@@ -1,0 +1,7 @@
+FROM itzg/mc-proxy:java25@sha256:6a5285415fb3847c83c1244f28e6fb83c1da88f9ffbcbe7f7941d43108e49966
+
+COPY --chown=1000:1000 dockerfiles/configs/Velocity                           /server/
+
+COPY --chown=1000:1000 dockerfiles/configs/TropicubeVelocity                  /server/plugins/tropicube-velocity/
+
+COPY --chown=1000:1000 dockerfiles/plugins/velocity                           /server/plugins/

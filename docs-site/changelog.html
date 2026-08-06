@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Historique fonctionnel et technique du projet">
+  <meta name="theme-color" content="#071a18">
+  <title>Historique des changements · Tropicube</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span>Tropicube</a><span>Documentation</span></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong>Tropicube</strong><small>Documentation réseau</small></span></a>
+    <nav aria-label="Documentation principale"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Accueil</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commandes</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Déploiement</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Développement</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link active" href="changelog.html"><span class="nav-icon">≡</span><span>Changements</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="contenu" class="main">
+    <section class="hero"><div class="eyebrow">Documentation officielle</div><h1>Historique des changements</h1><p>Historique fonctionnel et technique du projet</p></section>
+    <div class="content-grid">
+      <article class="documentation"><p>Ce document conserve les évolutions fonctionnelles, techniques et opérationnelles visibles du projet. Les modifications en cours restent sous <code>Non publié</code> jusqu'à la création d'une version.</p>
+<h2 id="non-publie">Non publié<a class="heading-anchor" href="#non-publie" aria-label="Lien vers cette section">#</a></h2>
+<h3 id="ajoute">Ajouté<a class="heading-anchor" href="#ajoute" aria-label="Lien vers cette section">#</a></h3>
+<ul><li>Dépôt Git local initialisé avec une branche principale <code>main</code>.</li><li>Maven Wrapper 3.9.11 pour des builds reproductibles sous Windows et Linux.</li><li>CI GitHub Actions couvrant Maven, JUnit, JaCoCo, le site documentaire, Docker Compose et les scripts de déploiement.</li><li>Dependabot pour la surveillance des dépendances Maven et GitHub Actions.</li><li>Règles EditorConfig, Git attributes et exclusions Git communes.</li><li>Git LFS pour les régions Minecraft, avec exclusion des JAR tiers et des données joueur volatiles.</li><li>Tests d'invariants pour le catalogue SheepWars et rapports de couverture JaCoCo.</li><li>Guides de développement, d'utilisation de Git/CI et consignes durables <code>AGENTS.md</code>.</li></ul>
+<h3 id="modifie">Modifié<a class="heading-anchor" href="#modifie" aria-label="Lien vers cette section">#</a></h3>
+<ul><li>Site documentaire enrichi avec les pages Développement, Git/CI et Historique des changements.</li><li>README complété avec le wrapper Maven et les contrôles automatiques disponibles.</li></ul>
+<h3 id="corrige">Corrigé<a class="heading-anchor" href="#corrige" aria-label="Lien vers cette section">#</a></h3>
+<ul><li>URL de téléchargement du Maven Wrapper épinglée sur Maven 3.9.11.</li></ul></article>
+      <aside class="page-toc" aria-label="Sommaire de la page"><span class="toc-title">Sur cette page</span><a class="toc-level-2" href="#non-publie">Non publié</a><a class="toc-level-3" href="#ajoute">Ajouté</a><a class="toc-level-3" href="#modifie">Modifié</a><a class="toc-level-3" href="#corrige">Corrigé</a></aside>
+    </div>
+    <footer><span>Tropicube</span><span>Documentation statique générée depuis les fichiers Markdown</span></footer>
+  </main>
+</body>
+</html>

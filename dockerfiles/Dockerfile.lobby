@@ -1,0 +1,10 @@
+FROM itzg/minecraft-server:java25@sha256:2a9d96d24be985fc81f01ab7cbe548ae2a92fa62b5a39c79efac3fec7c1f3c22
+
+COPY --chown=1000:1000 dockerfiles/configs/paper-global.yml                   /data/config/paper-global.yml
+
+COPY --chown=1000:1000 dockerfiles/configs/TropicubeCore                      /data/plugins/TropicubeCore/
+COPY --chown=1000:1000 dockerfiles/configs/TropicubeLobby                     /data/plugins/TropicubeLobby/
+
+COPY --chown=1000:1000 dockerfiles/plugins/lobby                              /data/plugins/
+
+COPY --chown=1000:1000 dockerfiles/worlds/lobby                               /data/world/

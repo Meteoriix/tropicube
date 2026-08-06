@@ -1,0 +1,68 @@
+# Configuration SheepWars
+
+redis:
+  host: localhost
+  port: 6379
+  password: ""
+
+default-settings:
+  # Nombre minimum et maximum de joueurs
+  min-players: 2
+  max-players: 16
+  # Démarrage automatique lorsque le minimum de joueurs est atteint
+  auto-start: false
+  # Durée du compte à rebours et de la partie (en secondes)
+  countdown: 10
+  game-duration: 600
+  # Kits aléatoires (ignore la sélection des joueurs)
+  random-kits: false
+  # Délai entre les apparitions de moutons (en secondes)
+  sheep-give-delay: 10
+  # Vote de map : true = tous votent, false = l'hôte choisit
+  map-vote-enabled: true
+  # Probabilités d'apparition des moutons spéciaux (en %)
+  sheep-probabilities:
+    boarding: 5
+    tnt: 7
+    distort: 8
+    darkness: 8
+    searching: 5
+    fire: 7
+    poison: 7
+    swap: 5
+    meteor: 5
+    healing: 6
+    lightning: 8
+    gravity: 8
+    mecha: 8
+    strength: 6
+    fragmentation: 7
+
+force-settings:
+  # IDs de classes désactivées (ex: ["DPS", "SUPPORT"])
+  classes-disabled: [ ]
+  # IDs de kits désactivés (ex: ["DPS_BOW", "TANK_HEARTS"])
+  kits-disabled: [ ]
+  # Types de moutons spéciaux désactivés (ex: ["TNT", "METEOR"])
+  sheep-disabled: [ ]
+
+# Locations & Arènes sur la map
+# Les spawns sont enregistrés automatiquement sous spawns.red.spawn1, spawn2, ... (max 8 par équipe)
+locations:
+  world:
+  lobby:
+    void_limit:
+  map_12345:
+    name: "Map 12345"
+    enabled: true
+    void_limit: 100
+    spawns:
+      red:
+      blue:
+  map_678910:
+    name: "Map 678910"
+    enabled: false
+    void_limit: 100
+    spawns:
+      red:
+      blue:

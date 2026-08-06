@@ -1,0 +1,30 @@
+# Secrets et configuration locale
+.env
+.env.*
+!.env.example
+
+# IDE et système d'exploitation
+.idea/
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Compilation et diagnostics JVM
+**/target/
+*.log
+hs_err_pid*
+replay_pid*
+
+# Artefacts copiés dans les contextes Docker
+dockerfiles/plugins/build/
+dockerfiles/plugins/**/*.jar
+
+# État volatil et données personnelles des mondes modèles
+dockerfiles/worlds/**/players/
+dockerfiles/worlds/**/session.lock
+dockerfiles/worlds/**/level.dat_old

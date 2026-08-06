@@ -1,0 +1,150 @@
+
+name: tropicube
+
+# ============================================================
+#  tropicube - Infrastructure Docker Compose
+#  Usage : docker compose up -d
+# ============================================================
+
+networks:
+  tropicube-net:
+    name: tropicube-net
+    driver: bridge
+  tropicube-control:
+    name: tropicube-control
+    driver: bridge
+    internal: true
+
+volumes:
+  mysql-data:
+  redis-data:
+
+services:
+  # ── Redis (bus de communication inter-services) ────────────
+  redis:
+    image: redis:8-alpine@sha256:978f0e01593e65eed801f2402944efcd936d43b5027e4908a7897baf88ed6241
+    container_name: tropicube-redis
+    restart: unless-stopped
+    networks:
+      - tropicube-net
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --save "" --appendonly yes --appendfsync everysec --requirepass "${REDIS_PASSWORD:?REDIS_PASSWORD manquant dans .env}"
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD:?REDIS_PASSWORD manquant dans .env}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── MySQL (données joueurs, économie, grades) ──────────────
+  mysql:
+    image: mysql:9.7.0@sha256:c11782aa2a96624c1efc121768641d96954faa136d6aa82751b032d8c426ffbc
+    container_name: tropicube-mysql
+    restart: unless-stopped
+    networks:
+      - tropicube-net
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD manquant dans .env}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE:?MYSQL_DATABASE manquant dans .env}"
+      MYSQL_USER: "${MYSQL_USER:?MYSQL_USER manquant dans .env}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:?MYSQL_PASSWORD manquant dans .env}"
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u\"$${MYSQL_USER}\" -p\"$${MYSQL_PASSWORD}\" --silent"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  # ── Velocity (proxy principal) ─────────────────────────────
+  velocity:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.velocity
+    image: tropicube-velocity:latest
+    container_name: tropicube-velocity
+    restart: unless-stopped
+    networks:
+      - tropicube-net
+      - tropicube-control
+    ports:
+      - "25565:25577"
+    environment:
+      TYPE: VELOCITY
+      VELOCITY_VERSION: "4.0.0"
+      REPLACE_ENV_VARIABLES: "true"
+      REPLACE_ENV_VARIABLE_PREFIX: "CFG_"
+      REPLACE_ENV_SUFFIXES: "yml,yaml,txt,cfg,conf,properties,hjson,json,tml,toml,secret"
+      CFG_REDIS_PASSWORD: "${REDIS_PASSWORD:?REDIS_PASSWORD manquant dans .env}"
+      CFG_FORWARDING_SECRET: "${FORWARDING_SECRET:?FORWARDING_SECRET manquant dans .env}"
+      CFG_RCON_PASSWORD: "${RCON_PASSWORD:?RCON_PASSWORD manquant dans .env}"
+      REDIS_PASSWORD: "${REDIS_PASSWORD:?REDIS_PASSWORD manquant dans .env}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE:?MYSQL_DATABASE manquant dans .env}"
+      MYSQL_USER: "${MYSQL_USER:?MYSQL_USER manquant dans .env}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:?MYSQL_PASSWORD manquant dans .env}"
+      FORWARDING_SECRET: "${FORWARDING_SECRET:?FORWARDING_SECRET manquant dans .env}"
+      RCON_PASSWORD: "${RCON_PASSWORD:?RCON_PASSWORD manquant dans .env}"
+    stop_grace_period: 60s
+    depends_on:
+      redis:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      docker-proxy:
+        condition: service_healthy
+  # ── Docker Socket Proxy ────────────────────────────────────
+  docker-proxy:
+    image: tecnativa/docker-socket-proxy:0.3@sha256:9e4b9e7517a6b660f2cc903a19b257b1852d5b3344794e3ea334ff00ae677ac2
+    container_name: tropicube-docker-proxy
+    restart: unless-stopped
+    networks:
+      - tropicube-control
+    environment:
+      CONTAINERS: 1
+      IMAGES: 1
+      NETWORKS: 1
+      INFO: 1
+      VERSION: 1
+      POST: 1
+    volumes:
+      - "${DOCKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock:ro"
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:2375/_ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Adminer (interface MySQL web, dev seulement) ───────────
+  adminer:
+    image: adminer:5@sha256:890cffec7caa20159fb6f68c1a521b2e5879f7314f4845d4ebca7cc1cf145971
+    container_name: tropicube-adminer
+    restart: unless-stopped
+    profiles: ["dev"]
+    networks:
+      - tropicube-net
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      - mysql
+
+  # ── Redis Commander (UI Redis, dev seulement) ──────────────
+  redis-commander:
+    image: rediscommander/redis-commander:latest@sha256:19cd0c49f418779fa2822a0496c5e6516d0c792effc39ed20089e6268477e40a
+    container_name: tropicube-redis-ui
+    restart: unless-stopped
+    profiles: ["dev"]
+    networks:
+      - tropicube-net
+    ports:
+      - "127.0.0.1:8081:8081"
+    environment:
+      REDIS_HOSTS: "tropicube:redis:6379:0:${REDIS_PASSWORD:?REDIS_PASSWORD manquant dans .env}"
+    depends_on:
+      redis:
+        condition: service_healthy

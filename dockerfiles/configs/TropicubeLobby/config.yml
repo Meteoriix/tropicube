@@ -1,0 +1,20 @@
+# ============================================================
+#  Tropicube Lobby - Configuration
+# ============================================================
+
+redis:
+  host: "redis"
+  port: 6379
+  password: "${CFG_REDIS_PASSWORD}"
+
+lobby:
+  spawn:
+    world: "world"
+    x: 100
+    y: 60
+    z: 100
+    yaw: 0.0
+    pitch: 0.0
+  double-jump: true
+  join-message: true
+  welcome-message: "<dark_gray>[<gold>Tropicube<dark_gray>] <gray>Bienvenue <yellow>%player% <gray>! <dark_gray>(<green>%online%<gray>/<red>%max%<dark_gray>)"

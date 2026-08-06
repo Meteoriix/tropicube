@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Variables, templates et réglages des plugins">
+  <meta name="theme-color" content="#071a18">
+  <title>Configuration · Tropicube</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span>Tropicube</a><span>Documentation</span></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong>Tropicube</strong><small>Documentation réseau</small></span></a>
+    <nav aria-label="Documentation principale"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Accueil</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commandes</span></a>
+<a class="nav-link active" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Déploiement</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Développement</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changements</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="contenu" class="main">
+    <section class="hero"><div class="eyebrow">Documentation officielle</div><h1>Configuration</h1><p>Variables, templates et réglages des plugins</p></section>
+    <div class="content-grid">
+      <article class="documentation"><h2 id="sources-et-ordre-d-application">Sources et ordre d'application<a class="heading-anchor" href="#sources-et-ordre-d-application" aria-label="Lien vers cette section">#</a></h2>
+<p>Le projet contient deux catégories de configuration :</p>
+<ol><li><code>src/main/resources</code> fournit les valeurs par défaut embarquées dans chaque JAR ;</li><li><code>dockerfiles/configs</code> contient la configuration effectivement copiée dans les images.</li></ol>
+<p>TropicubeCore complète automatiquement les fichiers de langue existants avec les nouvelles clés sans écraser les traductions personnalisées. Les scripts de déploiement font la même opération avant la construction des images pour Core et Velocity, avec refus des clés ou sections YAML dupliquées et des structures imbriquées non prises en charge par le mergeur.</p>
+<p>Les variables d'environnement ont priorité sur certaines valeurs Core. Dans les conteneurs <code>itzg</code>, le mécanisme <code>REPLACE_ENV_VARIABLES</code> remplace également les marqueurs <code>${CFG_...}</code> présents dans les fichiers copiés.</p>
+<h2 id="env"><code>.env</code><a class="heading-anchor" href="#env" aria-label="Lien vers cette section">#</a></h2>
+<p>Créer <code>.env</code> depuis <code>.env.example</code> et remplacer chaque valeur :</p>
+<div class="table-scroll"><table><thead><tr><th>Variable</th><th>Utilisation</th></tr></thead><tbody><tr><td><code>REDIS_PASSWORD</code></td><td>Authentification Redis et clients Java</td></tr><tr><td><code>MYSQL_ROOT_PASSWORD</code></td><td>Administration initiale du conteneur MySQL</td></tr><tr><td><code>MYSQL_DATABASE</code></td><td>Base créée pour Tropicube</td></tr><tr><td><code>MYSQL_USER</code></td><td>Compte applicatif MySQL</td></tr><tr><td><code>MYSQL_PASSWORD</code></td><td>Mot de passe du compte applicatif</td></tr><tr><td><code>FORWARDING_SECRET</code></td><td>Authentification Velocity → Paper</td></tr><tr><td><code>RCON_PASSWORD</code></td><td>RCON des instances dynamiques</td></tr><tr><td><code>DOCKER_SOCKET_PATH</code></td><td>Socket Docker de l'hôte, y compris rootless</td></tr></tbody></table></div>
+<p>Génération recommandée d'un secret sous PowerShell :</p>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>[Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32)).ToLower()</code></pre></div>
+<p>Sous Linux :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>openssl rand -hex 32</code></pre></div>
+<p>Éviter les espaces et caractères interprétés par les syntaxes <code>.env</code>, YAML ou shell. Ne jamais copier les valeurs réelles dans une issue, un log ou un commit.</p>
+<h2 id="tropicubevelocity">TropicubeVelocity<a class="heading-anchor" href="#tropicubevelocity" aria-label="Lien vers cette section">#</a></h2>
+<p>Fichier de déploiement : <code>dockerfiles/configs/TropicubeVelocity/config.yml</code>.</p>
+<h3 id="redis-et-docker">Redis et Docker<a class="heading-anchor" href="#redis-et-docker" aria-label="Lien vers cette section">#</a></h3>
+<ul><li><code>redis.host</code>, <code>port</code>, <code>password</code> : connexion au bus partagé ;</li><li><code>docker.host</code> : <code>tcp://docker-proxy:2375</code> en Compose ;</li><li><code>docker.network</code> : réseau auquel rattacher les backends ;</li><li><code>docker.container-prefix</code> : préfixe utilisé pour identifier les conteneurs gérés ;</li><li><code>docker.port-range-*</code> : plages réservées aux ports Minecraft et RCON ;</li><li><code>docker.base-path</code> : chemin absolu de l'hôte pour d'éventuels volumes relatifs.</li></ul>
+<p>Les plages doivent être valides, sans chevauchement et assez grandes pour le nombre maximal d'instances. Dans l'architecture Docker actuelle, les connexions proxy → backend utilisent le port interne <code>25565</code>; les ports hôte restent utiles pour l'administration et RCON.</p>
+<h3 id="templates">Templates<a class="heading-anchor" href="#templates" aria-label="Lien vers cette section">#</a></h3>
+<p>Chaque entrée de <code>templates</code> décrit :</p>
+<ul><li><code>enabled</code>, <code>name</code>, <code>image</code>, <code>type</code> ;</li><li>plage de ports et <code>max-players</code> ;</li><li>mémoire minimale/maximale en Mio ;</li><li><code>auto-start</code>, <code>min-instances</code> ;</li><li><code>auto-stop</code>, <code>auto-stop-delay</code> ;</li><li>variables d'environnement passées à l'image Paper.</li></ul>
+<p>Le lobby est une dépendance de routage essentielle et reste activé. Pour ajouter un mode de jeu, fournir une image, un plugin capable de publier son état, une plage de ports et une entrée correspondante dans <code>server-types</code> du lobby.</p>
+<p><code>shutdown.stop-dynamic-servers</code> doit normalement rester à <code>false</code>. Le passer à <code>true</code> signifie qu'un arrêt de Velocity doit également arrêter toutes les instances dynamiques.</p>
+<h3 id="nick-et-administration">Nick et administration<a class="heading-anchor" href="#nick-et-administration" aria-label="Lien vers cette section">#</a></h3>
+<ul><li><code>admin-uuids</code> donne <code>tropicube.admin</code>, <code>tropicube.admin.find</code>,</li></ul>
+<p><code>tropicube.admin.send</code> et <code>tropicube.bypass.whitelist</code> aux UUID approuvés ;</p>
+<ul><li><code>nick.allowed-grades</code> contrôle les grades pouvant utiliser <code>/nick</code> ;</li><li><code>nick.skin-uuids</code> complète le pool de profils Mojang utilisés comme skins.</li></ul>
+<h2 id="velocity-natif">Velocity natif<a class="heading-anchor" href="#velocity-natif" aria-label="Lien vers cette section">#</a></h2>
+<p>Fichiers : <code>dockerfiles/configs/Velocity/velocity.toml</code> et <code>forwarding.secret</code>.</p>
+<p>Paramètres indispensables :</p>
+<ul><li><code>bind = &quot;0.0.0.0:25577&quot;</code> dans le conteneur ;</li><li><code>online-mode = true</code> ;</li><li><code>player-info-forwarding-mode = &quot;modern&quot;</code> ;</li><li><code>forwarding-secret-file = &quot;forwarding.secret&quot;</code> ;</li><li>liste <code>servers.try</code> vide, le lobby étant choisi dynamiquement par le plugin.</li></ul>
+<p>Le fichier <code>forwarding.secret</code> contient le marqueur <code>${CFG_FORWARDING_SECRET}</code>, remplacé au démarrage. Le fichier Paper <code>paper-global.yml</code> utilise le même secret avec <code>proxies.velocity.enabled: true</code> et <code>online-mode: true</code>. Une divergence provoque typiquement « Unable to verify player details ».</p>
+<h2 id="tropicubecore">TropicubeCore<a class="heading-anchor" href="#tropicubecore" aria-label="Lien vers cette section">#</a></h2>
+<p>Fichier : <code>dockerfiles/configs/TropicubeCore/config.yml</code>.</p>
+<p>Les valeurs suivantes peuvent être surchargées sans modifier YAML :</p>
+<ul><li><code>TROPICUBE_REDIS_HOST</code>, <code>TROPICUBE_REDIS_PORT</code>, <code>TROPICUBE_REDIS_PASSWORD</code> ;</li><li><code>TROPICUBE_DB_HOST</code>, <code>TROPICUBE_DB_PORT</code>, <code>TROPICUBE_DB_NAME</code> ;</li><li><code>TROPICUBE_DB_USER</code>, <code>TROPICUBE_DB_PASSWORD</code>.</li></ul>
+<p>Sections métier :</p>
+<ul><li><code>economy</code> : nom, symbole, solde initial et bornes de transfert ;</li><li><code>language.default</code> : langue utilisée avant chargement du profil ;</li><li><code>grades</code> : présentation MiniMessage, priorité, statut VIP/staff et permissions.</li></ul>
+<p>Les noms de grades sont utilisés comme identifiants stables dans la boutique, le nick et les permissions. Une modification doit donc être répercutée dans tous les fichiers concernés.</p>
+<h2 id="tropicubelobby">TropicubeLobby<a class="heading-anchor" href="#tropicubelobby" aria-label="Lien vers cette section">#</a></h2>
+<p>Fichier : <code>dockerfiles/configs/TropicubeLobby/config.yml</code>.</p>
+<ul><li><code>lobby.spawn</code> définit monde, coordonnées et orientation ;</li><li><code>lobby.double-jump</code> active globalement les sauts aériens ;</li><li><code>server-types</code> définit les icônes Material ou HeadDatabase ;</li><li><code>vip-shop.entries</code> associe grade, icône, nom et prix ;</li><li><code>lang-selector.languages</code> configure codes, têtes et textes de présentation.</li></ul>
+<p>Le <code>grade-key</code> d'une entrée VIP doit exister dans Core. Le prix doit être positif et son avantage traduit sous la clé <code>lobby.vip-perks-&lt;grade&gt;</code> dans les quatre langues.</p>
+<h2 id="tropicubesheepwars">TropicubeSheepwars<a class="heading-anchor" href="#tropicubesheepwars" aria-label="Lien vers cette section">#</a></h2>
+<p>Fichier : <code>dockerfiles/configs/TropicubeSheepwars/config.yml</code>.</p>
+<ul><li><code>default-settings</code> fixe capacité, démarrage, durées, kits, vote et fréquence des moutons ;</li><li><code>sheep-probabilities</code> contient des poids relatifs, pas nécessairement un total de 100 ;</li><li><code>force-settings</code> désactive des classes, kits ou moutons ;</li><li><code>locations</code> décrit le lobby, la limite du vide et les cartes activées ;</li><li>chaque carte doit fournir des points d'apparition utilisables pour les équipes rouge et bleue.</li></ul>
+<p>Si tous les poids activés valent zéro, le gestionnaire sélectionne un type de repli afin de conserver une distribution valide.</p>
+<h2 id="langues">Langues<a class="heading-anchor" href="#langues" aria-label="Lien vers cette section">#</a></h2>
+<p>Core et Velocity prennent en charge <code>fr</code>, <code>en</code>, <code>es</code> et <code>de</code>. Les textes utilisent MiniMessage et les paramètres positionnels <code>{0}</code>, <code>{1}</code>, etc. Pour ajouter une clé :</p>
+<ol><li>l'ajouter dans les quatre ressources du module ;</li><li>ajouter les traductions correspondantes sous <code>dockerfiles/configs</code> ;</li><li>lancer <code>mvn test</code> pour vérifier les ressources Core ;</li><li>exécuter un déploiement ou <code>--validate-only</code> pour valider le merge.</li></ol>
+<p>Éviter les clés YAML dupliquées. Le merge de déploiement accepte les sections de premier niveau et leurs feuilles indentées de deux espaces ; une structure plus profonde doit être migrée explicitement plutôt qu'ignorée silencieusement.</p></article>
+      <aside class="page-toc" aria-label="Sommaire de la page"><span class="toc-title">Sur cette page</span><a class="toc-level-2" href="#sources-et-ordre-d-application">Sources et ordre d'application</a><a class="toc-level-2" href="#env">.env</a><a class="toc-level-2" href="#tropicubevelocity">TropicubeVelocity</a><a class="toc-level-3" href="#redis-et-docker">Redis et Docker</a><a class="toc-level-3" href="#templates">Templates</a><a class="toc-level-3" href="#nick-et-administration">Nick et administration</a><a class="toc-level-2" href="#velocity-natif">Velocity natif</a><a class="toc-level-2" href="#tropicubecore">TropicubeCore</a><a class="toc-level-2" href="#tropicubelobby">TropicubeLobby</a><a class="toc-level-2" href="#tropicubesheepwars">TropicubeSheepwars</a><a class="toc-level-2" href="#langues">Langues</a></aside>
+    </div>
+    <footer><span>Tropicube</span><span>Documentation statique générée depuis les fichiers Markdown</span></footer>
+  </main>
+</body>
+</html>

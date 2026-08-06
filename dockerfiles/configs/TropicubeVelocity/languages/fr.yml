@@ -1,0 +1,112 @@
+﻿# =====================================================
+#   Tropicube Velocity - Langue française (fr)
+# =====================================================
+
+general:
+  no-permission: "<red>Vous n'avez pas la permission."
+  player-only: "<red>Cette commande est réservée aux joueurs."
+
+proxy:
+  # Connexion / liste blanche
+  whitelist: "<red>Ce serveur est en liste blanche."
+  server-shutdown: "<yellow>Votre serveur s'arrête. Transfert vers le lobby..."
+  transfer-failed: "<red>La connexion au serveur a échoué. Veuillez réessayer."
+  # File d'attente
+  queue-already: "<yellow>Vous êtes déjà en file d'attente."
+  queue-usage: "<red>Usage : /queue \\<serveur>"
+  queue-added: "<green>Ajouté en file d'attente. Position : <yellow>{0}"
+  queue-added-vip: "<green>Ajouté en file d'attente <gold>(VIP prioritaire)</gold>. Position : <yellow>{0}"
+  queue-turn: "<green>Votre tour est arrivé ! Connexion à <yellow>{0}<green>..."
+  queue-position: "<gray>File d'attente — Position : <yellow>{0}"
+  queue-transfer-failed: "<red>La connexion a échoué. Vous restez dans la file d'attente."
+  queue-server-unavailable: "<red>Ce serveur n'est plus disponible. Vous avez quitté la file d'attente."
+  # /hub
+  hub-transfer: "<green>Transfert vers le lobby <yellow>{0}<green>..."
+  hub-none: "<red>Aucun lobby disponible pour le moment."
+  # /server
+  servers-header: "<dark_gray><strikethrough>──────────</strikethrough> <gold>Serveurs disponibles</gold> <dark_gray><strikethrough>──────────</strikethrough>"
+  servers-entry: "  <yellow>{0} <dark_gray>[<gray>{1}<dark_gray>]</dark_gray> <gray>— <white>{2}/{3} joueurs"
+  servers-usage: "<gray>Usage : <yellow>/server \\<nom>"
+  server-unavailable: "<red>Ce serveur n'est pas disponible ({0})."
+  server-connecting: "<green>Connexion à <yellow>{0}<green>..."
+  server-not-found: "<red>Serveur introuvable : <white>{0}"
+  # /send
+  send-usage: "<red>Usage : /send \\<joueur|*> \\<serveur>"
+  send-all: "<green>Envoi de tous les joueurs vers <yellow>{0}<green>."
+  send-player: "<green>{0} envoyé vers <yellow>{1}<green>."
+  send-received: "<gray>Vous avez été envoyé sur <yellow>{0}<green>."
+  send-player-not-found: "<red>Joueur introuvable : <white>{0}"
+  send-server-not-found: "<red>Serveur introuvable : <white>{0}"
+  # /find
+  find-usage: "<red>Usage : /find \\<joueur>"
+  find-result: "<gray>{0} <dark_gray>— <gray>Serveur : <yellow>{1}"
+  find-id: " <dark_gray>(ID : <gray>{0}<dark_gray>)"
+  find-not-online: "<gray>Le joueur <white>{0} <gray>n'est pas connecté."
+  # /tropi — en-têtes communs
+  admin-header: "<dark_gray><strikethrough>────────────────────</strikethrough> <gold>Tropicube Admin</gold> <dark_gray><strikethrough>────────────────────</strikethrough>"
+  admin-footer: "<dark_gray><strikethrough>─────────────────────────────────────────────</strikethrough>"
+  # /tropi list
+  admin-list-count: "<gray>Serveurs actifs : <yellow>{0}"
+  admin-list-empty: "  <gray>Aucun serveur en cours d'exécution."
+  admin-list-entry: "  <gray>[{0}] {1} <dark_gray>|</dark_gray> <gray>Joueurs: <white>{2}<gray>/<white>{3} <dark_gray>|</dark_gray> <gray>Port: <white>{4} <dark_gray>|</dark_gray> <gray>ID: <white>{5}"
+  # /tropi start
+  admin-start-usage: "<red>Usage : /tropi start \\<template> [nom]"
+  admin-start-not-found: "<red>Template introuvable : <white>{0}"
+  admin-start-available: "<gray>Templates disponibles : <white>{0}"
+  admin-starting: "<yellow>Démarrage du serveur <white>{0}<yellow>..."
+  admin-started: "<green>Serveur <white>{0} <green>démarré ! Port: <white>{1} <green>— ID: <white>{2}"
+  admin-start-error: "<red>Erreur : <white>{0}"
+  # /tropi stop
+  admin-stop-usage: "<red>Usage : /tropi stop \\<instanceId|nom>"
+  admin-stopping: "<yellow>Arrêt de <white>{0}<yellow>..."
+  admin-stopped: "<green>Serveur arrêté avec succès."
+  admin-stop-failed: "<red>Échec de l'arrêt."
+  # /tropi kill
+  admin-kill-usage: "<red>Usage : /tropi kill \\<instanceId|nom>"
+  admin-killing: "<yellow>Arrêt forcé de <white>{0}<yellow>..."
+  admin-killed: "<red>Serveur <white>{0} <red>killé."
+  admin-kill-failed: "<red>Échec de l'arrêt forcé de <white>{0}<red>."
+  admin-instance-not-found: "<red>Serveur introuvable : <white>{0}"
+  # /tropi info
+  admin-info-usage: "<red>Usage : /tropi info \\<instanceId|nom>"
+  admin-info-name: "<gold>Serveur: <white>{0}"
+  admin-info-id: "<gray>ID complet: <white>{0}"
+  admin-info-container: "<gray>Container: <white>{0}"
+  admin-info-type: "<gray>Type: <white>{0}"
+  admin-info-template: "<gray>Template: <white>{0}"
+  admin-info-status: "<gray>Statut: <white>{0}"
+  admin-info-address: "<gray>Adresse: <white>{0}:{1}"
+  admin-info-rcon: "<gray>RCON: <white>{0}"
+  admin-info-rcon-disabled: "<red>désactivé"
+  admin-info-players: "<gray>Joueurs: <white>{0}/{1}"
+  admin-info-whitelist: "<gray>Whitelist: {0}"
+  admin-info-whitelist-yes: "<red>Oui"
+  admin-info-whitelist-no: "<green>Non"
+  # /tropi maintenance
+  admin-maintenance-usage: "<red>Usage : /tropi maintenance \\<template> \\<on|off>"
+  admin-maintenance-on: "<gray>Template <white>{0}<gray> : maintenance <red>ACTIVÉE<gray>."
+  admin-maintenance-off: "<gray>Template <white>{0}<gray> : maintenance <green>DÉSACTIVÉE<gray>."
+  # /tropi reload
+  admin-reload-start: "<yellow>Rechargement de la configuration..."
+  admin-reload-done: "<green>Configuration rechargée."
+  # /tropi help
+  admin-help-title: "<gold>Commandes Tropicube Admin:"
+  admin-help-list: "  <yellow>/tropi list <gray>— Liste les serveurs actifs"
+  admin-help-start: "  <yellow>/tropi start \\<template> [nom] <gray>— Démarre un serveur"
+  admin-help-stop: "  <yellow>/tropi stop \\<id|nom> <gray>— Arrête un serveur"
+  admin-help-kill: "  <yellow>/tropi kill \\<id|nom> <gray>— Force l'arrêt"
+  admin-help-info: "  <yellow>/tropi info \\<id|nom> <gray>— Infos du serveur"
+  admin-help-templates: "  <yellow>/tropi templates <gray>— Voir les templates"
+  admin-help-maintenance: "  <yellow>/tropi maintenance \\<template> \\<on|off>"
+  admin-help-reload: "  <yellow>/tropi reload <gray>— Recharge la config"
+  # /tropi templates
+  admin-templates-count: "<gray>Templates disponibles ({0}):"
+  admin-template-entry: "  <gold>{0} <dark_gray>—</dark_gray> <white>{1} <dark_gray>[<gray>{2}<dark_gray>]</dark_gray> <gray>Image: <white>{3} <gray>RAM: <white>{4}-{5}Mo{6}"
+  admin-template-maintenance: " <red>[MAINTENANCE]"
+  # /nick
+  nick-fetching: "<gray>Génération de votre nick..."
+  nick-applied: "<green>Nick appliqué : <yellow>{0}<green>."
+  nick-removed: "<green>Nick retiré. Votre skin original est restauré."
+  nick-not-nicked: "<yellow>Vous n'avez pas de nick actif."
+  nick-no-permission: "<red>Vous devez être joueur premium pour utiliser cette commande."
+  nick-skin-error: "<red>Impossible de récupérer un skin pour le moment. Réessayez."

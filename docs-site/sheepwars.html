@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Game design, règles, kits et moutons spéciaux">
+  <meta name="theme-color" content="#071a18">
+  <title>SheepWars · Tropicube</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span>Tropicube</a><span>Documentation</span></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong>Tropicube</strong><small>Documentation réseau</small></span></a>
+    <nav aria-label="Documentation principale"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Accueil</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commandes</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Déploiement</span></a>
+<a class="nav-link active" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Développement</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changements</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="contenu" class="main">
+    <section class="hero"><div class="eyebrow">Documentation officielle</div><h1>SheepWars</h1><p>Game design, règles, kits et moutons spéciaux</p></section>
+    <div class="content-grid">
+      <article class="documentation"><h2 id="presentation">Présentation<a class="heading-anchor" href="#presentation" aria-label="Lien vers cette section">#</a></h2>
+<p>SheepWars est un mini-jeu PvP en équipes dans lequel les joueurs combattent sur des îles opposées en lançant des moutons aux effets spéciaux. La version Tropicube oppose l'équipe rouge à l'équipe bleue dans une manche unique à élimination : une équipe gagne lorsque plus aucun adversaire n'est vivant. À l'expiration du temps, l'équipe qui conserve le plus de joueurs gagne ; une égalité de survivants produit un match nul.</p>
+<p>Le mode mêle visée, gestion du recul et du vide, combat classique à l'épée et à l'arc, composition d'équipe et utilisation tactique d'effets de zone. Chaque joueur reçoit régulièrement un nouveau mouton, ce qui maintient la pression et oblige les équipes à adapter leur positionnement.</p>
+<h2 id="origine-et-adaptation-tropicube">Origine et adaptation Tropicube<a class="heading-anchor" href="#origine-et-adaptation-tropicube" aria-label="Lien vers cette section">#</a></h2>
+<p>Le concept SheepWars a été popularisé dans la communauté Minecraft francophone par le serveur Epicube au milieu des années 2010. Un article d'époque consacré à Epicube rapporte que le nom est né d'un jeu de mots autour d'un prototype appelé « ShipWars », devenu « SheepWars ». Des cartes communautaires de 2015 décrivaient déjà le principe comme un affrontement PvP visant à éliminer les joueurs de l'île adverse.</p>
+<p>La présente implémentation est une adaptation propre à Tropicube. Elle conserve le principe des moutons-projectiles et des deux îles, puis l'étend avec quinze types de moutons, trois classes, neuf kits spécialisés, des réglages de partie personnalisée, un vote de carte, une orchestration Docker et une interface traduite.</p>
+<p>Sources historiques : <a href="https://www.minecraft-france.fr/epicube/" target="_blank" rel="noreferrer">présentation d'Epicube et origine du nom</a>, <a href="https://www.minecraft-france.fr/map-sheepwars-vanilla-1-8-3/" target="_blank" rel="noreferrer">carte communautaire SheepWars de 2015</a>.</p>
+<h2 id="boucle-de-jeu">Boucle de jeu<a class="heading-anchor" href="#boucle-de-jeu" aria-label="Lien vers cette section">#</a></h2>
+<ol><li>L'instance attend les joueurs et charge leur profil, leur langue, leur classe et leur kit.</li><li>Les joueurs choisissent une équipe, une classe, un kit et, si le vote est actif, une carte.</li><li>L'hôte lance le compte à rebours depuis son menu de réglages, ou le démarrage automatique se déclenche lorsque le minimum configuré est atteint.</li><li>Au début de la manche, chaque joueur rejoint un spawn libre de son équipe avec une armure en cuir colorée, une épée, un arc Infinité, une flèche et un mouton aléatoire.</li><li>Un mouton spécial supplémentaire est distribué périodiquement à chaque survivant. L'équipe en sous-nombre reçoit aussi trois moutons par joueur au lancement.</li><li>Une mort est définitive pour la manche et place le joueur en spectateur. La disparition de tous les survivants d'une équipe termine immédiatement la partie.</li><li>Après l'écran de résultat, les joueurs sont renvoyés progressivement au lobby. Une prochaine instance est précréée lorsque possible et le lobby propose une revanche.</li></ol>
+<p>La durée par défaut est de 600 secondes, le compte à rebours de 10 secondes et la distribution des moutons de 10 secondes. Ces valeurs sont configurables.</p>
+<h2 id="classes-et-kits">Classes et kits<a class="heading-anchor" href="#classes-et-kits" aria-label="Lien vers cette section">#</a></h2>
+<p>Les classes organisent les kits par rôle. La classe elle-même sert de catégorie ; le bonus concret provient du kit sélectionné.</p>
+<div class="table-scroll"><table><thead><tr><th>Classe</th><th>Kit</th><th>Effet</th></tr></thead><tbody><tr><td>DPS</td><td>Épéiste</td><td>Épée en pierre avec Tranchant I à la place de l'épée en bois</td></tr><tr><td>DPS</td><td>Archer</td><td>Arc avec Puissance I en plus d'Infinité</td></tr><tr><td>DPS</td><td>Berger de la Mort</td><td>Moutons infligeant 50 % de dégâts supplémentaires</td></tr><tr><td>Tank</td><td>Colosse</td><td>14 cœurs maximum, soit 4 de plus que la base</td></tr><tr><td>Tank</td><td>Ancre</td><td>80 % de résistance au recul</td></tr><tr><td>Tank</td><td>Plume d'Acier</td><td>80 % de dégâts de chute en moins</td></tr><tr><td>Support</td><td>Éleveur</td><td>Moutons possédant 40 PV au lieu de 16</td></tr><tr><td>Support</td><td>Médic</td><td>Flèches soignant les alliés touchés</td></tr><tr><td>Support</td><td>Acrobate</td><td>Saut amélioré II permanent</td></tr></tbody></table></div>
+<p>L'hôte peut désactiver des classes ou des kits. Le mode « kits aléatoires » ignore les choix individuels et attribue un kit actif au lancement.</p>
+<h2 id="moutons-speciaux">Moutons spéciaux<a class="heading-anchor" href="#moutons-speciaux" aria-label="Lien vers cette section">#</a></h2>
+<div class="table-scroll"><table><thead><tr><th>Mouton</th><th>Fonction principale</th></tr></thead><tbody><tr><td>Abordage</td><td>Transporte son lanceur pour franchir l'espace entre les îles</td></tr><tr><td>TNT</td><td>Produit une forte explosion</td></tr><tr><td>Distortion</td><td>Téléporte les blocs autour de l'impact</td></tr><tr><td>Ténébreux</td><td>Ralentit et aveugle les ennemis touchés</td></tr><tr><td>Feu</td><td>Enflamme les ennemis touchés</td></tr><tr><td>Poison</td><td>Crée une zone persistante de poison</td></tr><tr><td>Échange</td><td>Échange le lanceur avec la cible proche, ou effectue un dash sans cible</td></tr><tr><td>Météore</td><td>Déclenche une pluie de météores</td></tr><tr><td>Tête chercheuse</td><td>Poursuit l'ennemi le plus proche de l'impact</td></tr><tr><td>Soin</td><td>Soigne le lanceur et les alliés dans un rayon de cinq blocs</td></tr><tr><td>Foudre</td><td>Frappe une cible puis enchaîne jusqu'à trois joueurs proches</td></tr><tr><td>Gravité</td><td>Attire les joueurs proches puis les projette en l'air</td></tr><tr><td>Mécha</td><td>Déploie un golem résistant qui attaque l'équipe ennemie</td></tr><tr><td>Force</td><td>Renforce les dégâts du lanceur et des alliés proches</td></tr><tr><td>Fragmentation</td><td>Libère cinq petits moutons explosifs</td></tr></tbody></table></div>
+<p>Chaque type possède une probabilité configurable dans <code>default-settings.sheep-probabilities</code>. Les types peuvent également être désactivés via <code>force-settings.sheep-disabled</code> ou depuis le menu de l'hôte.</p>
+<h2 id="cartes-et-equipes">Cartes et équipes<a class="heading-anchor" href="#cartes-et-equipes" aria-label="Lien vers cette section">#</a></h2>
+<p>Une carte jouable contient un monde, une limite de vide et jusqu'à huit spawns rouges et huit spawns bleus. Le nombre maximal effectif de joueurs est donc limité à 16. Les spawns sont mélangés au début de chaque manche afin d'éviter une attribution prévisible.</p>
+<p>Lorsque <code>map-vote-enabled</code> vaut <code>true</code>, chaque joueur vote et une carte est tirée au hasard parmi celles arrivées en tête. Sinon, l'hôte choisit directement la carte. Une partie ne démarre pas si la carte sélectionnée est incomplète ou désactivée.</p>
+<p>Les joueurs peuvent demander une équipe dans le menu d'attente. Le gestionnaire conserve des équipes équilibrées et attribue automatiquement une équipe lorsque nécessaire. Les coéquipiers bénéficient d'un contour coloré visible uniquement par leur équipe.</p>
+<h2 id="partie-personnalisee-et-role-de-l-hote">Partie personnalisée et rôle de l'hôte<a class="heading-anchor" href="#partie-personnalisee-et-role-de-l-hote" aria-label="Lien vers cette section">#</a></h2>
+<p>Une partie personnalisée est créée depuis le lobby par un joueur autorisé. Velocity réserve atomiquement <code>host-creation:&lt;uuid&gt;</code> pendant la création, puis associe le joueur à l'instance avec <code>host:&lt;uuid&gt;</code>. Un joueur ne peut ainsi posséder qu'un serveur personnalisé actif ou en cours de création.</p>
+<p>Avant la manche, l'hôte dispose d'un menu lui permettant notamment de :</p>
+<ul><li>lancer ou annuler le compte à rebours ;</li><li>régler les nombres minimum et maximum de joueurs ;</li><li>modifier le compte à rebours, la durée et la fréquence de distribution ;</li><li>activer le démarrage automatique, les kits aléatoires et le vote de carte ;</li><li>activer ou désactiver les moutons, classes et kits disponibles.</li></ul>
+<p>Le lobby permet d'arrêter le serveur tant que la manche n'a pas commencé. Après le lancement, l'association d'hôte est conservée jusqu'à la fin de partie, puis supprimée automatiquement.</p>
+<h2 id="interface-langues-et-commandes">Interface, langues et commandes<a class="heading-anchor" href="#interface-langues-et-commandes" aria-label="Lien vers cette section">#</a></h2>
+<p>Le backend SheepWars n'enregistre aucune commande Minecraft propre dans son <code>plugin.yml</code>. Toutes les actions pendant la partie passent par les objets de la hotbar et les inventaires : équipe, carte, classe/kit, réglages de l'hôte et retour au lobby.</p>
+<p>Le scoreboard affiche l'état de la partie, le temps restant, les survivants par équipe, la classe, le kit et les éliminations. La tablist identifie les équipes et les spectateurs. Les textes proviennent de TropicubeCore et sont disponibles en français, anglais, espagnol et allemand.</p>
+<p>La commande <code>/sw join</code>, fournie par TropicubeLobby, sert uniquement à rejoindre de nouveau une partie quittée mais encore active. Le lit de sortie transmet l'ID de l'instance pendant cinq minutes avant de transférer le joueur au lobby.</p>
+<h2 id="configuration-technique">Configuration technique<a class="heading-anchor" href="#configuration-technique" aria-label="Lien vers cette section">#</a></h2>
+<p>La configuration source se trouve dans <code>tropicube-sheepwars/src/main/resources/config.yml</code>. Les sections principales sont :</p>
+<ul><li><code>redis</code> : connexion à l'état partagé ;</li><li><code>default-settings</code> : règles initiales de la manche ;</li><li><code>force-settings</code> : fonctionnalités interdites par l'exploitation ;</li><li><code>locations</code> : monde, lobby, limite du vide, cartes et spawns d'équipe.</li></ul>
+<p>En déploiement Docker, <code>INSTANCE_ID</code>, <code>SERVER_NAME</code>, <code>IS_HOST</code> et <code>HOST_UUID</code> relient le plugin à Velocity. L'état de l'instance passe successivement par attente, démarrage, jeu, fin et arrêt. Redis porte les marqueurs de partie commencée, de reconnexion, de revanche et de propriété du serveur.</p>
+<p>Pour l'installation complète, la création des images et la configuration des cartes, consulter <a href="deployment.html">Déploiement</a> et <a href="configuration.html">Configuration</a>.</p></article>
+      <aside class="page-toc" aria-label="Sommaire de la page"><span class="toc-title">Sur cette page</span><a class="toc-level-2" href="#presentation">Présentation</a><a class="toc-level-2" href="#origine-et-adaptation-tropicube">Origine et adaptation Tropicube</a><a class="toc-level-2" href="#boucle-de-jeu">Boucle de jeu</a><a class="toc-level-2" href="#classes-et-kits">Classes et kits</a><a class="toc-level-2" href="#moutons-speciaux">Moutons spéciaux</a><a class="toc-level-2" href="#cartes-et-equipes">Cartes et équipes</a><a class="toc-level-2" href="#partie-personnalisee-et-role-de-l-hote">Partie personnalisée et rôle de l'hôte</a><a class="toc-level-2" href="#interface-langues-et-commandes">Interface, langues et commandes</a><a class="toc-level-2" href="#configuration-technique">Configuration technique</a></aside>
+    </div>
+    <footer><span>Tropicube</span><span>Documentation statique générée depuis les fichiers Markdown</span></footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,11 @@
+**
+!dockerfiles/
+!dockerfiles/Dockerfile.velocity
+!dockerfiles/configs/
+!dockerfiles/configs/Velocity/
+!dockerfiles/configs/Velocity/**
+!dockerfiles/configs/TropicubeVelocity/
+!dockerfiles/configs/TropicubeVelocity/**
+!dockerfiles/plugins/
+!dockerfiles/plugins/velocity/
+!dockerfiles/plugins/velocity/**

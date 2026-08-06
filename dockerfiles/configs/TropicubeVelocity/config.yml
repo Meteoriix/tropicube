@@ -1,0 +1,149 @@
+# =====================================================
+#   Tropicube Velocity - Configuration principale
+# =====================================================
+
+redis:
+  host: "redis"
+  port: 6379
+  password: "${CFG_REDIS_PASSWORD}"
+
+language:
+  default: "fr"
+
+# Conserver les backends pendant un redéploiement de Velocity permet leur restauration.
+# Mettre à true uniquement pour un arrêt complet de toute l'infrastructure.
+shutdown:
+  stop-dynamic-servers: false
+
+docker:
+  host: "tcp://docker-proxy:2375"
+  network: "tropicube-net"
+  container-prefix: "tropicube"
+  port-range-start: 25600
+  port-range-end: 25700
+  rcon-port-range-start: 25701
+  rcon-port-range-end: 25801
+  rcon-password: "${CFG_RCON_PASSWORD}"
+  # Chemin absolu du projet sur l'hôte Docker (utilisé pour résoudre les volumes relatifs)
+  base-path: ""
+
+admin-uuids:
+  - "bcc80c2b-98ca-4b6c-b21b-33cf85e41228" # Meteoriix
+  - "7f72f5e5-72ba-4a2f-99fc-d5a204c1b9da" # OloWak
+  - "62a69a13-11bc-4b74-9c19-5d0a5253af2d" # Flashoune
+
+# =====================================================
+#  Système de nick (/nick)
+#  skin-uuids : UUIDs Mojang supplémentaires utilisés
+#  comme source de skin aléatoire (sans tirets ou avec).
+#  Notch, jeb_ et Dinnerbone sont inclus par défaut.
+# =====================================================
+nick:
+  # Grades autorisés à utiliser /nick (les grades staff sont inclus explicitement).
+  allowed-grades: ["PREMIUM", "HELPER", "MODERATEUR", "ADMIN", "OWNER"]
+  # UUIDs Mojang supplémentaires pour le pool de skins aléatoires.
+  skin-uuids:
+    - "96ac1c5a-de96-4556-9763-46011a868496"
+    - "2398bc2f-6915-4048-8b48-999cdd4b1cb2"
+    - "2fa3096f-7c7a-4a7e-bc44-5de7d61bbef4"
+    - "bbfc1ab2-f8b6-450d-ad6e-2a1169de59fb"
+
+# =====================================================
+#  Templates de serveurs
+#  type: LOBBY | SHEEPWARS ...
+#
+#  Variables injectées AUTOMATIQUEMENT par DockerManager
+#  (ne pas les redéfinir ici sauf pour override intentionnel) :
+#    EULA, SERVER_NAME, INSTANCE_ID,
+#    MAX_PLAYERS  ← depuis max-players
+#    MEMORY       ← depuis ram-min  (ex. "1024M")
+#    MAX_MEMORY   ← depuis ram-max  (ex. "2048M")
+#    ENABLE_RCON, RCON_PORT, RCON_PASSWORD  ← depuis docker.rcon-*
+# =====================================================
+templates:
+
+  lobby:
+    enabled: true  # Toujours forcé à true par le serveur — le lobby ne peut pas être désactivé.
+    name: "Lobby"
+    image: "tropicube-lobby:latest"
+    type: "LOBBY"
+    port-min: 25600
+    port-max: 25624
+    max-players: 100
+    ram-min: 1024
+    ram-max: 2048
+    auto-start: true
+    # Les instances vides s'arrêtent automatiquement après auto-stop-delay secondes.
+    auto-stop: true
+    auto-stop-delay: 300
+    min-instances: 1
+    environment:
+      TYPE: "PAPER"
+      VERSION: "26.2"
+      DIFFICULTY: "peaceful"
+      SPAWN_PROTECTION: "0"
+      # Désactiver le mode en ligne : Velocity gère l'authentification (modern forwarding).
+      ONLINE_MODE: "false"
+      # Nécessaire pour que le double-saut fonctionne (le serveur autorise le vol côté Paper).
+      ALLOW_FLIGHT: "true"
+      # Réappliquer les env vars sur server.properties à chaque démarrage.
+      OVERRIDE_SERVER_PROPERTIES: "true"
+      USE_AIKAR_FLAGS: "true"
+      VIEW_DISTANCE: "10"
+      SIMULATION_DISTANCE: "6"
+      SYNC_CHUNK_WRITES: "false"
+      TZ: "Europe/Paris"
+      REPLACE_ENV_VARIABLES: "true"
+      REPLACE_ENV_VARIABLE_PREFIX: "CFG_"
+      CFG_REDIS_PASSWORD: "${REDIS_PASSWORD}"
+      CFG_FORWARDING_SECRET: "${FORWARDING_SECRET}"
+      TROPICUBE_REDIS_PASSWORD: "${REDIS_PASSWORD}"
+      TROPICUBE_DB_NAME: "${MYSQL_DATABASE}"
+      TROPICUBE_DB_USER: "${MYSQL_USER}"
+      TROPICUBE_DB_PASSWORD: "${MYSQL_PASSWORD}"
+      OPS: |
+        Meteoriix
+        OloWak
+        Flashoune
+
+  sheepwars:
+    enabled: true
+    name: "Sheepwars"
+    image: "tropicube-sheepwars:latest"
+    type: "SHEEPWARS"
+    port-min: 25625
+    port-max: 25649
+    max-players: 16
+    ram-min: 1024
+    ram-max: 2048
+    auto-start: true
+    # Les instances vides s'arrêtent automatiquement après auto-stop-delay secondes.
+    auto-stop: true
+    auto-stop-delay: 300
+    min-instances: 1
+    environment:
+      TYPE: "PAPER"
+      VERSION: "26.2"
+      DIFFICULTY: "peaceful"
+      SPAWN_PROTECTION: "0"
+      # Désactiver le mode en ligne : Velocity gère l'authentification (modern forwarding).
+      ONLINE_MODE: "false"
+      # Réappliquer les env vars sur server.properties à chaque démarrage.
+      OVERRIDE_SERVER_PROPERTIES: "true"
+      USE_AIKAR_FLAGS: "true"
+      VIEW_DISTANCE: "8"
+      SIMULATION_DISTANCE: "5"
+      SYNC_CHUNK_WRITES: "false"
+      TZ: "Europe/Paris"
+      REPLACE_ENV_VARIABLES: "true"
+      REPLACE_ENV_VARIABLE_PREFIX: "CFG_"
+      CFG_REDIS_PASSWORD: "${REDIS_PASSWORD}"
+      CFG_FORWARDING_SECRET: "${FORWARDING_SECRET}"
+      TROPICUBE_REDIS_PASSWORD: "${REDIS_PASSWORD}"
+      TROPICUBE_DB_NAME: "${MYSQL_DATABASE}"
+      TROPICUBE_DB_USER: "${MYSQL_USER}"
+      TROPICUBE_DB_PASSWORD: "${MYSQL_PASSWORD}"
+      OPS: |
+        Meteoriix
+        OloWak
+        Flashoune

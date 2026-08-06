@@ -1,0 +1,9 @@
+{
+  "id": "tropicube-velocity",
+  "name": "TropicubeVelocity",
+  "version": "1.0.0",
+  "description": "Tropicube - Plugin Velocity : routage, gestion Docker, queue, commandes admin",
+  "authors": ["Tropicube-Team"],
+  "dependencies": [],
+  "main": "fr.tropicube.velocity.TropicubeVelocity"
+}

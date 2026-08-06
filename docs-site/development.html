@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Environnement, tests et contributions">
+  <meta name="theme-color" content="#071a18">
+  <title>Développement et contribution · Tropicube</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span>Tropicube</a><span>Documentation</span></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong>Tropicube</strong><small>Documentation réseau</small></span></a>
+    <nav aria-label="Documentation principale"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Accueil</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commandes</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Déploiement</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link active" href="development.html"><span class="nav-icon">{ }</span><span>Développement</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changements</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="contenu" class="main">
+    <section class="hero"><div class="eyebrow">Documentation officielle</div><h1>Développement et contribution</h1><p>Environnement, tests et contributions</p></section>
+    <div class="content-grid">
+      <article class="documentation"><p>Ce guide décrit le cycle de développement recommandé pour Tropicube, depuis la préparation du poste jusqu'à la validation d'une modification.</p>
+<h2 id="prerequis">Prérequis<a class="heading-anchor" href="#prerequis" aria-label="Lien vers cette section">#</a></h2>
+<ul><li>Git 2.40 ou plus récent ;</li><li>JDK 25, avec <code>JAVA_HOME</code> correctement défini ;</li><li>Docker Engine et Docker Compose v2 pour les validations d'infrastructure ;</li><li>Node.js 24 pour reconstruire le site documentaire ;</li><li>un IDE compatible EditorConfig, IntelliJ IDEA étant recommandé pour les modules Java.</li></ul>
+<p>Maven n'a pas besoin d'être installé globalement : <code>mvnw.cmd</code> et <code>mvnw</code> téléchargent la version 3.9.11 contrôlée par le projet.</p>
+<h2 id="organisation-git">Organisation Git<a class="heading-anchor" href="#organisation-git" aria-label="Lien vers cette section">#</a></h2>
+<p>Le dépôt local utilise <code>main</code> comme branche principale. Une modification isolée devrait être développée dans une branche courte :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>git switch -c feature/description-courte</code></pre></div>
+<p>Avant chaque commit, vérifier <code>git status</code> afin d'exclure les secrets, les répertoires <code>target/</code> et les JAR copiés vers Docker. Le fichier <code>.env</code> ne doit jamais être versionné ; seul <code>.env.example</code> sert de modèle.</p>
+<p>Les commits doivent rester atomiques et suivre la convention détaillée dans <a href="git-ci.html">Git, CI et versionnement</a>, par exemple <code>fix(lobby): synchronise le scoreboard après un changement de langue</code>. Une pull request doit préciser les tests automatisés et les scénarios validés en jeu.</p>
+<h2 id="compiler-et-tester">Compiler et tester<a class="heading-anchor" href="#compiler-et-tester" aria-label="Lien vers cette section">#</a></h2>
+<p>Sous Windows :</p>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>.\mvnw.cmd clean verify</code></pre></div>
+<p>Sous Linux ou macOS :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>bash ./mvnw clean verify</code></pre></div>
+<p>La commande compile tous les modules, applique les règles Maven Enforcer, exécute JUnit et génère un rapport JaCoCo dans le répertoire <code>target/site/jacoco/</code> de chaque module testé. Pour itérer sur un module tout en construisant ses dépendances :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>bash ./mvnw -pl tropicube-sheepwars -am test</code></pre></div>
+<p>Les tests existants couvrent notamment les modèles Docker/Redis, la conversion des durées, la validité des ressources YAML et les invariants du catalogue SheepWars. Toute correction de bug devrait ajouter un test de non-régression lorsque le comportement peut être isolé de Paper ou Velocity.</p>
+<p>Les interactions nécessitant un serveur réel — inventaires Bukkit, événements réseau, démarrage d'instances et routage Velocity — restent à valider sur une pile Docker de développement. Si leur volume augmente, l'étape suivante recommandée est de créer des tests d'intégration avec des adaptateurs Paper/Velocity plutôt que de simuler toute l'API serveur.</p>
+<h2 id="controles-d-infrastructure">Contrôles d'infrastructure<a class="heading-anchor" href="#controles-d-infrastructure" aria-label="Lien vers cette section">#</a></h2>
+<p>Créer au préalable un <code>.env</code> local à partir du modèle. Les contrôles sans déploiement complet sont :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>docker compose --env-file .env.example config --quiet
+node docs-site/build.mjs
+node docs-site/validate.mjs
+bash -n deploy.sh</code></pre></div>
+<p>Sous PowerShell, la validation complète non destructive du déploiement est disponible avec :</p>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>.\deploy.ps1 -OnlyImages -ValidateOnly</code></pre></div>
+<p>Le script Bash propose l'équivalent :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>./deploy.sh --only-images --validate-only</code></pre></div>
+<h2 id="integration-continue">Intégration continue<a class="heading-anchor" href="#integration-continue" aria-label="Lien vers cette section">#</a></h2>
+<p>Le workflow <code>.github/workflows/ci.yml</code> s'exécute sur chaque pull request et chaque push vers <code>main</code>. Il contrôle :</p>
+<ul><li>le wrapper Maven et le build <code>verify</code> sous Java 25 ;</li><li>tous les tests JUnit et la génération des rapports JaCoCo ;</li><li>la reconstruction déterministe et les liens du site HTML ;</li><li>la résolution de <code>docker-compose.yml</code> avec <code>.env.example</code> ;</li><li>la syntaxe de <code>deploy.sh</code> et de <code>deploy.ps1</code>.</li></ul>
+<p>Une pull request ne devrait pas être fusionnée tant que ce workflow échoue. Après publication du dépôt sur GitHub, activer une règle de protection de <code>main</code> exigeant le contrôle <code>Build, tests and static validation</code> et au moins une revue si plusieurs personnes contribuent.</p>
+<h2 id="mise-a-jour-des-dependances">Mise à jour des dépendances<a class="heading-anchor" href="#mise-a-jour-des-dependances" aria-label="Lien vers cette section">#</a></h2>
+<p>Dependabot vérifie chaque semaine les dépendances Maven et chaque mois les actions GitHub. Ses pull requests doivent être validées par la CI puis, pour Paper et Velocity, par un démarrage réel du proxy, du lobby et d'une partie SheepWars.</p>
+<p>Une vérification manuelle complète reste possible avec :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>bash ./mvnw org.codehaus.mojo:versions-maven-plugin:2.19.1:display-dependency-updates</code></pre></div>
+<p>Ne pas appliquer aveuglément une nouvelle version majeure : vérifier les notes de migration, les changements d'API et la compatibilité avec Minecraft 26.2.</p>
+<h2 id="documentation-et-qualite">Documentation et qualité<a class="heading-anchor" href="#documentation-et-qualite" aria-label="Lien vers cette section">#</a></h2>
+<p>Les fichiers Markdown sont la source de vérité. Après leur modification, exécuter le générateur puis versionner les pages HTML mises à jour :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>node docs-site/build.mjs
+node docs-site/validate.mjs</code></pre></div>
+<p><code>.editorconfig</code> harmonise l'UTF-8, l'indentation et les fins de ligne. <code>.gitattributes</code> force les scripts Bash et fichiers de configuration en LF, et les scripts Windows en CRLF. Les commentaires Java doivent expliquer une contrainte métier ou une décision non évidente, sans paraphraser le code.</p>
+<p>Tout changement fonctionnel, de configuration ou d'exploitation doit mettre à jour la page documentaire concernée et <a href="changelog.html">l'historique des changements</a>. Les changements internes doivent au minimum être expliqués dans le corps du commit ; s'ils modifient une convention ou l'architecture, ils doivent également être documentés.</p>
+<h2 id="avant-une-pull-request">Avant une pull request<a class="heading-anchor" href="#avant-une-pull-request" aria-label="Lien vers cette section">#</a></h2>
+<ol><li>Vérifier qu'aucun secret ni artefact compilé n'apparaît dans <code>git status</code>.</li><li>Lancer <code>clean verify</code> sur l'ensemble du réacteur Maven.</li><li>Reconstruire et valider le site si la documentation a changé.</li><li>Valider Docker Compose et les scripts touchés.</li><li>Tester en jeu tout flux dépendant de Paper, Velocity, Redis ou Docker.</li><li>Décrire précisément les vérifications dans la pull request.</li></ol></article>
+      <aside class="page-toc" aria-label="Sommaire de la page"><span class="toc-title">Sur cette page</span><a class="toc-level-2" href="#prerequis">Prérequis</a><a class="toc-level-2" href="#organisation-git">Organisation Git</a><a class="toc-level-2" href="#compiler-et-tester">Compiler et tester</a><a class="toc-level-2" href="#controles-d-infrastructure">Contrôles d'infrastructure</a><a class="toc-level-2" href="#integration-continue">Intégration continue</a><a class="toc-level-2" href="#mise-a-jour-des-dependances">Mise à jour des dépendances</a><a class="toc-level-2" href="#documentation-et-qualite">Documentation et qualité</a><a class="toc-level-2" href="#avant-une-pull-request">Avant une pull request</a></aside>
+    </div>
+    <footer><span>Tropicube</span><span>Documentation statique générée depuis les fichiers Markdown</span></footer>
+  </main>
+</body>
+</html>

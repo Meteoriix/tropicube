@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Services, modules, données et flux réseau">
+  <meta name="theme-color" content="#071a18">
+  <title>Architecture et fonctionnement · Tropicube</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span>Tropicube</a><span>Documentation</span></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong>Tropicube</strong><small>Documentation réseau</small></span></a>
+    <nav aria-label="Documentation principale"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Accueil</span></a>
+<a class="nav-link active" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commandes</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Déploiement</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Développement</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changements</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="contenu" class="main">
+    <section class="hero"><div class="eyebrow">Documentation officielle</div><h1>Architecture et fonctionnement</h1><p>Services, modules, données et flux réseau</p></section>
+    <div class="content-grid">
+      <article class="documentation"><h2 id="vue-d-ensemble">Vue d'ensemble<a class="heading-anchor" href="#vue-d-ensemble" aria-label="Lien vers cette section">#</a></h2>
+<div class="code-block"><span class="code-language">mermaid</span><pre class="diagram-source"><code>flowchart LR
+    P[Joueurs Minecraft] --&gt;|TCP 25565| V[Velocity]
+    V --&gt; L[Paper Lobby]
+    V --&gt; S[Paper SheepWars]
+    V --&gt; DP[Docker Socket Proxy]
+    DP --&gt; D[Docker Engine]
+    V &lt;--&gt; R[(Redis)]
+    L &lt;--&gt; R
+    S &lt;--&gt; R
+    L &lt;--&gt; M[(MySQL)]
+    S &lt;--&gt; M
+    D --&gt; L
+    D --&gt; S</code></pre></div>
+<p>Velocity est l'unique point d'entrée public. Le plugin <code>tropicube-velocity</code> maintient un catalogue d'instances, restaure celles qui existent encore après son redémarrage, crée les conteneurs nécessaires et les enregistre dynamiquement auprès du proxy. Les serveurs Paper exécutent <code>TropicubeCore</code> et leur plugin spécialisé.</p>
+<p>Deux réseaux Docker séparent les flux :</p>
+<ul><li><code>tropicube-net</code> relie Velocity, Redis, MySQL et les serveurs de jeu ;</li><li><code>tropicube-control</code>, interne, relie uniquement Velocity au proxy du socket Docker.</li></ul>
+<h2 id="cycle-d-une-instance">Cycle d'une instance<a class="heading-anchor" href="#cycle-d-une-instance" aria-label="Lien vers cette section">#</a></h2>
+<ol><li>Au démarrage, Velocity charge les templates puis restaure les instances encore décrites dans Redis et Docker.</li><li>Il garantit <code>min-instances</code> pour chaque template activé avec <code>auto-start</code>.</li><li><code>DockerManager</code> réserve les ports, crée le conteneur, injecte son environnement, ses labels et ses volumes, puis le démarre.</li><li><code>TropiServerManager</code> attend que le backend soit joignable avant de l'enregistrer auprès de Velocity.</li><li>Les comptes de joueurs et l'état de l'instance sont actualisés dans Redis.</li><li>Une instance vide et éligible à <code>auto-stop</code> est arrêtée après <code>auto-stop-delay</code>, sans descendre sous <code>min-instances</code>.</li><li>Lors d'un arrêt, les joueurs sont transférés vers le meilleur lobby avant la suppression du conteneur et de son entrée Velocity.</li></ol>
+<p>Les états possibles d'une instance sont <code>STARTING</code>, <code>RUNNING</code>, <code>STOPPING</code>, <code>STOPPED</code> et <code>ERROR</code>. Une instance n'est joignable que si son état et sa capacité le permettent.</p>
+<h2 id="responsabilites-des-modules">Responsabilités des modules<a class="heading-anchor" href="#responsabilites-des-modules" aria-label="Lien vers cette section">#</a></h2>
+<h3 id="tropicube-docker-api"><code>tropicube-docker-api</code><a class="heading-anchor" href="#tropicube-docker-api" aria-label="Lien vers cette section">#</a></h3>
+<p>Bibliothèque commune ombrée dans les plugins qui en ont besoin :</p>
+<ul><li><code>ServerTemplate</code> valide la définition d'un type de serveur ;</li><li><code>ServerInstance</code> représente une exécution concrète et son état ;</li><li><code>DockerManager</code> réserve les ports, crée, inspecte, arrête et nettoie les conteneurs ;</li><li><code>RedisManager</code> centralise le préfixage, la sérialisation JSON, les transactions et les abonnements avec reconnexion.</li></ul>
+<p>Les clients Docker et Redis sont fermables. Les abonnements Redis, bloquants par nature, tournent dans des threads virtuels et se réabonnent après une coupure tant que le gestionnaire reste actif.</p>
+<h3 id="tropicube-velocity"><code>tropicube-velocity</code><a class="heading-anchor" href="#tropicube-velocity" aria-label="Lien vers cette section">#</a></h3>
+<p>Le plugin proxy :</p>
+<ul><li>initialise Redis et le client Docker via le socket proxy ;</li><li>charge les templates de <code>config.yml</code> ;</li><li>crée, restaure, surveille et retire les serveurs dynamiques ;</li><li>choisit le lobby le moins chargé à la connexion et comme solution de repli ;</li><li>gère les files VIP, les transferts et leurs erreurs ;</li><li>applique la whitelist d'une partie personnalisée ;</li><li>propose les commandes réseau et l'identité <code>/nick</code>.</li></ul>
+<p>Le redéploiement normal conserve les backends (<code>shutdown.stop-dynamic-servers: false</code>) afin qu'un redémarrage de Velocity ne détruise pas les parties actives.</p>
+<h3 id="tropicube-core"><code>tropicube-core</code><a class="heading-anchor" href="#tropicube-core" aria-label="Lien vers cette section">#</a></h3>
+<p>Plugin obligatoire sur chaque backend Paper. Son ordre d'initialisation est volontaire : configuration, MySQL, Redis, langues, permissions/grades, économie, données joueurs, HeadDatabase, commandes et listeners.</p>
+<p>Il fournit :</p>
+<ul><li>le profil et la langue du joueur ;</li><li>les grades, priorités et permissions calculées ;</li><li>l'économie et l'historique des transactions ;</li><li>les sanctions de modération ;</li><li>le formatage du chat et des pseudos ;</li><li>une API Java typée consommée par Lobby et SheepWars.</li></ul>
+<p>Les accès MySQL potentiellement longs sont exécutés hors du thread principal dans les flux de connexion, de commande et de boutique. Les modifications Bukkit reviennent ensuite sur le thread serveur.</p>
+<h3 id="tropicube-lobby"><code>tropicube-lobby</code><a class="heading-anchor" href="#tropicube-lobby" aria-label="Lien vers cette section">#</a></h3>
+<p>Le lobby prépare le joueur, fournit son inventaire de navigation et rafraîchit les données d'instances depuis Redis. Ses interfaces permettent de :</p>
+<ul><li>sélectionner un type et une instance ;</li><li>créer ou arrêter une partie personnalisée lorsque le joueur en est l'hôte ;</li><li>changer de langue ;</li><li>acheter un grade VIP avec compensation du débit si l'attribution échoue ;</li><li>utiliser un, deux ou une infinité de doubles-sauts selon les permissions ;</li><li>rejoindre la prochaine partie proposée après un match.</li></ul>
+<p>HeadDatabase est optionnel au moment précis du rendu : une icône Material ou une tête générique est utilisée tant que sa base n'est pas chargée.</p>
+<h3 id="tropicube-sheepwars"><code>tropicube-sheepwars</code><a class="heading-anchor" href="#tropicube-sheepwars" aria-label="Lien vers cette section">#</a></h3>
+<p>Une instance SheepWars suit les phases attente, sélection, compte à rebours, jeu et fin. Le module gère :</p>
+<ul><li>les cartes et points d'apparition rouges/bleus ;</li><li>le choix ou vote de carte ;</li><li>la sélection des équipes, classes et kits ;</li><li>les règles forcées ou personnalisées ;</li><li>les scores et statistiques persistantes ;</li><li>les moutons spéciaux pondérés par configuration ;</li><li>le retour au lobby et la proposition de revanche.</li></ul>
+<p>Les types inclus sont Boarding, TNT, Distort, Darkness, Searching, Fire, Poison, Swap, Meteor, Healing, Lightning, Gravity, Mecha, Strength et Fragmentation.</p>
+<h3 id="tropicube-fallenkingdoms"><code>tropicube-fallenkingdoms</code><a class="heading-anchor" href="#tropicube-fallenkingdoms" aria-label="Lien vers cette section">#</a></h3>
+<p>Ce module est pour l'instant un squelette Maven sans classe, ressource, dépendance Paper ni intégration Docker. Il participe au build global pour réserver son identité, mais n'est pas un plugin installable. Son futur déploiement nécessitera au minimum une classe <code>JavaPlugin</code>, un <code>plugin.yml</code>, une dépendance Paper/Core, une configuration, une image et un template Velocity.</p>
+<h2 id="contrats-redis">Contrats Redis<a class="heading-anchor" href="#contrats-redis" aria-label="Lien vers cette section">#</a></h2>
+<p><code>RedisManager</code> préfixe automatiquement les clés avec <code>tropicube:</code>. Les appels applicatifs utilisent donc les noms logiques ci-dessous.</p>
+<div class="table-scroll"><table><thead><tr><th>Clé ou canal logique</th><th>Producteur</th><th>Consommateur</th><th>Fonction</th></tr></thead><tbody><tr><td><code>instance:&lt;id&gt;</code></td><td>Velocity</td><td>Tous</td><td>JSON de l'instance</td></tr><tr><td><code>instances:active</code></td><td>Velocity</td><td>Lobby/Velocity</td><td>Ensemble des identifiants actifs</td></tr><tr><td><code>instances:type:&lt;type&gt;</code></td><td>Velocity</td><td>Lobby/Velocity</td><td>Index par type</td></tr><tr><td>canal <code>servers</code></td><td>Velocity</td><td>Intégrations</td><td><code>SERVER_STARTED</code> / <code>SERVER_STOPPED</code></td></tr><tr><td>canal <code>commands</code></td><td>Lobby/SheepWars/Velocity</td><td>Velocity</td><td>Commandes ciblées, notamment <code>PROXY:CONNECT:&lt;uuid&gt;:&lt;serveur&gt;</code></td></tr><tr><td>canal <code>players</code></td><td>Velocity</td><td>Intégrations</td><td>Changements de serveur d'un joueur</td></tr><tr><td><code>transfer:&lt;uuid&gt;</code></td><td>Velocity</td><td>Core/Lobby</td><td>Marqueur court évitant de traiter un transfert comme une première arrivée</td></tr><tr><td><code>host:&lt;uuid&gt;</code></td><td>Velocity</td><td>Lobby/SheepWars</td><td>Partie personnalisée administrée par le joueur</td></tr><tr><td><code>host-creation:&lt;uuid&gt;</code></td><td>Velocity</td><td>Lobby/Velocity</td><td>Verrou atomique et temporaire empêchant deux créations personnalisées simultanées</td></tr><tr><td><code>post-game:&lt;uuid&gt;</code></td><td>SheepWars</td><td>Lobby</td><td>Cible et type proposés par <code>/playnext</code>, TTL 120 s</td></tr><tr><td><code>nick:&lt;uuid&gt;</code></td><td>Velocity</td><td>Core</td><td>Pseudonyme et skin actifs</td></tr><tr><td>langue/grade/cache joueur</td><td>Core</td><td>Core/Velocity</td><td>Accélération et synchronisation du profil</td></tr></tbody></table></div>
+<p>Les messages de transfert ne doivent jamais appeler Bukkit depuis le thread d'abonnement Redis. Chaque plugin planifie les opérations d'entité ou d'inventaire sur le thread Paper.</p>
+<p>Un changement de langue publie <code>LANG_CHANGED:&lt;uuid&gt;:&lt;langue&gt;</code> sur le canal joueurs. Le lobby reconstruit alors, sur le thread Paper, la hotbar, le scoreboard personnel et la tablist. Le scoreboard du lobby est donc entièrement localisé et reste cohérent que la langue soit changée depuis le menu ou avec <code>/lang</code>.</p>
+<h2 id="persistance-mysql">Persistance MySQL<a class="heading-anchor" href="#persistance-mysql" aria-label="Lien vers cette section">#</a></h2>
+<p><code>DatabaseManager</code> crée et fait évoluer les tables suivantes au démarrage :</p>
+<ul><li><code>tropicube_players</code> : identité, langue et métadonnées du joueur ;</li><li><code>tropicube_economy</code> : solde courant ;</li><li><code>tropicube_transactions</code> : journal des mouvements ;</li><li><code>tropicube_sanctions</code> : mutes, avertissements et expulsions ;</li><li><code>tropicube_grades</code> : définition des grades ;</li><li><code>tropicube_permissions</code> : permissions individuelles temporaires ou permanentes ;</li><li><code>tropicube_sheepwars</code> : statistiques du mini-jeu.</li></ul>
+<p>Les grades déclarés dans la configuration Core sont resynchronisés au démarrage. Une modification manuelle en base ou via la sous-commande de définition de grade peut donc être écrasée par la configuration au prochain redémarrage.</p>
+<h2 id="securite-reseau">Sécurité réseau<a class="heading-anchor" href="#securite-reseau" aria-label="Lien vers cette section">#</a></h2>
+<ul><li>Velocity authentifie les comptes (<code>online-mode = true</code>).</li><li>Les backends Paper sont hors ligne car ils font confiance au forwarding moderne de Velocity.</li><li><code>paper-global.yml</code> exige le même <code>FORWARDING_SECRET</code> que <code>forwarding.secret</code> côté proxy.</li><li>Redis et MySQL ne sont publiés que sur la boucle locale de l'hôte.</li><li>Le proxy Docker limite les familles d'appels exposées et utilise <code>no-new-privileges</code>.</li><li>Les conteneurs dynamiques reçoivent uniquement les secrets nécessaires via leur environnement.</li></ul></article>
+      <aside class="page-toc" aria-label="Sommaire de la page"><span class="toc-title">Sur cette page</span><a class="toc-level-2" href="#vue-d-ensemble">Vue d'ensemble</a><a class="toc-level-2" href="#cycle-d-une-instance">Cycle d'une instance</a><a class="toc-level-2" href="#responsabilites-des-modules">Responsabilités des modules</a><a class="toc-level-3" href="#tropicube-docker-api">tropicube-docker-api</a><a class="toc-level-3" href="#tropicube-velocity">tropicube-velocity</a><a class="toc-level-3" href="#tropicube-core">tropicube-core</a><a class="toc-level-3" href="#tropicube-lobby">tropicube-lobby</a><a class="toc-level-3" href="#tropicube-sheepwars">tropicube-sheepwars</a><a class="toc-level-3" href="#tropicube-fallenkingdoms">tropicube-fallenkingdoms</a><a class="toc-level-2" href="#contrats-redis">Contrats Redis</a><a class="toc-level-2" href="#persistance-mysql">Persistance MySQL</a><a class="toc-level-2" href="#securite-reseau">Sécurité réseau</a></aside>
+    </div>
+    <footer><span>Tropicube</span><span>Documentation statique générée depuis les fichiers Markdown</span></footer>
+  </main>
+</body>
+</html>

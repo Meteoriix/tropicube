@@ -1,0 +1,7 @@
+_version: 31
+
+proxies:
+  velocity:
+    enabled: true
+    online-mode: true
+    secret: "${CFG_FORWARDING_SECRET}"

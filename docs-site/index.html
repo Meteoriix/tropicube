@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Vue d’ensemble du projet Tropicube">
+  <meta name="theme-color" content="#071a18">
+  <title>Tropicube · Tropicube</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span>Tropicube</a><span>Documentation</span></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong>Tropicube</strong><small>Documentation réseau</small></span></a>
+    <nav aria-label="Documentation principale"><a class="nav-link active" href="index.html"><span class="nav-icon">⌂</span><span>Accueil</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commandes</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Déploiement</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Développement</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changements</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="contenu" class="main">
+    <section class="hero"><div class="eyebrow">Documentation officielle</div><h1>Tropicube</h1><p>Vue d’ensemble du projet Tropicube</p></section>
+    <div class="content-grid">
+      <article class="documentation"><p>Tropicube est une infrastructure Minecraft multi-serveurs pour <strong>Minecraft 26.2</strong>. Elle associe un proxy Velocity, des serveurs Paper créés dynamiquement dans Docker, Redis pour l'état partagé et les événements, et MySQL pour les données persistantes.</p>
+<h2 id="documentation">Documentation<a class="heading-anchor" href="#documentation" aria-label="Lien vers cette section">#</a></h2>
+<ul><li><a href="index.html">Ouvrir le site de documentation HTML</a></li><li><a href="architecture.html">Architecture et fonctionnement</a></li><li><a href="commands.html">Commandes Minecraft et permissions</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="deployment.html">Installation, déploiement et exploitation</a></li><li><a href="sheepwars.html">SheepWars : game design et fonctionnalités</a></li><li><a href="development.html">Développement, tests et contribution</a></li><li><a href="git-ci.html">Git, CI et versionnement</a></li><li><a href="changelog.html">Historique des changements</a></li></ul>
+<h2 id="modules">Modules<a class="heading-anchor" href="#modules" aria-label="Lien vers cette section">#</a></h2>
+<div class="table-scroll"><table><thead><tr><th>Module</th><th>Environnement</th><th>Rôle</th></tr></thead><tbody><tr><td><code>tropicube-docker-api</code></td><td>Java partagé</td><td>Modèles d'instances/templates, client Docker et accès Redis</td></tr><tr><td><code>tropicube-velocity</code></td><td>Velocity</td><td>Routage, files d'attente, création/arrêt des instances et commandes proxy</td></tr><tr><td><code>tropicube-core</code></td><td>Paper</td><td>Joueurs, économie, grades, permissions, langues et modération</td></tr><tr><td><code>tropicube-lobby</code></td><td>Paper</td><td>Accueil, menus, sélection de serveur, double-saut et boutique VIP</td></tr><tr><td><code>tropicube-sheepwars</code></td><td>Paper</td><td>Mini-jeu SheepWars, cartes, équipes, kits, classes et moutons spéciaux</td></tr><tr><td><code>tropicube-fallenkingdoms</code></td><td>Non déployé</td><td>Squelette Maven réservé au futur mini-jeu Fallen Kingdoms</td></tr></tbody></table></div>
+<h2 id="demarrage-rapide">Démarrage rapide<a class="heading-anchor" href="#demarrage-rapide" aria-label="Lien vers cette section">#</a></h2>
+<p>Prérequis communs : Java 25, Maven 3.9+, Docker Engine actif et Docker Compose v2. Sous Windows, PowerShell 7 et Docker Desktop en mode conteneurs Linux sont recommandés. Sous Linux, Bash 4+ et Python 3 sont également requis.</p>
+<div class="code-block"><span class="code-language">text</span><pre class=""><code>1. Copier .env.example vers .env
+2. Remplacer tous les secrets de démonstration
+3. Lancer le script correspondant au système</code></pre></div>
+<p>Windows :</p>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>Copy-Item .env.example .env
+./deploy.ps1</code></pre></div>
+<p>Linux :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>cp .env.example .env
+chmod +x deploy.sh
+./deploy.sh</code></pre></div>
+<p>Le proxy écoute sur le port TCP <code>25565</code>. MySQL (<code>3306</code>), Redis (<code>6379</code>) et les interfaces de développement optionnelles sont publiés uniquement sur <code>127.0.0.1</code>.</p>
+<h2 id="developpement">Développement<a class="heading-anchor" href="#developpement" aria-label="Lien vers cette section">#</a></h2>
+<p>Windows :</p>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>.\mvnw.cmd clean verify</code></pre></div>
+<p>Linux :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>bash ./mvnw clean verify</code></pre></div>
+<p>Le wrapper télécharge Maven 3.9.11 si nécessaire. Le parent Maven impose Java <code>[25, 26)</code>, Maven 3.9+ et la convergence des dépendances. La phase <code>verify</code> exécute les tests et produit les rapports de couverture JaCoCo sous <code>target/site/jacoco/</code>. Les JAR déployables sont les artefacts ombrés <code>*-all.jar</code>; les scripts les localisent, contrôlent leur fraîcheur et vérifient chaque copie avant de construire les images.</p>
+<p>La CI GitHub Actions reproduit ces contrôles sous Linux, valide Docker Compose, les scripts Windows/Linux et le site documentaire. Dependabot surveille les dépendances Maven et les actions GitHub. Le processus complet est décrit dans <a href="development.html">le guide de développement</a>.</p>
+<p>Le module Fallen Kingdoms est actuellement vide : il compile dans le réacteur mais ne contient encore ni plugin Paper, ni ressource, ni image Docker. Les scripts ne tentent donc pas de le déployer.</p>
+<h2 id="avertissements-essentiels">Avertissements essentiels<a class="heading-anchor" href="#avertissements-essentiels" aria-label="Lien vers cette section">#</a></h2>
+<ul><li>Ne versionnez jamais <code>.env</code> ni un secret réel. Le fichier est ignoré par Git.</li><li>Ne publiez pas directement les ports des serveurs Paper dynamiques : seul Velocity doit être accessible aux joueurs.</li><li>Le secret de forwarding doit être identique côté Velocity et Paper.</li><li>L'accès au daemon Docker est limité au conteneur <code>docker-proxy</code>; il reste néanmoins sensible et doit être réservé à une machine de confiance.</li><li>Sauvegardez les volumes <code>mysql-data</code> et <code>redis-data</code> avant toute opération d'infrastructure importante.</li></ul></article>
+      <aside class="page-toc" aria-label="Sommaire de la page"><span class="toc-title">Sur cette page</span><a class="toc-level-2" href="#documentation">Documentation</a><a class="toc-level-2" href="#modules">Modules</a><a class="toc-level-2" href="#demarrage-rapide">Démarrage rapide</a><a class="toc-level-2" href="#developpement">Développement</a><a class="toc-level-2" href="#avertissements-essentiels">Avertissements essentiels</a></aside>
+    </div>
+    <footer><span>Tropicube</span><span>Documentation statique générée depuis les fichiers Markdown</span></footer>
+  </main>
+</body>
+</html>

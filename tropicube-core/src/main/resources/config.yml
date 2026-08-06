@@ -1,0 +1,139 @@
+# ============================================================
+#  Tropicube Core - Configuration
+# ============================================================
+
+# Surcharge possible : TROPICUBE_REDIS_HOST, TROPICUBE_REDIS_PORT, TROPICUBE_REDIS_PASSWORD
+redis:
+  host: "redis"
+  port: 6379
+  password: ""
+
+# Surcharge possible : TROPICUBE_DB_HOST, TROPICUBE_DB_PORT, TROPICUBE_DB_NAME,
+# TROPICUBE_DB_USER et TROPICUBE_DB_PASSWORD
+database:
+  host: "mysql"
+  port: 3306
+  name: tropicube
+  user: tropicube
+  password: ""
+
+economy:
+  currency-name: "TropiCoins"
+  currency-symbol: "⚙"
+  starting-balance: 100.0
+  min-transfer: 1.0
+  max-transfer: 1000000.0
+
+language:
+  default: "fr"
+
+# ──────────────────────────────────────────────────────────────────────────────
+#  Grades — définit tous les grades du réseau.
+#  Ces valeurs sont synchronisées dans la base de données à chaque démarrage
+#  (INSERT … ON DUPLICATE KEY UPDATE), donc les modifications ici s'appliquent
+#  au redémarrage. Les changements effectués via /tropiperm grade en jeu sont
+#  écrasés au prochain redémarrage.
+# ──────────────────────────────────────────────────────────────────────────────
+grades:
+  JOUEUR:
+    display-name: "Joueur"
+    prefix: "<gray>[Joueur] "
+    suffix: ""
+    color: "<white>"
+    priority: 0
+    is-vip: false
+    is-staff: false
+    permissions: []
+  VIP:
+    display-name: "VIP"
+    prefix: "<green>[VIP] "
+    suffix: ""
+    color: "<green>"
+    priority: 10
+    is-vip: true
+    is-staff: false
+    permissions:
+      - tropicube.vip
+      - tropicube.kit.vip
+      - tropicube.lobby.jump
+  VIP_PLUS:
+    display-name: "VIP+"
+    prefix: "<gold>[VIP+] "
+    suffix: ""
+    color: "<gold>"
+    priority: 20
+    is-vip: true
+    is-staff: false
+    permissions:
+      - tropicube.vip
+      - tropicube.vip.plus
+      - tropicube.kit.vip_plus
+      - tropicube.lobby.jump.double
+  PREMIUM:
+    display-name: "Premium"
+    prefix: "<light_purple>[Premium] "
+    suffix: ""
+    color: "<light_purple>"
+    priority: 30
+    is-vip: true
+    is-staff: false
+    permissions:
+      - tropicube.vip
+      - tropicube.premium
+      - tropicube.kit.premium
+      - tropicube.lobby.infinitejump
+      - tropicube.announce.join
+  HELPER:
+    display-name: "Helper"
+    prefix: "<aqua>[Helper] "
+    suffix: ""
+    color: "<aqua>"
+    priority: 50
+    is-vip: false
+    is-staff: true
+    permissions:
+      - tropicube.staff
+      - tropicube.helper
+      - tropicube.mute
+      - tropicube.kick
+      - tropicube.lobby.infinitejump
+      - tropicube.announce.join
+  MODERATEUR:
+    display-name: "Modérateur"
+    prefix: "<dark_aqua>[Modo] "
+    suffix: ""
+    color: "<dark_aqua>"
+    priority: 60
+    is-vip: false
+    is-staff: true
+    permissions:
+      - tropicube.staff
+      - tropicube.moderateur
+      - tropicube.mute
+      - tropicube.kick
+      - tropicube.warn
+      - tropicube.ban
+      - tropicube.lobby.infinitejump
+      - tropicube.announce.join
+  ADMIN:
+    display-name: "Administrateur"
+    prefix: "<red>[Admin] "
+    suffix: ""
+    color: "<red>"
+    priority: 80
+    is-vip: false
+    is-staff: true
+    permissions:
+      - tropicube.admin
+      - tropicube.staff
+      - tropicube.*
+  OWNER:
+    display-name: "Propriétaire"
+    prefix: "<dark_red>[Owner] "
+    suffix: ""
+    color: "<dark_red>"
+    priority: 100
+    is-vip: false
+    is-staff: true
+    permissions:
+      - "*"

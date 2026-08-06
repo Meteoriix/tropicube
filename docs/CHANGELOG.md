@@ -1,0 +1,25 @@
+# Historique des changements
+
+Ce document conserve les évolutions fonctionnelles, techniques et opérationnelles visibles du projet. Les modifications en cours restent sous `Non publié` jusqu'à la création d'une version.
+
+## Non publié
+
+### Ajouté
+
+- Dépôt Git local initialisé avec une branche principale `main`.
+- Maven Wrapper 3.9.11 pour des builds reproductibles sous Windows et Linux.
+- CI GitHub Actions couvrant Maven, JUnit, JaCoCo, le site documentaire, Docker Compose et les scripts de déploiement.
+- Dependabot pour la surveillance des dépendances Maven et GitHub Actions.
+- Règles EditorConfig, Git attributes et exclusions Git communes.
+- Git LFS pour les régions Minecraft, avec exclusion des JAR tiers et des données joueur volatiles.
+- Tests d'invariants pour le catalogue SheepWars et rapports de couverture JaCoCo.
+- Guides de développement, d'utilisation de Git/CI et consignes durables `AGENTS.md`.
+
+### Modifié
+
+- Site documentaire enrichi avec les pages Développement, Git/CI et Historique des changements.
+- README complété avec le wrapper Maven et les contrôles automatiques disponibles.
+
+### Corrigé
+
+- URL de téléchargement du Maven Wrapper épinglée sur Maven 3.9.11.

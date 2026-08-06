@@ -1,0 +1,89 @@
+# ============================================================
+#  Tropicube Lobby - Configuration
+# ============================================================
+
+redis:
+  host: localhost
+  port: 6379
+  password: ""          # Laisser vide si pas de mot de passe
+
+lobby:
+  # Position de spawn dans le monde lobby
+  spawn:
+    world: "world"
+    x: 0.5
+    y: 100.0
+    z: 0.5
+    yaw: 0.0
+    pitch: 0.0
+
+  # Master switch du double-saut en lobby.
+  # Le nombre de sauts accordés dépend des permissions du joueur :
+  #   tropicube.lobby.jump        → 1 saut
+  #   tropicube.lobby.jump.double → 2 sauts
+  #   tropicube.lobby.infinitejump → sauts illimités
+  # Mettre à false désactive la fonctionnalité pour tout le monde.
+  double-jump: true
+
+# ──────────────────────────────────────────────────────────────────────────────
+#  Types de serveurs — icône affichée dans le sélecteur de mode de jeu.
+#  Utiliser soit material (nom de Material Bukkit) soit head-id (HeadDatabase).
+# ──────────────────────────────────────────────────────────────────────────────
+server-types:
+  hub:
+    material: COMPASS
+  sheepwars:
+    head-id: "79740"
+
+# ──────────────────────────────────────────────────────────────────────────────
+#  Boutique VIP — entrées affichées dans le menu /vip.
+#  grade-key   : nom du grade en base de données (ex. VIP, VIP_PLUS, PREMIUM).
+#  material    : Material Bukkit pour l'icône principale.
+#  display-name: nom MiniMessage affiché dans le menu et les messages.
+#  price       : coût en monnaie de jeu.
+#  Les avantages (perks) sont lus dans les fichiers de langue :
+#    lobby.vip-perks-<grade-key-en-minuscules-avec-tirets>
+# ──────────────────────────────────────────────────────────────────────────────
+vip-shop:
+  entries:
+    - grade-key: "VIP"
+      material: EMERALD
+      display-name: "<green>[VIP]"
+      price: 5000
+    - grade-key: "VIP_PLUS"
+      material: EMERALD_BLOCK
+      display-name: "<gold>[VIP+]"
+      price: 15000
+    - grade-key: "PREMIUM"
+      material: DIAMOND
+      display-name: "<light_purple>[Premium]"
+      price: 40000
+
+# ──────────────────────────────────────────────────────────────────────────────
+#  Sélecteur de langue — icônes et libellés affichés dans le menu /lang.
+#  head-id   : identifiant HeadDatabase de la tête de joueur à afficher.
+#  display-name / lore1 / lore2 : texte MiniMessage.
+#  L'ordre de la liste détermine l'ordre d'affichage dans le menu.
+# ──────────────────────────────────────────────────────────────────────────────
+lang-selector:
+  languages:
+    - code: "fr"
+      head-id: "51737"
+      display-name: "<white>Français"
+      lore1: "<gray>🇫🇷 Langue : <aqua>Français"
+      lore2: "<gray>Cliquez pour jouer en français."
+    - code: "en"
+      head-id: "55849"
+      display-name: "<white>English"
+      lore1: "<gray>🇬🇧 Language: <aqua>English"
+      lore2: "<gray>Click to play in English."
+    - code: "es"
+      head-id: "58336"
+      display-name: "<white>Español"
+      lore1: "<gray>🇪🇸 Idioma: <aqua>Español"
+      lore2: "<gray>Haz clic para jugar en español."
+    - code: "de"
+      head-id: "522"
+      display-name: "<white>Deutsch"
+      lore1: "<gray>🇩🇪 Sprache: <aqua>Deutsch"
+      lore2: "<gray>Klicken Sie, um auf Deutsch zu spielen."

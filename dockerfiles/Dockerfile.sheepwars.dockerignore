@@ -1,0 +1,15 @@
+**
+!dockerfiles/
+!dockerfiles/Dockerfile.sheepwars
+!dockerfiles/configs/
+!dockerfiles/configs/paper-global.yml
+!dockerfiles/configs/TropicubeCore/
+!dockerfiles/configs/TropicubeCore/**
+!dockerfiles/configs/TropicubeSheepwars/
+!dockerfiles/configs/TropicubeSheepwars/**
+!dockerfiles/plugins/
+!dockerfiles/plugins/sheepwars/
+!dockerfiles/plugins/sheepwars/**
+!dockerfiles/worlds/
+!dockerfiles/worlds/sheepwars/
+!dockerfiles/worlds/sheepwars/**

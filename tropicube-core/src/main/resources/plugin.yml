@@ -1,0 +1,107 @@
+name: TropicubeCore
+version: 1.0.0
+main: fr.tropicube.core.TropicubeCore
+api-version: '26.2'
+description: "Tropicube - Plugin Core : économie, permissions, langues, modération"
+authors: [ Tropicube-Team ]
+
+depend:
+  - HeadDatabase
+
+commands:
+  money:
+    description: "Voir votre solde ou celui d'un joueur"
+    usage: /money [joueur]
+    aliases: [ balance ]
+  eco:
+    description: "Administration de l'économie"
+    usage: /eco <set|add|remove|top> [joueur] [montant]
+    permission: tropicube.eco.admin
+  rank:
+    description: "Gérer les grades des joueurs"
+    usage: /rank <set|info|list> [joueur] [rank]
+    permission: tropicube.grade.admin
+    aliases: [ grade ]
+  lang:
+    description: "Changer la langue du serveur"
+    usage: /lang [code]
+    aliases: [ language, langue ]
+  mute:
+    description: "Muter un joueur"
+    usage: /mute <joueur> <durée> [raison]
+    permission: tropicube.mute
+  unmute:
+    description: "Démuter un joueur"
+    usage: /unmute <joueur>
+    permission: tropicube.mute
+  kick:
+    description: "Expulser un joueur"
+    usage: /kick <joueur> [raison]
+    permission: tropicube.kick
+  warn:
+    description: "Avertir un joueur"
+    usage: /warn <joueur> <raison>
+    permission: tropicube.warn
+  history:
+    description: "Voir l'historique de sanctions d'un joueur"
+    usage: /history <joueur>
+    permission: tropicube.history
+  tropiperm:
+    description: "Gérer les permissions individuelles"
+    usage: /tropiperm <add|remove|list|grade> ...
+    permission: tropicube.admin.perm
+  tropiadmin:
+    description: "Administration générale Tropicube"
+    usage: /tropiadmin <reload|info>
+    permission: tropicube.admin
+    aliases: [ ca ]
+
+permissions:
+  tropicube.admin:
+    description: "Accès aux commandes d'administration"
+    default: op
+  tropicube.eco.admin:
+    description: "Administration de l'économie"
+    default: op
+  tropicube.eco.others:
+    description: "Voir le solde des autres joueurs"
+    default: true
+  tropicube.grade.admin:
+    description: "Gérer les grades"
+    default: op
+  tropicube.admin.perm:
+    description: "Gérer les permissions individuelles"
+    default: op
+  tropicube.mute:
+    description: "Muter des joueurs"
+    default: op
+  tropicube.kick:
+    description: "Expulser des joueurs"
+    default: op
+  tropicube.warn:
+    description: "Avertir des joueurs"
+    default: op
+  tropicube.ban:
+    description: "Bannir des joueurs"
+    default: op
+  tropicube.history:
+    description: "Voir l'historique de sanctions"
+    default: op
+  tropicube.bypass.whitelist:
+    description: "Bypasser la whitelist"
+    default: op
+  tropicube.bypass.spam:
+    description: "Bypasser l'anti-spam chat"
+    default: op
+  tropicube.chat.color:
+    description: "Utiliser des couleurs dans le chat"
+    default: false
+  tropicube.vip:
+    description: "Accès aux fonctionnalités VIP"
+    default: false
+  tropicube.premium:
+    description: "Accès aux fonctionnalités Premium"
+    default: false
+  tropicube.staff:
+    description: "Identification comme membre du staff"
+    default: false

@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Installation et exploitation sous Windows et Linux">
+  <meta name="theme-color" content="#071a18">
+  <title>Installation, déploiement et exploitation · Tropicube</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span>Tropicube</a><span>Documentation</span></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong>Tropicube</strong><small>Documentation réseau</small></span></a>
+    <nav aria-label="Documentation principale"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Accueil</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commandes</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link active" href="deployment.html"><span class="nav-icon">⇧</span><span>Déploiement</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Développement</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changements</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="contenu" class="main">
+    <section class="hero"><div class="eyebrow">Documentation officielle</div><h1>Installation, déploiement et exploitation</h1><p>Installation et exploitation sous Windows et Linux</p></section>
+    <div class="content-grid">
+      <article class="documentation"><h2 id="prerequis">Prérequis<a class="heading-anchor" href="#prerequis" aria-label="Lien vers cette section">#</a></h2>
+<h3 id="communs">Communs<a class="heading-anchor" href="#communs" aria-label="Lien vers cette section">#</a></h3>
+<ul><li>machine x86-64 ou ARM64 supportée par les images utilisées ;</li><li>Java JDK 25 sur le <code>PATH</code> ;</li><li>Maven 3.9 ou plus récent ;</li><li>Docker Engine récent et daemon démarré ;</li><li>plugin Docker Compose v2 (<code>docker compose</code>, pas l'ancien binaire <code>docker-compose</code>) ;</li><li>ports hôte <code>25565/tcp</code>, <code>3306</code>, <code>6379</code>, et éventuellement <code>8080</code>/<code>8081</code>, disponibles ;</li><li>mémoire suffisante pour Velocity, MySQL, Redis et au moins deux backends Paper. Prévoir au minimum 6 à 8 Gio pour un environnement de test confortable, davantage en production.</li></ul>
+<p>Les versions Java et Maven sont aussi contrôlées par Maven Enforcer. Les images Minecraft utilisées sont des images Linux : même sous Windows, Docker doit fonctionner en mode conteneurs Linux.</p>
+<h3 id="windows">Windows<a class="heading-anchor" href="#windows" aria-label="Lien vers cette section">#</a></h3>
+<ul><li>Windows 10/11 ou Windows Server compatible Docker ;</li><li>PowerShell 7 (<code>pwsh</code>) recommandé ;</li><li>Docker Desktop avec moteur Linux/WSL2, ou un Docker Engine distant compatible ;</li><li>exécution autorisée pour le script local si la stratégie PowerShell la bloque.</li></ul>
+<p>Vérification :</p>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>java -version
+mvn -version
+docker info
+docker compose version</code></pre></div>
+<p>Pour autoriser uniquement la session courante si nécessaire :</p>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>Set-ExecutionPolicy -Scope Process Bypass</code></pre></div>
+<h3 id="linux">Linux<a class="heading-anchor" href="#linux" aria-label="Lien vers cette section">#</a></h3>
+<ul><li>distribution 64 bits avec Docker Engine ;</li><li>Bash 4 ou ultérieur ;</li><li>Python 3, utilisé par le mergeur sûr de traductions ;</li><li>utilisateur autorisé à accéder au socket Docker.</li></ul>
+<p>Vérification :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>java -version
+mvn -version
+docker info
+docker compose version
+python3 --version</code></pre></div>
+<p>Pour Docker rootless, régler <code>DOCKER_SOCKET_PATH</code>, par exemple <code>/run/user/1000/docker.sock</code>. Éviter d'exécuter tout le déploiement en root uniquement pour contourner des permissions Docker : configurer proprement le groupe Docker ou le mode rootless.</p>
+<h2 id="premiere-installation">Première installation<a class="heading-anchor" href="#premiere-installation" aria-label="Lien vers cette section">#</a></h2>
+<ol><li>Placer le projet sur la machine de déploiement.</li><li>Vérifier que les mondes existent sous <code>dockerfiles/worlds/lobby</code> et <code>dockerfiles/worlds/sheepwars</code>.</li><li>Vérifier les plugins tiers dans <code>dockerfiles/plugins/lobby</code> et <code>dockerfiles/plugins/sheepwars</code>, notamment HeadDatabase.</li><li>Créer <code>.env</code> et remplacer tous les secrets.</li><li>Adapter les UUID administrateurs, OPS, cartes et coordonnées.</li><li>Valider sans construire d'image.</li><li>Exécuter le déploiement complet.</li></ol>
+<p>Windows :</p>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>Copy-Item .env.example .env
+# Éditer .env
+./deploy.ps1 -ValidateOnly
+./deploy.ps1</code></pre></div>
+<p>Linux :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>cp .env.example .env
+# Éditer .env
+chmod +x deploy.sh
+./deploy.sh --validate-only
+./deploy.sh</code></pre></div>
+<p>Le premier <code>docker compose up</code> télécharge MySQL, Redis, le proxy de socket et les images de base. Il peut donc prendre plusieurs minutes.</p>
+<h2 id="parite-des-scripts-windows-et-linux">Parité des scripts Windows et Linux<a class="heading-anchor" href="#parite-des-scripts-windows-et-linux" aria-label="Lien vers cette section">#</a></h2>
+<p><code>deploy.ps1</code> et <code>deploy.sh</code> offrent les mêmes étapes et garanties fonctionnelles. Leur implémentation diffère uniquement pour utiliser les primitives naturelles de chaque plateforme.</p>
+<div class="table-scroll"><table><thead><tr><th>Fonction ou contrôle</th><th>PowerShell</th><th>Bash</th><th>Parité</th></tr></thead><tbody><tr><td>Se place dans le dossier du script</td><td><code>$PSScriptRoot</code></td><td><code>BASH_SOURCE</code></td><td>oui</td></tr><tr><td>Vérifie Maven quand une compilation est demandée</td><td>oui</td><td>oui</td><td>oui</td></tr><tr><td>Vérifie Docker, le daemon et Compose v2</td><td>oui</td><td>oui</td><td>oui</td></tr><tr><td>Valide Compose et les variables <code>.env</code> obligatoires</td><td>oui</td><td>oui</td><td>oui</td></tr><tr><td><code>mvn clean package -T 1C</code></td><td>oui</td><td>oui</td><td>oui</td></tr><tr><td>Tests actifs par défaut</td><td>oui</td><td>oui</td><td>oui</td></tr><tr><td>Exige exactement un JAR ombré par module</td><td>oui</td><td>oui</td><td>oui</td></tr><tr><td>Refuse un artefact périmé avec <code>OnlyImages</code></td><td>oui</td><td>oui</td><td>oui</td></tr><tr><td>Vérifie l'intégrité après copie</td><td>SHA-256</td><td>comparaison binaire</td><td>équivalent</td></tr><tr><td>Nettoie l'ancien dossier de langues doublement imbriqué</td><td>oui</td><td>oui</td><td>oui</td></tr><tr><td>Fusionne uniquement les clés de langue absentes</td><td>natif PowerShell/.NET</td><td>Python 3</td><td>oui</td></tr><tr><td>Refuse sections/clés dupliquées et feuilles trop imbriquées</td><td>oui</td><td>oui</td><td>oui</td></tr><tr><td>Construit trois images en parallèle avec <code>--pull</code></td><td>jobs PowerShell</td><td>processus Bash</td><td>oui</td></tr><tr><td>Crée les tags <code>latest</code> et UTC horodaté</td><td>oui</td><td>oui</td><td>oui</td></tr><tr><td>Attend tous les builds et restitue leurs logs</td><td>oui</td><td>oui</td><td>oui</td></tr><tr><td>Recrée Velocity, sauf option contraire</td><td>oui</td><td>oui</td><td>oui</td></tr><tr><td>Affiche le tag utilisable pour un rollback</td><td>oui</td><td>oui</td><td>oui</td></tr></tbody></table></div>
+<p>Différence de prérequis : Bash délègue la lecture des ZIP et le merge YAML à Python 3. PowerShell utilise directement .NET et n'a donc pas ce prérequis. Le résultat et les validations sont identiques.</p>
+<h2 id="options-des-scripts">Options des scripts<a class="heading-anchor" href="#options-des-scripts" aria-label="Lien vers cette section">#</a></h2>
+<div class="table-scroll"><table><thead><tr><th>Windows</th><th>Linux</th><th>Effet</th></tr></thead><tbody><tr><td><code>-SkipTests</code></td><td><code>--skip-tests</code></td><td>Compile et package sans exécuter les tests</td></tr><tr><td><code>-OnlyImages</code></td><td><code>--only-images</code></td><td>Réutilise les JAR de <code>target</code> après contrôle de fraîcheur</td></tr><tr><td><code>-SkipRestart</code></td><td><code>--skip-restart</code></td><td>Construit les images mais ne recrée pas Velocity</td></tr><tr><td><code>-ValidateOnly</code></td><td><code>--validate-only</code></td><td>Compile si nécessaire, distribue/vérifie les JAR et fusionne les langues, sans image ni conteneur</td></tr></tbody></table></div>
+<p><code>ValidateOnly</code> ne modifie aucun conteneur ni image, mais peut copier des JAR sous <code>dockerfiles/plugins</code> et compléter les traductions de déploiement. <code>OnlyImages</code> n'est accepté que si aucun POM ou fichier source dépendant n'est plus récent que son artefact.</p>
+<p>Exemples :</p>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>./deploy.ps1 -SkipRestart
+./deploy.ps1 -OnlyImages -ValidateOnly</code></pre></div>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>./deploy.sh --skip-restart
+./deploy.sh --only-images --validate-only</code></pre></div>
+<h2 id="ce-que-fait-un-deploiement-complet">Ce que fait un déploiement complet<a class="heading-anchor" href="#ce-que-fait-un-deploiement-complet" aria-label="Lien vers cette section">#</a></h2>
+<ol><li>validation des outils, du daemon, de Compose et de <code>.env</code> ;</li><li>compilation Maven de tout le réacteur ;</li><li>copie des JAR ombrés vers les contextes Docker avec contrôle d'intégrité ;</li><li>fusion des nouvelles traductions dans les configurations persistantes ;</li><li>construction parallèle de <code>tropicube-lobby</code>, <code>tropicube-sheepwars</code> et <code>tropicube-velocity</code> ;</li><li>double tag <code>latest</code> et <code>YYYYMMDD-HHMMSS</code> UTC ;</li><li><code>docker compose up -d --force-recreate velocity</code>.</li></ol>
+<p>Compose démarre ou vérifie automatiquement Redis, MySQL et <code>docker-proxy</code> grâce aux dépendances de santé. Le nouveau Velocity restaure les backends encore actifs. Les futures instances utilisent les nouvelles images <code>latest</code>; un serveur de jeu déjà lancé ne change pas en plein match.</p>
+<p>Le build compile aussi le squelette <code>tropicube-fallenkingdoms</code>, mais aucun artefact de ce module n'est distribué ou incorporé à une image tant qu'il ne constitue pas un plugin complet.</p>
+<h2 id="controles-apres-deploiement">Contrôles après déploiement<a class="heading-anchor" href="#controles-apres-deploiement" aria-label="Lien vers cette section">#</a></h2>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>docker compose ps
+docker compose logs --tail 200 velocity
+docker compose exec redis redis-cli --no-auth-warning -a &quot;$REDIS_PASSWORD&quot; ping</code></pre></div>
+<p>Sous PowerShell, remplacer la dernière commande par une valeur lue de manière sûre ou utiliser directement les healthchecks de <code>docker compose ps</code>; éviter de placer un secret dans l'historique du terminal.</p>
+<p>Vérifier ensuite :</p>
+<ul><li>statut <code>healthy</code> de Redis, MySQL et docker-proxy ;</li><li>absence d'erreur d'initialisation du plugin Velocity ;</li><li>création d'au moins un lobby ;</li><li>connexion d'un compte Minecraft officiel sur <code>hôte:25565</code> ;</li><li><code>/server</code>, transfert vers SheepWars et retour <code>/hub</code> ;</li><li>chargement des profils, soldes, langues et permissions.</li></ul>
+<p>Les interfaces de développement sont optionnelles :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>docker compose --profile dev up -d adminer redis-commander</code></pre></div>
+<p>Adminer écoute alors sur <code>127.0.0.1:8080</code> et Redis Commander sur <code>127.0.0.1:8081</code>. Ne pas modifier ce binding pour les exposer publiquement sans authentification et filtrage supplémentaires.</p>
+<h2 id="arret-redemarrage-et-mise-a-jour">Arrêt, redémarrage et mise à jour<a class="heading-anchor" href="#arret-redemarrage-et-mise-a-jour" aria-label="Lien vers cette section">#</a></h2>
+<p>Arrêt gracieux de la stack statique :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>docker compose down</code></pre></div>
+<p>Les volumes nommés ne sont pas supprimés. Ne pas ajouter <code>-v</code> sauf si la suppression définitive de MySQL et Redis est réellement voulue.</p>
+<p>Redémarrage du proxy uniquement :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>docker compose up -d --force-recreate velocity</code></pre></div>
+<p>Pour un arrêt complet incluant les serveurs dynamiques, les arrêter d'abord avec <code>/tropi stop</code> ou activer temporairement <code>shutdown.stop-dynamic-servers</code>, puis arrêter la stack après vérification. Un arrêt brutal de Docker peut interrompre une sauvegarde de monde.</p>
+<h2 id="rollback">Rollback<a class="heading-anchor" href="#rollback" aria-label="Lien vers cette section">#</a></h2>
+<p>Chaque déploiement affiche un tag UTC. Pour revenir au lot précédent :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>docker tag tropicube-velocity:YYYYMMDD-HHMMSS tropicube-velocity:latest
+docker tag tropicube-lobby:YYYYMMDD-HHMMSS tropicube-lobby:latest
+docker tag tropicube-sheepwars:YYYYMMDD-HHMMSS tropicube-sheepwars:latest
+docker compose up -d --force-recreate velocity</code></pre></div>
+<p>Les backends existants gardent leur image actuelle. Les arrêter proprement puis les recréer si le rollback doit également s'appliquer aux instances de jeu. Un rollback de code n'annule pas automatiquement une migration de données ; restaurer les sauvegardes compatibles si le schéma a changé.</p>
+<h2 id="sauvegardes">Sauvegardes<a class="heading-anchor" href="#sauvegardes" aria-label="Lien vers cette section">#</a></h2>
+<p>Sauvegarder régulièrement :</p>
+<ul><li>le volume Docker <code>mysql-data</code> ou un dump SQL cohérent ;</li><li>le volume <code>redis-data</code> si la restauration des instances/états est requise ;</li><li>les mondes sources sous <code>dockerfiles/worlds</code> ;</li><li>les configurations sous <code>dockerfiles/configs</code> ;</li><li><code>.env</code> dans un coffre à secrets séparé du dépôt.</li></ul>
+<p>Tester les restaurations sur une machine isolée. Une sauvegarde jamais restaurée ne constitue pas une garantie exploitable.</p>
+<h2 id="depannage">Dépannage<a class="heading-anchor" href="#depannage" aria-label="Lien vers cette section">#</a></h2>
+<h3 id="unable-to-verify-player-details">« Unable to verify player details »<a class="heading-anchor" href="#unable-to-verify-player-details" aria-label="Lien vers cette section">#</a></h3>
+<p>Contrôler simultanément :</p>
+<ol><li><code>online-mode = true</code> et forwarding <code>modern</code> dans Velocity ;</li><li><code>ONLINE_MODE=false</code> sur Paper ;</li><li>forwarding Velocity activé dans <code>paper-global.yml</code> ;</li><li>même valeur réelle de <code>FORWARDING_SECRET</code> dans les deux conteneurs ;</li><li>remplacement effectif de <code>${CFG_FORWARDING_SECRET}</code> ;</li><li>connexion du joueur au port Velocity <code>25565</code>, jamais directement au backend.</li></ol>
+<p>Après modification du secret, reconstruire les images Paper et recréer Velocity ainsi que les backends concernés.</p>
+<h3 id="aucun-lobby-disponible">Aucun lobby disponible<a class="heading-anchor" href="#aucun-lobby-disponible" aria-label="Lien vers cette section">#</a></h3>
+<ul><li>consulter <code>docker compose logs velocity</code> ;</li><li>vérifier la santé du docker-proxy ;</li><li>contrôler l'image <code>tropicube-lobby:latest</code> et le template <code>lobby</code> ;</li><li>vérifier les plages de ports et <code>tropicube-net</code> ;</li><li>lancer <code>/tropi templates</code>, <code>/tropi list</code>, puis <code>/tropi start lobby</code> si nécessaire.</li></ul>
+<h3 id="redis-ou-mysql-inaccessible">Redis ou MySQL inaccessible<a class="heading-anchor" href="#redis-ou-mysql-inaccessible" aria-label="Lien vers cette section">#</a></h3>
+<ul><li>vérifier les healthchecks et les mots de passe <code>.env</code> ;</li><li>confirmer que les conteneurs sont sur <code>tropicube-net</code> ;</li><li>comparer les variables <code>TROPICUBE_REDIS_*</code> et <code>TROPICUBE_DB_*</code> injectées aux backends ;</li><li>ne pas utiliser <code>localhost</code> depuis un conteneur pour joindre un autre service : utiliser <code>redis</code> ou <code>mysql</code>.</li></ul>
+<h3 id="artefact-perime-avec-onlyimages">Artefact périmé avec <code>OnlyImages</code><a class="heading-anchor" href="#artefact-perime-avec-onlyimages" aria-label="Lien vers cette section">#</a></h3>
+<p>Relancer sans cette option. Le contrôle est intentionnel : il empêche de déployer un JAR antérieur au code ou à un POM dont il dépend.</p>
+<h3 id="docker-rootless">Docker rootless<a class="heading-anchor" href="#docker-rootless" aria-label="Lien vers cette section">#</a></h3>
+<p>Définir dans <code>.env</code> :</p>
+<div class="code-block"><span class="code-language">dotenv</span><pre class=""><code>DOCKER_SOCKET_PATH=/run/user/1000/docker.sock</code></pre></div>
+<p>Puis vérifier que Compose peut monter ce chemin et que le daemon correspondant est actif pour l'utilisateur du déploiement.</p></article>
+      <aside class="page-toc" aria-label="Sommaire de la page"><span class="toc-title">Sur cette page</span><a class="toc-level-2" href="#prerequis">Prérequis</a><a class="toc-level-3" href="#communs">Communs</a><a class="toc-level-3" href="#windows">Windows</a><a class="toc-level-3" href="#linux">Linux</a><a class="toc-level-2" href="#premiere-installation">Première installation</a><a class="toc-level-2" href="#parite-des-scripts-windows-et-linux">Parité des scripts Windows et Linux</a><a class="toc-level-2" href="#options-des-scripts">Options des scripts</a><a class="toc-level-2" href="#ce-que-fait-un-deploiement-complet">Ce que fait un déploiement complet</a><a class="toc-level-2" href="#controles-apres-deploiement">Contrôles après déploiement</a><a class="toc-level-2" href="#arret-redemarrage-et-mise-a-jour">Arrêt, redémarrage et mise à jour</a><a class="toc-level-2" href="#rollback">Rollback</a><a class="toc-level-2" href="#sauvegardes">Sauvegardes</a><a class="toc-level-2" href="#depannage">Dépannage</a><a class="toc-level-3" href="#unable-to-verify-player-details">« Unable to verify player details »</a><a class="toc-level-3" href="#aucun-lobby-disponible">Aucun lobby disponible</a><a class="toc-level-3" href="#redis-ou-mysql-inaccessible">Redis ou MySQL inaccessible</a><a class="toc-level-3" href="#artefact-perime-avec-onlyimages">Artefact périmé avec OnlyImages</a><a class="toc-level-3" href="#docker-rootless">Docker rootless</a></aside>
+    </div>
+    <footer><span>Tropicube</span><span>Documentation statique générée depuis les fichiers Markdown</span></footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,62 @@
+name: TropicubeLobby
+version: 1.0.0
+main: fr.tropicube.lobby.TropicubeLobby
+api-version: '26.2'
+description: "Tropicube - Plugin Lobby avec menus GUI, sélecteur de serveurs et boutique VIP"
+authors: [ Tropicube-Team ]
+
+depend:
+  - TropicubeCore
+
+softdepend: []
+
+commands:
+  spawn:
+    description: "Retourne au spawn du lobby"
+    usage: /spawn
+  servers:
+    description: "Ouvre le sélecteur de serveurs"
+    usage: /servers
+    aliases: [ sv, play ]
+  languages:
+    description: "Ouvre le sélecteur de langue"
+    usage: /languages
+  vip:
+    description: "Ouvre la boutique VIP"
+    usage: /vip
+    aliases: [ boutique, shop ]
+  flymode:
+    description: "Bascule entre vol permanent et double-saut infini (staff)"
+    usage: /flymode
+    permission: tropicube.lobby.fly
+    aliases: [ fm ]
+  playnext:
+    description: "Rejoins la prochaine partie disponible du dernier mini-jeu joué"
+    usage: /playnext
+    aliases: [ playagain, rejouer ]
+  sw:
+    description: "Rejoint une partie SheepWars quittée mais toujours active"
+    usage: /sw join
+
+permissions:
+  tropicube.lobby.build:
+    description: "Permet de construire dans le lobby"
+    default: op
+  tropicube.lobby.drop:
+    description: "Permet de poser des items dans le lobby"
+    default: op
+  tropicube.lobby.pickup:
+    description: "Permet de ramasser des items dans le lobby"
+    default: op
+  tropicube.lobby.fly:
+    description: "Vol permanent dans le lobby"
+    default: op
+  tropicube.lobby.jump:
+    description: "Double saut (1 saut) dans le lobby — VIP"
+    default: false
+  tropicube.lobby.jump.double:
+    description: "Double saut (2 sauts) dans le lobby — VIP+"
+    default: false
+  tropicube.lobby.infinitejump:
+    description: "Double saut infini dans le lobby — Premium+"
+    default: op

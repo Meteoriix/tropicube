@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Branches, commits, CI, Dependabot et versions">
+  <meta name="theme-color" content="#071a18">
+  <title>Git, intégration continue et versionnement · Tropicube</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span>Tropicube</a><span>Documentation</span></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong>Tropicube</strong><small>Documentation réseau</small></span></a>
+    <nav aria-label="Documentation principale"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Accueil</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commandes</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Déploiement</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Développement</span></a>
+<a class="nav-link active" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changements</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="contenu" class="main">
+    <section class="hero"><div class="eyebrow">Documentation officielle</div><h1>Git, intégration continue et versionnement</h1><p>Branches, commits, CI, Dependabot et versions</p></section>
+    <div class="content-grid">
+      <article class="documentation"><p>Ce guide explique comment versionner Tropicube, proposer une modification et utiliser les contrôles automatiques ajoutés au projet.</p>
+<h2 id="ce-qui-est-fourni-par-le-projet">Ce qui est fourni par le projet<a class="heading-anchor" href="#ce-qui-est-fourni-par-le-projet" aria-label="Lien vers cette section">#</a></h2>
+<p>Le dépôt contient désormais :</p>
+<ul><li><code>.gitignore</code>, qui exclut les secrets, sorties Maven, logs, fichiers d'IDE et artefacts Docker ;</li><li><code>.gitattributes</code>, qui stabilise les fins de ligne entre Windows et Linux ;</li><li><code>.editorconfig</code>, qui harmonise encodage et indentation dans les IDE ;</li><li><code>mvnw</code> et <code>mvnw.cmd</code>, qui utilisent Maven 3.9.11 sans installation globale ;</li><li><code>.github/workflows/ci.yml</code>, qui valide chaque pull request et chaque push sur <code>main</code> ;</li><li><code>.github/dependabot.yml</code>, qui recherche automatiquement les mises à jour Maven et GitHub Actions ;</li><li><code>.github/pull_request_template.md</code>, qui fournit la liste des vérifications attendues ;</li><li>JaCoCo, qui produit des rapports de couverture pendant la phase Maven <code>verify</code>.</li><li>Git LFS, qui stocke les fichiers de régions Minecraft <code>.mca</code> sans alourdir l'historique Git classique.</li></ul>
+<h2 id="publier-le-depot-pour-la-premiere-fois">Publier le dépôt pour la première fois<a class="heading-anchor" href="#publier-le-depot-pour-la-premiere-fois" aria-label="Lien vers cette section">#</a></h2>
+<p>Installer Git LFS sur chaque poste qui clone le projet, puis l'activer une fois dans le dépôt :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>git lfs install</code></pre></div>
+<p>Après avoir créé un dépôt vide sur GitHub, GitLab ou un autre hébergeur, vérifier l'identité utilisée pour signer les commits :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>git config user.name
+git config user.email</code></pre></div>
+<p>Puis enregistrer l'état initial et publier <code>main</code> :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>git add .
+git status
+git commit -m &quot;chore(project): initialise le dépôt Tropicube&quot;
+git remote add origin &lt;URL_DU_DEPOT&gt;
+git push -u origin main</code></pre></div>
+<p>Ne jamais ajouter <code>.env</code>, une clé privée, un mot de passe, un secret de forwarding ou un export de base de données. Vérifier systématiquement le contenu préparé avec <code>git diff --cached</code> avant de valider un commit.</p>
+<p>Les JAR de plugins tiers sont également ignorés : chaque développeur doit déposer les versions requises dans <code>dockerfiles/plugins/lobby/</code> et <code>dockerfiles/plugins/sheepwars/</code> comme indiqué dans le guide de déploiement. Les données joueur, statistiques et verrous de session présents dans les mondes modèles ne sont jamais versionnés.</p>
+<h2 id="cycle-quotidien-recommande">Cycle quotidien recommandé<a class="heading-anchor" href="#cycle-quotidien-recommande" aria-label="Lien vers cette section">#</a></h2>
+<p>Mettre à jour <code>main</code>, puis créer une branche courte depuis celui-ci :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>git switch main
+git pull --ff-only
+git switch -c feat/nom-court</code></pre></div>
+<p>Préfixes de branches conseillés :</p>
+<div class="table-scroll"><table><thead><tr><th>Préfixe</th><th>Usage</th><th>Exemple</th></tr></thead><tbody><tr><td><code>feat/</code></td><td>Nouvelle fonctionnalité ou mini-jeu</td><td><code>feat/map-voting</code></td></tr><tr><td><code>fix/</code></td><td>Correction de bug</td><td><code>fix/lobby-language-scoreboard</code></td></tr><tr><td><code>refactor/</code></td><td>Restructuration sans changement fonctionnel</td><td><code>refactor/redis-events</code></td></tr><tr><td><code>docs/</code></td><td>Documentation uniquement</td><td><code>docs/linux-installation</code></td></tr><tr><td><code>chore/</code></td><td>Infrastructure, dépendances ou outillage</td><td><code>chore/update-paper</code></td></tr></tbody></table></div>
+<p>Pendant le développement, utiliser fréquemment :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>git status
+git diff
+git diff --cached
+git log --oneline --decorate -10</code></pre></div>
+<p>Éviter les commandes destructrices telles que <code>git reset --hard</code> sur un espace de travail contenant des modifications non enregistrées. Pour retirer un fichier de l'index sans supprimer son contenu, utiliser <code>git restore --staged &lt;fichier&gt;</code>.</p>
+<h2 id="construire-un-bon-commit">Construire un bon commit<a class="heading-anchor" href="#construire-un-bon-commit" aria-label="Lien vers cette section">#</a></h2>
+<p>Un commit doit représenter une modification cohérente, compilable et vérifiée. Le projet suit une forme inspirée de Conventional Commits :</p>
+<div class="code-block"><span class="code-language">text</span><pre class=""><code>type(portée): résumé court à l'impératif
+
+Pourquoi le changement était nécessaire.
+Description des choix importants et de leurs conséquences.
+Tests automatiques et scénarios manuels exécutés.
+Documentation ou migration éventuellement requise.</code></pre></div>
+<p>Types principaux : <code>feat</code>, <code>fix</code>, <code>refactor</code>, <code>perf</code>, <code>test</code>, <code>docs</code>, <code>build</code>, <code>ci</code> et <code>chore</code>.</p>
+<p>Exemple :</p>
+<div class="code-block"><span class="code-language">text</span><pre class=""><code>fix(lobby): empêche la création de plusieurs serveurs personnalisés
+
+Vérifie l'instance déjà possédée avant d'envoyer la demande de création.
+Harmonise le message de refus dans les quatre langues et actualise la
+documentation du menu SheepWars.
+
+Tests : mvnw verify, création simple et tentative de doublon en jeu.</code></pre></div>
+<p>Le résumé doit décrire le résultat, rester concis et ne pas se limiter à <code>modifications</code>, <code>mise à jour</code> ou <code>fix</code>. Le corps est requis pour un changement important, une migration, une correction subtile ou toute décision d'architecture.</p>
+<h2 id="tests-avant-le-push">Tests avant le push<a class="heading-anchor" href="#tests-avant-le-push" aria-label="Lien vers cette section">#</a></h2>
+<p>Sous Windows :</p>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>.\mvnw.cmd clean verify
+node docs-site/build.mjs
+node docs-site/validate.mjs
+docker compose --env-file .env.example config --quiet
+.\deploy.ps1 -OnlyImages -ValidateOnly</code></pre></div>
+<p>Sous Linux :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>bash ./mvnw clean verify
+node docs-site/build.mjs
+node docs-site/validate.mjs
+docker compose --env-file .env.example config --quiet
+./deploy.sh --only-images --validate-only</code></pre></div>
+<p>Les rapports de couverture sont générés dans <code>target/site/jacoco/</code> pour les modules possédant des tests. La couverture aide à repérer les zones non testées, mais ne remplace pas des assertions métier pertinentes ni les essais en jeu.</p>
+<h2 id="fonctionnement-de-la-ci">Fonctionnement de la CI<a class="heading-anchor" href="#fonctionnement-de-la-ci" aria-label="Lien vers cette section">#</a></h2>
+<p>Le workflow GitHub Actions s'exécute automatiquement :</p>
+<ul><li>lors d'un push sur <code>main</code> ;</li><li>lors de l'ouverture ou de la mise à jour d'une pull request ;</li><li>manuellement avec <code>workflow_dispatch</code> depuis l'onglet Actions.</li></ul>
+<p>Le job <code>Build, tests and static validation</code> utilise Ubuntu, Java 25, Maven Wrapper et Node.js 24. Il effectue successivement :</p>
+<ol><li>la vérification du wrapper Maven ;</li><li>le build Maven <code>verify</code> de tous les modules et les tests JUnit ;</li><li>la génération des rapports JaCoCo ;</li><li>la reconstruction du site puis la vérification qu'il correspond aux Markdown ;</li><li>la validation de <code>docker-compose.yml</code> avec <code>.env.example</code> ;</li><li>l'analyse syntaxique des scripts Bash et PowerShell.</li></ol>
+<p>Un échec doit être corrigé dans la même branche. Ouvrir le job concerné dans GitHub Actions, identifier la première étape en erreur, reproduire sa commande localement puis pousser le correctif. Ne pas neutraliser un test ou une validation uniquement pour rendre la CI verte.</p>
+<h2 id="pull-requests-et-protection-de-main">Pull requests et protection de <code>main</code><a class="heading-anchor" href="#pull-requests-et-protection-de-main" aria-label="Lien vers cette section">#</a></h2>
+<p>Après les validations locales :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>git push -u origin feat/nom-court</code></pre></div>
+<p>Créer ensuite une pull request vers <code>main</code> et remplir son modèle : objectif, validations automatiques, essais manuels et éventuelles migrations. Après publication sur GitHub, configurer une règle de protection de <code>main</code> avec :</p>
+<ul><li>pull request obligatoire ;</li><li>contrôle <code>Build, tests and static validation</code> obligatoire ;</li><li>branche à jour avant fusion ;</li><li>au moins une approbation lorsque plusieurs personnes contribuent ;</li><li>interdiction du force-push et de la suppression de <code>main</code>.</li></ul>
+<p>Préférer <code>Squash and merge</code> pour une branche contenant des commits temporaires, ou <code>Rebase and merge</code> si chaque commit est déjà propre et autonome.</p>
+<h2 id="dependabot-et-dependances">Dependabot et dépendances<a class="heading-anchor" href="#dependabot-et-dependances" aria-label="Lien vers cette section">#</a></h2>
+<p>Dependabot inspecte Maven chaque semaine et GitHub Actions chaque mois. Pour chaque proposition :</p>
+<ol><li>lire les notes de version et migrations ;</li><li>vérifier la compatibilité avec Java 25 et Minecraft 26.2 ;</li><li>laisser la CI terminer ;</li><li>démarrer Velocity, le lobby et une partie SheepWars si Paper ou Velocity change ;</li><li>mettre à jour la documentation si le comportement ou les prérequis évoluent.</li></ol>
+<p>Une mise à jour majeure ne doit pas être fusionnée automatiquement, même si elle compile.</p>
+<h2 id="documentation-obligatoire">Documentation obligatoire<a class="heading-anchor" href="#documentation-obligatoire" aria-label="Lien vers cette section">#</a></h2>
+<p>Les Markdown sont la source de vérité. Toute évolution fonctionnelle ou opérationnelle doit :</p>
+<ol><li>mettre à jour les pages concernées sous <code>docs/</code> et, si nécessaire, le <code>README.md</code> ;</li><li>ajouter une entrée dans <a href="changelog.html">l'historique des changements</a> ;</li><li>reconstruire <code>docs-site/</code> ;</li><li>valider les liens ;</li><li>inclure Markdown et HTML généré dans le même commit que le code.</li></ol>
+<p>Une nouvelle commande met à jour <code>COMMANDS.md</code>, une nouvelle option met à jour <code>CONFIGURATION.md</code>, une modification de flux met à jour <code>ARCHITECTURE.md</code>, et toute modification de déploiement met à jour <code>DEPLOYMENT.md</code>.</p>
+<h2 id="versionner-une-livraison">Versionner une livraison<a class="heading-anchor" href="#versionner-une-livraison" aria-label="Lien vers cette section">#</a></h2>
+<p>Tropicube suit le versionnement sémantique <code>MAJEUR.MINEUR.CORRECTIF</code> :</p>
+<ul><li><code>CORRECTIF</code> pour une correction compatible ;</li><li><code>MINEUR</code> pour une fonctionnalité compatible ;</li><li><code>MAJEUR</code> pour une migration incompatible de configuration, données, commandes ou API.</li></ul>
+<p>Avant de créer une version, déplacer les entrées pertinentes de <code>Non publié</code> dans une section datée de <code>CHANGELOG.md</code>, mettre à jour la version Maven, exécuter toutes les validations puis créer un tag annoté :</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>git tag -a v1.1.0 -m &quot;Tropicube 1.1.0&quot;
+git push origin main v1.1.0</code></pre></div>
+<h2 id="ajouter-une-fonctionnalite-ou-un-mini-jeu">Ajouter une fonctionnalité ou un mini-jeu<a class="heading-anchor" href="#ajouter-une-fonctionnalite-ou-un-mini-jeu" aria-label="Lien vers cette section">#</a></h2>
+<p>Une fonctionnalité issue d'un document de game design doit commencer par une analyse des règles, états, données persistantes, commandes, permissions, textes, paramètres et interactions entre modules. Son implémentation doit être découpée en commits cohérents : socle métier, intégrations, interface joueur, tests et documentation.</p>
+<p>Pour un nouveau mini-jeu, consulter également <code>AGENTS.md</code> à la racine. Il contient la checklist d'architecture, de performance, de localisation, de Docker et de documentation à appliquer lors des développements futurs.</p></article>
+      <aside class="page-toc" aria-label="Sommaire de la page"><span class="toc-title">Sur cette page</span><a class="toc-level-2" href="#ce-qui-est-fourni-par-le-projet">Ce qui est fourni par le projet</a><a class="toc-level-2" href="#publier-le-depot-pour-la-premiere-fois">Publier le dépôt pour la première fois</a><a class="toc-level-2" href="#cycle-quotidien-recommande">Cycle quotidien recommandé</a><a class="toc-level-2" href="#construire-un-bon-commit">Construire un bon commit</a><a class="toc-level-2" href="#tests-avant-le-push">Tests avant le push</a><a class="toc-level-2" href="#fonctionnement-de-la-ci">Fonctionnement de la CI</a><a class="toc-level-2" href="#pull-requests-et-protection-de-main">Pull requests et protection de main</a><a class="toc-level-2" href="#dependabot-et-dependances">Dependabot et dépendances</a><a class="toc-level-2" href="#documentation-obligatoire">Documentation obligatoire</a><a class="toc-level-2" href="#versionner-une-livraison">Versionner une livraison</a><a class="toc-level-2" href="#ajouter-une-fonctionnalite-ou-un-mini-jeu">Ajouter une fonctionnalité ou un mini-jeu</a></aside>
+    </div>
+    <footer><span>Tropicube</span><span>Documentation statique générée depuis les fichiers Markdown</span></footer>
+  </main>
+</body>
+</html>

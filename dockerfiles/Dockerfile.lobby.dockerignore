@@ -1,0 +1,15 @@
+**
+!dockerfiles/
+!dockerfiles/Dockerfile.lobby
+!dockerfiles/configs/
+!dockerfiles/configs/paper-global.yml
+!dockerfiles/configs/TropicubeCore/
+!dockerfiles/configs/TropicubeCore/**
+!dockerfiles/configs/TropicubeLobby/
+!dockerfiles/configs/TropicubeLobby/**
+!dockerfiles/plugins/
+!dockerfiles/plugins/lobby/
+!dockerfiles/plugins/lobby/**
+!dockerfiles/worlds/
+!dockerfiles/worlds/lobby/
+!dockerfiles/worlds/lobby/**
