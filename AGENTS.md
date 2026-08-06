@@ -17,6 +17,21 @@ Modules Maven :
 
 Les fichiers Markdown sous `docs/` sont la documentation source. `docs-site/` est une sortie HTML statique générée par `docs-site/build.mjs`.
 
+## Environnement Minecraft
+
+- La cible est Minecraft 26.2. Ne jamais la remplacer automatiquement par Minecraft 1.21.x, même si des exemples ou documentations externes utilisent cette ancienne numérotation.
+- Ne jamais inventer ni ajouter une dépendance `paper-mojangapi`.
+- Respecter les mappings, dépôts Maven, dépendances Paper/Velocity et versions déjà configurés dans le POM parent.
+- Toute migration de version doit être demandée ou justifiée, vérifiée dans les sources officielles et validée sur l'ensemble du réacteur.
+
+## Architecture existante
+
+- Réutiliser une abstraction existante uniquement lorsque sa responsabilité est réellement commune au nouveau besoin.
+- Ne jamais créer de dépendance directe d'une nouvelle fonctionnalité ou d'un nouveau mini-jeu vers les classes métier propres à un autre mini-jeu.
+- Extraire vers `tropicube-core` uniquement ce qui est générique à plusieurs mini-jeux ou à l'ensemble du réseau.
+- Garder dans chaque module les règles, états, kits, équipes, capacités et données propres à son jeu.
+- Ne pas modifier un jeu existant sans nécessité démontrée par le game design, un contrat partagé ou une correction transversale. Préserver son comportement et couvrir toute modification indispensable par des tests de non-régression.
+
 ## Priorités obligatoires
 
 1. Préserver la correction fonctionnelle, la sécurité des données et la compatibilité Windows/Linux.
@@ -36,6 +51,17 @@ Avant de modifier :
 - identifier les contraintes de thread, de cycle de vie et de compatibilité de configuration ;
 - pour un bug, déterminer sa cause puis ajouter si possible un test de non-régression.
 
+Avant toute implémentation de mini-jeu, lire intégralement le fichier de game design `.md` fourni et analyser le code de tous les mini-jeux existants. Produire dans le plan de travail un tableau distinguant :
+
+| Catégorie | Question à traiter |
+|---|---|
+| Réutilisable tel quel | Quels services, utilitaires ou contrats partagés répondent déjà au besoin ? |
+| À généraliser | Quels composants ont une responsabilité réellement commune à au moins deux jeux ? |
+| Propre aux jeux existants | Quels éléments ne doivent surtout pas devenir une dépendance du nouveau jeu ? |
+| Nouveau | Quels composants sont spécifiques au game design fourni ? |
+
+Toute généralisation doit être motivée avant de modifier un module existant. Signaler à l'utilisateur les règles ambiguës qui influencent l'architecture, l'équilibrage ou l'expérience avant de les figer dans le code.
+
 Pendant l'implémentation :
 
 - garder une responsabilité claire par classe et une dépendance explicite par constructeur ;
@@ -44,6 +70,11 @@ Pendant l'implémentation :
 - journaliser les erreurs avec leur contexte sans exposer de secret ;
 - éviter les allocations répétées dans les tâches exécutées chaque tick et mettre en cache les objets immuables coûteux ;
 - ne pas optimiser sans mesure, mais corriger immédiatement les appels bloquants ou boucles non bornées sur le thread serveur.
+- préférer une machine à états explicite pour le cycle d'une partie et rendre chaque transition vérifiable ;
+- éviter les singletons globaux et tout état statique mutable ;
+- désinscrire les listeners propres à une partie ou les rendre explicitement inactifs dès sa fin ;
+- conserver les identifiants de toutes les tâches planifiées et les annuler à la fin de la partie ainsi qu'à l'arrêt du plugin ;
+- ne jamais effectuer d'accès Bukkit/Paper asynchrone non sûr ; repasser sur le scheduler serveur avant toute mutation du monde, d'une entité, d'un inventaire ou d'un joueur.
 
 Après l'implémentation :
 
@@ -52,6 +83,7 @@ Après l'implémentation :
 - reconstruire et valider `docs-site/` ;
 - contrôler `git diff`, `git status` et l'absence de secret avant le commit ;
 - résumer les validations réellement exécutées et signaler toute vérification manuelle restante.
+- relire le diff complet et signaler clairement les risques, hypothèses et éléments impossibles à tester localement.
 
 ## Style Java et documentation du code
 
@@ -89,6 +121,10 @@ Une modification de langue doit également actualiser toutes les interfaces mise
 ## Configuration et compatibilité
 
 - Toute nouvelle option doit avoir une valeur par défaut sûre, une validation et une description dans `docs/CONFIGURATION.md`.
+- Les durées, kits, équipes, messages, règles et paramètres d'équilibrage doivent être configurables lorsqu'ils relèvent du game design.
+- Éviter toute valeur métier codée en dur ; centraliser les constantes techniques et exposer les paramètres de gameplay dans la configuration.
+- Valider la configuration au démarrage et produire des erreurs lisibles indiquant la clé, la valeur reçue et la valeur attendue.
+- Conserver les fichiers de langue séparés de la logique métier et ne jamais utiliser un texte joueur codé directement dans une classe Java.
 - Préserver la compatibilité des anciennes configurations lorsque cela est raisonnable ; utiliser le mécanisme de mise à jour de configuration existant dans Core.
 - Synchroniser les ressources embarquées des plugins avec les fichiers actifs sous `dockerfiles/configs/` lorsque les deux représentent la même configuration.
 - Ne jamais publier les ports des serveurs Paper dynamiques directement ; les joueurs passent par Velocity.
@@ -103,6 +139,9 @@ Une modification de langue doit également actualiser toutes les interfaces mise
 - Ne pas simuler toute l'API Paper ou Velocity : extraire le métier dans des services Java purs et garder les listeners/commandes comme adaptateurs minces.
 - Les scénarios dépendant d'un serveur réel doivent être listés dans le commit et la pull request, puis validés sur la pile Docker.
 - JaCoCo produit les rapports sous `target/site/jacoco/`. Utiliser la couverture pour identifier les trous, sans écrire de tests sans assertion métier uniquement pour augmenter un pourcentage.
+- Ajouter des tests unitaires à toute logique qui ne nécessite pas un serveur Paper actif.
+- Après chaque étape cohérente d'une implémentation de mini-jeu, exécuter les tests ciblés puis le build Maven des modules affectés ; terminer par le réacteur complet.
+- Ne jamais masquer une erreur de compilation avec un stub incomplet, une implémentation vide ou une exception temporaire oubliée.
 
 Commandes de référence :
 
@@ -153,7 +192,9 @@ Suivre `docs/GIT_CI.md`. Lorsqu'une demande autorise des modifications, créer u
 
 ## Ajouter une fonctionnalité depuis un game design
 
-Lire intégralement le document de game design et transformer son contenu en éléments vérifiables :
+Le fichier de game design `.md` fourni par l'utilisateur est la source fonctionnelle principale. Lire ce fichier intégralement avant de coder, puis confronter chaque règle au code des mini-jeux déjà présents afin de réutiliser les conventions éprouvées sans copier leurs responsabilités métier propres.
+
+Transformer le game design en éléments vérifiables :
 
 - boucle de jeu et conditions de victoire/défaite ;
 - états et transitions ;
@@ -165,25 +206,29 @@ Lire intégralement le document de game design et transformer son contenu en él
 - interactions avec lobby, Velocity, Redis, Docker et Core ;
 - critères d'acceptation, tests automatiques et scénarios en jeu.
 
-Signaler les ambiguïtés qui changeraient fortement le résultat. Pour les détails réversibles, choisir une valeur par défaut configurable et documenter l'hypothèse.
+Produire avant l'implémentation le tableau comparatif défini dans « Méthode de travail ». Signaler les ambiguïtés qui changeraient fortement le résultat. Pour les détails réversibles, choisir une valeur par défaut configurable et documenter l'hypothèse.
 
-Séparer le domaine du framework : modèles et règles métier Java purs, services applicatifs, puis adaptateurs Paper/Velocity/Redis. Définir explicitement le cycle de vie, rendre les transitions idempotentes et empêcher qu'un événement tardif agisse sur une partie terminée.
+Séparer le domaine du framework : modèles et règles métier Java purs, services applicatifs, puis adaptateurs Paper/Velocity/Redis. Modéliser le cycle de partie avec une machine à états explicite, rendre les transitions idempotentes et empêcher qu'un événement tardif agisse sur une partie terminée. Les listeners et tâches ne doivent plus pouvoir agir après la fin ou l'arrêt.
 
 ## Créer un nouveau mini-jeu
 
 Pour un mini-jeu autonome :
 
-1. créer un module Maven `tropicube-<nom>` et l'ajouter au POM parent ;
-2. réutiliser Core et Docker API sans dupliquer leurs responsabilités ;
-3. créer le descripteur Paper, la configuration par défaut et les ressources nécessaires ;
-4. modéliser états, règles et catalogue dans des classes testables indépendantes de Bukkit ;
-5. ajouter commandes, permissions et textes localisés ;
-6. gérer proprement démarrage, compte à rebours, partie, fin, reconnexion, arrêt et nettoyage ;
-7. ajouter template Docker, configuration, monde ou mécanisme de chargement de carte ;
-8. intégrer la création/routage Velocity, Redis, Compose et les deux scripts de déploiement ;
-9. ajouter tests unitaires et scénarios d'intégration ;
-10. créer une page complète de game design dans `docs/`, l'ajouter à `docs-site/build.mjs`, puis documenter commandes, configuration, architecture et déploiement ;
-11. vérifier Windows et Linux, reconstruire le site, exécuter le réacteur complet et committer par étapes cohérentes.
+1. lire le fichier game design `.md` fourni, analyser SheepWars et tout autre mini-jeu existant, puis produire le tableau réutilisable/généralisable/existant/nouveau ;
+2. résoudre ou signaler les ambiguïtés importantes avant de figer l'architecture ;
+3. créer un module Maven `tropicube-<nom>` et l'ajouter au POM parent ;
+4. réutiliser Core et Docker API sans dupliquer leurs responsabilités et sans dépendre du métier de SheepWars ou d'un autre jeu ;
+5. créer le descripteur Paper, la configuration validée, les fichiers de langue séparés et les ressources nécessaires ;
+6. modéliser le cycle par une machine à états explicite et placer règles/catalogues dans des classes testables indépendantes de Bukkit ;
+7. rendre configurables durées, équipes, kits, règles et équilibrage, sans valeurs métier dispersées dans le code ;
+8. ajouter commandes, permissions et textes localisés harmonisés ;
+9. gérer démarrage, compte à rebours, partie, fin, reconnexion, arrêt, désactivation des listeners et annulation de toutes les tâches ;
+10. ajouter template Docker, configuration, monde ou mécanisme de chargement de carte ;
+11. intégrer la création/routage Velocity, Redis, Compose et les deux scripts de déploiement ;
+12. ajouter les tests unitaires à chaque logique pure et les scénarios d'intégration nécessaires ;
+13. après chaque étape cohérente, exécuter les tests et le build Maven concernés sans introduire de stub masquant une erreur ;
+14. créer une page complète de game design dans `docs/`, l'ajouter à `docs-site/build.mjs`, puis documenter commandes, configuration, architecture et déploiement ;
+15. relire le diff, signaler risques et éléments non testés, vérifier Windows/Linux, reconstruire le site, exécuter le réacteur complet et committer par étapes cohérentes.
 
 Le module ne doit pas supposer une seule instance, conserver un état global entre deux parties ou faire confiance à un événement Redis sans valider l'identifiant et le propriétaire de l'instance.
 

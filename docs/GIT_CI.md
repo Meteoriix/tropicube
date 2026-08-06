@@ -207,6 +207,8 @@ git push origin main v1.1.0
 
 ## Ajouter une fonctionnalité ou un mini-jeu
 
-Une fonctionnalité issue d'un document de game design doit commencer par une analyse des règles, états, données persistantes, commandes, permissions, textes, paramètres et interactions entre modules. Son implémentation doit être découpée en commits cohérents : socle métier, intégrations, interface joueur, tests et documentation.
+Une fonctionnalité issue d'un document de game design doit utiliser le fichier `.md` fourni comme source fonctionnelle principale. Avant de coder, analyser également SheepWars et les autres mini-jeux présents, puis produire un tableau séparant composants réutilisables tels quels, composants à généraliser, composants propres aux jeux existants et composants nouveaux. Une généralisation ne doit jamais créer de dépendance du nouveau jeu vers le métier d'un jeu existant.
+
+L'analyse couvre règles, machine à états, données persistantes, commandes, permissions, textes, paramètres configurables et interactions entre modules. Les ambiguïtés structurantes sont signalées avant implémentation. Le développement est découpé en commits cohérents : socle métier, intégrations, interface joueur, tests et documentation.
 
 Pour un nouveau mini-jeu, consulter également `AGENTS.md` à la racine. Il contient la checklist d'architecture, de performance, de localisation, de Docker et de documentation à appliquer lors des développements futurs.

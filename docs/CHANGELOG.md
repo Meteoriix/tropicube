@@ -19,6 +19,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 - Site documentaire enrichi avec les pages Développement, Git/CI et Historique des changements.
 - README complété avec le wrapper Maven et les contrôles automatiques disponibles.
+- Consignes de création de mini-jeux renforcées : game design Markdown obligatoire, analyse comparative des jeux existants, machine à états, configuration, sécurité Paper et validation incrémentale.
 
 ### Corrigé
 
