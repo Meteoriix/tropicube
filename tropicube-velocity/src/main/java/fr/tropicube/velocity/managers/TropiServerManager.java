@@ -501,8 +501,9 @@ public class TropiServerManager {
      * Arrête et supprime un serveur.
      */
     public CompletableFuture<Boolean> stopServer(String instanceId) {
-        ServerInstance instance = prepareStop(instanceId);
-        if (instance == null) return CompletableFuture.completedFuture(false);
+        InstanceStopAttempt preparation = prepareStop(instanceId);
+        if (preparation == null) return CompletableFuture.completedFuture(false);
+        ServerInstance instance = preparation.instance();
         return transferPlayers(instance, 5).thenApplyAsync(_ -> {
             boolean stopped = dockerManager.stopServer(instance);
             if (stopped) {
@@ -515,6 +516,8 @@ public class TropiServerManager {
                 purgeRedisInstance(instance);
                 redisManager.publishServerEvent("SERVER_STOPPED", instanceId + ":" + instance.getServerName());
                 logger.info("[Tropicube] Serveur arrêté : {}", instance.getServerName());
+            } else {
+                restoreAfterFailedStop(preparation);
             }
             return stopped;
         }, scheduler);
@@ -525,8 +528,9 @@ public class TropiServerManager {
      * Migre les joueurs, désenregistre de Velocity et nettoie Redis.
      */
     public CompletableFuture<Boolean> killServer(String instanceId) {
-        ServerInstance instance = prepareStop(instanceId);
-        if (instance == null) return CompletableFuture.completedFuture(false);
+        InstanceStopAttempt preparation = prepareStop(instanceId);
+        if (preparation == null) return CompletableFuture.completedFuture(false);
+        ServerInstance instance = preparation.instance();
         return transferPlayers(instance, 3).thenApplyAsync(_ -> {
             // Retire l'instance du registre Velocity.
             proxy.getServer(instance.getServerName()).ifPresent(s ->
@@ -544,16 +548,21 @@ public class TropiServerManager {
         }, scheduler);
     }
 
-    private ServerInstance prepareStop(String instanceId) {
+    private InstanceStopAttempt prepareStop(String instanceId) {
         ServerInstance instance = activeInstances.get(instanceId);
         if (instance == null) return null;
-        synchronized (instance) {
-            if (instance.getStatus() == ServerInstance.Status.STOPPING
-                    || instance.getStatus() == ServerInstance.Status.STOPPED) return null;
-            instance.setStatus(ServerInstance.Status.STOPPING);
-            redisManager.saveInstance(instance);
-            return instance;
-        }
+        InstanceStopAttempt preparation = InstanceStopAttempt.begin(instance);
+        if (preparation != null) redisManager.saveInstance(instance);
+        return preparation;
+    }
+
+    private void restoreAfterFailedStop(InstanceStopAttempt preparation) {
+        ServerInstance instance = preparation.instance();
+        if (activeInstances.get(instance.getInstanceId()) != instance) return;
+        preparation.restore();
+        redisManager.saveInstance(instance);
+        logger.warn("[Tropicube] Arrêt échoué pour {} : statut restauré à {}.",
+                instance.getServerName(), preparation.previousStatus());
     }
 
     /** Transfère réellement tous les joueurs puis détruit immédiatement une instance de mini-jeu terminée. */

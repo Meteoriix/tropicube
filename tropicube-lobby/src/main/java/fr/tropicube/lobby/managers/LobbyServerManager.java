@@ -202,6 +202,8 @@ public class LobbyServerManager {
             return ("GAME_WAITING".equalsIgnoreCase(status)
                     || "GAME_STARTING".equalsIgnoreCase(status)) && !isFull();
         }
+        /** Indique si l'instance doit apparaître dans les listes et totaux du lobby. */
+        public boolean isListed() { return isOnline() || isStarting(); }
         public boolean isStarting() { return "STARTING".equalsIgnoreCase(status); }
         public boolean isPlaying() { return "PLAYING".equalsIgnoreCase(status); }
         public boolean isFull()     { return playerCount >= maxPlayers; }

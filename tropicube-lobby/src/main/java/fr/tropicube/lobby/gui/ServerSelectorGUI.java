@@ -144,7 +144,7 @@ public class ServerSelectorGUI {
 
     private static List<LobbyServerManager.ServerInfo> filteredServers(TropicubeLobby plugin, String type) {
         return plugin.getLobbyServerManager().getServersByType(type).stream()
-                .filter(s -> s.isOnline() || s.isStarting())
+                .filter(LobbyServerManager.ServerInfo::isListed)
                 .toList();
     }
 
