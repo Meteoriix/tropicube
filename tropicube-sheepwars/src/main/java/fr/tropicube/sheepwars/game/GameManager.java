@@ -783,7 +783,9 @@ public class GameManager {
                     Entity teammateEntity = teammate.getBukkitPlayer();
                     if (teammateEntity == null) continue;
                     try {
-                        glowingEntities.setGlowing(teammateEntity, bukkitTeamPlayer, convertColorFormat(team.getColor()));
+                        // Le scoreboard personnel reste l'unique propriétaire de l'équipe et de sa couleur.
+                        // Fournir une couleur ici créerait une seconde équipe glow-* côté client.
+                        glowingEntities.setGlowing(teammateEntity, bukkitTeamPlayer);
                     } catch (ReflectiveOperationException e) {
                         plugin.getLogger().log(java.util.logging.Level.WARNING,
                                 "Impossible d'activer le surlignage d'équipe", e);
@@ -808,31 +810,6 @@ public class GameManager {
                         "Impossible de retirer le surlignage d'équipe", e);
             }
         }
-    }
-
-    @SuppressWarnings("deprecation")
-    public static ChatColor convertColorFormat(NamedTextColor color) {
-
-        if (color == null) return null;
-
-        if (color.equals(NamedTextColor.BLACK)) return ChatColor.BLACK;
-        if (color.equals(NamedTextColor.DARK_BLUE)) return ChatColor.DARK_BLUE;
-        if (color.equals(NamedTextColor.DARK_GREEN)) return ChatColor.DARK_GREEN;
-        if (color.equals(NamedTextColor.DARK_AQUA)) return ChatColor.DARK_AQUA;
-        if (color.equals(NamedTextColor.DARK_RED)) return ChatColor.DARK_RED;
-        if (color.equals(NamedTextColor.DARK_PURPLE)) return ChatColor.DARK_PURPLE;
-        if (color.equals(NamedTextColor.GOLD)) return ChatColor.GOLD;
-        if (color.equals(NamedTextColor.GRAY)) return ChatColor.GRAY;
-        if (color.equals(NamedTextColor.DARK_GRAY)) return ChatColor.DARK_GRAY;
-        if (color.equals(NamedTextColor.BLUE)) return ChatColor.BLUE;
-        if (color.equals(NamedTextColor.GREEN)) return ChatColor.GREEN;
-        if (color.equals(NamedTextColor.AQUA)) return ChatColor.AQUA;
-        if (color.equals(NamedTextColor.RED)) return ChatColor.RED;
-        if (color.equals(NamedTextColor.LIGHT_PURPLE)) return ChatColor.LIGHT_PURPLE;
-        if (color.equals(NamedTextColor.YELLOW)) return ChatColor.YELLOW;
-        if (color.equals(NamedTextColor.WHITE)) return ChatColor.WHITE;
-
-        return null;
     }
 
     // ============================================================

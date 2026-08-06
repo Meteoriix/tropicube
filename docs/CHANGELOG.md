@@ -26,3 +26,4 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 ### Corrigé
 
 - URL de téléchargement du Maven Wrapper épinglée sur Maven 3.9.11.
+- Déconnexion des clients à la mort d'un joueur SheepWars causée par un conflit entre les équipes de scoreboard et les équipes temporaires de surlignage.
