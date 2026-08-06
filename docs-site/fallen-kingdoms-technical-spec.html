@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Spécification V1, états, protections et contrats techniques">
+  <meta name="theme-color" content="#071a18">
+  <title>Fallen Kingdoms — spécification technique · Tropicube</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span>Tropicube</a><span>Documentation</span></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong>Tropicube</strong><small>Documentation réseau</small></span></a>
+    <nav aria-label="Documentation principale"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Accueil</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commandes</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Déploiement</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link" href="fallen-kingdoms.html"><span class="nav-icon">♜</span><span>Fallen Kingdoms</span></a>
+<a class="nav-link active" href="fallen-kingdoms-technical-spec.html"><span class="nav-icon">⌘</span><span>FK technique</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Développement</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changements</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="contenu" class="main">
+    <section class="hero"><div class="eyebrow">Documentation officielle</div><h1>Fallen Kingdoms — spécification technique</h1><p>Spécification V1, états, protections et contrats techniques</p></section>
+    <div class="content-grid">
+      <article class="documentation"><h2 id="statut-du-document">Statut du document<a class="heading-anchor" href="#statut-du-document" aria-label="Lien vers cette section">#</a></h2>
+<p>Cette page transforme le <a href="fallen-kingdoms.html">game design historique</a> en contrat technique pour la première version Tropicube de Fallen Kingdoms. Elle décrit le comportement à implémenter ; elle ne signifie pas que le module, les commandes ou les intégrations cités existent déjà.</p>
+<p>Les règles marquées <strong>confirmées</strong> sont approuvées. Les valeurs marquées <strong>configurables</strong> ont une valeur publique par défaut, mais peuvent être modifiées dans les limites indiquées. Les éléments marqués <strong>HYPOTHÈSE TEMPORAIRE</strong> doivent rester faciles à changer et devront être validés en jeu avant une publication.</p>
+<p>En cas de divergence, cette spécification prévaut pour la V1 Tropicube. Le game design historique reste la source de contexte et d'intention.</p>
+<h2 id="perimetre-de-la-premiere-version">Périmètre de la première version<a class="heading-anchor" href="#perimetre-de-la-premiere-version" aria-label="Lien vers cette section">#</a></h2>
+<p>La V1 comprend :</p>
+<ul><li>une partie automatisée sur une instance Paper 26.2 dédiée et éphémère ;</li><li>de deux à cinq royaumes actifs, choisis dynamiquement selon l'effectif ;</li><li>les phases de préparation, combat commun, assaut, mort subite et résultat ;</li><li>les quatre kits historiques : Mineur, Fermier, Éclaireur et Enchanteur ;</li><li>la sélection de carte, de préférence d'équipe et de kit par interface ;</li><li>les territoires de base, la zone commune, les protections et les brèches à la TNT ;</li><li>un cœur par royaume, les dernières vies, les réapparitions et les spectateurs ;</li><li>la ruine contrôlée d'une base éliminée ;</li><li>la réduction de bordure en mort subite ;</li><li>les messages, HUD, scoreboards et bossbars localisés par Core ;</li><li>des commandes d'administration minimales ;</li><li>la persistance asynchrone des préférences et statistiques globales, consultables sur Velocity ;</li><li>l'arrêt propre de l'instance par le flux Docker/Velocity existant.</li></ul>
+<p>Ne font pas partie de la V1 : une monnaie ou des récompenses économiques, un éditeur de carte en jeu, une restauration du monde permettant plusieurs parties dans le même conteneur, une reproduction exhaustive du combat Minecraft 1.8, et les cartes de production elles-mêmes.</p>
+<h2 id="regles-confirmees">Règles confirmées<a class="heading-anchor" href="#regles-confirmees" aria-label="Lien vers cette section">#</a></h2>
+<h3 id="effectif-et-royaumes">Effectif et royaumes<a class="heading-anchor" href="#effectif-et-royaumes" aria-label="Lien vers cette section">#</a></h3>
+<ul><li>Une partie publique exige au moins deux royaumes et quatre joueurs par royaume, soit huit joueurs.</li><li>Un royaume accueille au maximum six joueurs en partie publique.</li><li>Le nombre cible de royaumes est <code>max(2, ceil(effectif / 6))</code>, plafonné à cinq.</li><li>Les seuils publics naturels sont donc : 8 à 12 joueurs pour deux royaumes, 13 à 18 pour trois, 19 à 24 pour quatre et 25 à 30 pour cinq.</li><li>La répartition finale garantit au moins quatre joueurs par royaume et un écart d'effectif maximal de un.</li><li>Chaque carte activée doit définir un agencement valide pour chacun des nombres de royaumes qu'elle accepte.</li><li>Le joueur choisit une couleur préférée. L'algorithme respecte le plus de préférences possible sans enfreindre l'équilibrage ; une préférence n'est jamais une garantie.</li></ul>
+<h3 id="chronologie">Chronologie<a class="heading-anchor" href="#chronologie" aria-label="Lien vers cette section">#</a></h3>
+<p>Toutes les échéances sont mesurées depuis l'entrée en <code>PREPARATION</code> :</p>
+<div class="table-scroll"><table><thead><tr><th>Instant</th><th>Effet</th></tr></thead><tbody><tr><td>00:00</td><td>Début de la préparation, remise du kit et téléportation aux bases</td></tr><tr><td>15:00</td><td>Activation du JcJ dans la zone commune</td></tr><tr><td>25:00</td><td>Ouverture des bases ennemies et vulnérabilité des cœurs</td></tr><tr><td>75:00</td><td>Destruction forcée de tous les cœurs restants et mort subite</td></tr><tr><td>90:00</td><td>Résolution forcée selon le nombre de survivants</td></tr></tbody></table></div>
+<p>La partie se termine avant 90 minutes dès qu'un seul royaume possède encore au moins un joueur vivant.</p>
+<h3 id="combat">Combat<a class="heading-anchor" href="#combat" aria-label="Lien vers cette section">#</a></h3>
+<ul><li>Le profil public est le combat natif Paper 26.2.</li><li>Une partie personnalisée peut choisir le profil <code>LEGACY_1_8</code> : absence de délai d'attaque, dégâts et recul émulés, boucliers et seconde main désactivés.</li><li>L'émulation 1.8 est volontairement limitée à ces mécanismes essentiels.</li><li>Les dégâts directs et indirects entre membres d'un même royaume sont annulés.</li></ul>
+<h3 id="c-urs-dernieres-vies-et-elimination">Cœurs, dernières vies et élimination<a class="heading-anchor" href="#c-urs-dernieres-vies-et-elimination" aria-label="Lien vers cette section">#</a></h3>
+<ul><li>Chaque cœur possède 500 points de vie, indépendamment de la carte.</li><li>Avant l'assaut, le cœur est invulnérable et inaccessible aux ennemis.</li><li>Pendant l'assaut, les attaques de mêlée et les projectiles ennemis infligent les dégâts définis par le profil de combat.</li><li>La TNT ne retire jamais directement des points de vie au cœur ; elle sert uniquement aux brèches autorisées.</li><li>Le propriétaire du cœur et ses alliés ne peuvent pas l'endommager.</li><li>La destruction d'un cœur place tous ses survivants en dernière vie. Un joueur déjà mort ou en attente de réapparition au même instant est éliminé définitivement.</li><li>La base reste le territoire du royaume tant qu'au moins un de ses joueurs survit.</li><li>À la mort du dernier survivant, le royaume est éliminé, sa base subit une destruction contrôlée puis devient un territoire neutre en ruine.</li></ul>
+<h3 id="mort-deconnexion-et-arrivee-tardive">Mort, déconnexion et arrivée tardive<a class="heading-anchor" href="#mort-deconnexion-et-arrivee-tardive" aria-label="Lien vers cette section">#</a></h3>
+<ul><li>Tant que son cœur existe, un joueur mort laisse tomber son inventaire selon les règles Minecraft, observe pendant dix secondes, puis réapparaît sans équipement à sa base.</li><li>Le kit n'est distribué qu'une fois, au début de la partie.</li><li>Si le cœur est détruit durant ce délai, la réapparition est annulée et le joueur reste spectateur.</li><li>Une déconnexion pendant une phase active compte immédiatement comme une mort.</li><li>À son retour, le joueur ne peut reprendre que si sa session appartenait déjà à la partie et si son cœur est encore vivant ; sinon il reste spectateur.</li><li>Toute arrivée sans session verrouillée après le début de la préparation est placée en spectateur.</li></ul>
+<h3 id="mort-subite-et-resultat-a-90-minutes">Mort subite et résultat à 90 minutes<a class="heading-anchor" href="#mort-subite-et-resultat-a-90-minutes" aria-label="Lien vers cette section">#</a></h3>
+<ul><li>À 75 minutes, tous les cœurs encore vivants sont détruits avec la cause <code>FORCED_SUDDEN_DEATH</code> et aucune réapparition supplémentaire n'est possible.</li><li>La bordure se resserre autour du centre configuré pour atteindre exactement 50 × 50 blocs à 90 minutes.</li><li>Si un seul royaume conserve des survivants avant cette échéance, il gagne immédiatement.</li><li>À 90 minutes, gagne le ou les royaumes ayant le plus grand nombre de survivants.</li><li>En cas d'égalité au maximum, le résultat est un match nul et chaque royaume ex æquo reçoit à la fois une victoire et un match nul dans ses statistiques.</li></ul>
+<h2 id="regles-configurables">Règles configurables<a class="heading-anchor" href="#regles-configurables" aria-label="Lien vers cette section">#</a></h2>
+<p>Les valeurs de gameplay sont validées au chargement et regroupées dans <code>config.yml</code>. Les réglages publics forment le contrat par défaut. Une partie personnalisée ne peut surcharger que les clés explicitement autorisées.</p>
+<div class="table-scroll"><table><thead><tr><th>Règle</th><th>Défaut public</th><th>Surcharge personnalisée</th></tr></thead><tbody><tr><td>Compte à rebours</td><td>30 s</td><td>oui</td></tr><tr><td>Joueurs minimum par royaume</td><td>4</td><td>non</td></tr><tr><td>Joueurs maximum par royaume</td><td>6</td><td>oui, dans la capacité de la carte</td></tr><tr><td>Royaumes maximum</td><td>5</td><td>oui, de 2 à 5</td></tr><tr><td>Début du JcJ</td><td>15 min</td><td>oui</td></tr><tr><td>Début de l'assaut</td><td>25 min</td><td>oui</td></tr><tr><td>Mort subite</td><td>75 min</td><td>oui</td></tr><tr><td>Fin forcée</td><td>90 min</td><td>oui</td></tr><tr><td>Points de vie du cœur</td><td>500</td><td>oui</td></tr><tr><td>Délai de réapparition</td><td>10 s</td><td>oui</td></tr><tr><td>Taille finale de bordure</td><td>50 blocs</td><td>non</td></tr><tr><td>Profil de combat</td><td><code>PAPER_26_2</code></td><td>oui</td></tr><tr><td>Kits activés</td><td>quatre kits</td><td>oui</td></tr><tr><td>Carte</td><td>vote</td><td>choix de l'hôte</td></tr><tr><td>Rayon et proportion de ruine</td><td>selon configuration</td><td>oui</td></tr></tbody></table></div>
+<p>Les validations imposent <code>pvp-at &lt; assault-at &lt; sudden-death-at &lt; force-end-at</code>, au moins deux royaumes, quatre joueurs minimum par royaume, une taille finale de bordure de 50, un cœur strictement positif et au moins un kit actif. Les protections techniques, l'absence de dégâts alliés, la préservation des conteneurs et l'absence d'accès réseau bloquant ne sont jamais surchargeables.</p>
+<h2 id="hypotheses-temporaires">Hypothèses temporaires<a class="heading-anchor" href="#hypotheses-temporaires" aria-label="Lien vers cette section">#</a></h2>
+<ul><li><strong>HYPOTHÈSE TEMPORAIRE — compte à rebours :</strong> 30 secondes offrent assez de temps pour annuler si l'effectif devient invalide.</li><li><strong>HYPOTHÈSE TEMPORAIRE — écran de résultat :</strong> les résultats restent affichés dix secondes avant transfert par Velocity.</li><li><strong>HYPOTHÈSE TEMPORAIRE — combat 1.8 :</strong> l'émulation essentielle décrite plus haut suffit ; les écarts restants seront évalués après tests en jeu.</li><li><strong>HYPOTHÈSE TEMPORAIRE — kits :</strong> lorsqu'une durabilité historique n'est pas connue, l'objet commence à sa durabilité maximale.</li><li><strong>HYPOTHÈSE TEMPORAIRE — ruine :</strong> trois vagues visuelles espacées de quelques ticks, un rayon de huit blocs et 35 % de blocs destructibles sont les valeurs initiales d'équilibrage.</li><li><strong>HYPOTHÈSE TEMPORAIRE — récompenses :</strong> aucune monnaie n'est attribuée en V1.</li></ul>
+<p>Ces hypothèses doivent être configurables lorsqu'elles influencent le gameplay et couvertes par des critères d'acceptation avant d'être déclarées définitives.</p>
+<h2 id="machine-a-etats">Machine à états<a class="heading-anchor" href="#machine-a-etats" aria-label="Lien vers cette section">#</a></h2>
+<div class="code-block"><span class="code-language">text</span><pre class=""><code>WAITING ──effectif et carte valides──&gt; COUNTDOWN
+   ^                                      │
+   └──effectif/carte invalides────────────┘
+                                          │ compte à rebours terminé
+                                          v
+PREPARATION ──15:00──&gt; PVP ──25:00──&gt; ASSAULT ──75:00──&gt; SUDDEN_DEATH
+     │                    │               │                    │
+     └──────────── abandon administrateur / condition de victoire ───────┐
+                                                                         v
+                                                                      ENDING
+                                                                         │
+                                                            résultat traité/nettoyage
+                                                                         v
+                                                                       ENDED</code></pre></div>
+<h3 id="etats">États<a class="heading-anchor" href="#etats" aria-label="Lien vers cette section">#</a></h3>
+<div class="table-scroll"><table><thead><tr><th>État</th><th>Responsabilité et invariants</th></tr></thead><tbody><tr><td><code>WAITING</code></td><td>Accueil, vote de carte, préférences d'équipe et kits. Aucun roster verrouillé.</td></tr><tr><td><code>COUNTDOWN</code></td><td>Vérification continue de l'effectif et de la carte. Aucune règle active de partie.</td></tr><tr><td><code>PREPARATION</code></td><td>Roster et carte verrouillés, équipes assignées, kits remis, JcJ et bases ennemies fermés.</td></tr><tr><td><code>PVP</code></td><td>JcJ autorisé uniquement en zone commune ; bases ennemies et cœurs protégés.</td></tr><tr><td><code>ASSAULT</code></td><td>Bases ouvertes, cœurs vulnérables, JcJ et règles de siège actifs.</td></tr><tr><td><code>SUDDEN_DEATH</code></td><td>Tous les cœurs détruits, aucune réapparition, bordure mobile.</td></tr><tr><td><code>ENDING</code></td><td>Jeu figé, résultat immuable, statistiques et transfert en cours.</td></tr><tr><td><code>ENDED</code></td><td>Tâches annulées, listeners inactifs, ressources fermées ; aucun événement tardif n'agit.</td></tr></tbody></table></div>
+<h3 id="transitions-et-evenements-declencheurs">Transitions et événements déclencheurs<a class="heading-anchor" href="#transitions-et-evenements-declencheurs" aria-label="Lien vers cette section">#</a></h3>
+<div class="table-scroll"><table><thead><tr><th>Origine</th><th>Destination</th><th>Déclencheur</th><th>Effets atomiques</th></tr></thead><tbody><tr><td><code>WAITING</code></td><td><code>COUNTDOWN</code></td><td>démarrage automatique ou administrateur, effectif ≥ 8 et carte/agencement valides</td><td>démarre le minuteur et publie l'état</td></tr><tr><td><code>COUNTDOWN</code></td><td><code>WAITING</code></td><td>effectif insuffisant, carte/agencement invalide ou annulation</td><td>annule le minuteur et déverrouille les sélections</td></tr><tr><td><code>COUNTDOWN</code></td><td><code>PREPARATION</code></td><td>minuteur à zéro et préconditions toujours valides</td><td>verrouille le roster, résout le vote, calcule les royaumes, assigne joueurs/kits, crée les cœurs et téléporte</td></tr><tr><td><code>PREPARATION</code></td><td><code>PVP</code></td><td>horloge à 15:00</td><td>active le JcJ dans la zone commune</td></tr><tr><td><code>PVP</code></td><td><code>ASSAULT</code></td><td>horloge à 25:00</td><td>ouvre les bases et rend les cœurs vulnérables</td></tr><tr><td><code>ASSAULT</code></td><td><code>SUDDEN_DEATH</code></td><td>horloge à 75:00</td><td>détruit les cœurs restants, annule les réapparitions et démarre la bordure</td></tr><tr><td><code>ASSAULT</code></td><td><code>ENDING</code></td><td>un seul royaume vivant</td><td>fige le vainqueur</td></tr><tr><td><code>SUDDEN_DEATH</code></td><td><code>ENDING</code></td><td>un seul royaume vivant</td><td>fige le vainqueur</td></tr><tr><td><code>SUDDEN_DEATH</code></td><td><code>ENDING</code></td><td>horloge à 90:00</td><td>compte les survivants et applique l'égalité multi-vainqueur</td></tr><tr><td>état actif</td><td><code>ENDING</code></td><td>arrêt/abandon administrateur ou désactivation du plugin</td><td>résultat <code>ADMIN_ABORT</code>, aucune statistique compétitive</td></tr><tr><td><code>ENDING</code></td><td><code>ENDED</code></td><td>persistance terminée ou expirée, affichage terminé, joueurs transférés</td><td>annule tâches et abonnements, ferme les ressources et demande l'arrêt d'instance</td></tr></tbody></table></div>
+<p>Chaque transition est idempotente et exécutée sur le thread serveur pour les mutations Paper. Une transition refusée ne produit aucun effet partiel. Les tâches capturent l'identifiant de session attendu ; elles ignorent un callback tardif si la session ou l'état ne correspond plus.</p>
+<h2 id="responsabilites-des-composants">Responsabilités des composants<a class="heading-anchor" href="#responsabilites-des-composants" aria-label="Lien vers cette section">#</a></h2>
+<div class="table-scroll"><table><thead><tr><th>Composant</th><th>Responsabilité</th></tr></thead><tbody><tr><td><code>GameSessionManager</code></td><td>Compose les services pour une unique session d'instance ; ne contient pas les règles détaillées.</td></tr><tr><td><code>GameStateMachine</code></td><td>Valide et applique les transitions pures, conserve l'état et le motif de fin.</td></tr><tr><td><code>PhaseService</code></td><td>Convertit l'horloge de partie en échéances et demande les transitions une seule fois.</td></tr><tr><td><code>PlayerSessionService</code></td><td>Gère roster, présence, reconnexion, état vivant/mort/spectateur et arrivée tardive.</td></tr><tr><td><code>KingdomService</code></td><td>Calcule le nombre de royaumes, équilibre les préférences et détermine survivants/éliminations.</td></tr><tr><td><code>MapService</code></td><td>Charge et valide cartes, agencements, positions, régions et bornes. Résout le vote.</td></tr><tr><td><code>RegionProtectionService</code></td><td>Décide chaque interaction à partir de la phase, du territoire, du joueur et du matériau.</td></tr><tr><td><code>HeartService</code></td><td>Crée et identifie les cœurs, valide les attaquants, applique les dégâts et publie leur destruction.</td></tr><tr><td><code>KitService</code></td><td>Charge le catalogue, mémorise le choix et remet une seule fois le contenu configuré.</td></tr><tr><td><code>RespawnService</code></td><td>Programme les dix secondes, annule à la destruction du cœur et réapparaît sans kit.</td></tr><tr><td><code>RuinService</code></td><td>Exécute les vagues visuelles et la destruction filtrée, puis neutralise la région.</td></tr><tr><td><code>BorderService</code></td><td>Initialise la bordure et garantit son interpolation vers 50 × 50 à 90 minutes.</td></tr><tr><td><code>HudService</code></td><td>Produit scoreboard, bossbars, titres, hotbar et rafraîchissement après changement de langue.</td></tr><tr><td><code>TaskRegistry</code></td><td>Enregistre toutes les tâches Paper et les annule de façon idempotente à la fin.</td></tr><tr><td><code>StatisticsService</code></td><td>Construit un résultat immuable, orchestre l'écriture durable et la mise à jour du cache.</td></tr><tr><td><code>StatisticsRepository</code></td><td>Persiste les détails et agrégats dans MySQL hors thread Paper.</td></tr><tr><td><code>GameNetworkGateway</code></td><td>Publie les snapshots d'instance et demandes de transfert Redis avec identifiant/propriétaire validés.</td></tr></tbody></table></div>
+<p>Les modèles et règles de transition, d'équilibrage, de victoire et de validation restent en Java pur. Les listeners, commandes et adaptateurs Paper/Redis/SQL restent minces. Aucun composant Fallen Kingdoms ne dépend d'une classe métier SheepWars.</p>
+<h2 id="modele-de-domaine">Modèle de domaine<a class="heading-anchor" href="#modele-de-domaine" aria-label="Lien vers cette section">#</a></h2>
+<h3 id="partie">Partie<a class="heading-anchor" href="#partie" aria-label="Lien vers cette section">#</a></h3>
+<p><code>GameSession</code> possède un identifiant UUID immuable, l'identifiant de l'instance, la carte résolue, le profil de règles, l'instant de départ, l'état courant, les royaumes actifs et le résultat éventuel. Une instance ne conserve jamais l'état d'une ancienne session.</p>
+<h3 id="royaumes-et-bases">Royaumes et bases<a class="heading-anchor" href="#royaumes-et-bases" aria-label="Lien vers cette section">#</a></h3>
+<ul><li><code>KingdomId</code> appartient au catalogue <code>BLUE</code>, <code>RED</code>, <code>GREEN</code>, <code>YELLOW</code>, <code>ORANGE</code>.</li><li><code>KingdomRuntime</code> contient les joueurs affectés, les survivants, le cœur et l'état <code>ACTIVE</code>, <code>LAST_LIFE</code> ou <code>ELIMINATED</code>.</li><li><code>BaseDefinition</code> contient la région cuboïde, les points de réapparition, la position du cœur, les blocs/régions techniques protégés et les paramètres de ruine.</li><li><code>BaseRuntime</code> évolue de <code>INTACT</code> vers <code>LAST_LIFE</code>, puis <code>RUINED</code>. Une base <code>RUINED</code> est un territoire <code>NEUTRAL</code>.</li></ul>
+<h3 id="joueurs">Joueurs<a class="heading-anchor" href="#joueurs" aria-label="Lien vers cette section">#</a></h3>
+<p><code>PlayerSession</code> contient UUID, préférence de royaume, royaume affecté, kit, présence, statistiques de partie, échéance de réapparition et l'un des états :</p>
+<ul><li><code>ACTIVE</code> : vivant et participant ;</li><li><code>RESPAWNING</code> : mort avec une réapparition possible ;</li><li><code>LAST_LIFE</code> : vivant sans réapparition future ;</li><li><code>OFFLINE</code> : session connue, décès de déconnexion déjà appliqué ;</li><li><code>ELIMINATED</code> : définitivement hors jeu ;</li><li><code>SPECTATOR</code> : arrivé tardivement ou éliminé, sans interaction.</li></ul>
+<p>Le service de session conserve uniquement les données nécessaires à une reconnexion. Il ne duplique pas durablement un inventaire déjà tombé au sol.</p>
+<h3 id="c-urs">Cœurs<a class="heading-anchor" href="#c-urs" aria-label="Lien vers cette section">#</a></h3>
+<p><code>HeartRuntime</code> contient le royaume propriétaire, les points de vie maximum et courants, l'état <code>PROTECTED</code>, <code>VULNERABLE</code> ou <code>DESTROYED</code>, l'identifiant de l'entité/bloc Paper et une clé PDC propre à la session. Les dégâts portent un auteur, une cause, une valeur initiale et une valeur finale validée.</p>
+<h3 id="kits">Kits<a class="heading-anchor" href="#kits" aria-label="Lien vers cette section">#</a></h3>
+<p><code>KitDefinition</code> est immuable : identifiant, icône, traduction, équipement, inventaire, effets et activation. <code>PlayerKitPreference</code> est persistée par joueur et par jeu. Les doublons de kit dans un royaume sont permis.</p>
+<h3 id="cartes">Cartes<a class="heading-anchor" href="#cartes" aria-label="Lien vers cette section">#</a></h3>
+<p><code>MapDefinition</code> contient identifiant, nom localisable, monde, région jouable, accueil spectateur, centre et taille initiale de bordure, agencements par nombre de royaumes et définitions de bases. Une carte n'est activable que si sa validation complète réussit.</p>
+<h2 id="configuration-yaml">Configuration YAML<a class="heading-anchor" href="#configuration-yaml" aria-label="Lien vers cette section">#</a></h2>
+<p>Fallen Kingdoms suit le modèle SheepWars : toutes les cartes sont déclarées dans une section dédiée du <code>config.yml</code> du plugin. Les durées sont exprimées en secondes, les positions sous forme <code>x/y/z/yaw/pitch</code> et les cuboïdes par deux coins inclusifs.</p>
+<div class="code-block"><span class="code-language">yaml</span><pre class=""><code>game:
+  countdown-seconds: 30
+  result-display-seconds: 10
+  min-players-per-kingdom: 4
+  max-players-per-kingdom: 6
+  max-kingdoms: 5
+
+phases:
+  pvp-at-seconds: 900
+  assault-at-seconds: 1500
+  sudden-death-at-seconds: 4500
+  force-end-at-seconds: 5400
+
+combat:
+  default-profile: PAPER_26_2
+  allowed-custom-profiles:
+    - PAPER_26_2
+    - LEGACY_1_8
+  friendly-fire: false
+
+hearts:
+  max-health: 500.0
+  tnt-direct-damage: false
+
+respawn:
+  delay-seconds: 10
+  drop-inventory: true
+  reissue-kit: false
+  disconnect-counts-as-death: true
+
+sudden-death:
+  final-border-size: 50.0
+
+ruins:
+  waves: 3
+  ticks-between-waves: 10
+  radius: 8.0
+  destruction-ratio: 0.35
+  preserve-containers: true
+
+protections:
+  forbidden-base-materials:
+    - OBSIDIAN
+    - BEDROCK
+  common-placement-whitelist:
+    - COBBLESTONE
+    - OAK_PLANKS
+    - LADDER
+    - TORCH
+  tnt-breaches-enabled: true
+  block-portal-bypass: true
+  block-teleport-bypass: true
+  block-piston-crossing: true
+  block-fluid-crossing: true
+
+kits:
+  miner:
+    enabled: true
+    icon: IRON_PICKAXE
+    items:
+      - material: IRON_PICKAXE
+        amount: 1
+        slot: 0
+        durability: FULL
+  farmer:
+    enabled: true
+    icon: WHEAT
+    items: []
+  scout:
+    enabled: true
+    icon: FEATHER
+    items: []
+  enchanter:
+    enabled: true
+    icon: ENCHANTING_TABLE
+    items: []
+
+custom-game:
+  allowed-overrides:
+    - map
+    - combat-profile
+    - phase-timings
+    - heart-health
+    - kingdom-count
+    - max-players-per-kingdom
+    - enabled-kits
+    - respawn-delay
+
+locations:
+  world: world
+  lobby: { x: 0.5, y: 100.0, z: 0.5, yaw: 0.0, pitch: 0.0 }
+  spectator: { x: 0.5, y: 120.0, z: 0.5, yaw: 0.0, pitch: 30.0 }
+  maps:
+    citadelles:
+      enabled: false
+      display-name-key: fallenkingdoms.maps.citadelles
+      playable-region:
+        min: { x: -300, y: -64, z: -300 }
+        max: { x: 300, y: 320, z: 300 }
+      border:
+        center: { x: 0.5, z: 0.5 }
+        initial-size: 600.0
+      layouts:
+        &quot;2&quot;: [BLUE, RED]
+        &quot;3&quot;: [BLUE, RED, GREEN]
+        &quot;4&quot;: [BLUE, RED, GREEN, YELLOW]
+        &quot;5&quot;: [BLUE, RED, GREEN, YELLOW, ORANGE]
+      kingdoms:
+        blue:
+          spawn: { x: -200.5, y: 70.0, z: 0.5, yaw: -90.0, pitch: 0.0 }
+          heart: { x: -210, y: 72, z: 0 }
+          base-region:
+            min: { x: -250, y: -64, z: -70 }
+            max: { x: -150, y: 180, z: 70 }
+          ruin:
+            center: { x: -210.5, y: 72.0, z: 0.5 }
+            protected-regions: []
+        red:
+          spawn: { x: 200.5, y: 70.0, z: 0.5, yaw: 90.0, pitch: 0.0 }
+          heart: { x: 210, y: 72, z: 0 }
+          base-region:
+            min: { x: 150, y: -64, z: -70 }
+            max: { x: 250, y: 180, z: 70 }
+          ruin:
+            center: { x: 210.5, y: 72.0, z: 0.5 }
+            protected-regions: []</code></pre></div>
+<p>L'exemple est un schéma cible, pas une carte prête à jouer. <code>enabled: false</code> empêche son vote tant que toutes les bases référencées par ses agencements ne sont pas définies. Le chargeur doit signaler précisément la clé, la valeur reçue et la valeur attendue. Il refuse les régions inversées ou chevauchées de manière incohérente, les positions hors bornes, les couleurs absentes, les matériaux inconnus et les agencements incapables de respecter la capacité.</p>
+<h2 id="commandes-et-permissions-cibles">Commandes et permissions cibles<a class="heading-anchor" href="#commandes-et-permissions-cibles" aria-label="Lien vers cette section">#</a></h2>
+<div class="table-scroll"><table><thead><tr><th>Commande</th><th>Permission</th><th>Effet</th></tr></thead><tbody><tr><td><code>/fkadmin status</code></td><td><code>fallenkingdoms.admin</code></td><td>Affiche session, état, carte, effectif et minuteurs.</td></tr><tr><td><code>/fkadmin start</code></td><td><code>fallenkingdoms.admin</code></td><td>Tente un démarrage en appliquant toutes les préconditions.</td></tr><tr><td><code>/fkadmin cancel</code></td><td><code>fallenkingdoms.admin</code></td><td>Annule le compte à rebours et revient à l'attente.</td></tr><tr><td><code>/fkadmin stop</code></td><td><code>fallenkingdoms.admin</code></td><td>Termine administrativement sans statistiques compétitives.</td></tr><tr><td><code>/fkadmin reload</code></td><td><code>fallenkingdoms.admin</code></td><td>Recharge seulement en <code>WAITING</code>, après validation complète.</td></tr><tr><td><code>/stats</code></td><td><code>tropicube.stats</code></td><td>Affiche sur Velocity les agrégats globaux puis le détail par jeu.</td></tr><tr><td><code>/stats &lt;joueur&gt;</code></td><td><code>tropicube.stats.others</code></td><td>Affiche les statistiques globales d'un autre joueur.</td></tr></tbody></table></div>
+<p>La sélection de carte, royaume et kit reste graphique. Une commande refusée ne modifie jamais partiellement la session. Les textes sont fournis en <code>fr</code>, <code>en</code>, <code>de</code> et <code>es</code> via Adventure/MiniMessage.</p>
+<h2 id="protections-par-phase">Protections par phase<a class="heading-anchor" href="#protections-par-phase" aria-label="Lien vers cette section">#</a></h2>
+<div class="table-scroll"><table><thead><tr><th>Action</th><th><code>PREPARATION</code></th><th><code>PVP</code></th><th><code>ASSAULT</code></th><th><code>SUDDEN_DEATH</code></th></tr></thead><tbody><tr><td>JcJ en zone commune</td><td>interdit</td><td>autorisé</td><td>autorisé</td><td>autorisé</td></tr><tr><td>Entrée physique dans une base ennemie</td><td>repoussée</td><td>repoussée</td><td>autorisée</td><td>autorisée</td></tr><tr><td>Dégâts au cœur ennemi</td><td>interdits</td><td>interdits</td><td>autorisés</td><td>sans objet</td></tr><tr><td>Construction dans sa base</td><td>autorisée sauf interdits</td><td>identique</td><td>identique</td><td>identique</td></tr><tr><td>Construction en zone commune</td><td>liste blanche</td><td>liste blanche</td><td>liste blanche</td><td>liste blanche</td></tr><tr><td>Casse/pose manuelle en base ennemie</td><td>interdite</td><td>interdite</td><td>interdite</td><td>interdite</td></tr><tr><td>Brèche TNT configurée</td><td>inactive</td><td>inactive</td><td>autorisée</td><td>autorisée</td></tr></tbody></table></div>
+<p>Les projectiles, explosions, pistons, fluides, portails, perles de l'End, fruits de chorus, véhicules et téléportations doivent passer par la même décision territoriale. Aucun mécanisme indirect ne doit contourner une frontière. Les spectateurs sont en <code>GameMode.SPECTATOR</code>, ne peuvent ni interagir ni influencer les entités, peuvent se téléporter entre joueurs et restent confinés aux bornes de la carte.</p>
+<h2 id="mort-et-reapparition">Mort et réapparition<a class="heading-anchor" href="#mort-et-reapparition" aria-label="Lien vers cette section">#</a></h2>
+<ol><li>Le listener valide que la session est active et que le joueur participe.</li><li>L'inventaire tombe une seule fois ; le joueur devient <code>RESPAWNING</code> si son cœur vit, sinon <code>ELIMINATED</code>.</li><li>En <code>RESPAWNING</code>, il observe sans interaction et reçoit un décompte localisé.</li><li>Une tâche enregistrée dans <code>TaskRegistry</code> vérifie à l'échéance la session, la phase et l'état du cœur.</li><li>Si le cœur vit encore, le joueur réapparaît au spawn sûr de sa base, sans kit ni ancien inventaire, puis redevient <code>ACTIVE</code>.</li><li>Si le cœur a été détruit, la tâche est annulée et le joueur devient spectateur définitif.</li><li>Toute mort définitive déclenche un nouveau calcul des survivants du royaume.</li></ol>
+<p>Une déconnexion suit exactement ce pipeline avec la cause <code>DISCONNECT</code>, sans second dépôt d'inventaire au retour. La reconnexion réattache la session existante ; elle ne crée jamais une nouvelle vie.</p>
+<h2 id="elimination-et-ruine-d-un-royaume">Élimination et ruine d'un royaume<a class="heading-anchor" href="#elimination-et-ruine-d-un-royaume" aria-label="Lien vers cette section">#</a></h2>
+<p>L'élimination est déclenchée une seule fois lorsque le nombre de survivants atteint zéro. Le royaume passe à <code>ELIMINATED</code>, ses joueurs deviennent spectateurs et <code>RuinService</code> :</p>
+<ol><li>fige la liste de blocs candidats dans le rayon configuré ;</li><li>exclut conteneurs, inventaires, cœur, blocs techniques et régions protégées ;</li><li>sélectionne de façon bornée la proportion configurée de blocs destructibles ;</li><li>joue les vagues visuelles et sonores sans dégâts de cœur ni duplication d'objets ;</li><li>détruit uniquement la sélection autorisée ;</li><li>marque la base <code>RUINED</code> et son territoire <code>NEUTRAL</code>.</li></ol>
+<p>Les coffres, tonneaux et autres conteneurs conservent leur contenu. Une ruine n'est jamais déclenchée par la seule destruction du cœur.</p>
+<h2 id="victoire-statistiques-et-nettoyage">Victoire, statistiques et nettoyage<a class="heading-anchor" href="#victoire-statistiques-et-nettoyage" aria-label="Lien vers cette section">#</a></h2>
+<p>Le résultat immuable contient la cause (<code>LAST_KINGDOM</code>, <code>TIME_LIMIT</code>, <code>DRAW</code> ou <code>ADMIN_ABORT</code>), les royaumes gagnants, les survivants et les statistiques individuelles. Pour un résultat compétitif :</p>
+<ol><li>la machine entre dans <code>ENDING</code> et bloque combat/interactions ;</li><li>le HUD annonce le ou les vainqueurs ;</li><li><code>StatisticsService</code> persiste le détail de partie puis les agrégats ;</li><li>Redis est invalidé ou actualisé uniquement après succès MySQL ;</li><li>après dix secondes par défaut, Velocity transfère les joueurs vers un lobby ;</li><li>toutes les tâches sont annulées, listeners rendus inactifs et ressources fermées ;</li><li>l'instance publie son état terminal et Velocity arrête le conteneur.</li></ol>
+<p><code>ADMIN_ABORT</code> n'incrémente ni partie jouée, ni victoire, ni défaite, ni nul. Un échec de persistance est journalisé avec l'identifiant de partie, n'immobilise pas le thread serveur et ne transforme pas silencieusement un résultat en succès. Une stratégie de reprise idempotente doit éviter tout double comptage à partir de l'identifiant unique de partie.</p>
+<h2 id="evenements-paper-personnalises">Événements Paper personnalisés<a class="heading-anchor" href="#evenements-paper-personnalises" aria-label="Lien vers cette section">#</a></h2>
+<div class="table-scroll"><table><thead><tr><th>Événement</th><th>Contrat</th></tr></thead><tbody><tr><td><code>FallenKingdomsPhaseChangeEvent</code></td><td>Informatif, ancien/nouvel état et session ; non annulable.</td></tr><tr><td><code>KingdomHeartDamageEvent</code></td><td>Annulable ; dégâts modifiables avant application.</td></tr><tr><td><code>KingdomHeartDestroyedEvent</code></td><td>Informatif ; cause <code>PLAYER</code> ou <code>FORCED_SUDDEN_DEATH</code>.</td></tr><tr><td><code>FallenKingdomsPlayerRespawnEvent</code></td><td>Informatif après validation, avant téléportation sûre.</td></tr><tr><td><code>KingdomEliminatedEvent</code></td><td>Informatif, royaume et dernier événement causal.</td></tr><tr><td><code>KingdomBaseRuinedEvent</code></td><td>Informatif après neutralisation complète.</td></tr><tr><td><code>FallenKingdomsGameEndEvent</code></td><td>Résultat immuable, plusieurs gagnants possibles, cause de fin.</td></tr></tbody></table></div>
+<p>Ils sont émis sur le thread Paper. Les observateurs ne doivent pas effectuer de SQL, Redis ou disque bloquant et ne doivent jamais muter le monde de manière asynchrone.</p>
+<h2 id="sauvegarde-et-restauration-de-carte">Sauvegarde et restauration de carte<a class="heading-anchor" href="#sauvegarde-et-restauration-de-carte" aria-label="Lien vers cette section">#</a></h2>
+<p>Une instance héberge une seule partie. Le monde propre est intégré à l'image Docker ou monté depuis le modèle d'instance, puis chargé avant que le serveur devienne joignable. La partie est terminale : après <code>ENDED</code>, les joueurs sont transférés et le conteneur est supprimé.</p>
+<p>La V1 ne tient donc ni journal de blocs ni copie en mémoire pour redémarrer une partie sur le même processus. La restauration consiste à créer une nouvelle instance depuis l'image immuable. Les régions <code>.mca</code> restent sous Git LFS ; les données joueur du monde, journaux et fichiers générés ne sont pas versionnés.</p>
+<p>Si l'arrêt Docker échoue, Velocity marque l'instance non joignable et le mécanisme d'exploitation existant reprend le nettoyage. Un redémarrage du plugin dans un monde déjà modifié ne tente pas de reprendre la partie : il refuse l'ouverture publique et demande le remplacement de l'instance.</p>
+<h2 id="interactions-avec-core-redis-et-velocity">Interactions avec Core, Redis et Velocity<a class="heading-anchor" href="#interactions-avec-core-redis-et-velocity" aria-label="Lien vers cette section">#</a></h2>
+<h3 id="core">Core<a class="heading-anchor" href="#core" aria-label="Lien vers cette section">#</a></h3>
+<p>Fallen Kingdoms réutilise les services génériques de Core pour profils joueur, langues, Adventure/MiniMessage, grades et permissions. Le choix de kit préféré est une préférence par jeu. Le domaine Fallen Kingdoms reste dans son module.</p>
+<p>Les statistiques deviennent un contrat réseau commun : parties jouées, victoires, nuls, éliminations, morts et objectifs/cœurs détruits sont agrégés globalement et détaillés par mini-jeu. SheepWars devra alimenter le même contrat lors de l'implémentation, avec tests de non-régression.</p>
+<h3 id="mysql-et-redis">MySQL et Redis<a class="heading-anchor" href="#mysql-et-redis" aria-label="Lien vers cette section">#</a></h3>
+<p>MySQL est la source durable. Une écriture atomique et idempotente persiste le résultat détaillé et met à jour les agrégats avec index sur identifiant de partie, UUID et jeu. Toutes les opérations sont hors thread Paper/Velocity.</p>
+<p>Redis ne remplace pas MySQL. Il transporte les snapshots d'instance, événements de fin/transfert et caches de statistiques. Chaque message comporte version de schéma, identifiant de session, identifiant et propriétaire d'instance ; le consommateur les valide. Les clés éphémères ont une durée de vie explicite. Un cache n'est actualisé ou invalidé qu'après commit SQL réussi.</p>
+<h3 id="velocity">Velocity<a class="heading-anchor" href="#velocity" aria-label="Lien vers cette section">#</a></h3>
+<p>Velocity route les joueurs, expose <code>/stats</code>, déclenche une lecture asynchrone contrôlée en cas de cache absent et affiche une erreur localisée en cas de délai dépassé. Aucun appel SQL/Redis ne bloque un event loop Velocity. La vue présente d'abord l'agrégat tous jeux, puis le détail Fallen Kingdoms, SheepWars et des futurs jeux.</p>
+<h2 id="cas-limites-obligatoires">Cas limites obligatoires<a class="heading-anchor" href="#cas-limites-obligatoires" aria-label="Lien vers cette section">#</a></h2>
+<ul><li>Départ d'un joueur pendant le compte à rebours : recalculer les préconditions et revenir à <code>WAITING</code> si nécessaire.</li><li>Vote gagnant pour une carte sans agencement compatible : l'exclure avant le vote ; refuser le départ si aucune carte ne convient.</li><li>Événements exactement à 15:00, 25:00, 75:00 ou 90:00 : une seule transition, dans cet ordre, sans tick ambigu.</li><li>Destruction d'un cœur pendant une réapparition : annuler la tâche et éliminer le joueur.</li><li>Plusieurs dégâts de cœur dans le même tick : une seule destruction et une seule publication.</li><li>Éliminations simultanées : calculer tous les effets du tick avant de figer le résultat ; le résultat peut être nul.</li><li>Déconnexion du dernier survivant : appliquer le décès et l'élimination immédiatement.</li><li>Reconnexion après destruction du cœur : spectateur, jamais de vie recréée.</li><li>Arrivée tardive : spectateur sans affectation compétitive ni kit.</li><li>Égalité à 90 minutes : tous les royaumes au maximum reçoivent victoire et nul.</li><li>Aucun survivant à 90 minutes : tous les royaumes à zéro sont ex æquo ; le résultat nul les inclut uniquement si leur élimination était simultanée au traitement terminal, sinon seuls les royaumes encore admissibles au début du tick terminal.</li><li>Bordure : atteindre exactement 50 × 50, même après retard scheduler, sans descendre sous cette taille.</li><li>TNT à cheval sur plusieurs régions : ne modifier que les blocs autorisés, sans dégâts directs au cœur.</li><li>Pistons, fluides, portails, perles et chorus : aucun franchissement interdit.</li><li>Ruine : préserver tous les conteneurs et ne toucher aucun bloc hors sélection.</li><li>Transition, fin ou nettoyage répétés : résultat stable et aucune tâche/listener restant actif.</li><li>Arrêt administrateur : aucun agrégat compétitif.</li><li>Changement de langue en partie : rafraîchir HUD, hotbar et inventaires mis en cache sans reconnexion.</li><li>Panne MySQL/Redis : jeu et thread serveur restent disponibles, cache jamais annoncé à tort comme durable, reprise sans doublon.</li></ul>
+<h2 id="criteres-d-acceptation-testables">Critères d'acceptation testables<a class="heading-anchor" href="#criteres-d-acceptation-testables" aria-label="Lien vers cette section">#</a></h2>
+<h3 id="tests-unitaires-sans-serveur">Tests unitaires sans serveur<a class="heading-anchor" href="#tests-unitaires-sans-serveur" aria-label="Lien vers cette section">#</a></h3>
+<ul><li>Pour chaque effectif de 0 à 31, le calcul des royaumes accepte uniquement 8 à 30, produit 2 à 5 royaumes et respecte les tailles 4 à 6 avec un écart maximal de un.</li><li>L'affectation est déterministe à graine identique, respecte les capacités et maximise les préférences après le critère d'équilibrage.</li><li>La machine refuse toute transition non déclarée et rend chaque transition répétée sans effet supplémentaire.</li><li>Les bornes 899/900, 1499/1500, 4499/4500 et 5399/5400 secondes déclenchent exactement les phases attendues.</li><li>Les règles de victoire couvrent un survivant unique, plusieurs équipes, égalité au maximum, zéro survivant simultané et arrêt administrateur.</li><li>Les validations YAML couvrent clés manquantes, types, ordre des durées, régions, positions, matériaux, layouts et capacités.</li><li>La décision de protection couvre chaque phase, territoire, type d'action, projectile, explosion et mécanisme indirect.</li><li>Les dégâts de cœur refusent allié, phase protégée et TNT, puis plafonnent les points de vie à zéro sans double destruction.</li><li>La destruction d'un cœur élimine les joueurs en réapparition et place uniquement les survivants en dernière vie.</li><li>La sélection de ruine est bornée, reproductible pour un test, préserve conteneurs/technique et reste dans la région autorisée.</li><li>Le calcul de statistiques attribue victoire et nul à chaque gagnant ex æquo et exclut <code>ADMIN_ABORT</code>.</li><li>Le résultat persistant est idempotent par identifiant de partie.</li></ul>
+<h3 id="tests-de-ressources-et-de-modules">Tests de ressources et de modules<a class="heading-anchor" href="#tests-de-ressources-et-de-modules" aria-label="Lien vers cette section">#</a></h3>
+<ul><li>Le <code>config.yml</code> embarqué se charge et toutes les cartes activées sont valides.</li><li>Les clés <code>fr</code>, <code>en</code>, <code>de</code> et <code>es</code> ont la même arborescence et les mêmes placeholders.</li><li>Les permissions déclarées correspondent aux commandes et à la documentation.</li><li>Fallen Kingdoms dépend des API partagées de Core/Docker API, jamais du métier SheepWars.</li><li>Les contrats de statistiques compilent et leurs consommateurs Core, SheepWars, Fallen Kingdoms et Velocity disposent de tests de compatibilité.</li></ul>
+<h3 id="scenarios-sur-serveur-paper-docker">Scénarios sur serveur Paper/Docker<a class="heading-anchor" href="#scenarios-sur-serveur-paper-docker" aria-label="Lien vers cette section">#</a></h3>
+<ul><li>Une partie à 8, 13, 19 et 25 joueurs crée respectivement 2, 3, 4 et 5 royaumes équilibrés.</li><li>Le JcJ, l'entrée des bases, les cœurs et la construction suivent le tableau de protections à chaque transition.</li><li>Une mort avec cœur vivant réapparaît nue après dix secondes ; sa destruction pendant le décompte rend le joueur spectateur.</li><li>Une base n'explose pas à la destruction du cœur, mais se ruine une seule fois à l'élimination du dernier survivant en conservant les coffres.</li><li>À 75 minutes, les cœurs restants disparaissent, les réapparitions cessent et la bordure commence sa réduction.</li><li>À 90 minutes, la bordure mesure 50 × 50 et le résultat correspond au compte des survivants, y compris une égalité multi-vainqueur.</li><li>Un spectateur tardif ne peut interagir, sortir des limites ni redevenir participant.</li><li><code>/lang</code> rafraîchit immédiatement les surfaces en cache.</li><li>Après résultat ou arrêt administrateur, tous les joueurs sont transférés, toutes les tâches sont annulées et l'instance devient arrêtable.</li><li>Les écritures de statistiques n'apparaissent sur Velocity qu'après succès MySQL ; une panne simulée ne bloque aucun thread serveur.</li></ul>
+<h2 id="decoupage-d-implementation-approuve">Découpage d'implémentation approuvé<a class="heading-anchor" href="#decoupage-d-implementation-approuve" aria-label="Lien vers cette section">#</a></h2>
+<p>Chaque étape doit compiler et disposer de tests ciblés avant la suivante :</p>
+<ol><li>créer le squelette Paper Fallen Kingdoms, ses ressources et sa configuration validée ;</li><li>implémenter les modèles Java purs, la machine à états, l'horloge et leurs tests ;</li><li>charger et valider cartes, agencements, royaumes, équilibrage et votes ;</li><li>gérer roster, préférences, kits, arrivée tardive et reconnexion ;</li><li>implémenter les protections territoriales par adaptateurs Paper minces ;</li><li>ajouter cœurs, profils de dégâts et événements Paper ;</li><li>ajouter morts, réapparitions, dernière vie, élimination et ruine contrôlée ;</li><li>ajouter mort subite, bordure, victoire, HUD et localisation ;</li><li>généraliser dans Core le contrat de statistiques, migrer SheepWars avec tests de non-régression, puis brancher MySQL/Redis/Velocity ;</li><li>ajouter commandes administratives, arrêt, transfert et nettoyage idempotent ;</li><li>intégrer template Docker, monde de test, routage et scripts de déploiement ;</li><li>exécuter les scénarios Paper/Docker, le réacteur complet, les validations documentaires et la revue de sécurité.</li></ol>
+<p>Toute modification de Core ou SheepWars doit être motivée par le contrat partagé de l'étape 9 et livrée avec ses tests de non-régression. Aucune étape ne doit masquer une compilation rouge par un stub ou une implémentation vide.</p></article>
+      <aside class="page-toc" aria-label="Sommaire de la page"><span class="toc-title">Sur cette page</span><a class="toc-level-2" href="#statut-du-document">Statut du document</a><a class="toc-level-2" href="#perimetre-de-la-premiere-version">Périmètre de la première version</a><a class="toc-level-2" href="#regles-confirmees">Règles confirmées</a><a class="toc-level-3" href="#effectif-et-royaumes">Effectif et royaumes</a><a class="toc-level-3" href="#chronologie">Chronologie</a><a class="toc-level-3" href="#combat">Combat</a><a class="toc-level-3" href="#c-urs-dernieres-vies-et-elimination">Cœurs, dernières vies et élimination</a><a class="toc-level-3" href="#mort-deconnexion-et-arrivee-tardive">Mort, déconnexion et arrivée tardive</a><a class="toc-level-3" href="#mort-subite-et-resultat-a-90-minutes">Mort subite et résultat à 90 minutes</a><a class="toc-level-2" href="#regles-configurables">Règles configurables</a><a class="toc-level-2" href="#hypotheses-temporaires">Hypothèses temporaires</a><a class="toc-level-2" href="#machine-a-etats">Machine à états</a><a class="toc-level-3" href="#etats">États</a><a class="toc-level-3" href="#transitions-et-evenements-declencheurs">Transitions et événements déclencheurs</a><a class="toc-level-2" href="#responsabilites-des-composants">Responsabilités des composants</a><a class="toc-level-2" href="#modele-de-domaine">Modèle de domaine</a><a class="toc-level-3" href="#partie">Partie</a><a class="toc-level-3" href="#royaumes-et-bases">Royaumes et bases</a><a class="toc-level-3" href="#joueurs">Joueurs</a><a class="toc-level-3" href="#c-urs">Cœurs</a><a class="toc-level-3" href="#kits">Kits</a><a class="toc-level-3" href="#cartes">Cartes</a><a class="toc-level-2" href="#configuration-yaml">Configuration YAML</a><a class="toc-level-2" href="#commandes-et-permissions-cibles">Commandes et permissions cibles</a><a class="toc-level-2" href="#protections-par-phase">Protections par phase</a><a class="toc-level-2" href="#mort-et-reapparition">Mort et réapparition</a><a class="toc-level-2" href="#elimination-et-ruine-d-un-royaume">Élimination et ruine d'un royaume</a><a class="toc-level-2" href="#victoire-statistiques-et-nettoyage">Victoire, statistiques et nettoyage</a><a class="toc-level-2" href="#evenements-paper-personnalises">Événements Paper personnalisés</a><a class="toc-level-2" href="#sauvegarde-et-restauration-de-carte">Sauvegarde et restauration de carte</a><a class="toc-level-2" href="#interactions-avec-core-redis-et-velocity">Interactions avec Core, Redis et Velocity</a><a class="toc-level-3" href="#core">Core</a><a class="toc-level-3" href="#mysql-et-redis">MySQL et Redis</a><a class="toc-level-3" href="#velocity">Velocity</a><a class="toc-level-2" href="#cas-limites-obligatoires">Cas limites obligatoires</a><a class="toc-level-2" href="#criteres-d-acceptation-testables">Critères d'acceptation testables</a><a class="toc-level-3" href="#tests-unitaires-sans-serveur">Tests unitaires sans serveur</a><a class="toc-level-3" href="#tests-de-ressources-et-de-modules">Tests de ressources et de modules</a><a class="toc-level-3" href="#scenarios-sur-serveur-paper-docker">Scénarios sur serveur Paper/Docker</a><a class="toc-level-2" href="#decoupage-d-implementation-approuve">Découpage d'implémentation approuvé</a></aside>
+    </div>
+    <footer><span>Tropicube</span><span>Documentation statique générée depuis les fichiers Markdown</span></footer>
+  </main>
+</body>
+</html>

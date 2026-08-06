@@ -15,6 +15,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 - Tests d'invariants pour le catalogue SheepWars et rapports de couverture JaCoCo.
 - Guides de développement, d'utilisation de Git/CI et consignes durables `AGENTS.md`.
 - Game design historique complet du mode Fallen Kingdoms d'Epicube, intégré au site documentaire.
+- Spécification technique de Fallen Kingdoms : périmètre V1, machine à états, configurations, protections, persistance réseau et critères d'acceptation.
 
 ### Modifié
 

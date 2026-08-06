@@ -13,6 +13,7 @@ const pages = [
   { source: "docs/DEPLOYMENT.md", output: "deployment.html", label: "Déploiement", icon: "⇧", description: "Installation et exploitation sous Windows et Linux" },
   { source: "docs/SHEEPWARS.md", output: "sheepwars.html", label: "SheepWars", icon: "♙", description: "Game design, règles, kits et moutons spéciaux" },
   { source: "docs/FALLEN_KINGDOMS_GAME_DESIGN.md", output: "fallen-kingdoms.html", label: "Fallen Kingdoms", icon: "♜", description: "Game design historique, royaumes, kits et sièges" },
+  { source: "docs/FALLEN_KINGDOMS_TECHNICAL_SPEC.md", output: "fallen-kingdoms-technical-spec.html", label: "FK technique", icon: "⌘", description: "Spécification V1, états, protections et contrats techniques" },
   { source: "docs/DEVELOPMENT.md", output: "development.html", label: "Développement", icon: "{ }", description: "Environnement, tests et contributions" },
   { source: "docs/GIT_CI.md", output: "git-ci.html", label: "Git & CI", icon: "⑂", description: "Branches, commits, CI, Dependabot et versions" },
   { source: "docs/CHANGELOG.md", output: "changelog.html", label: "Changements", icon: "≡", description: "Historique fonctionnel et technique du projet" }
@@ -33,6 +34,8 @@ const outputByMarkdown = new Map([
   ["SHEEPWARS.md", "sheepwars.html"],
   ["docs/FALLEN_KINGDOMS_GAME_DESIGN.md", "fallen-kingdoms.html"],
   ["FALLEN_KINGDOMS_GAME_DESIGN.md", "fallen-kingdoms.html"],
+  ["docs/FALLEN_KINGDOMS_TECHNICAL_SPEC.md", "fallen-kingdoms-technical-spec.html"],
+  ["FALLEN_KINGDOMS_TECHNICAL_SPEC.md", "fallen-kingdoms-technical-spec.html"],
   ["docs/DEVELOPMENT.md", "development.html"],
   ["DEVELOPMENT.md", "development.html"],
   ["docs/GIT_CI.md", "git-ci.html"],
