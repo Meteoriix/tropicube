@@ -166,7 +166,10 @@ Vérifier ensuite :
 - création d'au moins un lobby ;
 - connexion d'un compte Minecraft officiel sur `hôte:25565` ;
 - `/server`, transfert vers SheepWars et retour `/hub` ;
+- fin d'une partie SheepWars, retour de tous les joueurs au lobby puis disparition immédiate du conteneur avec `docker compose ps` ;
 - chargement des profils, soldes, langues et permissions.
+
+Velocity sonde les backends prêts toutes les 10 secondes. Pour valider la protection contre les serveurs fantômes, interrompre un backend de test sans le retirer de Redis, attendre au moins 60 secondes depuis sa dernière réponse, puis vérifier sa disparition de Docker, de `/tropi list` et des clés `instance:*`/index Redis. Un template avec `min-instances` peut être recréé automatiquement après cette purge.
 
 Les interfaces de développement sont optionnelles :
 
@@ -241,6 +244,8 @@ Après modification du secret, reconstruire les images Paper et recréer Velocit
 - contrôler l'image `tropicube-lobby:latest` et le template `lobby` ;
 - vérifier les plages de ports et `tropicube-net` ;
 - lancer `/tropi templates`, `/tropi list`, puis `/tropi start lobby` si nécessaire.
+
+Une partie terminée n'est jamais détruite tant que ses joueurs ne peuvent pas rejoindre un lobby. Velocity réessaie le transfert chaque seconde ; restaurer au moins un lobby permet alors de terminer automatiquement la destruction en attente.
 
 ### Redis ou MySQL inaccessible
 

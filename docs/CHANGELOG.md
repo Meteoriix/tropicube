@@ -22,9 +22,11 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 - Site documentaire enrichi avec les pages Développement, Git/CI et Historique des changements.
 - README complété avec le wrapper Maven et les contrôles automatiques disponibles.
 - Consignes de création de mini-jeux renforcées : game design Markdown obligatoire, analyse comparative des jeux existants, machine à états, configuration, sécurité Paper et validation incrémentale.
+- Fin des parties SheepWars : transfert confirmé de tous les joueurs au lobby, puis destruction immédiate du conteneur et purge de son état Redis.
 
 ### Corrigé
 
 - URL de téléchargement du Maven Wrapper épinglée sur Maven 3.9.11.
 - Déconnexion des clients à la mort d'un joueur SheepWars causée par un conflit entre les équipes de scoreboard et les équipes temporaires de surlignage.
 - Démarrage automatique des parties SheepWars classiques dès que deux joueurs sont présents, tout en conservant un lancement manuel par défaut pour les parties personnalisées.
+- Suppression des serveurs fantômes : une instance prête sans réponse depuis 60 secondes est retirée de Docker, Velocity et de toutes ses références Redis connues.

@@ -32,10 +32,11 @@ Deux réseaux Docker séparent les flux :
 3. `DockerManager` réserve les ports, crée le conteneur, injecte son environnement, ses labels et ses volumes, puis le démarre.
 4. `TropiServerManager` attend que le backend soit joignable avant de l'enregistrer auprès de Velocity.
 5. Les comptes de joueurs et l'état de l'instance sont actualisés dans Redis.
-6. Une instance vide et éligible à `auto-stop` est arrêtée après `auto-stop-delay`, sans descendre sous `min-instances`.
-7. Lors d'un arrêt, les joueurs sont transférés vers le meilleur lobby avant la suppression du conteneur et de son entrée Velocity.
+6. À la fin d'une partie, le backend demande sa clôture à Velocity. Le proxy réessaie les transferts tant que tous les joueurs ne sont pas revenus au lobby, puis tue et supprime immédiatement le conteneur.
+7. Une instance vide et éligible à `auto-stop` est arrêtée après `auto-stop-delay`, sans descendre sous `min-instances`.
+8. Velocity sonde toutes les 10 secondes les backends prêts. Après 60 secondes sans réponse, il force la suppression du conteneur, de son entrée Velocity et de toutes ses références Redis connues.
 
-Les états possibles d'une instance sont `STARTING`, `RUNNING`, `STOPPING`, `STOPPED` et `ERROR`. Une instance n'est joignable que si son état et sa capacité le permettent.
+Le cycle nominal utilise `CREATING`, `STARTING`, `GAME_WAITING`, `GAME_STARTING`, `GAME_PLAYING`, `GAME_ENDING`, `STOPPING` et `STOPPED`, avec `ERROR` comme sortie d'échec. Une instance n'est joignable que si son état et sa capacité le permettent.
 
 ## Responsabilités des modules
 
@@ -120,7 +121,7 @@ Ce module est pour l'instant un squelette Maven sans classe, ressource, dépenda
 | `instances:active` | Velocity | Lobby/Velocity | Ensemble des identifiants actifs |
 | `instances:type:<type>` | Velocity | Lobby/Velocity | Index par type |
 | canal `servers` | Velocity | Intégrations | `SERVER_STARTED` / `SERVER_STOPPED` |
-| canal `commands` | Lobby/SheepWars/Velocity | Velocity | Commandes ciblées, notamment `PROXY:CONNECT:<uuid>:<serveur>` |
+| canal `commands` | Lobby/SheepWars/Velocity | Velocity | Commandes ciblées, notamment `PROXY:CONNECT:<uuid>:<serveur>` et `PROXY:FINISH_GAME:<instanceId>` |
 | canal `players` | Velocity | Intégrations | Changements de serveur d'un joueur |
 | `transfer:<uuid>` | Velocity | Core/Lobby | Marqueur court évitant de traiter un transfert comme une première arrivée |
 | `host:<uuid>` | Velocity | Lobby/SheepWars | Partie personnalisée administrée par le joueur |
@@ -130,6 +131,8 @@ Ce module est pour l'instant un squelette Maven sans classe, ressource, dépenda
 | langue/grade/cache joueur | Core | Core/Velocity | Accélération et synchronisation du profil |
 
 Les messages de transfert ne doivent jamais appeler Bukkit depuis le thread d'abonnement Redis. Chaque plugin planifie les opérations d'entité ou d'inventaire sur le thread Paper.
+
+La purge d'une instance supprime atomiquement son document et ses index principaux, puis balaie les références secondaires connues (`host`, serveur courant, reconnexion, abandon, revanche et post-partie). Chaque référence est relue avant suppression afin de ne pas effacer une valeur réaffectée concurremment à une autre instance.
 
 Un changement de langue publie `LANG_CHANGED:<uuid>:<langue>` sur le canal joueurs. Le lobby reconstruit alors, sur le thread Paper, la hotbar, le scoreboard personnel et la tablist. Le scoreboard du lobby est donc entièrement localisé et reste cohérent que la langue soit changée depuis le menu ou avec `/lang`.
 

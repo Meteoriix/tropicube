@@ -55,6 +55,14 @@ Fichier de déploiement : `dockerfiles/configs/TropicubeVelocity/config.yml`.
 
 Les plages doivent être valides, sans chevauchement et assez grandes pour le nombre maximal d'instances. Dans l'architecture Docker actuelle, les connexions proxy → backend utilisent le port interne `25565`; les ports hôte restent utiles pour l'administration et RCON.
 
+### Surveillance des backends
+
+- `health-check.interval-seconds` : fréquence des sondes TCP envoyées par Velocity aux instances prêtes, `10` par défaut ;
+- `health-check.stale-timeout-seconds` : durée maximale depuis la dernière réponse avant destruction complète, `60` secondes par défaut ;
+- `health-check.connect-timeout-millis` : délai maximal d'une tentative de connexion, `2000` ms par défaut.
+
+Ces trois valeurs doivent être strictement positives et le seuil d'expiration doit être supérieur ou égal à l'intervalle. Les instances `STARTING` ne sont pas concernées : leur initialisation dispose séparément de 120 secondes avant nettoyage. Une instance prête expirée est retirée de Docker, Velocity et Redis ; le maintien de `min-instances` peut ensuite recréer un lobby ou un serveur classique si nécessaire.
+
 ### Templates
 
 Chaque entrée de `templates` décrit :

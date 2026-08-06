@@ -3,7 +3,9 @@ package fr.tropicube.docker.client;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RedisManagerTest {
 
@@ -34,5 +36,20 @@ class RedisManagerTest {
         } finally {
             manager.close();
         }
+    }
+
+    @Test
+    void identifiesEveryKnownInstanceReferenceShape() {
+        String id = "instance-id";
+        String name = "Sheepwars-deadbeef";
+
+        assertTrue(RedisManager.isInstanceReference("tropicube:host:player", id, id, name));
+        assertTrue(RedisManager.isInstanceReference("tropicube:player:server:player", id, id, name));
+        assertTrue(RedisManager.isInstanceReference("tropicube:sw:rejoin:player", id, id, name));
+        assertTrue(RedisManager.isInstanceReference("tropicube:sw:left-game:player", id, id, name));
+        assertTrue(RedisManager.isInstanceReference("tropicube:sw:next-game:source", name, id, name));
+        assertTrue(RedisManager.isInstanceReference("tropicube:post-game:player", name + "|SHEEPWARS", id, name));
+        assertFalse(RedisManager.isInstanceReference("tropicube:host:other", "other-id", id, name));
+        assertFalse(RedisManager.isInstanceReference("tropicube:post-game:other", "|SHEEPWARS", id, name));
     }
 }

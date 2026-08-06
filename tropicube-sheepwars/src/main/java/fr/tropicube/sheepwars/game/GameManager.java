@@ -676,15 +676,15 @@ public class GameManager {
             p.sendMessage(prefix.append(LangHelper.component(p.getUniqueId(), "sw.replay-message")));
         }
 
-        // Send everyone to lobby (staggered to avoid Velocity congestion)
-        int delay = 0;
-        for (UUID uuid : new HashSet<>(players.keySet())) {
-            final int d = delay;
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                Player p = Bukkit.getPlayer(uuid);
-                if (p != null) sendToLobby(p);
-            }, d);
-            delay += 5;
+        if (instanceId != null && !instanceId.isBlank()) {
+            // Velocity attend la fin des transferts, puis tue le conteneur et purge Redis.
+            plugin.getRedisManager().publishCommand("PROXY", "FINISH_GAME:" + instanceId);
+        } else {
+            // Mode local sans orchestration : conserve uniquement le retour au lobby.
+            for (UUID uuid : new HashSet<>(players.keySet())) {
+                Player player = Bukkit.getPlayer(uuid);
+                if (player != null) sendToLobby(player);
+            }
         }
 
         players.clear();

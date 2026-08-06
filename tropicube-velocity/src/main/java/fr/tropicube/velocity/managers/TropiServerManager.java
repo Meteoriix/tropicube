@@ -35,8 +35,9 @@ public class TropiServerManager {
     // Instances actives : instanceId -> ServerInstance
     private final Map<String, ServerInstance> activeInstances = new ConcurrentHashMap<>();
     private final Map<String, AtomicInteger> pendingCreations = new ConcurrentHashMap<>();
-    private final Map<String, AtomicInteger> healthFailures = new ConcurrentHashMap<>();
+    private final Map<String, Long> lastHealthyAt = new ConcurrentHashMap<>();
     private final Map<String, Long> emptySince = new ConcurrentHashMap<>();
+    private final Map<String, CompletableFuture<Boolean>> finishingGames = new ConcurrentHashMap<>();
     // Scheduled executor pour les tâches périodiques
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
 
@@ -187,6 +188,16 @@ public class TropiServerManager {
                 return;
             }
 
+            // Format: "PROXY:FINISH_GAME:<instanceId>"
+            if (message.startsWith("PROXY:FINISH_GAME:")) {
+                String instanceId = message.substring("PROXY:FINISH_GAME:".length());
+                finishGameServer(instanceId).exceptionally(error -> {
+                    logger.error("[Tropicube] Échec de destruction après fin de partie : {}", instanceId, error);
+                    return false;
+                });
+                return;
+            }
+
             // Format: "PROXY:STOP_HOST:<uuid>"
             if (message.startsWith("PROXY:STOP_HOST:")) {
                 String uuidStr = message.substring("PROXY:STOP_HOST:".length());
@@ -284,7 +295,7 @@ public class TropiServerManager {
                 try {
                     if (instance.getContainerId() == null
                             || !dockerManager.isContainerRunning(instance.getContainerId())) {
-                        redisManager.removeInstance(instance.getInstanceId(), instance.getServerType());
+                        purgeRedisInstance(instance);
                         logger.warn("[Tropicube] Instance Redis sans conteneur actif supprimée : {}",
                                 instance.getServerName());
                         continue;
@@ -297,7 +308,7 @@ public class TropiServerManager {
                     registerServerToVelocity(instance);
                     logger.info("[Tropicube] Instance restaurée : {}", instance.getServerName());
                 } catch (RuntimeException e) {
-                    redisManager.removeInstance(instance.getInstanceId(), instance.getServerType());
+                    purgeRedisInstance(instance);
                     logger.error("[Tropicube] Instance restaurée invalide, elle sera nettoyée : {}",
                             instance.getServerName(), e);
                 }
@@ -373,7 +384,7 @@ public class TropiServerManager {
             } catch (Exception e) {
                 if (instance != null) {
                     activeInstances.remove(instanceId, instance);
-                    redisManager.removeInstance(instanceId, template.getServerType());
+                    redisManager.purgeInstance(instanceId, template.getServerType(), instance.getServerName());
                     try {
                         dockerManager.removeServer(instance);
                     } catch (Exception cleanupError) {
@@ -431,8 +442,8 @@ public class TropiServerManager {
                 dockerManager.removeServer(instance);
                 activeInstances.remove(instanceId);
                 emptySince.remove(instanceId);
-                healthFailures.remove(instanceId);
-                redisManager.removeInstance(instanceId, instance.getServerType());
+                lastHealthyAt.remove(instanceId);
+                purgeRedisInstance(instance);
                 redisManager.publishServerEvent("SERVER_STOPPED", instanceId + ":" + instance.getServerName());
                 logger.info("[Tropicube] Serveur arrêté : {}", instance.getServerName());
             }
@@ -456,8 +467,8 @@ public class TropiServerManager {
             dockerManager.removeServer(instance);
             activeInstances.remove(instanceId);
             emptySince.remove(instanceId);
-            healthFailures.remove(instanceId);
-            redisManager.removeInstance(instanceId, instance.getServerType());
+            lastHealthyAt.remove(instanceId);
+            purgeRedisInstance(instance);
             redisManager.publishServerEvent("SERVER_STOPPED", instanceId + ":" + instance.getServerName());
             logger.info("[Tropicube] Serveur tué (kill) : {}", instance.getServerName());
             return killed;
@@ -476,8 +487,61 @@ public class TropiServerManager {
         }
     }
 
-    private CompletableFuture<Void> transferPlayers(ServerInstance instance, long timeoutSeconds) {
-        CompletableFuture<?>[] transfers = proxy.getAllPlayers().stream()
+    /** Transfère réellement tous les joueurs puis détruit immédiatement une instance de mini-jeu terminée. */
+    public CompletableFuture<Boolean> finishGameServer(String instanceId) {
+        ServerInstance instance = activeInstances.get(instanceId);
+        if (instance == null || "LOBBY".equalsIgnoreCase(instance.getServerType())) {
+            return CompletableFuture.completedFuture(false);
+        }
+        synchronized (instance) {
+            if (instance.getStatus() == ServerInstance.Status.STOPPING
+                    || instance.getStatus() == ServerInstance.Status.STOPPED) {
+                return CompletableFuture.completedFuture(false);
+            }
+            instance.setStatus(ServerInstance.Status.GAME_ENDING);
+            redisManager.saveInstance(instance);
+        }
+
+        CompletableFuture<Boolean> created = new CompletableFuture<>();
+        CompletableFuture<Boolean> concurrent = finishingGames.putIfAbsent(instanceId, created);
+        if (concurrent != null) return concurrent;
+        created.whenComplete((_, _) -> finishingGames.remove(instanceId, created));
+        attemptFinishedGameTransfer(instance, created);
+        return created;
+    }
+
+    private void attemptFinishedGameTransfer(ServerInstance instance, CompletableFuture<Boolean> completion) {
+        if (activeInstances.get(instance.getInstanceId()) != instance) {
+            completion.complete(false);
+            return;
+        }
+        transferPlayers(instance, 3).whenCompleteAsync((transferred, error) -> {
+            if (error == null && Boolean.TRUE.equals(transferred) && !hasConnectedPlayers(instance)) {
+                killServer(instance.getInstanceId()).whenComplete((killed, killError) -> {
+                    if (killError != null) completion.completeExceptionally(killError);
+                    else completion.complete(killed);
+                });
+            } else {
+                logger.warn("[Tropicube] Fin de partie en attente : tous les joueurs de {} ne sont pas encore au lobby",
+                        instance.getServerName());
+                try {
+                    scheduler.schedule(
+                            () -> attemptFinishedGameTransfer(instance, completion), 1, TimeUnit.SECONDS);
+                } catch (RejectedExecutionException schedulingError) {
+                    completion.completeExceptionally(schedulingError);
+                }
+            }
+        }, scheduler);
+    }
+
+    private boolean hasConnectedPlayers(ServerInstance instance) {
+        return proxy.getServer(instance.getServerName())
+                .map(server -> !server.getPlayersConnected().isEmpty())
+                .orElse(false);
+    }
+
+    private CompletableFuture<Boolean> transferPlayers(ServerInstance instance, long timeoutSeconds) {
+        List<CompletableFuture<Boolean>> transfers = proxy.getAllPlayers().stream()
                 .filter(player -> player.getCurrentServer()
                         .map(ServerConnection::getServer)
                         .map(server -> server.getServerInfo().getName().equals(instance.getServerName()))
@@ -487,13 +551,14 @@ public class TropiServerManager {
                             player.getUniqueId(), "proxy.server-shutdown"));
                     return transferToLobby(player);
                 })
-                .toArray(CompletableFuture[]::new);
-        return CompletableFuture.allOf(transfers)
+                .toList();
+        return CompletableFuture.allOf(transfers.toArray(CompletableFuture[]::new))
                 .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
+                .thenApply(_ -> transfers.stream().allMatch(CompletableFuture::join))
                 .exceptionally(error -> {
                     logger.warn("[Tropicube] Délai dépassé pendant le transfert des joueurs de {}",
                             instance.getServerName(), error);
-                    return null;
+                    return false;
                 });
     }
 
@@ -528,7 +593,7 @@ public class TropiServerManager {
                         try {
                             dockerManager.stopServer(instance);
                             dockerManager.removeServer(instance);
-                            redisManager.removeInstance(instance.getInstanceId(), instance.getServerType());
+                            purgeRedisInstance(instance);
                         } catch (Exception e) {
                             logger.warn("[Tropicube] Erreur arrêt {}", instance.getServerName(), e);
                         }
@@ -546,7 +611,7 @@ public class TropiServerManager {
 
         activeInstances.clear();
         emptySince.clear();
-        healthFailures.clear();
+        lastHealthyAt.clear();
         pendingCreations.clear();
         // Sweep final : supprime tout container dynamique encore vivant (démarrage en cours, crash, etc.).
         dockerManager.removeAllDynamicContainers();
@@ -598,13 +663,14 @@ public class TropiServerManager {
                             dockerManager.removeServer(instance);
                         } finally {
                             activeInstances.remove(instance.getInstanceId(), instance);
-                            redisManager.removeInstance(instance.getInstanceId(), instance.getServerType());
+                            purgeRedisInstance(instance);
                         }
                         throw new CompletionException(ex);
                     }
                     instance.setStatus(ServerInstance.Status.GAME_WAITING);
                     instance.setStartedAt(System.currentTimeMillis() / 1000);
                     emptySince.put(instance.getInstanceId(), instance.getStartedAt());
+                    lastHealthyAt.put(instance.getInstanceId(), instance.getStartedAt());
                     redisManager.saveInstance(instance);
                     return null;
                 }, scheduler);
@@ -650,36 +716,51 @@ public class TropiServerManager {
     }
 
     private void startHealthChecker() {
+        long intervalSeconds = requirePositiveConfig("health-check.interval-seconds", 10);
+        long staleTimeoutSeconds = requirePositiveConfig("health-check.stale-timeout-seconds", 60);
+        int connectTimeoutMillis = Math.toIntExact(requirePositiveConfig("health-check.connect-timeout-millis", 2000));
+        if (staleTimeoutSeconds < intervalSeconds) {
+            throw new IllegalArgumentException("health-check.stale-timeout-seconds doit être supérieur ou égal à l'intervalle");
+        }
         scheduler.scheduleAtFixedRate(() -> activeInstances.values().forEach(instance -> {
+            if (!HealthCheckPolicy.isMonitored(instance.getStatus())) return;
+            long now = System.currentTimeMillis() / 1000;
             try (java.net.Socket socket = new java.net.Socket()) {
                 socket.connect(new InetSocketAddress(
                         instance.getHost() != null ? instance.getHost() : "127.0.0.1",
-                        MINECRAFT_INTERNAL_PORT), 2000);
-                healthFailures.remove(instance.getInstanceId());
-                if (instance.getStatus() == ServerInstance.Status.STARTING) {
-                    instance.setStatus(ServerInstance.Status.GAME_WAITING);
-                    redisManager.saveInstance(instance);
-                }
+                        MINECRAFT_INTERNAL_PORT), connectTimeoutMillis);
+                lastHealthyAt.put(instance.getInstanceId(), now);
             } catch (Exception e) {
-                if (instance.getStatus() != ServerInstance.Status.STOPPING
-                        && instance.getStatus() != ServerInstance.Status.STOPPED
-                        && instance.getStatus() != ServerInstance.Status.ERROR) {
-                    int failures = healthFailures
-                            .computeIfAbsent(instance.getInstanceId(), _ -> new AtomicInteger())
-                            .incrementAndGet();
-                    logger.warn("[Tropicube] Health check échoué ({}/3) : {}", failures, instance.getServerName());
-                    if (failures >= 3) {
-                        instance.setStatus(ServerInstance.Status.ERROR);
-                        redisManager.saveInstance(instance);
-                        killServer(instance.getInstanceId()).exceptionally(error -> {
-                            logger.error("[Tropicube] Nettoyage impossible après échec de santé : {}",
-                                    instance.getServerName(), error);
-                            return false;
-                        });
-                    }
+                long lastHealthy = lastHealthyAt.computeIfAbsent(instance.getInstanceId(), _ -> now);
+                long silentSeconds = Math.max(0, now - lastHealthy);
+                logger.warn("[Tropicube] Health check échoué depuis {} s : {}",
+                        silentSeconds, instance.getServerName());
+                if (HealthCheckPolicy.isStale(lastHealthy, now, staleTimeoutSeconds)) {
+                    instance.setStatus(ServerInstance.Status.ERROR);
+                    redisManager.saveInstance(instance);
+                    killServer(instance.getInstanceId()).exceptionally(error -> {
+                        logger.error("[Tropicube] Purge impossible après {} s sans healthcheck : {}",
+                                staleTimeoutSeconds, instance.getServerName(), error);
+                        return false;
+                    });
                 }
             }
-        }), 60, 60, TimeUnit.SECONDS);
+        }), intervalSeconds, intervalSeconds, TimeUnit.SECONDS);
+    }
+
+    private long requirePositiveConfig(String path, long fallback) {
+        long value = config.node((Object[]) path.split("\\.")).getLong(fallback);
+        if (value <= 0) throw new IllegalArgumentException(path + " doit être strictement positif");
+        return value;
+    }
+
+    private void purgeRedisInstance(ServerInstance instance) {
+        int removedReferences = redisManager.purgeInstance(
+                instance.getInstanceId(), instance.getServerType(), instance.getServerName());
+        if (removedReferences > 0) {
+            logger.info("[Tropicube] {} référence(s) Redis secondaire(s) purgée(s) pour {}",
+                    removedReferences, instance.getServerName());
+        }
     }
 
     /**

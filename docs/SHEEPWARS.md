@@ -110,4 +110,6 @@ La configuration source se trouve dans `tropicube-sheepwars/src/main/resources/c
 
 En déploiement Docker, `INSTANCE_ID`, `SERVER_NAME`, `IS_HOST` et `HOST_UUID` relient le plugin à Velocity. L'état de l'instance passe successivement par attente, démarrage, jeu, fin et arrêt. Redis porte les marqueurs de partie commencée, de reconnexion, de revanche et de propriété du serveur.
 
+Après l'écran de fin, SheepWars publie `PROXY:FINISH_GAME:<instanceId>`. Velocity transfère tous les joueurs vers le meilleur lobby disponible, réessaie chaque seconde en cas d'échec, puis tue et supprime immédiatement le conteneur ainsi que son état Redis. La disparition du backend n'est donc plus différée par l'auto-stop générique.
+
 Pour l'installation complète, la création des images et la configuration des cartes, consulter [Déploiement](DEPLOYMENT.md) et [Configuration](CONFIGURATION.md).

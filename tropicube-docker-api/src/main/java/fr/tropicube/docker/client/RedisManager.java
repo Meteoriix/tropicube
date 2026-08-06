@@ -6,6 +6,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.RedisClient;
+import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.SetParams;
 
 import java.util.*;
@@ -55,7 +56,17 @@ public class RedisManager {
             redis.call('DEL', KEYS[1])
             redis.call('SREM', KEYS[2], ARGV[1])
             redis.call('SREM', KEYS[3], ARGV[1])
+            redis.call('DEL', KEYS[4], KEYS[5])
             return 1
+            """;
+    private static final List<String> INSTANCE_REFERENCE_PATTERNS = List.of(
+            "host:*", "player:server:*", "sw:rejoin:*", "sw:left-game:*",
+            "sw:next-game:*", "post-game:*");
+    private static final String DELETE_IF_VALUE_MATCHES_SCRIPT = """
+            if redis.call('GET', KEYS[1]) == ARGV[1] then
+                return redis.call('DEL', KEYS[1])
+            end
+            return 0
             """;
     private static final String RESERVE_UNLESS_BLOCKED_SCRIPT = """
             if redis.call('EXISTS', KEYS[1]) == 1 or redis.call('EXISTS', KEYS[2]) == 1 then
@@ -203,8 +214,53 @@ public class RedisManager {
         RedisClient redis = redis();
         redis.eval(REMOVE_INSTANCE_SCRIPT,
                 List.of(KEY_PREFIX + "instance:" + instanceId, KEY_PREFIX + "instances:active",
-                        KEY_PREFIX + "instances:type:" + serverType),
+                        KEY_PREFIX + "instances:type:" + serverType,
+                        KEY_PREFIX + "sw:game-started:" + instanceId,
+                        KEY_PREFIX + "sw:next-game:" + instanceId),
                 List.of(instanceId));
+    }
+
+    /**
+     * Purge l'instance et toutes les références Redis connues qui pourraient la rendre visible après sa suppression.
+     * <p>
+     * Le retrait du registre principal et des marqueurs directs est atomique. Les index inverses historiques
+     * n'existant pas, les références joueur/hôte sont parcourues avec {@code SCAN} puis supprimées de façon
+     * idempotente ; une nouvelle écriture concurrente reste donc visible au lieu d'être supprimée par erreur.
+     *
+     * @return nombre de références secondaires supprimées
+     */
+    public int purgeInstance(String instanceId, String serverType, String serverName) {
+        requireText(instanceId, "instanceId");
+        requireText(serverType, "serverType");
+        requireText(serverName, "serverName");
+        removeInstance(instanceId, serverType);
+
+        RedisClient redis = redis();
+        int removedReferences = 0;
+        for (String pattern : INSTANCE_REFERENCE_PATTERNS) {
+            String cursor = "0";
+            ScanParams params = new ScanParams().match(KEY_PREFIX + pattern).count(100);
+            do {
+                var result = redis.scan(cursor, params);
+                cursor = result.getCursor();
+                for (String key : result.getResult()) {
+                    String value = redis.get(key);
+                    if (isInstanceReference(key, value, instanceId, serverName)) {
+                        Object removed = redis.eval(
+                                DELETE_IF_VALUE_MATCHES_SCRIPT, List.of(key), List.of(value));
+                        removedReferences += ((Number) removed).intValue();
+                    }
+                }
+            } while (!"0".equals(cursor));
+        }
+        return removedReferences;
+    }
+
+    static boolean isInstanceReference(String key, String value, String instanceId, String serverName) {
+        if (key == null || value == null) return false;
+        if (key.startsWith(KEY_PREFIX + "sw:next-game:")) return value.equals(serverName);
+        if (key.startsWith(KEY_PREFIX + "post-game:")) return value.startsWith(serverName + "|");
+        return value.equals(instanceId);
     }
 
     /**

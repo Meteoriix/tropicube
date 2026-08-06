@@ -15,6 +15,12 @@ language:
 shutdown:
   stop-dynamic-servers: false
 
+health-check:
+  # Une instance prête est sondée fréquemment et purgée après une minute sans succès.
+  interval-seconds: 10
+  stale-timeout-seconds: 60
+  connect-timeout-millis: 2000
+
 docker:
   host: "unix:///var/run/docker.sock"
   network: "tropicube-net"
