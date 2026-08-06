@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Game design historique, royaumes, kits et sièges">
+  <meta name="theme-color" content="#071a18">
+  <title>Fallen Kingdoms d’Epicube — description complète du mode de jeu · Tropicube</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#contenu">Aller au contenu</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span>Tropicube</a><span>Documentation</span></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong>Tropicube</strong><small>Documentation réseau</small></span></a>
+    <nav aria-label="Documentation principale"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Accueil</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commandes</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Déploiement</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link active" href="fallen-kingdoms.html"><span class="nav-icon">♜</span><span>Fallen Kingdoms</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Développement</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changements</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="contenu" class="main">
+    <section class="hero"><div class="eyebrow">Documentation officielle</div><h1>Fallen Kingdoms d’Epicube — description complète du mode de jeu</h1><p>Game design historique, royaumes, kits et sièges</p></section>
+    <div class="content-grid">
+      <article class="documentation"><p>Le Fallen Kingdoms d’Epicube était un jeu Minecraft de stratégie, de survie et de PvP opposant plusieurs royaumes. Chaque équipe devait exploiter les ressources de la carte, s’équiper, défendre sa base puis attaquer les royaumes adverses afin de détruire leur cœur.</p>
+<p>Il s’agissait d’une adaptation fortement automatisée du Fallen Kingdoms créé et popularisé dans la communauté Minecraft francophone par Zelvac. Epicube avait transformé le concept original — normalement organisé manuellement sur plusieurs heures — en un véritable mini-jeu public : équipes prédéfinies, cartes spécialisées, chronomètre, kits, protections de zones, objectifs automatiques, cœur à défendre et élimination gérée par le serveur.</p>
+<blockquote>Epicube ayant fermé et ses anciennes pages officielles n’étant plus disponibles, certaines caractéristiques ont évolué au fil des années. La description ci-dessous reconstitue principalement la version historique des années 2014–2016, à partir de vidéos d’époque, de témoignages et de reproductions techniques du jeu.</blockquote>
+<h2 id="1-concept-general">1. Concept général<a class="heading-anchor" href="#1-concept-general" aria-label="Lien vers cette section">#</a></h2>
+<p>Chaque équipe représente un royaume et possède :</p>
+<ul><li>une couleur ;</li><li>une base située dans une zone protégée ;</li><li>un point d’apparition ;</li><li>un cœur matérialisé par un cristal de l’End ;</li><li>des ressources naturelles à proximité ;</li><li>des joueurs ayant chacun choisi un kit ;</li><li>un nombre limité de membres, généralement jusqu’à six joueurs.</li></ul>
+<p>Les couleurs attestées sont :</p>
+<ul><li>Bleu ;</li><li>Rouge ;</li><li>Vert ;</li><li>Jaune ;</li><li>Orange.</li></ul>
+<p>Une partie pouvait donc réunir jusqu’à cinq royaumes, potentiellement une trentaine de joueurs lorsque toutes les équipes étaient complètes.</p>
+<p>La partie repose sur quatre activités principales :</p>
+<ol><li>récolter des ressources ;</li><li>construire et fortifier son royaume ;</li><li>combattre les joueurs ennemis ;</li><li>attaquer et détruire les cœurs adverses.</li></ol>
+<p>La dernière équipe dont le cœur demeure intact remporte la partie.</p>
+<hr>
+<h2 id="2-difference-avec-le-fallen-kingdoms-originel">2. Différence avec le Fallen Kingdoms originel<a class="heading-anchor" href="#2-difference-avec-le-fallen-kingdoms-originel" aria-label="Lien vers cette section">#</a></h2>
+<p>Dans les règles originales, chaque équipe devait construire un royaume dans une zone délimitée, remplir plusieurs objectifs architecturaux ou matériels, puis pénétrer dans une salle des coffres ennemie et l’occuper pendant un certain temps.</p>
+<p>La version Epicube simplifiait et automatisait cette condition de victoire :</p>
+<div class="table-scroll"><table><thead><tr><th>Fallen Kingdoms traditionnel</th><th>Adaptation Epicube</th></tr></thead><tbody><tr><td>Salle des coffres construite par les joueurs</td><td>Cœur placé à l’avance dans chaque base</td></tr><tr><td>Objectifs à construire avant l’assaut</td><td>Progression principalement régie par le temps</td></tr><tr><td>Occupation de la salle adverse</td><td>Destruction du cœur adverse</td></tr><tr><td>Arbitrage manuel des règles</td><td>Restrictions appliquées par le serveur</td></tr><tr><td>Parties privées très longues</td><td>Mini-jeu public et plus rythmé</td></tr><tr><td>Équipes constituées à l’avance</td><td>Sélecteur automatique d’équipe</td></tr><tr><td>Peu ou pas de classes</td><td>Système de kits spécialisés</td></tr></tbody></table></div>
+<p>Le résultat conservait l’esprit du mode original — collecte, construction, diplomatie, guerre et siège — tout en proposant une partie plus accessible et moins dépendante d’un arbitre.</p>
+<hr>
+<h1 id="3-le-lobby-et-la-preparation-de-la-partie">3. Le lobby et la préparation de la partie<a class="heading-anchor" href="#3-le-lobby-et-la-preparation-de-la-partie" aria-label="Lien vers cette section">#</a></h1>
+<p>Avant le lancement, les joueurs apparaissaient dans un lobby d’attente. Ils pouvaient y sélectionner leur équipe et leur kit grâce à des objets interactifs placés dans leur inventaire.</p>
+<h2 id="selecteur-d-equipe">Sélecteur d’équipe<a class="heading-anchor" href="#selecteur-d-equipe" aria-label="Lien vers cette section">#</a></h2>
+<p>Un objet, vraisemblablement une bannière, ouvrait l’interface de sélection des équipes. La couleur de la bannière pouvait refléter l’équipe choisie.</p>
+<p>L’interface présentait les cinq royaumes disponibles ainsi que leur nombre actuel de joueurs. Un équilibrage pouvait empêcher ou limiter l’arrivée de trop nombreux joueurs dans la même équipe.</p>
+<h2 id="selecteur-de-kit">Sélecteur de kit<a class="heading-anchor" href="#selecteur-de-kit" aria-label="Lien vers cette section">#</a></h2>
+<p>Une étiquette permettait d’ouvrir le menu des kits. Le kit sélectionné déterminait le matériel obtenu au commencement de la partie.</p>
+<h2 id="retour-au-lobby">Retour au lobby<a class="heading-anchor" href="#retour-au-lobby" aria-label="Lien vers cette section">#</a></h2>
+<p>Un lit permettait de quitter le serveur de jeu et de retourner au lobby général d’Epicube.</p>
+<h2 id="tableau-d-informations">Tableau d’informations<a class="heading-anchor" href="#tableau-d-informations" aria-label="Lien vers cette section">#</a></h2>
+<p>Un scoreboard affichait notamment :</p>
+<ul><li>le nom ou l’identifiant de la partie ;</li><li>le temps restant avant le lancement ;</li><li>la phase ou le jour en cours ;</li><li>le nombre de joueurs dans chaque équipe ;</li><li>l’état des royaumes ou de leurs cœurs ;</li><li>éventuellement l’adresse d’Epicube.</li></ul>
+<p>Lorsque suffisamment de joueurs étaient présents, un compte à rebours annonçait le départ.</p>
+<hr>
+<h1 id="4-les-kits">4. Les kits<a class="heading-anchor" href="#4-les-kits" aria-label="Lien vers cette section">#</a></h1>
+<p>Les équipements exacts ont pu varier selon les mises à jour, mais quatre grands kits de la version Epicube sont particulièrement bien documentés.</p>
+<h2 id="mineur">Mineur<a class="heading-anchor" href="#mineur" aria-label="Lien vers cette section">#</a></h2>
+<p>Le Mineur est spécialisé dans l’extraction rapide des ressources.</p>
+<p>Équipement reconstitué :</p>
+<ul><li>une pioche en pierre avec Efficacité I ;</li><li>une pioche en fer partiellement usée avec Efficacité I.</li></ul>
+<p>Son rôle consiste à descendre rapidement dans les mines et à fournir au royaume :</p>
+<ul><li>fer ;</li><li>charbon ;</li><li>or ;</li><li>redstone ;</li><li>lapis-lazuli ;</li><li>diamants ;</li><li>matériaux de construction.</li></ul>
+<p>Il procure un avantage immédiat au début, quand chaque minute passée à obtenir du fer ou des diamants compte.</p>
+<h2 id="fermier">Fermier<a class="heading-anchor" href="#fermier" aria-label="Lien vers cette section">#</a></h2>
+<p>Le Fermier assure l’approvisionnement en nourriture et peut améliorer le butin obtenu sur certains animaux.</p>
+<p>Équipement reconstitué :</p>
+<ul><li>seize poudres d’os ;</li><li>une épée en bois usée ;</li><li>Butin III ;</li><li>Aura de feu I.</li></ul>
+<p>La poudre d’os accélère les cultures. L’épée enflammée permet de tuer les animaux tout en récupérant directement de la viande cuite, avec davantage de butin grâce à l’enchantement.</p>
+<p>Selon les cartes, ce kit pouvait également interagir de manière particulièrement rentable avec certains monstres ou ressources personnalisés.</p>
+<h2 id="eclaireur">Éclaireur<a class="heading-anchor" href="#eclaireur" aria-label="Lien vers cette section">#</a></h2>
+<p>L’Éclaireur est consacré à la mobilité, à l’exploration et aux engagements rapides.</p>
+<p>Il disposait de plusieurs potions de vitesse, sous différentes formes :</p>
+<ul><li>potion de vitesse personnelle ;</li><li>potion jetable de vitesse ;</li><li>version de Vitesse II ;</li><li>potion à durée prolongée ;</li><li>potion jetable à durée prolongée.</li></ul>
+<p>Ses fonctions naturelles étaient :</p>
+<ul><li>découvrir rapidement les accès aux mines ;</li><li>surveiller les bases adverses ;</li><li>rejoindre un combat ;</li><li>poursuivre un ennemi ;</li><li>battre en retraite ;</li><li>transporter rapidement des ressources ou du matériel entre les joueurs.</li></ul>
+<h2 id="enchanteur">Enchanteur<a class="heading-anchor" href="#enchanteur" aria-label="Lien vers cette section">#</a></h2>
+<p>L’Enchanteur fournit à son équipe une avance importante dans l’amélioration de l’équipement.</p>
+<p>Matériel documenté :</p>
+<ul><li>128 fioles d’expérience ;</li><li>une enclume ;</li><li>plusieurs livres d’enchantement ;</li><li>Tranchant I et II ;</li><li>Protection I et II ;</li><li>Épines I ;</li><li>Recul II.</li></ul>
+<p>L’équipe doit toutefois disposer des niveaux nécessaires et des objets auxquels appliquer les livres. Ce kit devient particulièrement puissant si les ressources sont mutualisées : au lieu de conserver les livres pour lui-même, l’Enchanteur peut fabriquer les armes et armures des combattants du royaume.</p>
+<h2 id="complementarite-des-roles">Complémentarité des rôles<a class="heading-anchor" href="#complementarite-des-roles" aria-label="Lien vers cette section">#</a></h2>
+<p>Une équipe organisée pouvait répartir ses tâches ainsi :</p>
+<ul><li>Mineur : minerais et diamants ;</li><li>Fermier : nourriture et élevage ;</li><li>Éclaireur : reconnaissance et mobilité ;</li><li>Enchanteur : amélioration de l’équipement ;</li><li>autres joueurs : construction, défense ou PvP.</li></ul>
+<p>Les kits ne constituaient donc pas nécessairement des classes rigides. Une fois l’équipement distribué, tous les joueurs restaient libres de miner, construire ou combattre.</p>
+<hr>
+<h1 id="5-les-cartes">5. Les cartes<a class="heading-anchor" href="#5-les-cartes" aria-label="Lien vers cette section">#</a></h1>
+<p>Epicube proposait plusieurs cartes spécifiquement conçues pour le mode. Parmi les noms attestés figurent notamment :</p>
+<ul><li>Cactus ;</li><li>Apocalypse ;</li><li>Yeti.</li></ul>
+<p>Ces cartes ne se limitaient pas à un décor différent. Leur relief et leurs ressources modifiaient réellement la stratégie.</p>
+<h2 id="organisation-generale">Organisation générale<a class="heading-anchor" href="#organisation-generale" aria-label="Lien vers cette section">#</a></h2>
+<p>Chaque royaume disposait normalement :</p>
+<ul><li>d’une base ou d’un emplacement constructible ;</li><li>d’une structure en bedrock délimitant les éléments essentiels ;</li><li>d’un cœur ;</li><li>d’un passage permettant de rejoindre la surface ;</li><li>d’un réseau de grottes ;</li><li>de ressources réparties de façon équilibrée ;</li><li>d’un accès au centre ou aux territoires communs.</li></ul>
+<p>Les bases étaient séparées afin de laisser une véritable zone d’exploration et de combat entre les royaumes.</p>
+<h2 id="carte-cactus">Carte Cactus<a class="heading-anchor" href="#carte-cactus" aria-label="Lien vers cette section">#</a></h2>
+<p>Cactus utilisait un environnement désertique. Des témoignages d’époque évoquent notamment :</p>
+<ul><li>des cactus exploitables ;</li><li>des ressources visibles à la sortie de la structure en bedrock ;</li><li>des blocs de minerai ou des ressources spéciales ;</li><li>des mécanismes personnalisés liés à certains monstres.</li></ul>
+<p>Une particularité communautaire attribuée à cette carte est la possibilité d’obtenir des diamants grâce à un mob tué dans des conditions précises, notamment après l’avoir enflammé. Il s’agissait vraisemblablement d’une mécanique propre à la carte ou au serveur, et non du Minecraft classique.</p>
+<h2 id="carte-apocalypse">Carte Apocalypse<a class="heading-anchor" href="#carte-apocalypse" aria-label="Lien vers cette section">#</a></h2>
+<p>Apocalypse proposait un terrain plus hostile mêlant notamment glace, lave et relief accidenté. Elle semble avoir favorisé :</p>
+<ul><li>les chutes ;</li><li>les dégâts environnementaux ;</li><li>les déplacements risqués ;</li><li>les défenses naturelles ;</li><li>les combats dans des passages étroits.</li></ul>
+<h2 id="carte-yeti">Carte Yeti<a class="heading-anchor" href="#carte-yeti" aria-label="Lien vers cette section">#</a></h2>
+<p>Yeti était une carte plus tardive, initialement présentée comme accessible aux joueurs VIP. Son environnement enneigé et montagneux renouvelait les itinéraires de minage et d’assaut.</p>
+<hr>
+<h1 id="6-la-base-d-un-royaume">6. La base d’un royaume<a class="heading-anchor" href="#6-la-base-d-un-royaume" aria-label="Lien vers cette section">#</a></h1>
+<p>La base constitue à la fois :</p>
+<ul><li>le foyer de l’équipe ;</li><li>son atelier ;</li><li>son entrepôt ;</li><li>son point de réapparition ;</li><li>sa forteresse ;</li><li>l’emplacement de son cœur.</li></ul>
+<h2 id="zone-constructible">Zone constructible<a class="heading-anchor" href="#zone-constructible" aria-label="Lien vers cette section">#</a></h2>
+<p>Les joueurs peuvent généralement poser et casser librement des blocs à l’intérieur de leur propre territoire. La limite est contrôlée automatiquement afin d’empêcher la construction anarchique sur toute la carte.</p>
+<p>Cela oblige chaque équipe à concentrer ses infrastructures dans sa base :</p>
+<ul><li>murs ;</li><li>tours ;</li><li>escaliers ;</li><li>portes ;</li><li>ateliers ;</li><li>fours ;</li><li>coffres ;</li><li>fermes ;</li><li>postes d’archers ;</li><li>défenses autour du cœur.</li></ul>
+<h2 id="le-c-ur">Le cœur<a class="heading-anchor" href="#le-c-ur" aria-label="Lien vers cette section">#</a></h2>
+<p>Le cœur du royaume est représenté par un cristal de l’End. Il constitue la condition d’existence de l’équipe.</p>
+<p>Dans les reproductions techniques directement inspirées d’Epicube, ce cœur possède environ 500 points de vie. Cette valeur est crédible pour la version historique, mais peut avoir changé selon la période.</p>
+<p>Ses propriétés principales sont :</p>
+<ul><li>il appartient à une équipe précise ;</li><li>les membres de cette équipe ne peuvent pas l’endommager ;</li><li>les ennemis peuvent le frapper lorsque les assauts sont autorisés ;</li><li>ses points de vie sont suivis par le serveur ;</li><li>lorsqu’ils atteignent zéro, le royaume est éliminé.</li></ul>
+<p>Le cœur remplace donc à la fois le drapeau et la salle des coffres du jeu originel.</p>
+<h2 id="defense-du-c-ur">Défense du cœur<a class="heading-anchor" href="#defense-du-c-ur" aria-label="Lien vers cette section">#</a></h2>
+<p>Les joueurs peuvent concevoir une forteresse autour de lui, avec certaines limites imposées par le serveur. Une bonne défense peut utiliser :</p>
+<ul><li>plusieurs épaisseurs de murs ;</li><li>des couloirs étroits ;</li><li>des angles permettant de tirer à l’arc ;</li><li>des différences de hauteur ;</li><li>des portes et passages contrôlés ;</li><li>de faux accès ;</li><li>des postes défensifs ;</li><li>des matériaux résistants aux explosions.</li></ul>
+<p>Le cœur ne doit toutefois pas devenir totalement inaccessible. Les protections empêchent normalement les solutions abusives telles qu’un enfermement absolu dans la bedrock ou l’obsidienne.</p>
+<hr>
+<h1 id="7-recolte-et-economie-de-ressources">7. Récolte et économie de ressources<a class="heading-anchor" href="#7-recolte-et-economie-de-ressources" aria-label="Lien vers cette section">#</a></h1>
+<p>Au début de la partie, les équipes doivent devenir autonomes.</p>
+<h2 id="ressources-essentielles">Ressources essentielles<a class="heading-anchor" href="#ressources-essentielles" aria-label="Lien vers cette section">#</a></h2>
+<p>Les priorités sont généralement :</p>
+<ul><li>bois pour les outils et les constructions ;</li><li>nourriture pour survivre et régénérer ;</li><li>charbon pour les torches et les fours ;</li><li>fer pour les armures, épées, seaux et outils ;</li><li>diamants pour l’équipement de haut niveau ;</li><li>lapis-lazuli pour les enchantements ;</li><li>redstone pour les mécanismes ;</li><li>sable et poudre à canon pour la TNT ;</li><li>ingrédients de potions lorsque l’alchimie est accessible.</li></ul>
+<h2 id="travail-collectif">Travail collectif<a class="heading-anchor" href="#travail-collectif" aria-label="Lien vers cette section">#</a></h2>
+<p>Une équipe efficace centralise ses ressources dans des coffres communs et distribue le matériel selon les rôles.</p>
+<p>Par exemple :</p>
+<ul><li>les premiers fers servent aux pioches, seaux et armures ;</li><li>les diamants ne sont pas nécessairement dépensés immédiatement ;</li><li>les livres du kit Enchanteur sont réservés aux meilleures pièces ;</li><li>une réserve d’équipement est préparée pour les joueurs morts ;</li><li>de la nourriture et des blocs sont stockés près du point de réapparition ;</li><li>une réserve spécifique est constituée pour les assauts.</li></ul>
+<h2 id="mort-d-un-joueur">Mort d’un joueur<a class="heading-anchor" href="#mort-d-un-joueur" aria-label="Lien vers cette section">#</a></h2>
+<p>Tant que le cœur de son équipe est vivant, un joueur mort peut normalement réapparaître dans sa base. Il perd néanmoins le contenu de son inventaire, qui peut être :</p>
+<ul><li>récupéré par ses alliés ;</li><li>volé par l’adversaire ;</li><li>détruit par une explosion, la lave ou le temps.</li></ul>
+<p>Les morts ont donc un coût matériel important, même si elles n’éliminent pas immédiatement le joueur.</p>
+<hr>
+<h1 id="8-deroulement-d-une-partie">8. Déroulement d’une partie<a class="heading-anchor" href="#8-deroulement-d-une-partie" aria-label="Lien vers cette section">#</a></h1>
+<p>Le Fallen Kingdoms progresse par phases temporelles. Le scoreboard indique le jour ou le temps restant avant la prochaine étape.</p>
+<p>Les minutages exacts ont varié, mais la structure suivante représente fidèlement le fonctionnement général.</p>
+<h2 id="phase-1-lancement-et-prise-de-possession">Phase 1 — Lancement et prise de possession<a class="heading-anchor" href="#phase-1-lancement-et-prise-de-possession" aria-label="Lien vers cette section">#</a></h2>
+<p>Les équipes sont téléportées dans leurs bases respectives. Les kits sont distribués et les joueurs commencent immédiatement à se répartir les tâches.</p>
+<p>Premières décisions :</p>
+<ul><li>qui descend miner ;</li><li>qui récolte le bois ;</li><li>qui cherche la nourriture ;</li><li>qui installe les coffres et les fours ;</li><li>qui construit les premiers murs ;</li><li>quels objets doivent être mutualisés.</li></ul>
+<p>Le PvP et les attaques de bases sont normalement interdits ou techniquement désactivés durant cette phase.</p>
+<h2 id="phase-2-developpement-du-royaume">Phase 2 — Développement du royaume<a class="heading-anchor" href="#phase-2-developpement-du-royaume" aria-label="Lien vers cette section">#</a></h2>
+<p>L’équipe transforme son emplacement initial en véritable forteresse.</p>
+<p>Elle doit simultanément :</p>
+<ul><li>acquérir de meilleures armures ;</li><li>sécuriser de la nourriture ;</li><li>enchanter son équipement ;</li><li>construire ses défenses ;</li><li>reconnaître le terrain ;</li><li>localiser les autres royaumes ;</li><li>constituer des réserves.</li></ul>
+<p>Une équipe trop concentrée sur la construction risque d’être sous-équipée. Une équipe qui mine exclusivement risque de laisser son cœur exposé.</p>
+<h2 id="phase-3-ouverture-du-pvp">Phase 3 — Ouverture du PvP<a class="heading-anchor" href="#phase-3-ouverture-du-pvp" aria-label="Lien vers cette section">#</a></h2>
+<p>À l’expiration du premier délai, les combats entre joueurs deviennent possibles dans les zones communes.</p>
+<p>Les joueurs peuvent alors :</p>
+<ul><li>tendre des embuscades ;</li><li>tuer des mineurs ennemis ;</li><li>intercepter des ressources ;</li><li>contrôler les passages stratégiques ;</li><li>observer les défenses adverses ;</li><li>repousser les éclaireurs ;</li><li>préparer les futurs itinéraires d’assaut.</li></ul>
+<p>Le PvP peut donc commencer avant que les cœurs ne soient directement attaquables.</p>
+<h2 id="phase-4-preparation-du-siege">Phase 4 — Préparation du siège<a class="heading-anchor" href="#phase-4-preparation-du-siege" aria-label="Lien vers cette section">#</a></h2>
+<p>À mesure que l’assaut approche, les équipes préparent :</p>
+<ul><li>TNT ;</li><li>briquets ;</li><li>arcs et flèches ;</li><li>potions ;</li><li>pioches ;</li><li>nourriture ;</li><li>armures de rechange ;</li><li>blocs éventuellement autorisés ;</li><li>points de rassemblement.</li></ul>
+<p>Les éclaireurs cherchent les côtés les moins protégés des forteresses. Des alliances temporaires peuvent se former, même si elles restent fragiles : une équipe aidée pendant un assaut peut devenir la cible suivante.</p>
+<h2 id="phase-5-ouverture-des-assauts">Phase 5 — Ouverture des assauts<a class="heading-anchor" href="#phase-5-ouverture-des-assauts" aria-label="Lien vers cette section">#</a></h2>
+<p>Lorsque la protection des cœurs prend fin, les royaumes deviennent pleinement vulnérables.</p>
+<p>L’attaque d’une base comporte généralement plusieurs étapes :</p>
+<ol><li>rejoindre le territoire ennemi ;</li><li>repousser ou contourner ses défenseurs ;</li><li>ouvrir une brèche ;</li><li>progresser jusqu’au cœur ;</li><li>empêcher les défenseurs de revenir ;</li><li>infliger suffisamment de dégâts au cristal ;</li><li>survivre à la contre-attaque.</li></ol>
+<p>La TNT tient une place importante dans cette guerre de siège. Elle permet de détruire les fortifications sans autoriser nécessairement les attaquants à casser librement tous les blocs adverses à la pioche.</p>
+<h2 id="phase-6-destruction-d-un-royaume">Phase 6 — Destruction d’un royaume<a class="heading-anchor" href="#phase-6-destruction-d-un-royaume" aria-label="Lien vers cette section">#</a></h2>
+<p>Lorsque le cœur atteint zéro :</p>
+<ul><li>l’équipe correspondante est déclarée éliminée ;</li><li>ses joueurs ne peuvent plus réapparaître pour défendre le royaume ;</li><li>ils sont téléportés hors de la partie active ;</li><li>ils passent en mode spectateur ou retournent au lobby ;</li><li>leur couleur disparaît ou est barrée du scoreboard.</li></ul>
+<p>Selon la version, les survivants pouvaient être éliminés immédiatement par le serveur, ou disposer de quelques instants avant leur transfert.</p>
+<p>La base et les ressources de l’équipe vaincue peuvent alors devenir un enjeu pour les royaumes restants.</p>
+<h2 id="phase-7-fin-de-partie">Phase 7 — Fin de partie<a class="heading-anchor" href="#phase-7-fin-de-partie" aria-label="Lien vers cette section">#</a></h2>
+<p>Les assauts se poursuivent jusqu’à ce qu’il ne reste plus qu’un cœur en vie.</p>
+<p>La dernière équipe active remporte la partie. Le serveur annonce les vainqueurs, affiche éventuellement les statistiques, puis renvoie les joueurs au lobby ou relance une nouvelle carte.</p>
+<hr>
+<h1 id="9-construction-et-restrictions">9. Construction et restrictions<a class="heading-anchor" href="#9-construction-et-restrictions" aria-label="Lien vers cette section">#</a></h1>
+<p>L’essence du jeu exige que la construction soit possible sans permettre des abus qui rendraient la partie interminable.</p>
+<h2 id="dans-sa-propre-base">Dans sa propre base<a class="heading-anchor" href="#dans-sa-propre-base" aria-label="Lien vers cette section">#</a></h2>
+<p>Les joueurs peuvent généralement :</p>
+<ul><li>casser et poser des blocs ;</li><li>construire une forteresse ;</li><li>installer des coffres et des fours ;</li><li>cultiver ;</li><li>créer des mécanismes ;</li><li>modifier le relief ;</li><li>aménager des défenses.</li></ul>
+<h2 id="en-dehors-de-sa-base">En dehors de sa base<a class="heading-anchor" href="#en-dehors-de-sa-base" aria-label="Lien vers cette section">#</a></h2>
+<p>Les restrictions historiques du Fallen Kingdoms interdisent normalement la pose libre de blocs hors de son territoire. Certaines exceptions peuvent exister :</p>
+<ul><li>torches ;</li><li>TNT ;</li><li>redstone et éléments nécessaires à son activation ;</li><li>eau ;</li><li>jeunes pousses ;</li><li>éventuellement échelles ou éléments propres à une carte.</li></ul>
+<p>La version Epicube appliquait automatiquement une partie de ces règles.</p>
+<p>Cette limitation empêche :</p>
+<ul><li>les tours de blocs permettant de franchir instantanément un mur ;</li><li>les ponts improvisés partout ;</li><li>le blocage des routes ;</li><li>la création d’une seconde base hors territoire ;</li><li>l’enfermement d’autres joueurs ;</li><li>la dégradation massive de la carte.</li></ul>
+<h2 id="dans-une-base-ennemie">Dans une base ennemie<a class="heading-anchor" href="#dans-une-base-ennemie" aria-label="Lien vers cette section">#</a></h2>
+<p>Les attaquants ne peuvent normalement pas démolir librement une forteresse à la pioche. Ils doivent utiliser les moyens de siège autorisés, notamment la TNT, ou exploiter les ouvertures laissées par les défenseurs.</p>
+<p>Cela donne une véritable utilité :</p>
+<ul><li>aux murs ;</li><li>aux portes ;</li><li>aux explosions ;</li><li>aux assauts coordonnés ;</li><li>à la connaissance de l’architecture adverse.</li></ul>
+<h2 id="obsidienne-et-protections-abusives">Obsidienne et protections abusives<a class="heading-anchor" href="#obsidienne-et-protections-abusives" aria-label="Lien vers cette section">#</a></h2>
+<p>L’obsidienne est traditionnellement interdite comme matériau défensif, car elle annulerait presque complètement l’intérêt de la TNT.</p>
+<p>Sont également contraires à l’esprit du mode :</p>
+<ul><li>enfermer totalement le cœur sans accès ;</li><li>utiliser la bedrock comme défense artificielle ;</li><li>exploiter un bug pour traverser un mur ;</li><li>pénétrer dans une base avec une perle de l’End si cela contourne toutes les défenses ;</li><li>utiliser un portail du Nether pour apparaître directement dans une forteresse ;</li><li>creuser sous une zone protégée lorsqu’une règle ou le plugin l’interdit.</li></ul>
+<hr>
+<h1 id="10-combat-et-assauts">10. Combat et assauts<a class="heading-anchor" href="#10-combat-et-assauts" aria-label="Lien vers cette section">#</a></h1>
+<h2 id="pvp-classique">PvP classique<a class="heading-anchor" href="#pvp-classique" aria-label="Lien vers cette section">#</a></h2>
+<p>Le combat reprend les mécaniques du Minecraft de l’époque d’Epicube, principalement autour de la version 1.7/1.8 :</p>
+<ul><li>épées sans délai de recharge moderne ;</li><li>arcs ;</li><li>armures en fer ou diamant ;</li><li>pommes dorées ;</li><li>potions ;</li><li>enchantements ;</li><li>seaux d’eau et de lave lorsque permis ;</li><li>dégâts de chute et dangers environnementaux.</li></ul>
+<h2 id="importance-de-la-mort">Importance de la mort<a class="heading-anchor" href="#importance-de-la-mort" aria-label="Lien vers cette section">#</a></h2>
+<p>Une élimination temporaire retire un défenseur du combat pendant le temps nécessaire à sa réapparition et à son rééquipement. Quelques secondes peuvent suffire aux attaquants pour atteindre le cœur.</p>
+<p>Le jeu récompense donc davantage la coordination que le simple nombre de victimes.</p>
+<h2 id="assaut-coordonne">Assaut coordonné<a class="heading-anchor" href="#assaut-coordonne" aria-label="Lien vers cette section">#</a></h2>
+<p>Une attaque efficace peut comporter :</p>
+<ul><li>un joueur chargé de la TNT ;</li><li>des combattants protégeant le poseur ;</li><li>un archer maintenant les défenseurs à distance ;</li><li>un éclaireur cherchant une autre entrée ;</li><li>un joueur conservant du matériel de secours ;</li><li>une diversion sur une autre façade.</li></ul>
+<h2 id="defense-active">Défense active<a class="heading-anchor" href="#defense-active" aria-label="Lien vers cette section">#</a></h2>
+<p>Défendre ne consiste pas seulement à attendre devant le cristal. Une équipe peut :</p>
+<ul><li>intercepter les ennemis avant leur arrivée ;</li><li>combattre depuis les murailles ;</li><li>effectuer une sortie ;</li><li>désamorcer ou faire exploser prématurément la TNT ;</li><li>réparer les dégâts lorsque les règles le permettent ;</li><li>attaquer la base ennemie pendant que celle-ci est dégarnie.</li></ul>
+<hr>
+<h1 id="11-diplomatie-et-strategie">11. Diplomatie et stratégie<a class="heading-anchor" href="#11-diplomatie-et-strategie" aria-label="Lien vers cette section">#</a></h1>
+<p>Avec plusieurs royaumes, la diplomatie devient une mécanique émergente importante.</p>
+<p>Les équipes peuvent :</p>
+<ul><li>conclure une non-agression temporaire ;</li><li>coordonner un assaut contre le royaume dominant ;</li><li>échanger des informations ;</li><li>faire croire à une attaque ;</li><li>provoquer un combat entre deux adversaires ;</li><li>rompre une alliance au moment opportun.</li></ul>
+<p>Ces alliances ne sont généralement pas garanties par le serveur. Elles reposent sur la parole des joueurs et peuvent être trahies.</p>
+<p>Un royaume très puissant ou possédant beaucoup de joueurs attire naturellement l’attention des autres. À l’inverse, une équipe discrète peut conserver ses forces jusqu’à la fin pendant que les adversaires s’épuisent.</p>
+<hr>
+<h1 id="12-interface-et-automatisations">12. Interface et automatisations<a class="heading-anchor" href="#12-interface-et-automatisations" aria-label="Lien vers cette section">#</a></h1>
+<p>L’adaptation Epicube se distinguait par son niveau d’automatisation.</p>
+<p>Le serveur prenait vraisemblablement en charge :</p>
+<ul><li>la constitution des équipes ;</li><li>la coloration des noms ;</li><li>la prévention du friendly fire ;</li><li>la téléportation vers les bases ;</li><li>la distribution des kits ;</li><li>le compte à rebours ;</li><li>l’affichage du jour et du temps ;</li><li>la protection des zones ;</li><li>l’activation progressive du PvP ;</li><li>l’ouverture de la phase d’assaut ;</li><li>les points de vie des cœurs ;</li><li>l’élimination d’un royaume ;</li><li>le passage en spectateur ;</li><li>la détection de la dernière équipe ;</li><li>le retour au lobby.</li></ul>
+<h2 id="scoreboard">Scoreboard<a class="heading-anchor" href="#scoreboard" aria-label="Lien vers cette section">#</a></h2>
+<p>Il pouvait présenter :</p>
+<ul><li><code>-FK-</code> ou le nom du mode ;</li><li>le numéro du jour ;</li><li>l’heure ou le chronomètre ;</li><li>la liste des équipes ;</li><li>le nombre de joueurs par équipe ;</li><li>l’état ou la vie des cœurs ;</li><li>l’identifiant du serveur ;</li><li>l’adresse d’Epicube.</li></ul>
+<h2 id="messages-et-annonces">Messages et annonces<a class="heading-anchor" href="#messages-et-annonces" aria-label="Lien vers cette section">#</a></h2>
+<p>Des messages avertissaient vraisemblablement les joueurs lors :</p>
+<ul><li>du démarrage ;</li><li>du changement de phase ;</li><li>de l’activation du PvP ;</li><li>de la possibilité d’attaquer les bases ;</li><li>des dégâts importants infligés à un cœur ;</li><li>de la destruction d’un royaume ;</li><li>de la victoire finale.</li></ul>
+<hr>
+<h1 id="13-fonctionnalites-remarquables-a-retenir">13. Fonctionnalités remarquables à retenir<a class="heading-anchor" href="#13-fonctionnalites-remarquables-a-retenir" aria-label="Lien vers cette section">#</a></h1>
+<p>La version Epicube peut être résumée par les fonctionnalités suivantes :</p>
+<ul><li>jusqu’à cinq équipes colorées ;</li><li>environ six joueurs maximum par équipe ;</li><li>cartes dédiées et symétriques ;</li><li>ressources et événements propres à certaines cartes ;</li><li>lobby d’attente ;</li><li>sélection d’équipe par interface ;</li><li>quatre kits complémentaires ;</li><li>scoreboard en temps réel ;</li><li>progression découpée en jours ou phases ;</li><li>protection initiale des joueurs et des royaumes ;</li><li>ouverture différée du PvP ;</li><li>ouverture différée des assauts ;</li><li>zones de construction délimitées ;</li><li>restrictions de pose et de destruction ;</li><li>combat d’équipe ;</li><li>construction libre dans son royaume ;</li><li>minage et survie ;</li><li>enchantement et potions ;</li><li>guerre de siège à la TNT ;</li><li>cœur représenté par un cristal de l’End ;</li><li>santé personnalisée du cœur, autour de 500 PV dans les reproductions ;</li><li>impossibilité de frapper son propre cœur ;</li><li>réapparition tant que le cœur survit ;</li><li>élimination automatique lors de sa destruction ;</li><li>mode spectateur pour les équipes éliminées ;</li><li>diplomatie émergente ;</li><li>dernière équipe vivante déclarée gagnante.</li></ul>
+<hr>
+<h1 id="14-exemple-de-partie-complete">14. Exemple de partie complète<a class="heading-anchor" href="#14-exemple-de-partie-complete" aria-label="Lien vers cette section">#</a></h1>
+<p>Une équipe bleue de cinq joueurs commence sur Cactus.</p>
+<p>Un Mineur descend immédiatement dans les galeries avec ses pioches. Le Fermier récupère le bois, fait pousser du blé et abat les animaux avec son épée enchantée. L’Enchanteur place son enclume et conserve ses livres jusqu’au retour des mineurs. L’Éclaireur cartographie les accès aux royaumes rouge et jaune tandis que le dernier joueur construit une première muraille.</p>
+<p>Après quelques minutes, l’équipe possède des armures en fer, deux diamants, une réserve de nourriture et une défense rudimentaire. Les meilleurs enchantements sont appliqués aux deux combattants principaux.</p>
+<p>Le PvP s’active. L’Éclaireur bleu repère un mineur rouge isolé, l’élimine et rapporte son fer. Pendant ce temps, les Jaunes observent la base bleue sans pouvoir encore attaquer le cœur.</p>
+<p>Lorsque les assauts sont autorisés, les Rouges et les Jaunes se battent. Les Bleus profitent de la situation pour attaquer les Rouges par une façade peu défendue. La TNT ouvre le mur, mais les défenseurs réapparaissent et repoussent la première tentative.</p>
+<p>Les Bleus reviennent avec davantage d’explosifs. Deux joueurs retiennent les défenseurs, tandis qu’un troisième atteint le cristal et réduit progressivement sa vie. Le cœur rouge est détruit : tous les Rouges sont éliminés et passent spectateurs.</p>
+<p>Les Jaunes attaquent alors la base bleue pendant que l’escouade est encore loin. Les défenseurs restés sur place gagnent juste assez de temps pour permettre le retour de leurs alliés. Après un dernier siège et plusieurs morts, le cœur jaune tombe.</p>
+<p>Si les autres royaumes ont déjà été éliminés, l’équipe bleue devient le dernier royaume vivant et remporte la partie.</p>
+<hr>
+<h1 id="15-ce-qui-rendait-le-mode-particulier">15. Ce qui rendait le mode particulier<a class="heading-anchor" href="#15-ce-qui-rendait-le-mode-particulier" aria-label="Lien vers cette section">#</a></h1>
+<p>Le Fallen Kingdoms d’Epicube ne se résumait ni à un UHC, ni à un jeu de destruction de lit, ni à une simple capture d’objectif.</p>
+<p>Son intérêt provenait du mélange de plusieurs dimensions :</p>
+<ul><li>la progression d’une survie accélérée ;</li><li>la spécialisation apportée par les kits ;</li><li>la créativité de la construction ;</li><li>la préparation économique ;</li><li>le PvP en monde ouvert ;</li><li>la défense d’une forteresse personnalisée ;</li><li>la guerre de siège ;</li><li>la diplomatie entre cinq équipes ;</li><li>une condition de victoire permanente et très lisible.</li></ul>
+<p>Chaque partie produisait une histoire différente : royaume suréquipé mais mal défendu, forteresse imprenable manquant de ressources, alliance contre l’équipe dominante, attaque surprise ou cœur détruit à quelques secondes près.</p>
+<h2 id="fiabilite-des-informations">Fiabilité des informations<a class="heading-anchor" href="#fiabilite-des-informations" aria-label="Lien vers cette section">#</a></h2>
+<p>Les éléments les mieux attestés sont les cinq couleurs, la limite d’environ six joueurs, les cartes Cactus, Apocalypse et Yeti, les quatre kits, le cristal faisant office de cœur, l’élimination d’une équipe lors de sa destruction et le passage des perdants en spectateur.</p>
+<p>Les valeurs exactes — durée de chaque phase, inventaires au point de durabilité près, vie exacte du cœur et exceptions de construction — ont probablement changé au cours de l’exploitation d’Epicube. La valeur de 500 PV et les inventaires détaillés des kits proviennent notamment d’une <a href="https://skript-mc.fr/forum/topic/8182-un-skript-fallenkindoms-style-epicube/" target="_blank" rel="noreferrer">reconstitution technique « style Epicube » publiée en 2016</a>, et doivent donc être considérés comme une très bonne reconstitution plutôt que comme une documentation officielle encore vérifiable.</p>
+<p>Sources complémentaires : <a href="https://www.youtube.com/watch?v=lYZv11VIid8" target="_blank" rel="noreferrer">vidéo promotionnelle d’Epicube</a>, <a href="https://www.youtube.com/watch?v=zhPhpN6Nh4A" target="_blank" rel="noreferrer">partie sur la carte Apocalypse</a>, <a href="https://www.youtube.com/playlist?list=PLzHrXSFcjLGp4OiA-NKbECQmPdT1-nnsB" target="_blank" rel="noreferrer">playlist historique sur Epicube</a>, <a href="https://www.jeuxvideo.com/forums/1-24777-2074535-1-0-1-0-principe-regles-du-fallen-kingdom.htm" target="_blank" rel="noreferrer">règles communautaires du concept originel</a>.</p></article>
+      <aside class="page-toc" aria-label="Sommaire de la page"><span class="toc-title">Sur cette page</span><a class="toc-level-2" href="#1-concept-general">1. Concept général</a><a class="toc-level-2" href="#2-difference-avec-le-fallen-kingdoms-originel">2. Différence avec le Fallen Kingdoms originel</a><a class="toc-level-2" href="#selecteur-d-equipe">Sélecteur d’équipe</a><a class="toc-level-2" href="#selecteur-de-kit">Sélecteur de kit</a><a class="toc-level-2" href="#retour-au-lobby">Retour au lobby</a><a class="toc-level-2" href="#tableau-d-informations">Tableau d’informations</a><a class="toc-level-2" href="#mineur">Mineur</a><a class="toc-level-2" href="#fermier">Fermier</a><a class="toc-level-2" href="#eclaireur">Éclaireur</a><a class="toc-level-2" href="#enchanteur">Enchanteur</a><a class="toc-level-2" href="#complementarite-des-roles">Complémentarité des rôles</a><a class="toc-level-2" href="#organisation-generale">Organisation générale</a><a class="toc-level-2" href="#carte-cactus">Carte Cactus</a><a class="toc-level-2" href="#carte-apocalypse">Carte Apocalypse</a><a class="toc-level-2" href="#carte-yeti">Carte Yeti</a><a class="toc-level-2" href="#zone-constructible">Zone constructible</a><a class="toc-level-2" href="#le-c-ur">Le cœur</a><a class="toc-level-2" href="#defense-du-c-ur">Défense du cœur</a><a class="toc-level-2" href="#ressources-essentielles">Ressources essentielles</a><a class="toc-level-2" href="#travail-collectif">Travail collectif</a><a class="toc-level-2" href="#mort-d-un-joueur">Mort d’un joueur</a><a class="toc-level-2" href="#phase-1-lancement-et-prise-de-possession">Phase 1 — Lancement et prise de possession</a><a class="toc-level-2" href="#phase-2-developpement-du-royaume">Phase 2 — Développement du royaume</a><a class="toc-level-2" href="#phase-3-ouverture-du-pvp">Phase 3 — Ouverture du PvP</a><a class="toc-level-2" href="#phase-4-preparation-du-siege">Phase 4 — Préparation du siège</a><a class="toc-level-2" href="#phase-5-ouverture-des-assauts">Phase 5 — Ouverture des assauts</a><a class="toc-level-2" href="#phase-6-destruction-d-un-royaume">Phase 6 — Destruction d’un royaume</a><a class="toc-level-2" href="#phase-7-fin-de-partie">Phase 7 — Fin de partie</a><a class="toc-level-2" href="#dans-sa-propre-base">Dans sa propre base</a><a class="toc-level-2" href="#en-dehors-de-sa-base">En dehors de sa base</a><a class="toc-level-2" href="#dans-une-base-ennemie">Dans une base ennemie</a><a class="toc-level-2" href="#obsidienne-et-protections-abusives">Obsidienne et protections abusives</a><a class="toc-level-2" href="#pvp-classique">PvP classique</a><a class="toc-level-2" href="#importance-de-la-mort">Importance de la mort</a><a class="toc-level-2" href="#assaut-coordonne">Assaut coordonné</a><a class="toc-level-2" href="#defense-active">Défense active</a><a class="toc-level-2" href="#scoreboard">Scoreboard</a><a class="toc-level-2" href="#messages-et-annonces">Messages et annonces</a><a class="toc-level-2" href="#fiabilite-des-informations">Fiabilité des informations</a></aside>
+    </div>
+    <footer><span>Tropicube</span><span>Documentation statique générée depuis les fichiers Markdown</span></footer>
+  </main>
+</body>
+</html>

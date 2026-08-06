@@ -14,6 +14,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 - Git LFS pour les régions Minecraft, avec exclusion des JAR tiers et des données joueur volatiles.
 - Tests d'invariants pour le catalogue SheepWars et rapports de couverture JaCoCo.
 - Guides de développement, d'utilisation de Git/CI et consignes durables `AGENTS.md`.
+- Game design historique complet du mode Fallen Kingdoms d'Epicube, intégré au site documentaire.
 
 ### Modifié
 

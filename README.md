@@ -10,6 +10,7 @@ Tropicube est une infrastructure Minecraft multi-serveurs pour **Minecraft 26.2*
 - [Configuration](docs/CONFIGURATION.md)
 - [Installation, déploiement et exploitation](docs/DEPLOYMENT.md)
 - [SheepWars : game design et fonctionnalités](docs/SHEEPWARS.md)
+- [Fallen Kingdoms : game design de référence](docs/FALLEN_KINGDOMS_GAME_DESIGN.md)
 - [Développement, tests et contribution](docs/DEVELOPMENT.md)
 - [Git, CI et versionnement](docs/GIT_CI.md)
 - [Historique des changements](docs/CHANGELOG.md)
