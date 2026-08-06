@@ -22,7 +22,7 @@ Sources historiques : [présentation d'Epicube et origine du nom](https://www.mi
 4. Au début de la manche, chaque joueur rejoint un spawn libre de son équipe avec une armure en cuir colorée, une épée, un arc Infinité, une flèche et un mouton aléatoire.
 5. Un mouton spécial supplémentaire est distribué périodiquement à chaque survivant. L'équipe en sous-nombre reçoit aussi trois moutons par joueur au lancement.
 6. Une mort est définitive pour la manche et place le joueur en spectateur. La disparition de tous les survivants d'une équipe termine immédiatement la partie.
-7. Après l'écran de résultat, les joueurs sont renvoyés progressivement au lobby. Une prochaine instance est précréée lorsque possible et le lobby propose une revanche.
+7. Après l'écran de résultat, les joueurs sont renvoyés au lobby. Une prochaine instance est précréée lorsque possible et le lobby propose une revanche. Si elle démarre encore, les joueurs qui acceptent sont placés dans une file dédupliquée et la rejoignent automatiquement dès qu'elle est prête, sans multiplier les conteneurs.
 
 La durée par défaut est de 600 secondes, le compte à rebours de 10 secondes et la distribution des moutons de 10 secondes. Ces valeurs sont configurables.
 

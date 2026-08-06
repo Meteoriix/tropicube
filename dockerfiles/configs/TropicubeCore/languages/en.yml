@@ -407,7 +407,7 @@ lobby:
   custom-game-active-lore: "<gray>You can only own one custom server at a time."
   custom-game-failed: "<red>✖ Could not create the game. Please try again later."
   game-start-failed: "<red>✖ Could not start a game. Please try again later."
-  game-queued: "<yellow>⧗ No server is available; a new game is being prepared."
+  game-queued: "<yellow>⧗ Game starting up: you will connect automatically as soon as it is ready."
   no-template-for-type: "<red>No server template is available for {0}."
   host-stop-name: "<red>⚠ Stop my game"
   host-stop-lore1: "<gray>Your server is waiting for players."

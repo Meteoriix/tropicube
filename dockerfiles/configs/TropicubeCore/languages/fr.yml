@@ -416,7 +416,7 @@ lobby:
   custom-game-active-lore: "<gray>Tu ne peux posséder qu'un seul serveur personnalisé à la fois."
   custom-game-failed: "<red>✖ Impossible de créer la partie. Réessaie plus tard."
   game-start-failed: "<red>✖ Impossible de démarrer une partie. Réessaie plus tard."
-  game-queued: "<yellow>⧗ Aucun serveur disponible : une nouvelle partie est en préparation."
+  game-queued: "<yellow>⧗ Partie en préparation : tu seras connecté automatiquement dès qu'elle sera prête."
   no-template-for-type: "<red>Aucun modèle de serveur disponible pour {0}."
   host-stop-name: "<red>⚠ Arrêter ma partie"
   host-stop-lore1: "<gray>Ton serveur attend des joueurs."

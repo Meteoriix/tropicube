@@ -324,7 +324,7 @@ lobby:
   custom-game-active-lore: "<gray>Du kannst nur einen eigenen Server gleichzeitig besitzen."
   custom-game-failed: "<red>✖ Spiel konnte nicht erstellt werden. Versuche es später erneut."
   game-start-failed: "<red>✖ Ein Spiel konnte nicht gestartet werden. Versuche es später erneut."
-  game-queued: "<yellow>⧗ Kein Server ist verfügbar; ein neues Spiel wird vorbereitet."
+  game-queued: "<yellow>⧗ Spiel wird vorbereitet: Du wirst automatisch verbunden, sobald es bereit ist."
   no-template-for-type: "<red>Für {0} ist keine Servervorlage verfügbar."
   host-stop-name: "<red>⚠ Spiel stoppen"
   host-stop-lore1: "<gray>Dein Server wartet auf Spieler."

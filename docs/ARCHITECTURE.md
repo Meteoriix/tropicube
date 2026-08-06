@@ -91,6 +91,8 @@ Le lobby prépare le joueur, fournit son inventaire de navigation et rafraîchit
 - utiliser un, deux ou une infinité de doubles-sauts selon les permissions ;
 - rejoindre la prochaine partie proposée après un match.
 
+Le matchmaking classique est coordonné par Velocity par template. Tant qu'une création est en cours, les clics du menu et les demandes `/playnext` réutilisent la même `CompletableFuture` au lieu de créer un conteneur supplémentaire. Les UUID sont conservés dans une file FIFO dédupliquée en mémoire, puis transférés automatiquement quand l'instance est enregistrée. Si sa capacité ne suffit pas, les joueurs restants déclenchent une unique instance suivante. Ce mécanisme ne s'applique ni aux parties personnalisées ni aux créations administratives.
+
 HeadDatabase est optionnel au moment précis du rendu : une icône Material ou une tête générique est utilisée tant que sa base n'est pas chargée.
 
 ### `tropicube-sheepwars`

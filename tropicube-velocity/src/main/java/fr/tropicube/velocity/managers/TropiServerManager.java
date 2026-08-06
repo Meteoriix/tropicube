@@ -35,6 +35,9 @@ public class TropiServerManager {
     // Instances actives : instanceId -> ServerInstance
     private final Map<String, ServerInstance> activeInstances = new ConcurrentHashMap<>();
     private final Map<String, AtomicInteger> pendingCreations = new ConcurrentHashMap<>();
+    private final InFlightCreationRegistry<String, ServerInstance> matchmakingCreations =
+            new InFlightCreationRegistry<>();
+    private final MatchmakingWaitlist matchmakingWaitlist = new MatchmakingWaitlist();
     private final Map<String, Long> lastHealthyAt = new ConcurrentHashMap<>();
     private final Map<String, Long> emptySince = new ConcurrentHashMap<>();
     private final Map<String, CompletableFuture<Boolean>> finishingGames = new ConcurrentHashMap<>();
@@ -153,7 +156,7 @@ public class TropiServerManager {
                     logger.warn("[Tropicube] CREATE_GAME refusé pour template invalide : {}", templateId);
                     return;
                 }
-                createServer(templateId, null, false, Collections.emptyMap())
+                ensureMatchmakingCreation(templateId)
                         .thenAccept(instance -> {
                             redisManager.set("sw:next-game:" + sourceInstanceId, instance.getServerName(), 7200);
                             logger.info("[Tropicube] Prochain jeu préparé : {} pour instance {}", instance.getServerName(), sourceInstanceId);
@@ -177,14 +180,12 @@ public class TropiServerManager {
                     redisManager.publishCommand("LOBBY", "GAME_START_FAILED:" + uuidStr);
                     return;
                 }
-                createServer(templateId, null, false, Collections.emptyMap())
-                        .thenAccept(instance ->
-                                redisManager.publishCommand("PROXY", "CONNECT:" + uuidStr + ":" + instance.getServerName()))
-                        .exceptionally(ex -> {
-                            logger.warn("[Tropicube] Échec START_GAME pour {} : {}", uuidStr, ex.getMessage());
-                            redisManager.publishCommand("LOBBY", "GAME_START_FAILED:" + uuidStr);
-                            return null;
-                        });
+                try {
+                    queueForMatchmaking(templateId, UUID.fromString(uuidStr));
+                } catch (IllegalArgumentException e) {
+                    logger.warn("[Tropicube] UUID invalide dans START_GAME : {}", uuidStr);
+                    redisManager.publishCommand("LOBBY", "GAME_START_FAILED:" + uuidStr);
+                }
                 return;
             }
 
@@ -405,6 +406,74 @@ public class TropiServerManager {
         }));
     }
 
+    /**
+     * Ajoute un joueur à la file d'un template classique. Une instance déjà joignable est utilisée en priorité ;
+     * sinon tous les joueurs partagent la même création en cours et seront transférés lorsqu'elle sera prête.
+     */
+    private void queueForMatchmaking(String templateId, UUID playerId) {
+        matchmakingWaitlist.add(templateId, playerId);
+        findJoinableMatchmakingInstance(templateId, playerId).ifPresentOrElse(
+                instance -> dispatchMatchmakingPlayers(templateId, instance),
+                () -> ensureMatchmakingCreation(templateId));
+    }
+
+    /** Retire un joueur déconnecté de toute attente de création classique. */
+    public void removeFromMatchmaking(UUID playerId) {
+        matchmakingWaitlist.remove(playerId);
+    }
+
+    private Optional<ServerInstance> findJoinableMatchmakingInstance(String templateId, UUID playerId) {
+        return activeInstances.values().stream()
+                .filter(instance -> templateId.equals(instance.getTemplateId()))
+                .filter(instance -> !instance.isWhitelisted())
+                .filter(instance -> instance.getStatus() == ServerInstance.Status.GAME_WAITING
+                        || instance.getStatus() == ServerInstance.Status.GAME_STARTING)
+                .filter(instance -> instance.isJoinable(playerId))
+                .min(Comparator.comparingInt(ServerInstance::getOnlinePlayers));
+    }
+
+    /** Retourne l'unique création classique en cours pour ce template, ou en démarre une. */
+    private CompletableFuture<ServerInstance> ensureMatchmakingCreation(String templateId) {
+        CompletableFuture<ServerInstance> creation = matchmakingCreations.getOrCreate(
+                templateId, () -> createServer(templateId, null, false, Collections.emptyMap()));
+        creation.whenComplete((instance, error) -> {
+            if (matchmakingCreations.remove(templateId, creation)) {
+                if (error != null) {
+                    List<UUID> failedPlayers = matchmakingWaitlist.removeAll(templateId);
+                    failedPlayers.forEach(playerId -> redisManager.publishCommand(
+                            "LOBBY", "GAME_START_FAILED:" + playerId));
+                    logger.warn("[Tropicube] Échec de la création matchmaking {} pour {} joueur(s)",
+                            templateId, failedPlayers.size(), error);
+                    return;
+                }
+                dispatchMatchmakingPlayers(templateId, instance);
+            }
+        });
+        return creation;
+    }
+
+    private void dispatchMatchmakingPlayers(String templateId, ServerInstance instance) {
+        List<UUID> waitingPlayers = matchmakingWaitlist.removeAll(templateId);
+        if (waitingPlayers.isEmpty()) return;
+
+        int availableSlots = Math.max(0, instance.getMaxPlayers() - instance.getOnlinePlayers());
+        int transferredPlayers = 0;
+        for (UUID playerId : waitingPlayers) {
+            if (proxy.getPlayer(playerId).isEmpty()) continue;
+            if (transferredPlayers < availableSlots) {
+                redisManager.publishCommand(
+                        "PROXY", "CONNECT:" + playerId + ":" + instance.getServerName());
+                transferredPlayers++;
+            } else {
+                matchmakingWaitlist.add(templateId, playerId);
+            }
+        }
+
+        if (matchmakingWaitlist.hasPlayers(templateId)) {
+            ensureMatchmakingCreation(templateId);
+        }
+    }
+
     private void publishTemplates() {
         StringBuilder sb = new StringBuilder("[");
         boolean first = true;
@@ -568,6 +637,8 @@ public class TropiServerManager {
      * par {@link #restoreActiveInstances()} au prochain démarrage.
      */
     public void shutdown(boolean stopDynamicServers) {
+        matchmakingWaitlist.clear();
+        matchmakingCreations.clear();
         if (stopDynamicServers) {
             stopAllServers();
             return;
@@ -613,6 +684,8 @@ public class TropiServerManager {
         emptySince.clear();
         lastHealthyAt.clear();
         pendingCreations.clear();
+        matchmakingCreations.clear();
+        matchmakingWaitlist.clear();
         // Sweep final : supprime tout container dynamique encore vivant (démarrage en cours, crash, etc.).
         dockerManager.removeAllDynamicContainers();
     }

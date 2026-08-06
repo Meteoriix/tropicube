@@ -121,6 +121,7 @@ public class PlayerConnectionListener {
         redisManager.delete("player:online:" + player.getUniqueId());
         redisManager.removePlayerServer(player.getUniqueId().toString());
         plugin.getQueueManager().removeFromQueue(player.getUniqueId());
+        serverManager.removeFromMatchmaking(player.getUniqueId());
         lm.unloadPlayer(player.getUniqueId());
         redisManager.publishPlayerEvent("PLAYER_QUIT",
                 player.getUniqueId() + ":" + player.getUsername());

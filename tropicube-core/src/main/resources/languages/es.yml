@@ -324,7 +324,7 @@ lobby:
   custom-game-active-lore: "<gray>Solo puedes tener un servidor personalizado a la vez."
   custom-game-failed: "<red>✖ No se pudo crear la partida. Inténtalo más tarde."
   game-start-failed: "<red>✖ No se pudo iniciar una partida. Inténtalo más tarde."
-  game-queued: "<yellow>⧗ No hay servidores disponibles; se está preparando una nueva partida."
+  game-queued: "<yellow>⧗ Partida en preparación: te conectarás automáticamente cuando esté lista."
   no-template-for-type: "<red>No hay una plantilla de servidor disponible para {0}."
   host-stop-name: "<red>⚠ Detener mi partida"
   host-stop-lore1: "<gray>Tu servidor está esperando jugadores."
