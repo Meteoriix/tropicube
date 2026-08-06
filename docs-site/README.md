@@ -11,3 +11,4 @@ node docs-site/validate.mjs
 
 Le générateur utilise uniquement les API natives de Node.js et ne nécessite donc aucun `npm install`.
 La feuille de style applique la palette officielle Tropicube (Violet Nuit, Soleil Doré, Sable et accents tropicaux) et conserve des polices de repli locales afin que le site reste entièrement consultable hors ligne.
+Le générateur ajoute à l'URL de `styles.css` une empreinte calculée depuis son contenu. Une modification de la feuille de style invalide ainsi automatiquement les caches des navigateurs et reverse proxies après reconstruction et mise en ligne de toutes les pages générées.

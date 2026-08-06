@@ -1,9 +1,12 @@
+import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const siteDirectory = dirname(fileURLToPath(import.meta.url));
 const projectDirectory = resolve(siteDirectory, "..");
+const stylesheet = await readFile(join(siteDirectory, "styles.css"));
+const stylesheetVersion = createHash("sha256").update(stylesheet).digest("hex").slice(0, 12);
 
 const pages = [
   { source: "README.md", output: "index.html", label: "Accueil", icon: "⌂", description: "Vue d’ensemble du projet Tropicube" },
@@ -227,7 +230,7 @@ function documentTemplate(page, rendered) {
   <meta name="description" content="${escapeHtml(page.description)}">
   <meta name="theme-color" content="#2d1b6b">
   <title>${escapeHtml(rendered.title)} · Tropicube</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=${stylesheetVersion}">
 </head>
 <body>
   <a class="skip-link" href="#contenu">Aller au contenu</a>
