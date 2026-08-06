@@ -17,10 +17,10 @@ default-settings:
   # Kits aléatoires (ignore la sélection des joueurs)
   random-kits: false
   # Délai entre les apparitions de moutons (en secondes)
-  sheep-give-delay: 10
+  sheep-give-delay: 20
   # Vote de map : true = tous votent, false = l'hôte choisit
   map-vote-enabled: true
-  # Probabilités d'apparition des moutons spéciaux (en %)
+  # Poids relatifs d'apparition des moutons spéciaux
   sheep-probabilities:
     boarding: 5
     tnt: 7

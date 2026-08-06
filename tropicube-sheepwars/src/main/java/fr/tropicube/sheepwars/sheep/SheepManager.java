@@ -35,6 +35,7 @@ public class SheepManager {
     /** Nettoie les entités et bonus temporaires au début et à la fin d'une partie. */
     public void reset() {
         strengthBuffCounts.clear();
+        playerDrawDecks.clear();
         for (Map.Entry<UUID, MechaData> entry : mechaGolems.entrySet()) {
             org.bukkit.entity.Entity golem = org.bukkit.Bukkit.getEntity(entry.getKey());
             if (golem != null) golem.remove();
@@ -58,6 +59,9 @@ public class SheepManager {
     /** Pondérations mises en cache et recalculées par {@link #buildWeightCache()}. */
     private EnumMap<SheepType, Integer> sheepWeights;
     private int sheepWeightTotal;
+
+    /** Pioche indépendante par joueur afin d'éviter les séries individuelles. */
+    private final Map<UUID, SheepDrawDeck> playerDrawDecks = new HashMap<>();
 
     public final NamespacedKey sheepTypeKey;
 
@@ -111,6 +115,7 @@ public class SheepManager {
             sheepWeights.put(fallback, 1);
             sheepWeightTotal = 1;
         }
+        playerDrawDecks.clear();
     }
 
     public AbstractSheep getHandler(SheepType type) {
@@ -166,14 +171,9 @@ public class SheepManager {
 
     // ── Random sheep selection ─────────────────────────────────────────────
 
-    public SheepType randomSheepType() {
-        int rand = ThreadLocalRandom.current().nextInt(sheepWeightTotal);
-        int sum = 0;
-        for (Map.Entry<SheepType, Integer> entry : sheepWeights.entrySet()) {
-            sum += entry.getValue();
-            if (rand < sum) return entry.getKey();
-        }
-        return SheepType.TNT; // Garde défensive si les pondérations sont modifiées de manière concurrente.
+    public SheepType randomSheepType(UUID playerId) {
+        return playerDrawDecks.computeIfAbsent(playerId,
+                _ -> new SheepDrawDeck(sheepWeights, ThreadLocalRandom.current())).next();
     }
 
     // ── Sheep lifecycle ────────────────────────────────────────────────────

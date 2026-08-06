@@ -64,7 +64,7 @@ L'hôte peut désactiver des classes ou des kits. Le mode « kits aléatoires »
 | Force | Renforce les dégâts du lanceur et des alliés proches |
 | Fragmentation | Libère cinq petits moutons explosifs |
 
-Chaque type possède une probabilité configurable dans `default-settings.sheep-probabilities`. Les types peuvent également être désactivés via `force-settings.sheep-disabled` ou depuis le menu de l'hôte.
+Chaque type possède une probabilité configurable dans `default-settings.sheep-probabilities`. Chaque joueur utilise sa propre pioche pondérée : les poids restent respectés sur la durée et deux distributions consécutives ne donnent pas le même type lorsque la pondération le permet. Les types peuvent également être désactivés via `force-settings.sheep-disabled` ou depuis le menu de l'hôte.
 
 ## Cartes et équipes
 

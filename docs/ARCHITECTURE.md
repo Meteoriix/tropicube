@@ -110,7 +110,7 @@ Une instance SheepWars suit les phases attente, sélection, compte à rebours, j
 - la sélection des équipes, classes et kits ;
 - les règles forcées ou personnalisées ;
 - les scores et statistiques persistantes ;
-- les moutons spéciaux pondérés par configuration ;
+- les moutons spéciaux issus d'une pioche pondérée indépendante par joueur, sans répétition consécutive lorsque les poids actifs le permettent ;
 - le retour au lobby et la proposition de revanche.
 
 Les types inclus sont Boarding, TNT, Distort, Darkness, Searching, Fire, Poison, Swap, Meteor, Healing, Lightning, Gravity, Mecha, Strength et Fragmentation.

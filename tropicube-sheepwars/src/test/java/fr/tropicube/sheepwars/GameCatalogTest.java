@@ -71,6 +71,16 @@ class GameCatalogTest {
         assertFalse(configuration.getBoolean("custom-game-default-settings.auto-start"));
     }
 
+    @Test
+    void defaultSheepDistributionIsLimitedToThirtyPeriodicDrawsPerFullGame() {
+        YamlConfiguration configuration = loadDefaultConfiguration();
+
+        int duration = configuration.getInt("default-settings.game-duration");
+        int delay = configuration.getInt("default-settings.sheep-give-delay");
+        assertEquals(20, delay);
+        assertEquals(30, duration / delay);
+    }
+
     private static YamlConfiguration loadDefaultConfiguration() {
         InputStream stream = GameCatalogTest.class.getClassLoader().getResourceAsStream("config.yml");
         assertNotNull(stream, "config.yml doit être présent dans les ressources du module");

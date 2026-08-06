@@ -244,7 +244,7 @@ public class GameSettingsMenu implements Listener {
 
         // Troisième ligne : délai, kits aléatoires, démarrage, vote et retour.
         if (isConfigurable("sheep-give-delay")) {
-            int delay = cfg.getInt("default-settings.sheep-give-delay", 10);
+            int delay = cfg.getInt("default-settings.sheep-give-delay", 20);
             List<Component> delayLore = new ArrayList<>();
             delayLore.add(Component.text(delay + "s", NamedTextColor.WHITE)
                     .decoration(TextDecoration.ITALIC, false));
@@ -614,7 +614,7 @@ public class GameSettingsMenu implements Listener {
         int max       = cfg.getInt("default-settings.max-players", 16);
         int countdown = cfg.getInt("default-settings.countdown", 10);
         int duration  = cfg.getInt("default-settings.game-duration", 600);
-        int delay     = cfg.getInt("default-settings.sheep-give-delay", 10);
+        int delay     = cfg.getInt("default-settings.sheep-give-delay", 20);
         switch (slot) {
             case 0  -> cfg.set("default-settings.min-players", Math.max(1, min - 1));
             case 2  -> cfg.set("default-settings.min-players", Math.min(max, min + 1));

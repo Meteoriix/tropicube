@@ -362,7 +362,7 @@ public class GameManager {
         plugin.getSheepManager().reset();
 
         int sheepDelaySeconds = Math.max(1,
-                plugin.getConfig().getInt("default-settings.sheep-give-delay", 10));
+                plugin.getConfig().getInt("default-settings.sheep-give-delay", 20));
         if (sheepDelaySeconds < 5) {
             Player host = Bukkit.getPlayer(hostUuid);
             if (host != null)
@@ -428,7 +428,7 @@ public class GameManager {
                 if (bukkitPlayer == null) continue;
                 for (int i = 0; i < 3; i++) {
                     bukkitPlayer.getInventory().addItem(plugin.getSheepManager()
-                            .createSheepItem(plugin.getSheepManager().randomSheepType()));
+                            .createSheepItem(plugin.getSheepManager().randomSheepType(bukkitPlayer.getUniqueId())));
                 }
             }
         }
@@ -507,7 +507,8 @@ public class GameManager {
         p.getInventory().setItem(EquipmentSlot.FEET, boots);
 
         // Mouton de départ
-        p.getInventory().addItem(plugin.getSheepManager().createSheepItem(plugin.getSheepManager().randomSheepType()));
+        p.getInventory().addItem(plugin.getSheepManager().createSheepItem(
+                plugin.getSheepManager().randomSheepType(p.getUniqueId())));
     }
 
     private PlayerKit randomEnabledKit() {
@@ -559,7 +560,7 @@ public class GameManager {
         for (GamePlayer gp : getAlivePlayers()) {
             Player p = gp.getBukkitPlayer();
             if (p == null) continue;
-            SheepType type = plugin.getSheepManager().randomSheepType();
+            SheepType type = plugin.getSheepManager().randomSheepType(p.getUniqueId());
             p.getInventory().addItem(plugin.getSheepManager().createSheepItem(type));
             p.playSound(p.getLocation(), Sound.ENTITY_SHEEP_AMBIENT, 1.0F, 1.0F);
         }
