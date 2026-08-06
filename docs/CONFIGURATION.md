@@ -76,7 +76,9 @@ Chaque entrée de `templates` décrit :
 
 Le lobby est une dépendance de routage essentielle et reste activé. Pour ajouter un mode de jeu, fournir une image, un plugin capable de publier son état, une plage de ports et une entrée correspondante dans `server-types` du lobby.
 
-`shutdown.stop-dynamic-servers` doit normalement rester à `false`. Le passer à `true` signifie qu'un arrêt de Velocity doit également arrêter toutes les instances dynamiques.
+`shutdown.stop-dynamic-servers` vaut `true` par défaut. Un arrêt propre de Velocity arrête alors toutes les instances dynamiques, supprime leurs conteneurs et demande à Docker de supprimer leurs volumes anonymes. Les volumes nommés persistants `mysql-data` et `redis-data` ne sont jamais concernés.
+
+La valeur `false` conserve les backends et leurs volumes afin qu'un redémarrage de Velocity puisse restaurer les parties actives. Cette dérogation doit être réservée aux redéploiements où cette continuité est explicitement recherchée ; si la clé est absente, le comportement sûr reste la suppression.
 
 ### Nick et administration
 

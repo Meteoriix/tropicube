@@ -63,7 +63,7 @@ Le plugin proxy :
 - applique la whitelist d'une partie personnalisée ;
 - propose les commandes réseau et l'identité `/nick`.
 
-Le redéploiement normal conserve les backends (`shutdown.stop-dynamic-servers: false`) afin qu'un redémarrage de Velocity ne détruise pas les parties actives.
+À l'arrêt propre de Velocity, le comportement par défaut (`shutdown.stop-dynamic-servers: true`) arrête et supprime tous les conteneurs dynamiques. La suppression Docker inclut leurs volumes anonymes `/data`, qui ne contiennent que l'état éphémère de l'instance. Les volumes nommés de MySQL et Redis sont hors de ce périmètre et restent persistants. Un redéploiement qui doit préserver les parties peut temporairement utiliser la valeur `false` ; les backends sont alors restaurés au démarrage suivant.
 
 ### `tropicube-core`
 

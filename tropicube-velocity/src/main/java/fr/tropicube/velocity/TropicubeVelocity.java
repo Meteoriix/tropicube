@@ -97,8 +97,7 @@ public class TropicubeVelocity {
             queueManager.shutdown();
         }
         if (tropiServerManager != null) {
-            boolean stopDynamicServers = config != null
-                    && config.node("shutdown", "stop-dynamic-servers").getBoolean(false);
+            boolean stopDynamicServers = stopDynamicServersOnShutdown(config);
             tropiServerManager.shutdown(stopDynamicServers);
         }
         if (redisManager != null) {
@@ -107,6 +106,15 @@ public class TropicubeVelocity {
         if (dockerManager != null) {
             dockerManager.close();
         }
+    }
+
+    /**
+     * Détermine si les conteneurs dynamiques et leurs volumes anonymes doivent être supprimés.
+     * L'absence de configuration privilégie le nettoyage afin de ne pas laisser de données
+     * éphémères sur l'hôte après l'arrêt du proxy.
+     */
+    static boolean stopDynamicServersOnShutdown(ConfigurationNode config) {
+        return config == null || config.node("shutdown", "stop-dynamic-servers").getBoolean(true);
     }
 
     private void loadConfig() {

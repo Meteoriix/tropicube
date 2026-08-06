@@ -145,7 +145,9 @@ Exemples :
 6. double tag `latest` et `YYYYMMDD-HHMMSS` UTC ;
 7. `docker compose up -d --force-recreate velocity`.
 
-Compose démarre ou vérifie automatiquement Redis, MySQL et `docker-proxy` grâce aux dépendances de santé. Le nouveau Velocity restaure les backends encore actifs. Les futures instances utilisent les nouvelles images `latest`; un serveur de jeu déjà lancé ne change pas en plein match.
+Compose démarre ou vérifie automatiquement Redis, MySQL et `docker-proxy` grâce aux dépendances de santé. Par défaut, l'arrêt de l'ancien Velocity supprime les backends dynamiques et leurs volumes anonymes avant le redémarrage. Les futures instances utilisent les nouvelles images `latest`.
+
+Pour conserver exceptionnellement les parties actives pendant un redéploiement, régler auparavant `shutdown.stop-dynamic-servers: false` dans la configuration Velocity déployée. Le nouveau proxy restaurera alors les backends encore actifs. Cette option ne doit pas être utilisée pour un arrêt complet.
 
 Le build compile aussi le squelette `tropicube-fallenkingdoms`, mais aucun artefact de ce module n'est distribué ou incorporé à une image tant qu'il ne constitue pas un plugin complet.
 
@@ -195,7 +197,7 @@ Redémarrage du proxy uniquement :
 docker compose up -d --force-recreate velocity
 ```
 
-Pour un arrêt complet incluant les serveurs dynamiques, les arrêter d'abord avec `/tropi stop` ou activer temporairement `shutdown.stop-dynamic-servers`, puis arrêter la stack après vérification. Un arrêt brutal de Docker peut interrompre une sauvegarde de monde.
+Avec la configuration par défaut, l'arrêt propre du proxy arrête les serveurs dynamiques puis supprime leurs conteneurs et volumes anonymes. Attendre la fin de ce nettoyage avant d'arrêter `docker-proxy` ou le daemon Docker ; un arrêt brutal peut interrompre une sauvegarde de monde et laisser des ressources orphelines. Si `shutdown.stop-dynamic-servers` a été désactivé pour un redéploiement, rétablir la valeur `true` ou arrêter d'abord les instances avec `/tropi stop` avant un arrêt complet.
 
 ## Rollback
 

@@ -19,6 +19,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Modifié
 
+- Arrêt de Velocity : les serveurs dynamiques et leurs volumes Docker anonymes sont désormais supprimés par défaut, sans toucher aux volumes persistants MySQL et Redis.
 - Site documentaire aligné sur la charte graphique Tropicube : palette officielle, identité de marque, composants, navigation et affichage mobile.
 - Site documentaire enrichi avec les pages Développement, Git/CI et Historique des changements.
 - README complété avec le wrapper Maven et les contrôles automatiques disponibles.

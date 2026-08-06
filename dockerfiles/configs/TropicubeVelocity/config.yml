@@ -10,10 +10,10 @@ redis:
 language:
   default: "fr"
 
-# Conserver les backends pendant un redéploiement de Velocity permet leur restauration.
-# Mettre à true uniquement pour un arrêt complet de toute l'infrastructure.
+# Supprime les serveurs dynamiques et leurs volumes anonymes à l'arrêt du proxy.
+# Mettre à false uniquement pour conserver les parties pendant un redéploiement de Velocity.
 shutdown:
-  stop-dynamic-servers: false
+  stop-dynamic-servers: true
 
 health-check:
   # Une instance prête est sondée fréquemment et purgée après une minute sans succès.
