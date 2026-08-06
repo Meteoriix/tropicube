@@ -265,7 +265,7 @@ public class GameSettingsMenu implements Listener {
             inv.setItem(22, randomKitsItem(player, cfg.getBoolean("default-settings.random-kits", false)));
         }
         if (isConfigurable("auto-start")) {
-            inv.setItem(23, autoStartItem(player, cfg.getBoolean("default-settings.auto-start", false)));
+            inv.setItem(23, autoStartItem(player, cfg.getBoolean("default-settings.auto-start", true)));
         }
         if (isConfigurable("map-vote-enabled")) {
             inv.setItem(24, mapVoteItem(player, cfg.getBoolean("default-settings.map-vote-enabled", true)));
@@ -627,7 +627,10 @@ public class GameSettingsMenu implements Listener {
             case 18 -> cfg.set("default-settings.sheep-give-delay", Math.max(1, delay - 1));
             case 20 -> cfg.set("default-settings.sheep-give-delay", Math.min(120, delay + 1));
             case 22 -> cfg.set("default-settings.random-kits", !cfg.getBoolean("default-settings.random-kits", false));
-            case 23 -> cfg.set("default-settings.auto-start", !cfg.getBoolean("default-settings.auto-start", false));
+            case 23 -> {
+                cfg.set("default-settings.auto-start", !cfg.getBoolean("default-settings.auto-start", true));
+                plugin.getGameManager().evaluateAutoStart();
+            }
             case 24 -> {
                 boolean next = !cfg.getBoolean("default-settings.map-vote-enabled", true);
                 cfg.set("default-settings.map-vote-enabled", next);

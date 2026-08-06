@@ -63,6 +63,14 @@ class GameCatalogTest {
         }
     }
 
+    @Test
+    void autoStartDefaultsDifferBetweenClassicAndCustomGames() {
+        YamlConfiguration configuration = loadDefaultConfiguration();
+
+        assertTrue(configuration.getBoolean("default-settings.auto-start"));
+        assertFalse(configuration.getBoolean("custom-game-default-settings.auto-start"));
+    }
+
     private static YamlConfiguration loadDefaultConfiguration() {
         InputStream stream = GameCatalogTest.class.getClassLoader().getResourceAsStream("config.yml");
         assertNotNull(stream, "config.yml doit être présent dans les ressources du module");

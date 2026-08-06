@@ -10,7 +10,7 @@ default-settings:
   min-players: 2
   max-players: 16
   # Démarrage automatique lorsque le minimum de joueurs est atteint
-  auto-start: false
+  auto-start: true
   # Durée du compte à rebours et de la partie (en secondes)
   countdown: 10
   game-duration: 600
@@ -37,6 +37,10 @@ default-settings:
     mecha: 8
     strength: 6
     fragmentation: 7
+
+custom-game-default-settings:
+  # Une partie personnalisée attend par défaut le lancement manuel de son hôte
+  auto-start: false
 
 force-settings:
   # IDs de classes désactivées (ex: ["DPS", "SUPPORT"])

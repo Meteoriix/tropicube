@@ -18,7 +18,7 @@ Sources historiques : [présentation d'Epicube et origine du nom](https://www.mi
 
 1. L'instance attend les joueurs et charge leur profil, leur langue, leur classe et leur kit.
 2. Les joueurs choisissent une équipe, une classe, un kit et, si le vote est actif, une carte.
-3. L'hôte lance le compte à rebours depuis son menu de réglages, ou le démarrage automatique se déclenche lorsque le minimum configuré est atteint.
+3. En partie classique, le démarrage automatique déclenche le compte à rebours lorsque le minimum configuré est atteint. En partie personnalisée, l'hôte lance le compte à rebours depuis son menu de réglages ou active explicitement le démarrage automatique.
 4. Au début de la manche, chaque joueur rejoint un spawn libre de son équipe avec une armure en cuir colorée, une épée, un arc Infinité, une flèche et un mouton aléatoire.
 5. Un mouton spécial supplémentaire est distribué périodiquement à chaque survivant. L'équipe en sous-nombre reçoit aussi trois moutons par joueur au lancement.
 6. Une mort est définitive pour la manche et place le joueur en spectateur. La disparition de tous les survivants d'une équipe termine immédiatement la partie.
@@ -86,6 +86,8 @@ Avant la manche, l'hôte dispose d'un menu lui permettant notamment de :
 - activer le démarrage automatique, les kits aléatoires et le vote de carte ;
 - activer ou désactiver les moutons, classes et kits disponibles.
 
+Le démarrage automatique est désactivé par défaut pour une partie personnalisée, contrairement aux parties classiques où il est activé. Si l'hôte l'active après que le nombre minimum de joueurs a déjà été atteint, le compte à rebours commence immédiatement.
+
 Le lobby permet d'arrêter le serveur tant que la manche n'a pas commencé. Après le lancement, l'association d'hôte est conservée jusqu'à la fin de partie, puis supprimée automatiquement.
 
 ## Interface, langues et commandes
@@ -102,6 +104,7 @@ La configuration source se trouve dans `tropicube-sheepwars/src/main/resources/c
 
 - `redis` : connexion à l'état partagé ;
 - `default-settings` : règles initiales de la manche ;
+- `custom-game-default-settings` : valeurs initiales propres aux instances personnalisées ;
 - `force-settings` : fonctionnalités interdites par l'exploitation ;
 - `locations` : monde, lobby, limite du vide, cartes et spawns d'équipe.
 

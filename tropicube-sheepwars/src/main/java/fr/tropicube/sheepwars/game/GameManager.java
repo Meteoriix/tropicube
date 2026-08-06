@@ -70,6 +70,11 @@ public class GameManager {
         this.gameStartCancelKey = new NamespacedKey(plugin, "game_start_cancel_item");
         this.leaveItemKey = new NamespacedKey(plugin, "leave_game_item");
         this.hostUuid = parseHostUuid(System.getenv("HOST_UUID"));
+        boolean initialAutoStart = AutoStartPolicy.initialValue(
+                !hostUuid.equals(NO_HOST),
+                plugin.getConfig().getBoolean("default-settings.auto-start", true),
+                plugin.getConfig().getBoolean("custom-game-default-settings.auto-start", false));
+        plugin.getConfig().set("default-settings.auto-start", initialAutoStart);
         this.glowingEntities = new GlowingEntities(plugin);
     }
 
@@ -170,12 +175,7 @@ public class GameManager {
 
         broadcastLang("sw.player-joined", player.getName(), players.size(), maxPlayers);
 
-        // Lance le countdown si on a assez de joueurs et auto-start activé
-        int minPlayers = getMinPlayers();
-        boolean autoStart = plugin.getConfig().getBoolean("default-settings.auto-start", false);
-        if (autoStart && state == GameState.WAITING && players.size() >= minPlayers) {
-            startCountdown();
-        }
+        evaluateAutoStart();
     }
 
     public void removePlayer(Player player) {
@@ -306,6 +306,14 @@ public class GameManager {
         updateInstanceStatus(ServerInstance.Status.GAME_WAITING);
         broadcastLang("sw.countdown-cancelled");
         plugin.getScoreboardManager().updateAll();
+    }
+
+    /** Lance le compte à rebours si le réglage automatique et le nombre de joueurs le permettent. */
+    public void evaluateAutoStart() {
+        boolean enabled = plugin.getConfig().getBoolean("default-settings.auto-start", true);
+        if (AutoStartPolicy.shouldStart(enabled, state, players.size(), getMinPlayers())) {
+            startCountdown();
+        }
     }
 
     // ============================================================
