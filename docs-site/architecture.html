@@ -4,15 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Services, modules, données et flux réseau">
-  <meta name="theme-color" content="#071a18">
+  <meta name="theme-color" content="#2d1b6b">
   <title>Architecture et fonctionnement · Tropicube</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <a class="skip-link" href="#contenu">Aller au contenu</a>
-  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span>Tropicube</a><span>Documentation</span></header>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span><span><span class="brand-name-accent">Tropi</span>cube</span></a><span>Documentation</span></header>
   <aside class="sidebar">
-    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong>Tropicube</strong><small>Documentation réseau</small></span></a>
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong><span class="brand-name-accent">Tropi</span>cube</strong><small>Documentation réseau</small></span></a>
     <nav aria-label="Documentation principale"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Accueil</span></a>
 <a class="nav-link active" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
 <a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commandes</span></a>
@@ -88,7 +88,7 @@
 <ul><li>Velocity authentifie les comptes (<code>online-mode = true</code>).</li><li>Les backends Paper sont hors ligne car ils font confiance au forwarding moderne de Velocity.</li><li><code>paper-global.yml</code> exige le même <code>FORWARDING_SECRET</code> que <code>forwarding.secret</code> côté proxy.</li><li>Redis et MySQL ne sont publiés que sur la boucle locale de l'hôte.</li><li>Le proxy Docker limite les familles d'appels exposées et utilise <code>no-new-privileges</code>.</li><li>Les conteneurs dynamiques reçoivent uniquement les secrets nécessaires via leur environnement.</li></ul></article>
       <aside class="page-toc" aria-label="Sommaire de la page"><span class="toc-title">Sur cette page</span><a class="toc-level-2" href="#vue-d-ensemble">Vue d'ensemble</a><a class="toc-level-2" href="#cycle-d-une-instance">Cycle d'une instance</a><a class="toc-level-2" href="#responsabilites-des-modules">Responsabilités des modules</a><a class="toc-level-3" href="#tropicube-docker-api">tropicube-docker-api</a><a class="toc-level-3" href="#tropicube-velocity">tropicube-velocity</a><a class="toc-level-3" href="#tropicube-core">tropicube-core</a><a class="toc-level-3" href="#tropicube-lobby">tropicube-lobby</a><a class="toc-level-3" href="#tropicube-sheepwars">tropicube-sheepwars</a><a class="toc-level-3" href="#tropicube-fallenkingdoms">tropicube-fallenkingdoms</a><a class="toc-level-2" href="#contrats-redis">Contrats Redis</a><a class="toc-level-2" href="#persistance-mysql">Persistance MySQL</a><a class="toc-level-2" href="#securite-reseau">Sécurité réseau</a></aside>
     </div>
-    <footer><span>Tropicube</span><span>Documentation statique générée depuis les fichiers Markdown</span></footer>
+    <footer><span><span class="brand-name-accent">Tropi</span>cube</span><span>Documentation statique générée depuis les fichiers Markdown</span></footer>
   </main>
 </body>
 </html>

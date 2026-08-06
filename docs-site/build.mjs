@@ -225,15 +225,15 @@ function documentTemplate(page, rendered) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="${escapeHtml(page.description)}">
-  <meta name="theme-color" content="#071a18">
+  <meta name="theme-color" content="#2d1b6b">
   <title>${escapeHtml(rendered.title)} · Tropicube</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <a class="skip-link" href="#contenu">Aller au contenu</a>
-  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span>Tropicube</a><span>Documentation</span></header>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span><span><span class="brand-name-accent">Tropi</span>cube</span></a><span>Documentation</span></header>
   <aside class="sidebar">
-    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong>Tropicube</strong><small>Documentation réseau</small></span></a>
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong><span class="brand-name-accent">Tropi</span>cube</strong><small>Documentation réseau</small></span></a>
     <nav aria-label="Documentation principale">${navigation(page.output)}</nav>
     <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
   </aside>
@@ -243,7 +243,7 @@ function documentTemplate(page, rendered) {
       <article class="documentation">${rendered.html}</article>
       ${tableOfContents(rendered.headings)}
     </div>
-    <footer><span>Tropicube</span><span>Documentation statique générée depuis les fichiers Markdown</span></footer>
+    <footer><span><span class="brand-name-accent">Tropi</span>cube</span><span>Documentation statique générée depuis les fichiers Markdown</span></footer>
   </main>
 </body>
 </html>`;
