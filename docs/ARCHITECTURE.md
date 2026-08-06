@@ -36,6 +36,8 @@ Deux réseaux Docker séparent les flux :
 7. Une instance vide et éligible à `auto-stop` est arrêtée après `auto-stop-delay`, sans descendre sous `min-instances`.
 8. Velocity sonde toutes les 10 secondes les backends prêts. Après 60 secondes sans réponse, il force la suppression du conteneur, de son entrée Velocity et de toutes ses références Redis connues.
 
+Les créations classiques SheepWars ne sont pas limitées à `min-instances` : dès qu'aucune instance `GAME_WAITING` ou `GAME_STARTING` n'a de place, le matchmaking partage une nouvelle création entre les joueurs en attente, jusqu'à `max-instances`. Une seule création simultanée par template est lancée afin d'éviter les doublons, puis une création suivante peut démarrer si des joueurs restent en attente.
+
 Le cycle nominal utilise `CREATING`, `STARTING`, `GAME_WAITING`, `GAME_STARTING`, `GAME_PLAYING`, `GAME_ENDING`, `STOPPING` et `STOPPED`, avec `ERROR` comme sortie d'échec. Une instance n'est joignable que si son état et sa capacité le permettent.
 
 ## Responsabilités des modules
@@ -64,6 +66,8 @@ Le plugin proxy :
 - propose les commandes réseau et l'identité `/nick`.
 
 À l'arrêt propre de Velocity, le comportement par défaut (`shutdown.stop-dynamic-servers: true`) arrête et supprime tous les conteneurs dynamiques. La suppression Docker inclut leurs volumes anonymes `/data`, qui ne contiennent que l'état éphémère de l'instance. Les volumes nommés de MySQL et Redis sont hors de ce périmètre et restent persistants. Un redéploiement qui doit préserver les parties peut temporairement utiliser la valeur `false` ; les backends sont alors restaurés au démarrage suivant.
+
+L'arrêt d'un conteneur est réconcilié avec son état Docker réel. Si le proxy de socket perd la réponse HTTP après avoir transmis la commande, Velocity vérifie si le conteneur est déjà arrêté ; sinon il retente une fois. L'instance n'est marquée en erreur que si les deux commandes échouent et que Docker la voit toujours active.
 
 ### `tropicube-core`
 

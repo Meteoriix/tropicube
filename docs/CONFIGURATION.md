@@ -70,11 +70,13 @@ Chaque entrée de `templates` décrit :
 - `enabled`, `name`, `image`, `type` ;
 - plage de ports et `max-players` ;
 - mémoire minimale/maximale en Mio ;
-- `auto-start`, `min-instances` ;
+- `auto-start`, `min-instances` et `max-instances` ;
 - `auto-stop`, `auto-stop-delay` ;
 - variables d'environnement passées à l'image Paper.
 
 Le lobby est une dépendance de routage essentielle et reste activé. Pour ajouter un mode de jeu, fournir une image, un plugin capable de publier son état, une plage de ports et une entrée correspondante dans `server-types` du lobby.
+
+`min-instances` est le plancher maintenu toutes les 30 secondes par l'autoscaler. Pour SheepWars, le matchmaking crée également une nouvelle instance à la demande lorsqu'aucun serveur classique en attente ou en démarrage n'est encore joignable. `max-instances` borne toutes les créations simultanées, qu'elles viennent du matchmaking, d'une partie personnalisée ou de `/tropi start`. Les templates fournis autorisent explicitement cinq instances concurrentes chacun.
 
 `shutdown.stop-dynamic-servers` vaut `true` par défaut. Un arrêt propre de Velocity arrête alors toutes les instances dynamiques, supprime leurs conteneurs et demande à Docker de supprimer leurs volumes anonymes. Les volumes nommés persistants `mysql-data` et `redis-data` ne sont jamais concernés.
 

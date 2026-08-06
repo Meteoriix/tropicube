@@ -619,16 +619,18 @@ public class DockerManager implements Closeable {
         requireContainer(instance);
         try {
             instance.setStatus(ServerInstance.Status.STOPPING);
-            dockerClient.stopContainerCmd(instance.getContainerId())
-                    .withTimeout(30) // Délai d'attente avant SIGKILL (en secondes)
-                    .exec();
+            DockerStopOperation.Result result = DockerStopOperation.execute(
+                    () -> dockerClient.stopContainerCmd(instance.getContainerId())
+                            .withTimeout(30) // Délai d'attente avant SIGKILL (en secondes)
+                            .exec(),
+                    () -> isContainerRunning(instance.getContainerId()));
+            if (result != DockerStopOperation.Result.COMPLETED) {
+                LOGGER.log(System.Logger.Level.INFO,
+                        "Arrêt Docker réconcilié pour " + instance.getContainerId() + " : " + result);
+            }
             instance.setStatus(ServerInstance.Status.STOPPED);
             releasePort(instance.getPort());
             if (instance.getRconPort() != 0) releaseRconPort(instance.getRconPort());
-            return true;
-        } catch (NotFoundException _) {
-            instance.setStatus(ServerInstance.Status.STOPPED);
-            releasePorts(instance);
             return true;
         } catch (Exception e) {
             instance.setStatus(ServerInstance.Status.ERROR);

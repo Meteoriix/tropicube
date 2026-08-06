@@ -28,6 +28,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Corrigé
 
+- Faux échec de `/tropi stop` lorsque le proxy de socket Docker perdait la réponse HTTP après avoir effectivement arrêté le conteneur ; l'état réel est maintenant vérifié et la commande retentée une fois si nécessaire.
+- Configuration d'autoscaling rendue explicite : les templates Lobby et SheepWars autorisent chacun jusqu'à cinq instances, et la documentation distingue maintien du minimum et création SheepWars à la demande.
 - Cache persistant de l'ancienne interface documentaire après déploiement : les pages référencent désormais `styles.css` avec une empreinte de contenu automatiquement validée.
 - URL de téléchargement du Maven Wrapper épinglée sur Maven 3.9.11.
 - Déconnexion des clients à la mort d'un joueur SheepWars causée par un conflit entre les équipes de scoreboard et les équipes temporaires de surlignage.

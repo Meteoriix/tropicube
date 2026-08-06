@@ -83,6 +83,7 @@ templates:
     auto-stop: true
     auto-stop-delay: 300
     min-instances: 1
+    max-instances: 5
     environment:
       TYPE: "PAPER"
       VERSION: "26.2"
@@ -127,6 +128,7 @@ templates:
     auto-stop: true
     auto-stop-delay: 300
     min-instances: 1
+    max-instances: 5
     environment:
       TYPE: "PAPER"
       VERSION: "26.2"
