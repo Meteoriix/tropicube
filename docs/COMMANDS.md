@@ -82,12 +82,12 @@ Le module est actuellement vide et n'ajoute donc aucune commande ni permission.
 | `/server [nom]` | — | aucune | Liste les instances ou se connecte à une instance joignable |
 | `/queue <serveur>` | `/file` | aucune | Entre dans la file d'une instance pleine ; VIP+ et Premium sont prioritaires |
 | `/nick` | — | grade autorisé | Génère un pseudonyme et un skin aléatoires |
-| `/nick off` | — | grade autorisé | Restaure l'identité originale |
+| `/nick off` | — | aucune | Restaure l'identité originale, même après une perte de grade |
 | `/find <joueur>` | — | `tropicube.admin.find` | Localise un joueur connecté |
 | `/send <joueur|*> <serveur>` | — | `tropicube.admin.send` | Transfère un joueur ou tous les joueurs |
 | `/tropi ...` | `/tropicube`, `/cm` | `tropicube.admin` | Administration des instances |
 
-Les grades autorisés pour `/nick` sont configurés dans `nick.allowed-grades`; les grades staff sont destinés à y figurer explicitement. Le changement est propagé aux backends par Redis sans déconnexion volontaire du joueur.
+Les grades autorisés à activer `/nick` sont configurés dans `nick.allowed-grades`; les grades staff sont destinés à y figurer explicitement. `/nick off` reste toujours accessible et annule aussi une génération encore en attente. Le changement est propagé aux backends par Redis sans déconnexion volontaire du joueur et deux générations simultanées pour le même joueur sont refusées.
 
 ### Administration des instances
 

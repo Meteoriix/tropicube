@@ -1,6 +1,7 @@
 package fr.tropicube.core.managers;
 
 import fr.tropicube.core.TropicubeCore;
+import fr.tropicube.docker.model.PlayerGradeCache;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 
@@ -120,6 +121,8 @@ public class PermissionManager {
                 }
                 db.executeUpdate("DELETE FROM tropicube_permissions WHERE uuid = ? AND expiry > 0 AND expiry <= ?",
                         uuid.toString(), System.currentTimeMillis() / 1000);
+                plugin.getRedisManager().set(PlayerGradeCache.key(uuid),
+                        playerGrades.getOrDefault(uuid, "JOUEUR"), PlayerGradeCache.TTL_SECONDS);
             } catch (SQLException e) {
                 plugin.getLogger().log(Level.SEVERE, "[Tropicube-Perms] Erreur chargement joueur " + uuid, e);
             }
@@ -201,6 +204,7 @@ public class PermissionManager {
         playerGradeExpiries.put(uuid, expiryEpoch);
         db.executeUpdate("UPDATE tropicube_players SET grade = ?, grade_expiry = ? WHERE uuid = ?",
                 gradeName, expiryEpoch, uuid.toString());
+        plugin.getRedisManager().set(PlayerGradeCache.key(uuid), gradeName, PlayerGradeCache.TTL_SECONDS);
 
         plugin.getServer().getScheduler().runTask(plugin, () -> {
             Player player = plugin.getServer().getPlayer(uuid);

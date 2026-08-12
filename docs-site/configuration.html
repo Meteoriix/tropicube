@@ -60,7 +60,8 @@
 <h3 id="nick-et-administration">Nick et administration<a class="heading-anchor" href="#nick-et-administration" aria-label="Lien vers cette section">#</a></h3>
 <ul><li><code>admin-uuids</code> donne <code>tropicube.admin</code>, <code>tropicube.admin.find</code>,</li></ul>
 <p><code>tropicube.admin.send</code> et <code>tropicube.bypass.whitelist</code> aux UUID approuvés ;</p>
-<ul><li><code>nick.allowed-grades</code> contrôle les grades pouvant utiliser <code>/nick</code> ;</li><li><code>nick.skin-uuids</code> complète le pool de profils Mojang utilisés comme skins.</li></ul>
+<ul><li><code>nick.allowed-grades</code> contrôle les grades pouvant activer <code>/nick</code> ; la désactivation reste accessible à tous ;</li><li><code>nick.skin-uuids</code> complète le pool de profils Mojang utilisés comme skins.</li></ul>
+<p>Core publie le grade courant sous <code>player:grade:&lt;uuid&gt;</code> avec une durée de vie de 24 heures. La valeur est actualisée au chargement et à chaque changement de grade, et n'est pas supprimée pendant un transfert entre backends.</p>
 <h2 id="velocity-natif">Velocity natif<a class="heading-anchor" href="#velocity-natif" aria-label="Lien vers cette section">#</a></h2>
 <p>Fichiers : <code>dockerfiles/configs/Velocity/velocity.toml</code> et <code>forwarding.secret</code>.</p>
 <p>Paramètres indispensables :</p>

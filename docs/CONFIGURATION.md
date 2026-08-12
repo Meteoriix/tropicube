@@ -86,8 +86,10 @@ La valeur `false` conserve les backends et leurs volumes afin qu'un redémarrage
 
 - `admin-uuids` donne `tropicube.admin`, `tropicube.admin.find`,
   `tropicube.admin.send` et `tropicube.bypass.whitelist` aux UUID approuvés ;
-- `nick.allowed-grades` contrôle les grades pouvant utiliser `/nick` ;
+- `nick.allowed-grades` contrôle les grades pouvant activer `/nick` ; la désactivation reste accessible à tous ;
 - `nick.skin-uuids` complète le pool de profils Mojang utilisés comme skins.
+
+Core publie le grade courant sous `player:grade:<uuid>` avec une durée de vie de 24 heures. La valeur est actualisée au chargement et à chaque changement de grade, et n'est pas supprimée pendant un transfert entre backends.
 
 ## Velocity natif
 

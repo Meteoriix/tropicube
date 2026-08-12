@@ -16,6 +16,9 @@ public class NickCommand implements SimpleCommand {
 
     private final NickManager             nickManager;
     private final VelocityLanguageManager lm;
+    private final NickRequestRegistry requests = new NickRequestRegistry();
+
+    enum NickAction { ENABLE, DISABLE, INVALID }
 
     public NickCommand(NickManager nickManager, VelocityLanguageManager lm) {
         this.nickManager = nickManager;
@@ -30,31 +33,51 @@ public class NickCommand implements SimpleCommand {
         }
 
         UUID uuid = player.getUniqueId();
+        NickAction action = parseAction(invocation.arguments());
+
+        if (action == NickAction.INVALID) {
+            player.sendMessage(lm.getComponent(uuid, "proxy.nick-usage"));
+            return;
+        }
+
+        // La désactivation reste toujours possible afin de ne jamais enfermer
+        // un joueur dans une identité active après un changement de grade.
+        if (action == NickAction.DISABLE) {
+            handleNickOff(player);
+            return;
+        }
 
         if (!nickManager.canUseNick(uuid)) {
             player.sendMessage(lm.getComponent(uuid, "proxy.nick-no-permission"));
             return;
         }
 
-        String[] args = invocation.arguments();
-
-        if (args.length > 0 && args[0].equalsIgnoreCase("off")) {
-            handleNickOff(player);
-            return;
-        }
-
         handleNickOn(player);
+    }
+
+    static NickAction parseAction(String[] arguments) {
+        if (arguments.length == 0) return NickAction.ENABLE;
+        if (arguments.length == 1 && arguments[0].equalsIgnoreCase("off")) return NickAction.DISABLE;
+        return NickAction.INVALID;
     }
 
     /** Génère et applique une identité sans déconnecter le joueur. */
     private void handleNickOn(Player player) {
+        UUID uuid = player.getUniqueId();
+        Object requestToken = requests.begin(uuid);
+        if (requestToken == null) {
+            player.sendMessage(lm.getComponent(uuid, "proxy.nick-already-fetching"));
+            return;
+        }
         player.sendMessage(lm.getComponent(player.getUniqueId(), "proxy.nick-fetching"));
         String nickName = nickManager.generateRandomName();
 
-        nickManager.fetchRandomSkin().thenAccept(skinOpt -> {
+        nickManager.fetchRandomSkin().whenComplete((skinOpt, error) -> {
+            // /nick off ou une requête plus récente invalide ce callback.
+            if (!requests.complete(uuid, requestToken)) return;
             if (!player.isActive()) return;
 
-            if (skinOpt.isEmpty()) {
+            if (error != null || skinOpt == null || skinOpt.isEmpty()) {
                 player.sendMessage(lm.getComponent(player.getUniqueId(), "proxy.nick-skin-error"));
                 return;
             }
@@ -79,6 +102,7 @@ public class NickCommand implements SimpleCommand {
     /** Restaure l'identité originale sans déconnecter le joueur. */
     private void handleNickOff(Player player) {
         UUID uuid = player.getUniqueId();
+        requests.cancel(uuid);
 
         if (nickManager.getNick(uuid).isEmpty()) {
             player.sendMessage(lm.getComponent(uuid, "proxy.nick-not-nicked"));

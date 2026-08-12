@@ -25,6 +25,15 @@ class VelocityConfigurationTest {
         }
     }
 
+    @Test
+    void bundledNickConfigurationAllowsPremiumAndStaffGrades() throws IOException {
+        ConfigurationNode config = loadBundledConfig();
+
+        assertEquals(
+                java.util.List.of("PREMIUM", "HELPER", "MODERATEUR", "ADMIN", "OWNER"),
+                config.node("nick", "allowed-grades").getList(String.class));
+    }
+
     private ConfigurationNode loadBundledConfig() throws IOException {
         var resource = getClass().getResource("/config.yml");
         assertNotNull(resource);

@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.util.GameProfile;
 import fr.tropicube.docker.client.RedisManager;
+import fr.tropicube.docker.model.PlayerGradeCache;
 import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
@@ -25,7 +26,6 @@ public class NickManager {
 
     private static final String KEY_NICK     = "nick:";
     private static final String KEY_ORIGINAL = "nick:original:";
-    private static final String KEY_GRADE    = "player:viplevel:";
     private static final int    NICK_TTL     = 86400;
     private static final Pattern COMPACT_UUID = Pattern.compile("[0-9a-fA-F]{32}");
 
@@ -75,7 +75,11 @@ public class NickManager {
         this.skinUuids = List.copyOf(pool);
 
         this.allowedGrades = Objects.requireNonNullElse(allowedGrades, List.<String>of()).stream()
-            .map(String::toUpperCase)
+            .filter(Objects::nonNull)
+            .map(String::trim)
+            .filter(grade -> !grade.isEmpty())
+            .map(grade -> grade.toUpperCase(Locale.ROOT))
+            .distinct()
             .toList();
     }
 
@@ -83,8 +87,8 @@ public class NickManager {
 
     public boolean canUseNick(UUID uuid) {
         if (allowedGrades.isEmpty()) return false;
-        String grade = redis.get(KEY_GRADE + uuid);
-        return grade != null && allowedGrades.contains(grade.toUpperCase());
+        String grade = redis.get(PlayerGradeCache.key(uuid));
+        return PlayerGradeCache.isAllowed(grade, allowedGrades);
     }
 
     // Génération du pseudonyme

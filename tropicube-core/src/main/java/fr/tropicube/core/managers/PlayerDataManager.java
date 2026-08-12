@@ -103,9 +103,6 @@ public class PlayerDataManager {
                     profileCache.put(uuid, profile);
                     sessionStart.put(uuid, now);
 
-                    // Publie le grade afin que Velocity puisse vérifier les permissions.
-                    plugin.getRedisManager().set("player:grade:" + uuid, profile.grade(), 86400);
-
                     // Charger les sous-systèmes
                     languageManager.loadPlayerLanguage(uuid, profile.language());
                     permissionManager.loadPlayer(uuid);
@@ -121,7 +118,6 @@ public class PlayerDataManager {
 
     public void unloadPlayer(UUID uuid) {
         PlayerProfile profile = profileCache.remove(uuid);
-        plugin.getRedisManager().delete("player:grade:" + uuid);
         plugin.getRedisManager().removePlayerLanguage(String.valueOf(uuid));
         if (profile == null) return;
 

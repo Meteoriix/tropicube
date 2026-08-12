@@ -92,5 +92,7 @@ proxy:
   nick-applied: "<green>Nick aplicado: <yellow>{0}<green>."
   nick-removed: "<green>Nick eliminado. Tu skin original ha sido restaurado."
   nick-not-nicked: "<yellow>No tienes un nick activo."
-  nick-no-permission: "<red>Debes ser jugador premium para usar este comando."
+  nick-no-permission: "<red>Tu rango no permite activar un nick."
   nick-skin-error: "<red>No se pudo obtener un skin en este momento. Inténtalo de nuevo."
+  nick-already-fetching: "<yellow>Ya se está generando un nick."
+  nick-usage: "<yellow>Uso: <white>/nick <gray>o <white>/nick off"

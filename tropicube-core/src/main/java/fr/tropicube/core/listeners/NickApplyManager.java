@@ -16,6 +16,7 @@ import java.util.UUID;
  * Événements Redis écoutés :
  *   NICK_APPLY:{uuid}  — applique le nick stocké dans nick:{uuid}
  *   NICK_RESET:{uuid}  — restaure le skin original stocké dans nick:original:{uuid}
+ *   NICK_CLEAR:{uuid}  — restaure le profil puis purge les deux clés de nick
  */
 public class NickApplyManager {
 
@@ -75,6 +76,9 @@ public class NickApplyManager {
         try {
             UUID uuid = UUID.fromString(uuidStr);
             plugin.getServer().getScheduler().runTask(plugin, () -> {
+                // Tous les backends reçoivent l'événement. Seul celui qui
+                // possède le joueur peut restaurer son profil et purger Redis.
+                if (plugin.getServer().getPlayer(uuid) == null) return;
                 resetNick(uuid);
                 plugin.getRedisManager().delete("nick:" + uuid);
                 plugin.getRedisManager().delete("nick:original:" + uuid);

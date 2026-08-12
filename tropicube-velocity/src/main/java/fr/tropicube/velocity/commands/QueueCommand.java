@@ -3,6 +3,7 @@ package fr.tropicube.velocity.commands;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;
 import fr.tropicube.docker.client.RedisManager;
+import fr.tropicube.docker.model.PlayerGradeCache;
 import fr.tropicube.velocity.managers.QueueManager;
 import fr.tropicube.velocity.managers.TropiServerManager;
 import fr.tropicube.velocity.managers.VelocityLanguageManager;
@@ -50,7 +51,7 @@ public class QueueCommand implements SimpleCommand {
                         "proxy.server-unavailable", instance.getStatus()));
                 return;
             }
-            String grade = redisManager.get("player:viplevel:" + player.getUniqueId());
+            String grade = redisManager.get(PlayerGradeCache.key(player.getUniqueId()));
             boolean priority = grade != null && PRIORITY_GRADES.contains(grade.toUpperCase(Locale.ROOT));
             queueManager.addToQueue(player, instance.getInstanceId(), priority);
         }, () -> player.sendMessage(languageManager.getComponent(player.getUniqueId(),

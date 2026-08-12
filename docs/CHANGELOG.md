@@ -28,6 +28,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Corrigé
 
+- Accès à `/nick` refusé aux grades autorisés à cause d'une clé Redis incohérente ; le contrat de grade est désormais partagé avec Core, stable pendant les transferts et actualisé lors des changements de grade. `/nick off`, les arguments invalides, les requêtes concurrentes et la purge multi-backend sont également sécurisés.
 - Distribution SheepWars trop rapide et sujette aux séries : la cadence standard passe de 10 à 20 secondes et chaque joueur dispose désormais d'une pioche pondérée sans répétition consécutive.
 - Instances SheepWars actives affichées hors ligne après l'échec d'un auto-stop : Velocity restaure désormais leur statut précédent dans Redis, et le Lobby exclut les états arrêtés ou en erreur de ses listes et totaux.
 - Faux échec de `/tropi stop` lorsque le proxy de socket Docker perdait la réponse HTTP après avoir effectivement arrêté le conteneur ; l'état réel est maintenant vérifié et la commande retentée une fois si nécessaire.

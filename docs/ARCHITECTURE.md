@@ -136,6 +136,7 @@ Ce module est pour l'instant un squelette Maven sans classe, ressource, dépenda
 | `host-creation:<uuid>` | Velocity | Lobby/Velocity | Verrou atomique et temporaire empêchant deux créations personnalisées simultanées |
 | `post-game:<uuid>` | SheepWars | Lobby | Cible et type proposés par `/playnext`, TTL 120 s |
 | `nick:<uuid>` | Velocity | Core | Pseudonyme et skin actifs |
+| `player:grade:<uuid>` | Core | Velocity | Grade réseau courant, TTL 24 h, utilisé par `/nick` et la priorité de file |
 | langue/grade/cache joueur | Core | Core/Velocity | Accélération et synchronisation du profil |
 
 Les messages de transfert ne doivent jamais appeler Bukkit depuis le thread d'abonnement Redis. Chaque plugin planifie les opérations d'entité ou d'inventaire sur le thread Paper.
