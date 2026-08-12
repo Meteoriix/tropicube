@@ -6,13 +6,14 @@
   <meta name="description" content="Vue d’ensemble du projet Tropicube">
   <meta name="theme-color" content="#2d1b6b">
   <title>Tropicube · Tropicube</title>
-  <link rel="stylesheet" href="styles.css?v=16da96fa257d">
+  <link rel="stylesheet" href="styles.css?v=54e32bb45a59">
 </head>
 <body>
-  <a class="skip-link" href="#contenu">Aller au contenu</a>
-  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span><span><span class="brand-name-accent">Tropi</span>cube</span></a><span>Documentation</span></header>
+  <a class="skip-link" href="#content">Aller au contenu</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span><span><span class="brand-name-accent">Tropi</span>cube</span></a><a class="language-switch" href="en/index.html" hreflang="en">English</a></header>
   <aside class="sidebar">
     <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong><span class="brand-name-accent">Tropi</span>cube</strong><small>Documentation réseau</small></span></a>
+    <a class="language-switch" href="en/index.html" hreflang="en">English</a>
     <nav aria-label="Documentation principale"><a class="nav-link active" href="index.html"><span class="nav-icon">⌂</span><span>Accueil</span></a>
 <a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
 <a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commandes</span></a>
@@ -26,12 +27,13 @@
 <a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changements</span></a></nav>
     <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
   </aside>
-  <main id="contenu" class="main">
+  <main id="content" class="main">
     <section class="hero"><div class="eyebrow">Documentation officielle</div><h1>Tropicube</h1><p>Vue d’ensemble du projet Tropicube</p></section>
     <div class="content-grid">
-      <article class="documentation"><p>Tropicube est une infrastructure Minecraft multi-serveurs pour <strong>Minecraft 26.2</strong>. Elle associe un proxy Velocity, des serveurs Paper créés dynamiquement dans Docker, Redis pour l'état partagé et les événements, et MySQL pour les données persistantes.</p>
+      <article class="documentation"><p><a href="en/index.html">English version</a></p>
+<p>Tropicube est une infrastructure Minecraft multi-serveurs pour <strong>Minecraft 26.2</strong>. Elle associe un proxy Velocity, des serveurs Paper créés dynamiquement dans Docker, Redis pour l'état partagé et les événements, et MySQL pour les données persistantes.</p>
 <h2 id="documentation">Documentation<a class="heading-anchor" href="#documentation" aria-label="Lien vers cette section">#</a></h2>
-<ul><li><a href="index.html">Ouvrir le site de documentation HTML</a></li><li><a href="architecture.html">Architecture et fonctionnement</a></li><li><a href="commands.html">Commandes Minecraft et permissions</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="deployment.html">Installation, déploiement et exploitation</a></li><li><a href="sheepwars.html">SheepWars : game design et fonctionnalités</a></li><li><a href="fallen-kingdoms.html">Fallen Kingdoms : game design de référence</a></li><li><a href="fallen-kingdoms-technical-spec.html">Fallen Kingdoms : spécification technique</a></li><li><a href="development.html">Développement, tests et contribution</a></li><li><a href="git-ci.html">Git, CI et versionnement</a></li><li><a href="changelog.html">Historique des changements</a></li></ul>
+<ul><li><a href="index.html">Ouvrir le site de documentation HTML</a></li><li><a href="en/index.html">Ouvrir la documentation anglaise</a></li><li><a href="architecture.html">Architecture et fonctionnement</a></li><li><a href="commands.html">Commandes Minecraft et permissions</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="deployment.html">Installation, déploiement et exploitation</a></li><li><a href="sheepwars.html">SheepWars : game design et fonctionnalités</a></li><li><a href="fallen-kingdoms.html">Fallen Kingdoms : game design de référence</a></li><li><a href="fallen-kingdoms-technical-spec.html">Fallen Kingdoms : spécification technique</a></li><li><a href="development.html">Développement, tests et contribution</a></li><li><a href="git-ci.html">Git, CI et versionnement</a></li><li><a href="changelog.html">Historique des changements</a></li></ul>
 <h2 id="modules">Modules<a class="heading-anchor" href="#modules" aria-label="Lien vers cette section">#</a></h2>
 <div class="table-scroll"><table><thead><tr><th>Module</th><th>Environnement</th><th>Rôle</th></tr></thead><tbody><tr><td><code>tropicube-docker-api</code></td><td>Java partagé</td><td>Modèles d'instances/templates, client Docker et accès Redis</td></tr><tr><td><code>tropicube-velocity</code></td><td>Velocity</td><td>Routage, files d'attente, création/arrêt des instances et commandes proxy</td></tr><tr><td><code>tropicube-core</code></td><td>Paper</td><td>Joueurs, économie, grades, permissions, langues et modération</td></tr><tr><td><code>tropicube-lobby</code></td><td>Paper</td><td>Accueil, menus, sélection de serveur, double-saut et boutique VIP</td></tr><tr><td><code>tropicube-sheepwars</code></td><td>Paper</td><td>Mini-jeu SheepWars, cartes, équipes, kits, classes et moutons spéciaux</td></tr><tr><td><code>tropicube-fallenkingdoms</code></td><td>Non déployé</td><td>Squelette Maven réservé au futur mini-jeu Fallen Kingdoms</td></tr></tbody></table></div>
 <h2 id="demarrage-rapide">Démarrage rapide<a class="heading-anchor" href="#demarrage-rapide" aria-label="Lien vers cette section">#</a></h2>
@@ -57,7 +59,7 @@ chmod +x deploy.sh
 <p>Le module Fallen Kingdoms est actuellement vide : il compile dans le réacteur mais ne contient encore ni plugin Paper, ni ressource, ni image Docker. Les scripts ne tentent donc pas de le déployer.</p>
 <h2 id="avertissements-essentiels">Avertissements essentiels<a class="heading-anchor" href="#avertissements-essentiels" aria-label="Lien vers cette section">#</a></h2>
 <ul><li>Ne versionnez jamais <code>.env</code> ni un secret réel. Le fichier est ignoré par Git.</li><li>Ne publiez pas directement les ports des serveurs Paper dynamiques : seul Velocity doit être accessible aux joueurs.</li><li>Le secret de forwarding doit être identique côté Velocity et Paper.</li><li>L'accès au daemon Docker est limité au conteneur <code>docker-proxy</code>; il reste néanmoins sensible et doit être réservé à une machine de confiance.</li><li>Sauvegardez les volumes <code>mysql-data</code> et <code>redis-data</code> avant toute opération d'infrastructure importante.</li></ul></article>
-      <aside class="page-toc" aria-label="Sommaire de la page"><span class="toc-title">Sur cette page</span><a class="toc-level-2" href="#documentation">Documentation</a><a class="toc-level-2" href="#modules">Modules</a><a class="toc-level-2" href="#demarrage-rapide">Démarrage rapide</a><a class="toc-level-2" href="#developpement">Développement</a><a class="toc-level-2" href="#avertissements-essentiels">Avertissements essentiels</a></aside>
+      <aside class="page-toc" aria-label="Sur cette page"><span class="toc-title">Sur cette page</span><a class="toc-level-2" href="#documentation">Documentation</a><a class="toc-level-2" href="#modules">Modules</a><a class="toc-level-2" href="#demarrage-rapide">Démarrage rapide</a><a class="toc-level-2" href="#developpement">Développement</a><a class="toc-level-2" href="#avertissements-essentiels">Avertissements essentiels</a></aside>
     </div>
     <footer><span><span class="brand-name-accent">Tropi</span>cube</span><span>Documentation statique générée depuis les fichiers Markdown</span></footer>
   </main>

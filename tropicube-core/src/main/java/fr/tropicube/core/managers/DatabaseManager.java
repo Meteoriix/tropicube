@@ -13,8 +13,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 /**
- * Gestionnaire de base de données MySQL avec pool de connexions HikariCP.
- * Gère la création des tables et fournit des méthodes utilitaires.
+ * MySQL database manager with HikariCP connection pool.
+ * Manages table creation and provides utility methods.
  */
 public class DatabaseManager {
 
@@ -56,7 +56,7 @@ public class DatabaseManager {
 
     private void createTables() throws SQLException {
         String[] tables = {
-            // Table joueurs
+            // Players table
             """
             CREATE TABLE IF NOT EXISTS tropicube_players (
                 uuid VARCHAR(36) PRIMARY KEY,
@@ -138,7 +138,7 @@ public class DatabaseManager {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
             """,
 
-            // Permissions individuelles, éventuellement temporaires
+            // Individual permissions, possibly temporary
             """
             CREATE TABLE IF NOT EXISTS tropicube_permissions (
                 uuid VARCHAR(36) NOT NULL,
@@ -194,7 +194,7 @@ public class DatabaseManager {
         plugin.getLogger().info("[Tropicube-DB] Colonne monétaire normalisée : " + table + "." + column);
     }
 
-    /** Met à niveau les tables créées par les anciennes versions sans supprimer de données. */
+    /** Upgrades tables created by older versions without deleting data. */
     private void migrateLegacySchema(Connection conn) throws SQLException {
         boolean legacyPlayerRank = hasColumn(conn, "tropicube_players", "player_rank");
         boolean hadGradeColumn = hasColumn(conn, "tropicube_players", "grade");
@@ -226,7 +226,7 @@ public class DatabaseManager {
         try (ResultSet rs = metaData.getColumns(conn.getCatalog(), null, table, column)) {
             if (rs.next()) return true;
         }
-        // Certains pilotes traitent les noms de métadonnées en majuscules.
+        // Some drivers treat metadata names in uppercase.
         try (ResultSet rs = metaData.getColumns(conn.getCatalog(), null,
                 table.toUpperCase(Locale.ROOT), column.toUpperCase(Locale.ROOT))) {
             return rs.next();

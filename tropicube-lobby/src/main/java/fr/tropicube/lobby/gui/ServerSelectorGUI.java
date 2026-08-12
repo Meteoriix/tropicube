@@ -17,11 +17,11 @@ import org.jspecify.annotations.NonNull;
 import java.util.*;
 
 /**
- * Affiche la liste paginée des serveurs disponibles pour un type donné.
+ * Displays the paginated list of servers available for a given type.
  *
- * Le {@link Holder} porte le contexte (type, page) et le mapping slot → serverId.
- * Les champs de pagination et de mapping sont mutables afin que {@link #refresh}
- * puisse les mettre à jour en place sans recréer l'inventaire.
+ * The {@link Holder} carries the context (type and page) and the slot-to-serverId mapping.
+ * Paging and mapping fields are mutable so that {@link #refresh}
+ * can update them in place without recreating the inventory.
  */
 public class ServerSelectorGUI {
 
@@ -41,7 +41,7 @@ public class ServerSelectorGUI {
     public static final class Holder implements InventoryHolder {
         private final String type;
         private final int    page;
-        // État mutable actualisé sur place afin d'éviter de rouvrir l'inventaire.
+        // Mutable state refreshed in place to avoid reopening inventory.
         boolean hasPrevPage;
         boolean hasNextPage;
         Map<Integer, String> slotToServerId;
@@ -99,8 +99,8 @@ public class ServerSelectorGUI {
     }
 
     /**
-     * Actualise les serveurs et la pagination d'un inventaire déjà ouvert.
-     * Le holder est modifié sur place afin d'éviter tout scintillement visuel.
+     * Refreshes the servers and pagination of an already open inventory.
+     * The holder is modified on site to avoid any visual flicker.
      */
     public static void refresh(TropicubeLobby plugin, Player player) {
         var topInv = player.getOpenInventory().getTopInventory();
@@ -178,7 +178,11 @@ public class ServerSelectorGUI {
         String statusLabel;
         String namePrefix;
 
-        if (s.isOnline() && !s.isFull()) {
+        if (s.isPlaying()) {
+            icon = Material.BLUE_CONCRETE;
+            statusLabel = LangHelper.get(player, "lobby.server-status-playing");
+            namePrefix = "<blue>";
+        } else if (s.isOnline() && !s.isFull()) {
             icon = Material.LIME_CONCRETE;
             statusLabel = LangHelper.get(player, "lobby.server-status-online");
             namePrefix  = "<green>";
@@ -204,7 +208,9 @@ public class ServerSelectorGUI {
         lore.add("");
         lore.add(LangHelper.get(player, "lobby.server-template", s.templateName()));
         lore.add("");
-        if (s.isOnline() && !s.isFull()) {
+        if (s.isPlaying() && !s.isFull()) {
+            lore.add(LangHelper.get(player, "lobby.server-click-spectate"));
+        } else if (s.isOnline() && !s.isFull()) {
             lore.add(LangHelper.get(player, "lobby.server-click-join"));
         } else if (s.isOnline()) {
             lore.add(LangHelper.get(player, "lobby.server-click-full"));
@@ -216,7 +222,7 @@ public class ServerSelectorGUI {
         ItemBuilder ib = new ItemBuilder(icon)
                 .name(namePrefix + "⬛ " + s.id().toUpperCase(Locale.ROOT))
                 .lore(lore.toArray(new String[0]));
-        if (s.isOnline() && !s.isFull()) ib.glow();
+        if (s.isJoinable()) ib.glow();
         return ib;
     }
 

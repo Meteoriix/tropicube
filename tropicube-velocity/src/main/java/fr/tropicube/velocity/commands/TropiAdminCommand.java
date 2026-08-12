@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Commande /tropi - Panneau d'administration des serveurs Docker.
+ * /tropi command - Docker server administration panel.
  */
 public class TropiAdminCommand implements SimpleCommand {
 

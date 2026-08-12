@@ -18,14 +18,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 /**
- * Gestionnaire Redis central pour la communication inter-services de Tropicube.
+ * Central Redis manager for Tropicube inter-service communication.
  * <p>
- * Deux responsabilités principales :
- *   1. Stockage clé-valeur  — persister l'état partagé (instances de serveurs, données joueurs, templates)
- *   2. Messagerie Pub/Sub   — diffuser des événements en temps réel entre services (serveurs, joueurs, commandes)
+ * Two main responsibilities:
+ * 1. Key-value storage — persist shared state (server instances, player data, templates)
+ * 2. Pub/Sub Messaging — broadcast real-time events between services (servers, players, commands)
  * <p>
- * Toutes les clés sont préfixées par "tropicube:" pour éviter les collisions
- * avec d'autres applications sur le même serveur Redis.
+ * All keys are prefixed with "tropicube:" to avoid collisions
+ * with other applications on the same Redis server.
  */
 public class RedisManager {
 
@@ -33,18 +33,18 @@ public class RedisManager {
 
     // ── Namespace ──────────────────────────────────────────────────────────────
 
-    /** Préfixe commun appliqué à toutes les clés et canaux pour éviter les conflits de nommage. */
+    /** Common prefix applied to all keys and channels to avoid naming conflicts. */
     private static final String KEY_PREFIX = "tropicube:";
 
     // ── Canaux Pub/Sub ─────────────────────────────────────────────────────────
 
-    /** Canal pour les événements du cycle de vie des serveurs (démarrage, arrêt, mise à jour…). */
+    /** Channel for server lifecycle events (start, stop, update, etc.). */
     private static final String CHANNEL_SERVERS  = KEY_PREFIX + "servers";
 
-    /** Canal pour les événements joueurs (connexion, déconnexion, changement de serveur…). */
+    /** Channel for player events (connection, disconnection, server change, etc.). */
     private static final String CHANNEL_PLAYERS  = KEY_PREFIX + "players";
 
-    /** Canal pour les commandes à distance envoyées à des instances de serveurs spécifiques. */
+    /** Channel for remote commands sent to specific server instances. */
     private static final String CHANNEL_COMMANDS = KEY_PREFIX + "commands";
     private static final String SAVE_INSTANCE_SCRIPT = """
             redis.call('SET', KEYS[1], ARGV[1], 'EX', ARGV[3])
@@ -76,31 +76,31 @@ public class RedisManager {
             return 1
             """;
 
-    // ── Paramètres de connexion ────────────────────────────────────────────────
+    // ── Connection settings ──────────────────────── ────────────────────────
 
     private final String host;
     private final int    port;
     private final String password; // null ou vide → pas d'authentification
 
-    /** Le client Jedis encapsulant le pool de connexions. Initialisé par initialize(). */
+    /** The Jedis client encapsulating the connection pool. Initialized by initialize(). */
     private volatile RedisClient client;
     private final AtomicBoolean closed = new AtomicBoolean();
 
     // ── Infrastructure Pub/Sub ─────────────────────────────────────────────────
 
     /**
-     * Exécuteur de threads virtuels utilisé pour isoler les appels bloquants subscribe()
-     * sans immobiliser le thread principal ni créer un pool de threads natifs non borné.
+     * Virtual thread executor used to isolate blocking subscribe() calls
+     * without tying up the main thread or creating an unbounded native thread pool.
      */
     private final ExecutorService subscriberExecutor;
 
     /**
-     * Registre de tous les handlers de messages actifs, regroupés par nom de canal.
+     * Register of all active message handlers, grouped by channel name.
      * <p>
-     * Structure :  canal → [handler1, handler2, …]
+     * Structure: channel → [handler1, handler2, …]
      * <p>
-     * ConcurrentHashMap est utilisé car le thread principal (enregistrement des handlers)
-     * et les threads abonnés en arrière-plan (distribution des messages) y accèdent en même temps.
+     * ConcurrentHashMap is used as the main thread (registration of handlers)
+     * and subscribed background threads (message delivery) access it at the same time.
      */
     private final Map<String, List<Consumer<String>>> subscribers = new ConcurrentHashMap<>();
     private final Map<String, JedisPubSub> activeSubscriptions = new ConcurrentHashMap<>();
@@ -121,13 +121,13 @@ public class RedisManager {
     // ── Initialisation ─────────────────────────────────────────────────────────
 
     /**
-     * Construit le client Jedis avec un pool de connexions et se connecte à Redis.
-     * Doit être appelé une seule fois avant toute autre méthode.
+     * Builds the Jedis client with a connection pool and connects to Redis.
+     * Must be called only once before any other method.
      */
     public synchronized void initialize() {
         if (closed.get()) throw new IllegalStateException("RedisManager est fermé");
         if (client != null) throw new IllegalStateException("RedisManager est déjà initialisé");
-        // Construction de la configuration par connexion (timeouts, authentification optionnelle)
+        // Build the per-connection configuration (timeouts and optional authentication)
         DefaultJedisClientConfig.Builder configBuilder = DefaultJedisClientConfig.builder()
                 .connectionTimeoutMillis(2000) // délai max pour établir une connexion TCP
                 .socketTimeoutMillis(2000);    // délai max pour attendre une réponse
@@ -138,7 +138,7 @@ public class RedisManager {
 
         JedisClientConfig clientConfig = configBuilder.build();
 
-        // Configuration du pool : pré-ouvre des connexions et les réutilise pour éviter le coût de création à chaque appel
+        // Pool configuration: pre-opens connections and reuses them to avoid the cost of creating each call
         ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
         poolConfig.setMaxTotal(20);       // limite stricte de connexions simultanées
         poolConfig.setMaxIdle(10);        // garde au maximum 10 connexions inactives ouvertes
@@ -151,8 +151,8 @@ public class RedisManager {
                 .poolConfig(poolConfig)
                 .build();
 
-        // RedisClient est paresseux : un PING force réellement la connexion et
-        // fait échouer le démarrage immédiatement si Redis est indisponible.
+        // RedisClient is lazy: a PING actually forces the connection and
+        // causes startup to fail immediately if Redis is unavailable.
         try {
             String response = candidate.ping();
             if (!"PONG".equalsIgnoreCase(response)) {
@@ -165,7 +165,7 @@ public class RedisManager {
         }
     }
 
-    /** Expose le client Jedis brut pour les opérations avancées non couvertes par ce gestionnaire. */
+    /** Exposes the raw Jedis client for advanced operations not covered by this handler. */
     public RedisClient getClient() {
         return redis();
     }
@@ -181,13 +181,13 @@ public class RedisManager {
     // ===== INSTANCES =====
 
     /**
-     * Persiste une ServerInstance dans Redis sous trois structures :
-     *   - tropicube:instance:<id>           → données JSON complètes (TTL 24h)
-     *   - tropicube:instances:active         → ensemble de tous les IDs d'instances actives
-     *   - tropicube:instances:type:<type>    → ensemble des IDs groupés par type de serveur
+     * Persists a ServerInstance in Redis under three structures:
+     * - tropicube:instance:<id> → complete JSON data (TTL 24h)
+     * - tropicube:instances:active → set of all active instance IDs
+     * - tropicube:instances:type:<type> → set of IDs grouped by server type
      * <p>
-     * Les deux ensembles permettent des recherches efficaces comme "donne-moi tous les LOBBYs actifs"
-     * sans avoir à parcourir toutes les clés.
+     * Both sets allow efficient searches like "give me all active LOBBYs"
+     * without having to go through all the keys.
      */
     public void saveInstance(ServerInstance instance) {
         Objects.requireNonNull(instance, "instance");
@@ -205,8 +205,8 @@ public class RedisManager {
     }
 
     /**
-     * Supprime une instance arrêtée des trois structures Redis.
-     * serverType est requis car les données de l'instance peuvent déjà avoir été supprimées.
+     * Deletes a stopped instance of the three Redis structures.
+     * serverType is required because the instance data may already have been deleted.
      */
     public void removeInstance(String instanceId, String serverType) {
         requireText(instanceId, "instanceId");
@@ -221,13 +221,13 @@ public class RedisManager {
     }
 
     /**
-     * Purge l'instance et toutes les références Redis connues qui pourraient la rendre visible après sa suppression.
+     * Purge the instance and any known Redis references that could make it visible after deletion.
      * <p>
-     * Le retrait du registre principal et des marqueurs directs est atomique. Les index inverses historiques
-     * n'existant pas, les références joueur/hôte sont parcourues avec {@code SCAN} puis supprimées de façon
-     * idempotente ; une nouvelle écriture concurrente reste donc visible au lieu d'être supprimée par erreur.
+     * The removal of the main register and direct markers is atomic. Historical inverse indexes
+     * not existing, the player/host references are scanned with {@code SCAN} then deleted so
+     * idempotent; a new concurrent entry therefore remains visible instead of being deleted by mistake.
      *
-     * @return nombre de références secondaires supprimées
+     * @return number of secondary references deleted
      */
     public int purgeInstance(String instanceId, String serverType, String serverName) {
         requireText(instanceId, "instanceId");
@@ -264,8 +264,8 @@ public class RedisManager {
     }
 
     /**
-     * Récupère et désérialise une instance par son ID.
-     * Retourne null si la clé n'existe pas ou a expiré.
+     * Retrieves and deserializes an instance by its ID.
+     * Returns null if the key does not exist or has expired.
      */
     public ServerInstance getInstance(String instanceId) {
         requireText(instanceId, "instanceId");
@@ -274,10 +274,10 @@ public class RedisManager {
     }
 
     /**
-     * Retourne toutes les instances actuellement actives.
-     * Lit l'ensemble "active" pour obtenir les IDs, puis récupère chaque instance individuellement.
-     * Note : une race condition est possible entre la lecture de l'ensemble et la récupération des données
-     * (une instance pourrait être supprimée entre les deux), d'où la vérification du null.
+     * Returns all currently active instances.
+     * Reads the "active" set to get the IDs, then retrieves each instance individually.
+     * Note: a race condition is possible between reading the set and retrieving the data
+     * (an instance could be deleted in between), hence the null check.
      */
     public List<ServerInstance> getAllInstances() {
         List<ServerInstance> instances = new ArrayList<>();
@@ -300,41 +300,41 @@ public class RedisManager {
         return instances;
     }
 
-    // ===== JOUEURS =====
+    // ===== PLAYERS =====
 
-    /** Enregistre sur quelle instance se trouve un joueur. TTL : 1h (se nettoie automatiquement à la déconnexion). */
+    /** Records which instance a player is on. TTL: 1 hour (automatically cleans when disconnected). */
     public void setPlayerServer(String playerUuid, String instanceId) {
         requireText(playerUuid, "playerUuid");
         requireText(instanceId, "instanceId");
         redis().set(KEY_PREFIX + "player:server:" + playerUuid, instanceId, SetParams.setParams().ex(3600L));
     }
 
-    /** Retourne l'ID de l'instance sur laquelle se trouve le joueur, ou null s'il n'est pas connecté. */
+    /** Returns the ID of the instance the player is on, or null if the player is not connected. */
     public String getPlayerServer(String playerUuid) {
         requireText(playerUuid, "playerUuid");
         return redis().get(KEY_PREFIX + "player:server:" + playerUuid);
     }
 
-    /** Supprime la localisation du joueur (appelé à la déconnexion). */
+    /** Deletes the player's location (called at logout). */
     public void removePlayerServer(String playerUuid) {
         requireText(playerUuid, "playerUuid");
         redis().del(KEY_PREFIX + "player:server:" + playerUuid);
     }
 
-    /** Enregistre la langue préférée du joueur. TTL : 24h. */
+    /** Saves the player's preferred language. TTL: 24h. */
     public void setPlayerLanguage(String playerUuid, String lang) {
         requireText(playerUuid, "playerUuid");
         requireText(lang, "lang");
         redis().set(KEY_PREFIX + "player:lang:" + playerUuid, lang, SetParams.setParams().ex(86400L));
     }
 
-    /** Retourne la langue préférée du joueur, ou null si non définie. */
+    /** Returns the player's preferred language, or null if not set. */
     public String getPlayerLanguage(String playerUuid) {
         requireText(playerUuid, "playerUuid");
         return redis().get(KEY_PREFIX + "player:lang:" + playerUuid);
     }
 
-    /** Supprime la langue du joueur de Redis (appelé à la déconnexion).*/
+    /** Removes player language from Redis (called at logout).*/
     public void removePlayerLanguage(String playerUuid) {
         requireText(playerUuid, "playerUuid");
         redis().del(KEY_PREFIX + "player:lang:" + playerUuid);
@@ -343,8 +343,8 @@ public class RedisManager {
     // ===== PUB/SUB =====
 
     /**
-     * Publie un événement serveur sur le canal dédié.
-     * Le message est formaté comme "TYPE:payload" (ex: "STARTED:abc123").
+     * Publishes a server event to the dedicated channel.
+     * The message is formatted as "TYPE:payload" (ex: "STARTED:abc123").
      */
     public void publishServerEvent(String eventType, String payload) {
         requireText(eventType, "eventType");
@@ -353,8 +353,8 @@ public class RedisManager {
     }
 
     /**
-     * Publie un événement joueur sur le canal dédié.
-     * Le message est formaté comme "TYPE:payload" (ex: "JOIN:uuid-du-joueur").
+     * Publish a player event on the dedicated channel.
+     * The message is formatted as "TYPE:payload" (ex: "JOIN:player-uuid").
      */
     public void publishPlayerEvent(String eventType, String payload) {
         requireText(eventType, "eventType");
@@ -363,8 +363,8 @@ public class RedisManager {
     }
 
     /**
-     * Envoie une commande à un serveur cible spécifique.
-     * Le message est formaté comme "serveurCible:commande".
+     * Sends a command to a specific target server.
+     * The message is formatted as "targetserver:command".
      */
     public void publishCommand(String targetServer, String command) {
         requireText(targetServer, "targetServer");
@@ -372,7 +372,7 @@ public class RedisManager {
         publish(CHANNEL_COMMANDS, targetServer + ":" + command);
     }
 
-    /** Méthode interne commune d'envoi : publie un message brut sur un canal Redis. */
+    /** Common internal method of sending: Publishes a raw message to a Redis channel. */
     private void publish(String channel, String message) {
         requireText(channel, "channel");
         Objects.requireNonNull(message, "message");
@@ -380,26 +380,26 @@ public class RedisManager {
     }
 
     /**
-     * Abonne un handler à un canal Redis.
+     * Subscribes a handler to a Redis channel.
      * <p>
      * Deux choses se passent :
-     *   1. Le handler est enregistré dans la map "subscribers" sous le nom du canal,
-     *      aux côtés d'éventuels handlers déjà existants pour ce même canal.
-     *   2. Au premier handler du canal, un thread dédié est lancé pour écouter Redis,
-     *      car client.subscribe() est bloquant (il ne rend jamais la main).
-     *      Quand un message arrive, onMessage() distribue le message à tous les handlers enregistrés.
+     * 1. The handler is saved in the “subscribers” map under the channel name,
+     * alongside any already existing handlers for this same channel.
+     * 2. At the first handler of the channel, a dedicated thread is launched to listen to Redis,
+     * because client.subscribe() is blocking (it never returns control).
+     * When a message arrives, onMessage() distributes the message to all registered handlers.
      * <p>
-     * Les handlers supplémentaires réutilisent le même abonnement afin d'éviter les
+     * Additional handlers reuse the same subscription to avoid
      * livraisons en double.
      */
     public void subscribe(String channel, Consumer<String> handler) {
         requireText(channel, "channel");
         Objects.requireNonNull(handler, "handler");
         redis();
-        // Ajoute le handler à la liste existante, ou crée une nouvelle liste si le canal est nouveau
+        // Adds the handler to the existing list, or creates a new list if the channel is new
         subscribers.computeIfAbsent(channel, _ -> new CopyOnWriteArrayList<>()).add(handler);
 
-        // Un seul runner par canal maintient l'abonnement et le recrée après une coupure.
+        // A single runner per channel maintains the subscription and recreates it after an outage.
         if (subscriptionRunners.add(channel)) {
             subscriberExecutor.submit(() -> runSubscriptionLoop(channel));
         }
@@ -449,14 +449,14 @@ public class RedisManager {
             }
         } finally {
             subscriptionRunners.remove(channel);
-            // Couvre la course où un handler est ajouté pendant la sortie du runner.
+            // Covers the run where a handler is added during runner exit.
             if (!closed.get() && subscribers.containsKey(channel) && subscriptionRunners.add(channel)) {
                 subscriberExecutor.submit(() -> runSubscriptionLoop(channel));
             }
         }
     }
 
-    /** Retire un handler local et ferme l'abonnement Redis lorsque celui-ci n'est plus utilisé. */
+    /** Removes a local handler and closes the Redis subscription when it is no longer used. */
     public void unsubscribe(String channel, Consumer<String> handler) {
         requireText(channel, "channel");
         Objects.requireNonNull(handler, "handler");
@@ -469,32 +469,32 @@ public class RedisManager {
         }
     }
 
-    /** Raccourci pour s'abonner aux événements joueurs (canal tropicube:players). */
+    /** Shortcut to subscribe to player events (tropicube:players channel). */
     public void subscribeToPlayerEvents(Consumer<String> handler) {
         subscribe(CHANNEL_PLAYERS, handler);
     }
 
-    /** Raccourci pour s'abonner aux commandes à distance (canal tropicube:commands). */
+    /** Shortcut to subscribe to remote commands (tropicube:commands channel). */
     public void subscribeToCommands(Consumer<String> handler) {
         subscribe(CHANNEL_COMMANDS, handler);
     }
 
     // ===== TEMPLATES =====
 
-    /** Sauvegarde la liste des templates de serveurs au format JSON. TTL : 24h. */
+    /** Saves the list of server templates in JSON format. TTL: 24h. */
     public void saveTemplatesJson(String json) {
         Objects.requireNonNull(json, "json");
         redis().set(KEY_PREFIX + "templates", json, SetParams.setParams().ex(86400L));
     }
 
-    /** Récupère la liste des templates de serveurs au format JSON, ou null si absente. */
+    /** Retrieves the list of server templates in JSON format, or null if absent. */
     public String getTemplatesJson() {
         return redis().get(KEY_PREFIX + "templates");
     }
 
-    // ===== CLÉ-VALEUR GÉNÉRIQUE =====
+    // ===== GENERIC KEY-VALUE =====
 
-    /** Stocke une valeur arbitraire sous une clé préfixée, avec un TTL en secondes. */
+    /** Stores an arbitrary value under a prefixed key, with a TTL in seconds. */
     public void set(String key, String value, int ttlSeconds) {
         requireText(key, "key");
         Objects.requireNonNull(value, "value");
@@ -503,8 +503,8 @@ public class RedisManager {
     }
 
     /**
-     * Crée une réservation seulement si ni celle-ci ni la clé bloquante
-     * n'existent. Le contrôle et l'écriture forment une seule opération Redis.
+     * Creates a reservation only if neither it nor the blocking key
+     * do not exist. Control and write form a single Redis operation.
      */
     public boolean reserveUnlessBlocked(String reservationKey, String blockingKey,
                                         String value, int ttlSeconds) {
@@ -518,28 +518,28 @@ public class RedisManager {
         return result instanceof Number number && number.longValue() == 1L;
     }
 
-    /** Récupère une valeur par sa clé préfixée. Retourne null si la clé n'existe pas ou a expiré. */
+    /** Retrieves a value by its prefixed key. Returns null if the key does not exist or has expired. */
     public String get(String key) {
         requireText(key, "key");
         return redis().get(KEY_PREFIX + key);
     }
 
-    /** Supprime une clé préfixée de Redis. */
+    /** Removes a prefixed key from Redis. */
     public void delete(String key) {
         requireText(key, "key");
         redis().del(KEY_PREFIX + key);
     }
 
-    /** Vérifie si une clé préfixée existe dans Redis. */
+    /** Checks if a prefixed key exists in Redis. */
     public boolean exists(String key) {
         requireText(key, "key");
         return redis().exists(KEY_PREFIX + key);
     }
 
     /**
-     * Ferme proprement le gestionnaire :
-     *   1. Arrête immédiatement tous les threads d'écoute Pub/Sub
-     *   2. Ferme le client Redis et libère le pool de connexions
+     * Closes the manager cleanly:
+     * 1. Immediately stops all Pub/Sub listening threads
+     * 2. Close the Redis client and release the connection pool
      */
     public synchronized void close() {
         if (!closed.compareAndSet(false, true)) return;
@@ -547,7 +547,7 @@ public class RedisManager {
             try {
                 subscription.unsubscribe();
             } catch (RuntimeException ignored) {
-                // La connexion peut déjà être fermée.
+                // The connection may already be closed.
             }
         });
         activeSubscriptions.clear();

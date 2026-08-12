@@ -3,7 +3,7 @@ package fr.tropicube.sheepwars.sheep;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.DyeColor;
 
-/** Catalogue des moutons, de leur présentation et de leur pondération configurable. */
+/** Catalog of sheep, their presentation and their configurable weighting. */
 public enum SheepType {
     BOARDING("Abordage", DyeColor.WHITE, NamedTextColor.WHITE, "boarding",
             "Un mouton qui transporte son lanceur"),

@@ -23,8 +23,8 @@ import java.util.Objects;
 import java.util.logging.Level;
 
 /**
- * Point d'entrée Paper du lobby. Il configure l'expérience d'accueil,
- * les menus de sélection et la communication avec les instances dynamiques.
+ * Lobby Paper entry point. It configures the welcome experience,
+ * selection menus and communication with dynamic instances.
  */
 public class TropicubeLobby extends JavaPlugin {
 
@@ -75,13 +75,13 @@ public class TropicubeLobby extends JavaPlugin {
         // Commandes
         registerCommands();
 
-        // Rafraîchissement des données serveurs toutes les 5 s + mise à jour des GUIs ouverts.
+        // Refreshing server data every 5 s + updating open GUIs.
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
             lobbyServerManager.refreshServerList();
             Bukkit.getScheduler().runTask(this, () -> guiManager.refreshOpenServerGuis());
         }, 0L, 100L);
 
-        // Écoute des réponses du proxy (échec de création/arrêt de partie personnalisée).
+        // Listening to proxy responses (failed to create/stop custom game).
         redisManager.subscribeToCommands(message -> {
             // Format: "LOBBY:CREATE_HOST_FAILED:<uuid>"
             if (message.startsWith("LOBBY:CREATE_HOST_FAILED:")) {
@@ -108,8 +108,8 @@ public class TropicubeLobby extends JavaPlugin {
             }
         });
 
-        // Synchronise les éléments localisés lorsqu'une langue change depuis le
-        // menu du lobby, /lang ou une autre instance du réseau.
+        // Synchronizes localized elements when a language changes from the
+        // lobby menu, /lang or another network instance.
         redisManager.subscribeToPlayerEvents(message -> {
             if (!message.startsWith("LANG_CHANGED:")) return;
             String payload = message.substring("LANG_CHANGED:".length());

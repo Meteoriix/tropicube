@@ -5,7 +5,7 @@ import org.bukkit.Material;
 
 import java.util.Arrays;
 
-/** Kits optionnels modifiant les capacités d'un joueur pendant la partie. */
+/** Optional kits modifying a player's abilities during the game. */
 public enum PlayerKit {
     NONE(PlayerClass.NONE, "Aucun", Material.BARRIER, NamedTextColor.WHITE,
             "Aucun bonus accordé"),

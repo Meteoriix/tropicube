@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Environment, tests, and contributions">
+  <meta name="theme-color" content="#2d1b6b">
+  <title>Development · Tropicube</title>
+  <link rel="stylesheet" href="../styles.css?v=54e32bb45a59">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span><span><span class="brand-name-accent">Tropi</span>cube</span></a><a class="language-switch" href="../development.html" hreflang="fr">Français</a></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong><span class="brand-name-accent">Tropi</span>cube</strong><small>Network documentation</small></span></a>
+    <a class="language-switch" href="../development.html" hreflang="fr">Français</a>
+    <nav aria-label="Main documentation"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commands</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Deployment</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link" href="fallen-kingdoms.html"><span class="nav-icon">♜</span><span>Fallen Kingdoms</span></a>
+<a class="nav-link" href="fallen-kingdoms-technical-spec.html"><span class="nav-icon">⌘</span><span>FK technical</span></a>
+<a class="nav-link active" href="development.html"><span class="nav-icon">{ }</span><span>Development</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changes</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="content" class="main">
+    <section class="hero"><div class="eyebrow">Official documentation</div><h1>Development</h1><p>Environment, tests, and contributions</p></section>
+    <div class="content-grid">
+      <article class="documentation"><h2 id="reference-environment">Reference environment<a class="heading-anchor" href="#reference-environment" aria-label="Link to this section">#</a></h2>
+<ul><li>Java 25;</li><li>Maven 3.9.11 through the repository wrapper;</li><li>Minecraft 26.2 with the Paper and Velocity versions declared in the parent POM;</li><li>UTF-8 and four-space Java indentation;</li><li>Windows and Linux compatibility.</li></ul>
+<p>Do not replace Minecraft 26.2 with a 1.21.x example version and do not introduce a <code>paper-mojangapi</code> dependency.</p>
+<h2 id="module-boundaries">Module boundaries<a class="heading-anchor" href="#module-boundaries" aria-label="Link to this section">#</a></h2>
+<p>Shared network contracts belong in Docker API or Core only when they are genuinely used across modules. Game rules, teams, kits, abilities, match state, and game data remain inside their game module. A new game must never depend on SheepWars business classes.</p>
+<h2 id="code-design">Code design<a class="heading-anchor" href="#code-design" aria-label="Link to this section">#</a></h2>
+<ul><li>inject dependencies explicitly through constructors;</li><li>keep mutable global state out of static fields;</li><li>model game lifecycles with explicit, idempotent state transitions;</li><li>keep Paper and Velocity adapters thin and move pure rules into testable Java classes;</li><li>validate configuration at startup with actionable error messages;</li><li>expose immutable collections where callers must not mutate internal state;</li><li>use Adventure Components and MiniMessage for player text;</li><li>keep code comments and JavaDoc in English.</li></ul>
+<h2 id="threading">Threading<a class="heading-anchor" href="#threading" aria-label="Link to this section">#</a></h2>
+<p>Never block the Paper or Velocity event thread with SQL, Redis, Docker, network, or disk work. Perform I/O asynchronously, then return to the server scheduler before changing worlds, entities, inventories, player profiles, or other non-thread-safe Bukkit state.</p>
+<p>Track every scheduled task and cancel it when a match ends or a plugin stops. Close executors, connection pools, subscriptions, and clients during shutdown.</p>
+<h2 id="tests">Tests<a class="heading-anchor" href="#tests" aria-label="Link to this section">#</a></h2>
+<p>Use JUnit for pure rules, parsers, configuration validation, resource parity, state transitions, and regressions. Avoid mocking the entire Paper or Velocity API. Extract business logic when a server runtime is unnecessary.</p>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>.\mvnw.cmd -o -pl tropicube-sheepwars -am test --batch-mode --no-transfer-progress
+.\mvnw.cmd clean verify</code></pre></div>
+<p>JaCoCo reports are generated under each module's <code>target/site/jacoco/</code> directory. Coverage helps locate missing behavior, but assertions must remain meaningful.</p>
+<h2 id="languages">Languages<a class="heading-anchor" href="#languages" aria-label="Link to this section">#</a></h2>
+<p>Player-facing messages are available in French, English, German, and Spanish. Every new key must exist in all four files with the same placeholder structure. Embedded resources and deployment copies must stay synchronized. Cached interfaces must refresh after <code>/lang</code> without requiring a reconnect.</p>
+<h2 id="documentation-site">Documentation site<a class="heading-anchor" href="#documentation-site" aria-label="Link to this section">#</a></h2>
+<p>French Markdown lives in <code>docs/</code>; English equivalents live in <code>docs/en/</code>. <code>README.md</code> and <code>README.en.md</code> provide the two home pages. Build and validate both languages with:</p>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>node docs-site/build.mjs
+node docs-site/validate.mjs</code></pre></div>
+<p>Generated HTML under <code>docs-site/</code> and <code>docs-site/en/</code> is committed with its Markdown sources.</p>
+<h2 id="change-workflow">Change workflow<a class="heading-anchor" href="#change-workflow" aria-label="Link to this section">#</a></h2>
+<ol><li>Inspect <code>git status</code>, the affected POM, resources, documentation, and consumers.</li><li>Identify lifecycle, threading, Redis, SQL, Docker, and compatibility constraints.</li><li>Implement the smallest coherent change with tests.</li><li>Run targeted tests after each coherent step.</li><li>Run the full reactor for cross-module changes.</li><li>Rebuild the documentation site.</li><li>Inspect the full diff, status, LFS state when relevant, and secrets.</li><li>Commit with a conventional French commit subject as defined by project policy.</li></ol></article>
+      <aside class="page-toc" aria-label="On this page"><span class="toc-title">On this page</span><a class="toc-level-2" href="#reference-environment">Reference environment</a><a class="toc-level-2" href="#module-boundaries">Module boundaries</a><a class="toc-level-2" href="#code-design">Code design</a><a class="toc-level-2" href="#threading">Threading</a><a class="toc-level-2" href="#tests">Tests</a><a class="toc-level-2" href="#languages">Languages</a><a class="toc-level-2" href="#documentation-site">Documentation site</a><a class="toc-level-2" href="#change-workflow">Change workflow</a></aside>
+    </div>
+    <footer><span><span class="brand-name-accent">Tropi</span>cube</span><span>Static documentation generated from Markdown files</span></footer>
+  </main>
+</body>
+</html>

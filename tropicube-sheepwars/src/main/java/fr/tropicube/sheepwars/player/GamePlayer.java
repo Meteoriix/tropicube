@@ -5,7 +5,7 @@ import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
-/** État mutable d'un participant pendant une partie SheepWars. */
+/** Mutable state of a participant during a SheepWars game. */
 public class GamePlayer {
 
     private final UUID uuid;

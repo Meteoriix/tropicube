@@ -11,7 +11,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
-/** Mouton qui applique un effet de poison dans sa zone d'impact. */
+/** Sheep that applies a poison effect in its area of ​​impact. */
 public class PoisonSheep extends AbstractSheep {
 
     private static final int CLOUD_DURATION_TICKS = 100; // 5 seconds
@@ -39,7 +39,7 @@ public class PoisonSheep extends AbstractSheep {
             c.setColor(org.bukkit.Color.fromRGB(0, 180, 0));
         });
 
-        // Inflige périodiquement des dégâts aux ennemis visibles dans le nuage.
+        // Periodically deals damage to visible enemies in the cloud.
         new BukkitRunnable() {
             int ticks = 0;
 
@@ -52,7 +52,7 @@ public class PoisonSheep extends AbstractSheep {
                 if (ticks % 5 == 0) {
                     loc.getWorld().spawnParticle(Particle.ENTITY_EFFECT, loc.clone().add(0, 0.5, 0),
                             20, CLOUD_RADIUS * 0.4, 0.5, CLOUD_RADIUS * 0.4, 0.01, Color.fromARGB(85, 0, 255, 120));
-                    // Applique les dégâts aux ennemis présents dans la zone.
+                    // Applies damage to enemies in the area.
                     for (Player target : loc.getNearbyPlayers(CLOUD_RADIUS)) {
                         if (isEnemy(thrower, target)) {
                             target.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 30, 2));

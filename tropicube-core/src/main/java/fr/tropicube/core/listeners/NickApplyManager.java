@@ -5,18 +5,19 @@ import com.destroystokyo.paper.profile.ProfileProperty;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import fr.tropicube.core.TropicubeCore;
+import fr.tropicube.docker.model.NickIdentity;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
 /**
- * Applique ou retire un nick skin côté backend (Paper) sans déconnecter le joueur.
+ * Apply or remove a nick skin on the backend side (Paper) without disconnecting the player.
  * <p>
- * Événements Redis écoutés :
- *   NICK_APPLY:{uuid}  — applique le nick stocké dans nick:{uuid}
- *   NICK_RESET:{uuid}  — restaure le skin original stocké dans nick:original:{uuid}
- *   NICK_CLEAR:{uuid}  — restaure le profil puis purge les deux clés de nick
+ * Redis events listened to:
+ * NICK_APPLY:{uuid} — applies the nick stored in nick:{uuid}
+ * NICK_RESET:{uuid} — restores the original skin stored in nick:original:{uuid}
+ * NICK_CLEAR:{uuid} — restores the profile then purges both nick keys
  */
 public class NickApplyManager {
 
@@ -55,29 +56,22 @@ public class NickApplyManager {
         Player target = plugin.getServer().getPlayer(uuid);
         if (target == null) return;
 
-        String raw = plugin.getRedisManager().get("nick:" + uuid);
-        if (raw == null) return;
-
-        try {
-            JsonObject obj      = JsonParser.parseString(raw).getAsJsonObject();
-            String     nickName = obj.get("n").getAsString();
-            String     skinVal  = obj.get("v").getAsString();
-            String     skinSig  = obj.has("s") ? obj.get("s").getAsString() : "";
-
-            swapSkin(target, nickName, skinVal, skinSig);
-        } catch (Exception e) {
-            plugin.getLogger().warning("[Nick] Failed to apply nick for " + uuid + ": " + e.getMessage());
-        }
+        String raw = plugin.getRedisManager().get(NickIdentity.key(uuid));
+        NickIdentity.fromJson(raw).ifPresentOrElse(
+                identity -> swapSkin(target, identity.name(), identity.skinValue(), identity.skinSignature()),
+                () -> {
+                    if (raw != null) plugin.getLogger().warning("[Nick] Invalid identity payload for " + uuid);
+                });
     }
 
-    // /nick off : restaure le skin puis purge l'état Redis de l'identité.
+    // /nick off: restores the skin then purges the Redis state of the identity.
 
     private void handleClear(String uuidStr) {
         try {
             UUID uuid = UUID.fromString(uuidStr);
             plugin.getServer().getScheduler().runTask(plugin, () -> {
-                // Tous les backends reçoivent l'événement. Seul celui qui
-                // possède le joueur peut restaurer son profil et purger Redis.
+                // All backends receive the event. Only the one who
+                // owns the player can restore his profile and purge Redis.
                 if (plugin.getServer().getPlayer(uuid) == null) return;
                 resetNick(uuid);
                 plugin.getRedisManager().delete("nick:" + uuid);
@@ -114,12 +108,12 @@ public class NickApplyManager {
         profile.setProperty(new ProfileProperty("textures", skinValue, skinSig));
         target.setPlayerProfile(profile);
 
-        // Actualise le nom Adventure du chat et de la liste des joueurs.
+        // Updates the Adventure name of the chat and player list.
         Component nameComponent = Component.text(displayName);
         target.displayName(nameComponent);
         target.playerListName(nameComponent);
 
-        // Force les observateurs à recharger l'entité afin d'afficher le nouveau skin.
+        // Forces observers to reload the entity in order to display the new skin.
         for (Player observer : plugin.getServer().getOnlinePlayers()) {
             if (!observer.equals(target)) {
                 observer.hidePlayer(plugin, target);

@@ -9,8 +9,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Gère les files d'attente lorsqu'un serveur est plein.
- * Les joueurs VIP sont prioritaires dans la queue.
+ * Handles queues when a server is full.
+ * VIP players have priority in the queue.
  */
 public class QueueManager {
 

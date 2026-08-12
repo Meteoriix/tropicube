@@ -20,8 +20,8 @@ import org.bukkit.event.weather.WeatherChangeEvent;
 import java.util.Set;
 
 /**
- * Protège le lobby : pas de PvP, pas de faim, pas de dégâts, pas de construction,
- * pas d'interactions avec les conteneurs ou portails.
+ * Protects the lobby: no PvP, no hunger, no damage, no construction,
+ * no interactions with containers or portals.
  */
 public class LobbyProtectionListener implements Listener {
 
@@ -115,7 +115,7 @@ public class LobbyProtectionListener implements Listener {
 
     @EventHandler
     public void onPortalCreate(org.bukkit.event.world.PortalCreateEvent e) {
-        // Empêche la création de portails du Nether ou de l'End dans le lobby.
+        // Prevents the creation of Nether or End portals in the lobby.
         e.setCancelled(true);
     }
 

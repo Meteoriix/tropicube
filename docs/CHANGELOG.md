@@ -28,6 +28,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Corrigé
 
+- Persistance du grade d'affichage factice de `/nick` après reconnexion et compatibilité des anciens payloads Redis ; les noms nickés utilisent désormais la bonne couleur d'équipe dans la tablist SheepWars et le glowing ne retombe plus en blanc lorsque le nom de profil change.
+- Les instances SheepWars en cours sont affichées avec le statut bleu `PLAYING` et acceptent les nouvelles connexions en mode spectateur, sans équipe ni impact sur les conditions de victoire.
 - Accès à `/nick` refusé aux grades autorisés à cause d'une clé Redis incohérente ; le contrat de grade est désormais partagé avec Core, stable pendant les transferts et actualisé lors des changements de grade. `/nick off`, les arguments invalides, les requêtes concurrentes et la purge multi-backend sont également sécurisés.
 - Distribution SheepWars trop rapide et sujette aux séries : la cadence standard passe de 10 à 20 secondes et chaque joueur dispose désormais d'une pioche pondérée sans répétition consécutive.
 - Instances SheepWars actives affichées hors ligne après l'échec d'un auto-stop : Velocity restaure désormais leur statut précédent dans Redis, et le Lobby exclut les états arrêtés ou en erreur de ses listes et totaux.

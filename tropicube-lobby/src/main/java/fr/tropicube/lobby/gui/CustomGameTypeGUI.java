@@ -11,9 +11,9 @@ import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NonNull;
 
 /**
- * Menu de choix du type de partie personnalisée (Custom Game).
- * Chaque template disponible est affiché comme une option cliquable.
- * Accessible aux joueurs ayant la permission {@code tropicube.lobby.customgame}.
+ * Menu for choosing the type of personalized game (Custom Game).
+ * Each available template is displayed as a clickable option.
+ * Accessible to players with {@code tropicube.lobby.customgame} permission.
  */
 public class CustomGameTypeGUI {
 

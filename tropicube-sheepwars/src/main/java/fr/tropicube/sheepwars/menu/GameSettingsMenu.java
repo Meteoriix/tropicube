@@ -26,14 +26,14 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.*;
 
 /**
- * Interface de configuration d'une partie personnalisée : règles, moutons,
- * classes et kits autorisés. Les réglages sont réinitialisés entre les parties.
+ * Custom game configuration interface: rules, sheep,
+ * authorized classes and kits. Settings are reset between games.
  */
 public class GameSettingsMenu implements Listener {
 
     private enum Page { MAIN, SHEEP, KITS, CLASSES, OPTIONS, DROP_RATES }
 
-    // Page de 54 cases : deux lignes internes de sept moutons, puis deux sur la troisième.
+    // Page of 54 boxes: two internal lines of seven sheep, then two on the third.
     private static final int[] SHEEP_SLOTS     = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29};
     // 27-slot kits page: DPS row 1, TANK row 2, SUPPORT row 3
     private static final int[] KIT_SLOTS_DPS     = {2, 4, 6};
@@ -55,7 +55,7 @@ public class GameSettingsMenu implements Listener {
         load();
     }
 
-    // Objet privé placé dans la barre rapide de l'hôte
+    // Private object placed in host quickbar
 
     public ItemStack createSelectorItem(Player player) {
         return new ItemBuilder(Material.COMPARATOR)
@@ -199,7 +199,7 @@ public class GameSettingsMenu implements Listener {
     private void openClassesPage(Player player) {
         Inventory inv = Bukkit.createInventory(null, 27,
                 Component.text(LangHelper.get(player, "sw.settings-classes-title"), NamedTextColor.RED));
-        // Ignore PlayerClass.NONE et affiche uniquement les classes jouables.
+        // Ignore PlayerClass.NONE and display only playable classes.
         PlayerClass[] allClasses = PlayerClass.values();
         for (int i = 0; i < CLASS_SLOTS.length && (i + 1) < allClasses.length; i++)
             inv.setItem(CLASS_SLOTS[i], classToggleItem(player, allClasses[i + 1]));
@@ -242,7 +242,7 @@ public class GameSettingsMenu implements Listener {
             inv.setItem(15, plusItem());
         }
 
-        // Troisième ligne : délai, kits aléatoires, démarrage, vote et retour.
+        // Third row: deadline, random kits, start, vote and feedback.
         if (isConfigurable("sheep-give-delay")) {
             int delay = cfg.getInt("default-settings.sheep-give-delay", 20);
             List<Component> delayLore = new ArrayList<>();

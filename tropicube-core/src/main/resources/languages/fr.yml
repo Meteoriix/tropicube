@@ -1,8 +1,8 @@
 # =====================================================
-#   Tropicube - Langue française (fr)
+# Tropicube - French language (fr)
 # =====================================================
 
-# Général
+# General
 general:
   prefix: "<dark_gray>[<gold>Tropicube<dark_gray>] "
   no-permission: "<red>Oups ! Tu n'as pas la permission de faire ça. 🚫"
@@ -16,7 +16,7 @@ general:
   no-reason: "Aucune raison"
   chat-cooldown: "<red>Doucement ! Attends un peu avant d'envoyer un autre message. ⏳"
 
-# Connexion / Déconnexion
+# Connection / Disconnect
 join:
   message: "<dark_gray>[<green>+<dark_gray>] {0} <dark_gray>a rejoint l'aventure"
   first-join: "<dark_gray>[<gold>★<dark_gray>] <gold>{0} <yellow>rejoint l'aventure pour la première fois ! 🎉"
@@ -25,7 +25,7 @@ join:
 quit:
   message: "<dark_gray>[<red>-<dark_gray>] <gray>{0} <dark_gray>a quitté l'aventure"
 
-# Économie
+# Economy
 economy:
   balance: "<gray>Tes <gold>⬡<gray> : <gold>{0} 💰"
   balance-other: "<gray>Solde de <white>{0}<gray> : <gold>{1}"
@@ -69,7 +69,7 @@ language:
   invalid: "<red>Langue invalide. Langues disponibles : <white>{0}"
   current: "<gray>Ta langue actuelle : <white>{0}"
 
-# Modération
+# Moderation
 moderation:
   mute-success: "<white>{0} <green>a été muté pour <white>{1}<green>. Raison : <white>{2}"
   mute-received: "<red>Tu as été réduit au silence pour <white>{0}<red>. Raison : <white>{1}"
@@ -89,7 +89,7 @@ moderation:
   not-banned: "<white>{0} <red>n'est pas banni."
   warn-kick: "<red>⚠ Tu as atteint {0} avertissements et as été expulsé."
 
-# Temps formaté
+# Formatted time
 time:
   permanent: "Permanent"
   seconds: "{0}s"
@@ -130,6 +130,7 @@ commands:
 sw:
   # addPlayer
   game-already-started: "<red>Une partie est déjà en cours."
+  spectator-joined: "<aqua>Vous avez rejoint la partie en tant que spectateur."
   arena-not-ready: "<red>L'arène n'est pas configurée."
   game-full: "<red>La partie est pleine ! Tente ta chance plus tard 🌊"
   # Broadcasts
@@ -150,7 +151,7 @@ sw:
   title-draw: "Égalité !"
   title-winner: "🏆 Victoire de l'équipe {0} !"
   subtitle-end: "GG à tous les champions ! 🏆"
-  # Message fin (MiniMessage)
+# End message (MiniMessage)
   join-next: "<aqua>[SW]</aqua> <gold>Clique <click:run_command:'/sw join'><b>ICI</b></click> pour rejoindre la prochaine partie !</gold>"
   # PlayerListener
   arena-not-configured-msg: "<aqua>L'arène n'est pas configurée. Utilise <gold>/sw setlobby<aqua> puis <gold>/sw setspawn <red|blue><aqua> pour la configurer."
@@ -271,6 +272,7 @@ sw:
   sb-red: "<red>Rouges: <white>{0}"
   sb-blue: "<blue>Bleus: <white>{0}"
   sb-your-team: "<yellow>Votre équipe: {0}"
+  sb-spectator: "<gray>Mode : <white>Spectateur"
   sb-kills: "<yellow>Kills: <white>{0}"
   sb-time: "<gray>Temps: <white>{0}"
   sb-ending: "<yellow>Partie terminée !"
@@ -278,7 +280,8 @@ sw:
   sb-team-blue: "<blue>Bleue"
   tab-header: "\n<aqua><b>SheepWars</b></aqua> <dark_gray>│</dark_gray> <gray>Tropicube\n"
   tab-footer: "\n<gray>Équipe : <white>{0}</white>  <dark_gray>│</dark_gray>  <red>Rouges : <white>{1}</white></red>  <dark_gray>│</dark_gray>  <blue>Bleus : <white>{2}</white></blue>  <dark_gray>│</dark_gray>  <yellow>⏱ <white>{3}</white></yellow>\n"
-  # Sélection d'équipe
+  tab-footer-spectator: "\n<gray>Spectateur  <dark_gray>│</dark_gray>  <red>Rouges : <white>{0}</white></red>  <dark_gray>│</dark_gray>  <blue>Bleus : <white>{1}</white></blue>  <dark_gray>│</dark_gray>  <yellow>⏱ <white>{2}</white></yellow>\n"
+  # Team selection
   team-selector-name: "<gold>Équipe"
   team-selector-lore: "<gray>Clic droit pour choisir ton équipe"
   team-menu-title: "Choisir une Équipe"
@@ -286,21 +289,21 @@ sw:
   team-click-join: "<green>▶ Cliquer pour rejoindre"
   team-joined: "<green>Tu as rejoint l'équipe <white>{0}<green> !"
   team-unbalanced: "<red>Impossible de rejoindre {0} : les équipes seraient déséquilibrées."
-  # Quitter la partie
+  # Leave the game
   leave-item-name: "<red>Quitter la partie"
   leave-item-lore: "<gray>Clic droit pour retourner au lobby"
   cant-leave-ingame: "<red>Tu ne peux pas quitter pendant une partie en cours."
-  # Fin de partie
+  # End of game
   replay-message: "<gray>Partie terminée ! Retour au lobby dans quelques instants..."
-  # Boutons de lancement (menu paramètres)
+  # Launch buttons (settings menu)
   settings-launch-name: "▶ Lancer la partie"
   settings-launch-lore: "Clic pour démarrer le compte à rebours"
   settings-cancel-launch-name: "✖ Annuler le lancement"
   settings-cancel-launch-lore: "Clic pour stopper le compte à rebours"
   settings-no-launch-name: "✘ Lancement impossible"
-  # Scoreboard fin de partie
+  # End of game scoreboard
   sb-sheep-thrown: "<yellow>Moutons lancés : <white>{0}"
-  # Tablist (états supplémentaires)
+  # Tablist (additional states)
   tab-footer-waiting: "\n<gray>Joueurs : <yellow>{0}</yellow>  <dark_gray>│</dark_gray>  <gray>En attente...\n"
   tab-footer-starting: "\n<yellow>La partie commence dans <white>{0}s</white><yellow> !\n"
   tab-footer-ending: "\n<gold>Partie terminée ! Merci d'avoir joué 🏆\n"
@@ -382,9 +385,11 @@ lobby:
   server-players: "<gray>Joueurs : <white>{0}<gray>/<white>{1}"
   server-template: "<gray>Template : <yellow>{0}"
   server-status-online: "<green>EN LIGNE"
+  server-status-playing: "<blue>EN COURS"
   server-status-full: "<red>PLEIN"
   server-status-starting: "<gold>EN DÉMARRAGE"
   server-click-join: "<green>▶ Clique pour rejoindre ! 🌴"
+  server-click-spectate: "<blue>▶ Clique pour observer la partie !"
   server-click-full: "<red>⚠ Serveur complet."
   server-click-full2: "<gray>Rejoins la file d'attente avec <yellow>/queue {0}"
   server-click-starting: "<gold>⧗ Démarrage en cours..."

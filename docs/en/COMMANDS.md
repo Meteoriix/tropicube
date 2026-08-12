@@ -1,0 +1,47 @@
+# Commands
+
+## Velocity commands
+
+| Command | Alias | Permission | Purpose |
+|---|---|---|---|
+| `/server [name]` | — | none | Lists known instances or connects to one |
+| `/queue <server>` | `/file` | none | Joins the queue for a full instance; Premium and staff grades have priority |
+| `/hub` | `/lobby` | none | Connects to the least loaded lobby |
+| `/nick` | — | configured grade | Generates and applies a random name and signed skin |
+| `/nick off` | — | none | Restores the original identity, even after losing the required grade |
+| `/find <player>` | — | `tropicube.admin.find` | Locates a connected player |
+| `/send <player|*> <server>` | — | `tropicube.admin.send` | Transfers one or all players |
+| `/tropi ...` | `/tropicube`, `/cm` | `tropicube.admin` | Administers dynamic instances |
+
+`nick.allowed-grades` controls who may enable a nick. Disabling is always allowed and cancels an outstanding skin request. The Redis identity includes the fake `PREMIUM` display grade, so the same presentation survives reconnects. Concurrent generations for the same player are rejected.
+
+## Core commands
+
+| Command | Permission | Purpose |
+|---|---|---|
+| `/money [player]` | own balance: none; other player: administrative | Displays TropiCoin balance |
+| `/eco <set|add|remove|top> ...` | economy administration | Changes balances or displays the ranking |
+| `/rank <set|info|list> ...` | grade administration | Reads and assigns grades, including temporary grades |
+| `/tropiperm ...` | permission administration | Manages individual and grade permissions |
+| `/lang [fr|en|de|es]` | none | Reads or changes the persistent language |
+| `/mute`, `/unmute`, `/kick`, `/warn`, `/history` | moderation permissions | Performs and audits moderation actions |
+| `/tropiadmin reload` | Core administration | Reloads supported Core configuration |
+
+## Lobby commands
+
+| Command | Purpose |
+|---|---|
+| `/servers` | Opens the server selector |
+| `/sw join` | Rejoins the remembered active SheepWars instance as a spectator |
+| `/playnext` | Joins or waits for the suggested replay instance |
+| `/lang` | Opens or updates language selection |
+| `/fly` | Toggles authorized lobby flight |
+| `/vip` | Opens the VIP presentation interface |
+
+## SheepWars controls
+
+SheepWars registers no standalone Paper command. Team, class, kit, map, host settings, start/cancel, and return-to-lobby actions use hotbar items and inventory menus. Late arrivals and reconnecting players enter spectator mode when the game is already in progress.
+
+## Administration principles
+
+Command handlers validate arguments and permissions at the boundary. Player-facing text comes from the four language files. Operations involving SQL, Redis, Docker, or disk must not block the Paper or Velocity event thread.

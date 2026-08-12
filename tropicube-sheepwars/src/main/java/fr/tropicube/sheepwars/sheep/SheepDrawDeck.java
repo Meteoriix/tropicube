@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.random.RandomGenerator;
 
 /**
- * Pioche pondérée propre à un joueur. Les jetons configurés sont consommés sans
- * remise afin de lisser la distribution. Tant que la pondération le permet, le
- * prochain choix préserve la possibilité de terminer le sac sans répétition.
+ * Weighted pickaxe specific to a player. The configured tokens are consumed without
+ * discount in order to smooth the distribution. As long as the weighting allows it, the
+ * next choice preserves the possibility of completing the bag without repetition.
  */
 final class SheepDrawDeck {
 

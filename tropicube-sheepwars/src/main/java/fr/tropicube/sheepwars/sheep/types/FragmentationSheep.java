@@ -11,7 +11,7 @@ import org.bukkit.util.Vector;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-/** Mouton explosif qui projette plusieurs charges secondaires. */
+/** Explosive sheep that projects several secondary charges. */
 public class FragmentationSheep extends AbstractSheep {
 
     private static final int FRAG_COUNT = 5;
@@ -35,7 +35,7 @@ public class FragmentationSheep extends AbstractSheep {
 
         loc.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1.0F, 1.5F);
 
-        // Projette FRAG_COUNT fragments dans des directions aléatoires.
+        // Projects FRAG_COUNT fragments in random directions.
         for (int i = 0; i < FRAG_COUNT; i++) {
             ThreadLocalRandom rng = ThreadLocalRandom.current();
             Vector dir = new Vector(
@@ -59,7 +59,7 @@ public class FragmentationSheep extends AbstractSheep {
                 );
             });
 
-            // Chaque fragment explose après 0,6 à 1,2 seconde.
+            // Each fragment explodes after 0.6 to 1.2 seconds.
             int delay = 12 + rng.nextInt(12);
             new BukkitRunnable() {
                 @Override

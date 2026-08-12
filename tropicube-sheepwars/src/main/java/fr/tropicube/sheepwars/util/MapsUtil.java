@@ -9,7 +9,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Charge les cartes SheepWars depuis la configuration et valide leurs points clés. */
+/** Load SheepWars maps from configuration and validate their key points. */
 public class MapsUtil {
 
     public static List<GameMap> loadMaps(ConfigurationSection section, World world) {
@@ -44,7 +44,7 @@ public class MapsUtil {
                 (float) sub.getDouble("yaw"), (float) sub.getDouble("pitch"));
     }
 
-    // Charge les points spawn1 à spawn8 depuis le chemin indiqué.
+    // Loads spawn1 to spawn8 from the given path.
     public static List<Location> loadSpawns(ConfigurationSection section, World world, String path) {
         List<Location> locations = new ArrayList<>();
         ConfigurationSection sub = section.getConfigurationSection(path);

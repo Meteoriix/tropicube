@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Overview of the Tropicube project">
+  <meta name="theme-color" content="#2d1b6b">
+  <title>Tropicube · Tropicube</title>
+  <link rel="stylesheet" href="../styles.css?v=54e32bb45a59">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span><span><span class="brand-name-accent">Tropi</span>cube</span></a><a class="language-switch" href="../index.html" hreflang="fr">Français</a></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong><span class="brand-name-accent">Tropi</span>cube</strong><small>Network documentation</small></span></a>
+    <a class="language-switch" href="../index.html" hreflang="fr">Français</a>
+    <nav aria-label="Main documentation"><a class="nav-link active" href="index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commands</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Deployment</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link" href="fallen-kingdoms.html"><span class="nav-icon">♜</span><span>Fallen Kingdoms</span></a>
+<a class="nav-link" href="fallen-kingdoms-technical-spec.html"><span class="nav-icon">⌘</span><span>FK technical</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Development</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changes</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="content" class="main">
+    <section class="hero"><div class="eyebrow">Official documentation</div><h1>Tropicube</h1><p>Overview of the Tropicube project</p></section>
+    <div class="content-grid">
+      <article class="documentation"><p><a href="../index.html">Version française</a></p>
+<p>Tropicube is a modular Minecraft 26.2 network built around Velocity, dynamically created Paper servers, Redis, MySQL, and Docker Compose. The reference development environment is Java 25 with Maven 3.9.11.</p>
+<h2 id="modules">Modules<a class="heading-anchor" href="#modules" aria-label="Link to this section">#</a></h2>
+<div class="table-scroll"><table><thead><tr><th>Module</th><th>Responsibility</th></tr></thead><tbody><tr><td><code>tropicube-docker-api</code></td><td>Shared server models plus Docker and Redis access</td></tr><tr><td><code>tropicube-velocity</code></td><td>Proxy routing, queues, dynamic instance lifecycle, and <code>/nick</code></td></tr><tr><td><code>tropicube-core</code></td><td>Player data, economy, grades, permissions, languages, and moderation</td></tr><tr><td><code>tropicube-lobby</code></td><td>Lobby menus, server selection, language selection, and custom games</td></tr><tr><td><code>tropicube-sheepwars</code></td><td>Complete SheepWars minigame</td></tr><tr><td><code>tropicube-fallenkingdoms</code></td><td>Reserved module for the future Fallen Kingdoms implementation</td></tr></tbody></table></div>
+<h2 id="runtime-architecture">Runtime architecture<a class="heading-anchor" href="#runtime-architecture" aria-label="Link to this section">#</a></h2>
+<p>Players enter through Velocity. The proxy creates and registers Paper containers from templates, stores shared state in Redis, and routes players without exposing backend ports publicly. Paper plugins use MySQL for durable player data and Redis for short-lived coordination.</p>
+<div class="code-block"><span class="code-language">text</span><pre class=""><code>Player -&gt; Velocity -&gt; Lobby / SheepWars Paper instance
+                    |-&gt; Redis (state, events, queues)
+                    |-&gt; Docker socket proxy (instance lifecycle)
+Paper plugins ------|-&gt; MySQL (profiles and statistics)</code></pre></div>
+<h2 id="requirements">Requirements<a class="heading-anchor" href="#requirements" aria-label="Link to this section">#</a></h2>
+<ul><li>Java 25;</li><li>Maven 3.9.11 through the included wrapper;</li><li>Docker Engine with Compose;</li><li>Git LFS for Minecraft region files;</li><li>Node.js for the static documentation site.</li></ul>
+<p>Copy <code>.env.example</code> to <code>.env</code>, fill in local secrets without committing them, then validate the stack before deployment.</p>
+<h2 id="common-commands">Common commands<a class="heading-anchor" href="#common-commands" aria-label="Link to this section">#</a></h2>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>.\mvnw.cmd clean verify
+node docs-site/build.mjs
+node docs-site/validate.mjs
+docker compose --env-file .env.example config --quiet
+.\deploy.ps1 -OnlyImages -ValidateOnly</code></pre></div>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>bash ./mvnw clean verify
+node docs-site/build.mjs
+node docs-site/validate.mjs
+docker compose --env-file .env.example config --quiet
+./deploy.sh --only-images --validate-only</code></pre></div>
+<h2 id="documentation">Documentation<a class="heading-anchor" href="#documentation" aria-label="Link to this section">#</a></h2>
+<ul><li><a href="architecture.html">Architecture</a></li><li><a href="commands.html">Commands</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="deployment.html">Deployment</a></li><li><a href="sheepwars.html">SheepWars</a></li><li><a href="fallen-kingdoms.html">Fallen Kingdoms game design</a></li><li><a href="fallen-kingdoms-technical-spec.html">Fallen Kingdoms technical specification</a></li><li><a href="development.html">Development</a></li><li><a href="git-ci.html">Git and CI</a></li><li><a href="changelog.html">Changelog</a></li></ul>
+<p>The French documentation remains canonical for existing operations, while the English pages mirror the same contracts and are generated under <code>docs-site/en/</code>.</p></article>
+      <aside class="page-toc" aria-label="On this page"><span class="toc-title">On this page</span><a class="toc-level-2" href="#modules">Modules</a><a class="toc-level-2" href="#runtime-architecture">Runtime architecture</a><a class="toc-level-2" href="#requirements">Requirements</a><a class="toc-level-2" href="#common-commands">Common commands</a><a class="toc-level-2" href="#documentation">Documentation</a></aside>
+    </div>
+    <footer><span><span class="brand-name-accent">Tropi</span>cube</span><span>Static documentation generated from Markdown files</span></footer>
+  </main>
+</body>
+</html>

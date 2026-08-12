@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-/** Ajoute un joueur à la file d'attente d'une instance pleine. */
+/** Adds a player to the queue of a full instance. */
 public class QueueCommand implements SimpleCommand {
 
     private static final Set<String> PRIORITY_GRADES = Set.of("VIP_PLUS", "PREMIUM");

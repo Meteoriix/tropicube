@@ -6,13 +6,14 @@
   <meta name="description" content="Variables, templates et réglages des plugins">
   <meta name="theme-color" content="#2d1b6b">
   <title>Configuration · Tropicube</title>
-  <link rel="stylesheet" href="styles.css?v=16da96fa257d">
+  <link rel="stylesheet" href="styles.css?v=54e32bb45a59">
 </head>
 <body>
-  <a class="skip-link" href="#contenu">Aller au contenu</a>
-  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span><span><span class="brand-name-accent">Tropi</span>cube</span></a><span>Documentation</span></header>
+  <a class="skip-link" href="#content">Aller au contenu</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span><span><span class="brand-name-accent">Tropi</span>cube</span></a><a class="language-switch" href="en/configuration.html" hreflang="en">English</a></header>
   <aside class="sidebar">
     <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong><span class="brand-name-accent">Tropi</span>cube</strong><small>Documentation réseau</small></span></a>
+    <a class="language-switch" href="en/configuration.html" hreflang="en">English</a>
     <nav aria-label="Documentation principale"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Accueil</span></a>
 <a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
 <a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commandes</span></a>
@@ -26,7 +27,7 @@
 <a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changements</span></a></nav>
     <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
   </aside>
-  <main id="contenu" class="main">
+  <main id="content" class="main">
     <section class="hero"><div class="eyebrow">Documentation officielle</div><h1>Configuration</h1><p>Variables, templates et réglages des plugins</p></section>
     <div class="content-grid">
       <article class="documentation"><h2 id="sources-et-ordre-d-application">Sources et ordre d'application<a class="heading-anchor" href="#sources-et-ordre-d-application" aria-label="Lien vers cette section">#</a></h2>
@@ -62,6 +63,7 @@
 <p><code>tropicube.admin.send</code> et <code>tropicube.bypass.whitelist</code> aux UUID approuvés ;</p>
 <ul><li><code>nick.allowed-grades</code> contrôle les grades pouvant activer <code>/nick</code> ; la désactivation reste accessible à tous ;</li><li><code>nick.skin-uuids</code> complète le pool de profils Mojang utilisés comme skins.</li></ul>
 <p>Core publie le grade courant sous <code>player:grade:&lt;uuid&gt;</code> avec une durée de vie de 24 heures. La valeur est actualisée au chargement et à chaque changement de grade, et n'est pas supprimée pendant un transfert entre backends.</p>
+<p>Une identité active est enregistrée sous <code>nick:&lt;uuid&gt;</code> avec le pseudonyme, le skin signé et le grade d'affichage factice. Les anciens payloads sans grade restent compatibles et utilisent <code>PREMIUM</code>. La durée de vie de 24 heures est renouvelée lors d'une reconnexion rapide.</p>
 <h2 id="velocity-natif">Velocity natif<a class="heading-anchor" href="#velocity-natif" aria-label="Lien vers cette section">#</a></h2>
 <p>Fichiers : <code>dockerfiles/configs/Velocity/velocity.toml</code> et <code>forwarding.secret</code>.</p>
 <p>Paramètres indispensables :</p>
@@ -86,7 +88,7 @@
 <p>Core et Velocity prennent en charge <code>fr</code>, <code>en</code>, <code>es</code> et <code>de</code>. Les textes utilisent MiniMessage et les paramètres positionnels <code>{0}</code>, <code>{1}</code>, etc. Pour ajouter une clé :</p>
 <ol><li>l'ajouter dans les quatre ressources du module ;</li><li>ajouter les traductions correspondantes sous <code>dockerfiles/configs</code> ;</li><li>lancer <code>mvn test</code> pour vérifier les ressources Core ;</li><li>exécuter un déploiement ou <code>--validate-only</code> pour valider le merge.</li></ol>
 <p>Éviter les clés YAML dupliquées. Le merge de déploiement accepte les sections de premier niveau et leurs feuilles indentées de deux espaces ; une structure plus profonde doit être migrée explicitement plutôt qu'ignorée silencieusement.</p></article>
-      <aside class="page-toc" aria-label="Sommaire de la page"><span class="toc-title">Sur cette page</span><a class="toc-level-2" href="#sources-et-ordre-d-application">Sources et ordre d'application</a><a class="toc-level-2" href="#env">.env</a><a class="toc-level-2" href="#tropicubevelocity">TropicubeVelocity</a><a class="toc-level-3" href="#redis-et-docker">Redis et Docker</a><a class="toc-level-3" href="#surveillance-des-backends">Surveillance des backends</a><a class="toc-level-3" href="#templates">Templates</a><a class="toc-level-3" href="#nick-et-administration">Nick et administration</a><a class="toc-level-2" href="#velocity-natif">Velocity natif</a><a class="toc-level-2" href="#tropicubecore">TropicubeCore</a><a class="toc-level-2" href="#tropicubelobby">TropicubeLobby</a><a class="toc-level-2" href="#tropicubesheepwars">TropicubeSheepwars</a><a class="toc-level-2" href="#langues">Langues</a></aside>
+      <aside class="page-toc" aria-label="Sur cette page"><span class="toc-title">Sur cette page</span><a class="toc-level-2" href="#sources-et-ordre-d-application">Sources et ordre d'application</a><a class="toc-level-2" href="#env">.env</a><a class="toc-level-2" href="#tropicubevelocity">TropicubeVelocity</a><a class="toc-level-3" href="#redis-et-docker">Redis et Docker</a><a class="toc-level-3" href="#surveillance-des-backends">Surveillance des backends</a><a class="toc-level-3" href="#templates">Templates</a><a class="toc-level-3" href="#nick-et-administration">Nick et administration</a><a class="toc-level-2" href="#velocity-natif">Velocity natif</a><a class="toc-level-2" href="#tropicubecore">TropicubeCore</a><a class="toc-level-2" href="#tropicubelobby">TropicubeLobby</a><a class="toc-level-2" href="#tropicubesheepwars">TropicubeSheepwars</a><a class="toc-level-2" href="#langues">Langues</a></aside>
     </div>
     <footer><span><span class="brand-name-accent">Tropi</span>cube</span><span>Documentation statique générée depuis les fichiers Markdown</span></footer>
   </main>

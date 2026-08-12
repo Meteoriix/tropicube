@@ -11,10 +11,10 @@ import java.util.concurrent.*;
 import java.util.logging.Level;
 
 /**
- * Gestionnaire des permissions et grades Tropicube.
+ * Tropicube permissions and grades manager.
  * <p>
- * Hiérarchie des grades (ordre croissant) :
- *   JOUEUR → VIP → VIP+ → PREMIUM → HELPER → MODERATEUR → ADMIN → OWNER
+ * Rank hierarchy (ascending order):
+ * PLAYER → VIP → VIP+ → PREMIUM → HELPER → MODERATOR → ADMIN → OWNER
  */
 public class PermissionManager {
 
@@ -25,9 +25,9 @@ public class PermissionManager {
     private final TropicubeCore plugin;
     private final DatabaseManager db;
 
-    // Cache des grades définis
+    // Cache of defined grades
     private final Map<String, Grade> gradeRegistry = new ConcurrentHashMap<>();
-    // Grade de chaque joueur : UUID -> grade name
+    // Rank of each player: UUID -> grade name
     private final Map<UUID, String> playerGrades = new ConcurrentHashMap<>();
     private final Map<UUID, Long> playerGradeExpiries = new ConcurrentHashMap<>();
     // Permissions individuelles : UUID -> Set<permission>
@@ -68,12 +68,12 @@ public class PermissionManager {
         }
     }
 
-    // ===== Chargement joueur =====
+    // ===== Player Loading =====
 
     public void loadPlayer(UUID uuid) {
         CompletableFuture.runAsync(() -> {
             try (Connection conn = db.getConnection()) {
-                // Charger le grade
+        // Load the grade
                 try (PreparedStatement stmt = conn.prepareStatement(
                         "SELECT grade, grade_expiry FROM tropicube_players WHERE uuid = ?")) {
                     stmt.setString(1, uuid.toString());
@@ -97,7 +97,7 @@ public class PermissionManager {
                     }
                 }
 
-                // Charger les permissions individuelles
+        // Load individual permissions
                 try (PreparedStatement stmt = conn.prepareStatement(
                         "SELECT permission, value, expiry FROM tropicube_permissions WHERE uuid = ?")) {
                     stmt.setString(1, uuid.toString());
@@ -127,7 +127,7 @@ public class PermissionManager {
                 plugin.getLogger().log(Level.SEVERE, "[Tropicube-Perms] Erreur chargement joueur " + uuid, e);
             }
 
-            // Appliquer les permissions en synchrone sur le thread Bukkit
+            // Apply permissions synchronously on the Bukkit thread
             plugin.getServer().getScheduler().runTask(plugin, () -> {
                 Player player = plugin.getServer().getPlayer(uuid);
                 if (player != null) applyPermissions(player);
@@ -147,7 +147,7 @@ public class PermissionManager {
         playerPermissionExpiries.remove(uuid);
     }
 
-    // ===== Application des permissions =====
+    // ===== Applying permissions =====
 
     private void applyPermissions(Player player) {
         UUID uuid = player.getUniqueId();
@@ -159,14 +159,14 @@ public class PermissionManager {
         PermissionAttachment attachment = player.addAttachment(plugin);
         attachments.put(uuid, attachment);
 
-        // Appliquer les permissions du grade
+        // Apply grade permissions
         String gradeName = playerGrades.getOrDefault(uuid, "JOUEUR");
         Grade grade = gradeRegistry.get(gradeName);
         if (grade != null) {
             grade.permissions().forEach(perm -> applyPermissionPattern(attachment, perm));
         }
 
-        // Appliquer les permissions individuelles
+        // Apply individual permissions
         Set<String> individual = playerPermissions.getOrDefault(uuid, Collections.emptySet());
         individual.forEach(perm -> applyPermissionPattern(attachment, perm));
 
@@ -276,7 +276,7 @@ public class PermissionManager {
         Player player = plugin.getServer().getPlayer(uuid);
         if (player != null) return player.hasPermission(permission);
 
-        // Vérification hors-ligne
+        // Offline verification
         Grade grade = getGradeInfo(uuid);
         if (grade != null && grade.permissions().stream().anyMatch(pattern -> matches(pattern, permission))) return true;
         Set<String> individual = getIndividualPermissions(uuid);

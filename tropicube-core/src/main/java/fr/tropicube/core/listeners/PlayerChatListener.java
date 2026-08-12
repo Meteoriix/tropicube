@@ -2,6 +2,7 @@ package fr.tropicube.core.listeners;
 
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.core.managers.PermissionManager;
+import fr.tropicube.docker.model.NickIdentity;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -15,7 +16,7 @@ import org.bukkit.event.Listener;
 import java.util.UUID;
 
 /**
- * Gère le chat avec formatage par grade et filtre anti-spam/mute.
+ * Manages chat with grade formatting and spam/mute filter.
  */
 public class PlayerChatListener implements Listener {
 
@@ -32,7 +33,7 @@ public class PlayerChatListener implements Listener {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
-        // Vérifier le mute
+        // Check mute
         if (plugin.getPlayerDataManager().isMuted(uuid)) {
             event.setCancelled(true);
             long expiry = plugin.getPlayerDataManager().getMuteExpiry(uuid);
@@ -51,21 +52,24 @@ public class PlayerChatListener implements Listener {
         }
         lastMessage.put(uuid, now);
 
-        // Formatage du message
+        // Format the message
         PermissionManager pm = plugin.getPermissionManager();
-        // Une identité active masque le grade réel et présente le grade Premium.
-        boolean nicked = plugin.getRedisManager().get("nick:" + uuid) != null;
-        PermissionManager.Grade displayGrade = nicked
-                ? pm.getAllGrades().getOrDefault("PREMIUM", pm.getGradeInfo(uuid))
-                : pm.getGradeInfo(uuid);
+        // An active identity carries its persistent display grade in Redis.
+        String nickPayload = plugin.getRedisManager().get(NickIdentity.key(uuid));
+        String displayGradeName = NickIdentity.fromJson(nickPayload)
+                .map(NickIdentity::displayGrade)
+                .orElse(null);
+        PermissionManager.Grade displayGrade = displayGradeName == null
+                ? pm.getGradeInfo(uuid)
+                : pm.getAllGrades().getOrDefault(displayGradeName, pm.getGradeInfo(uuid));
         String prefix = displayGrade != null ? displayGrade.prefix() : "";
         String playerColor = displayGrade != null ? displayGrade.color() : "<white>";
 
-        // Récupérer le texte brut du message
+        // Retrieve the raw text of the message
         String rawText = PlainTextComponentSerializer.plainText().serialize(event.message());
         Component playerMessage;
         if (player.hasPermission("tropicube.chat.color")) {
-            // Les joueurs avec la permission peuvent utiliser les codes &
+            // Players with permission can use codes &
             playerMessage = LegacyComponentSerializer.legacyAmpersand().deserialize(rawText);
         } else {
             rawText = rawText.replaceAll("&[0-9a-fk-or]", "");

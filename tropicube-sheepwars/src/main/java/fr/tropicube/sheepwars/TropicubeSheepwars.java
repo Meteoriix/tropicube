@@ -20,7 +20,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.util.logging.Level;
 
-/** Initialise une instance Paper SheepWars et coordonne son cycle de partie. */
+/** Initializes a Paper SheepWars instance and coordinates its game cycle. */
 public final class TropicubeSheepwars extends JavaPlugin {
     private RedisManager redisManager;
 

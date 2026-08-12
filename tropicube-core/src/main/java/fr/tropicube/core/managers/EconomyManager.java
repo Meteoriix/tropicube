@@ -12,9 +12,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 /**
- * Gestionnaire du système économique Tropicube.
- * Utilise un cache Redis pour les balances en temps réel
- * et MySQL pour la persistance.
+ * Manager of the Tropicube economic system.
+ * Uses a Redis cache for real-time scales
+ * and MySQL for persistence.
  */
 public class EconomyManager {
 
@@ -29,7 +29,7 @@ public class EconomyManager {
     private final DatabaseManager db;
     private final RedisManager redis;
 
-    // Cache local des balances (évite les requêtes Redis répétées)
+    // Local cache of scales (avoids repeated Redis requests)
     private final Map<UUID, Double> balanceCache = new ConcurrentHashMap<>();
     private volatile String currencyName;
     private volatile String currencySymbol;
@@ -45,7 +45,7 @@ public class EconomyManager {
             try {
                 balanceCache.remove(UUID.fromString(message.substring("ECONOMY_INVALIDATE:".length())));
             } catch (IllegalArgumentException ignored) {
-                // Ignore les événements mal formés.
+                // Ignores malformed events.
             }
         });
     }
@@ -84,14 +84,14 @@ public class EconomyManager {
                     return val;
                 }
             } catch (NumberFormatException ignored) {
-                // Une valeur Redis corrompue est ignorée au profit de MySQL.
+                // A corrupted Redis value is ignored in favor of MySQL.
             }
             try {
                 redis.delete("economy:balance:" + uuid);
             } catch (RuntimeException ignored) {}
         }
 
-        // 3. Base de données
+        // 3. Database
         return getBalanceFromDB(uuid);
     }
 
@@ -120,7 +120,7 @@ public class EconomyManager {
         return getBalance(uuid) >= amount;
     }
 
-    // ===== Opérations =====
+    // ===== Operations =====
 
     public boolean deposit(UUID uuid, double amount, String reason) {
         if (!isValidPositiveAmount(amount)) return false;

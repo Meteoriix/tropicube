@@ -1,5 +1,5 @@
 # =====================================================
-#   Tropicube Velocity - Langue française (fr)
+# Tropicube Velocity - French language (fr)
 # =====================================================
 
 general:
@@ -7,11 +7,11 @@ general:
   player-only: "<red>Cette commande est réservée aux joueurs."
 
 proxy:
-  # Connexion / liste blanche
+# Connection / whitelist
   whitelist: "<red>Ce serveur est en liste blanche."
   server-shutdown: "<yellow>Votre serveur s'arrête. Transfert vers le lobby..."
   transfer-failed: "<red>La connexion au serveur a échoué. Veuillez réessayer."
-  # File d'attente
+# Queue
   queue-already: "<yellow>Vous êtes déjà en file d'attente."
   queue-usage: "<red>Usage : /queue \\<serveur>"
   queue-added: "<green>Ajouté en file d'attente. Position : <yellow>{0}"
@@ -42,7 +42,7 @@ proxy:
   find-result: "<gray>{0} <dark_gray>— <gray>Serveur : <yellow>{1}"
   find-id: " <dark_gray>(ID : <gray>{0}<dark_gray>)"
   find-not-online: "<gray>Le joueur <white>{0} <gray>n'est pas connecté."
-  # /tropi — en-têtes communs
+  # /tropi — common headers
   admin-header: "<dark_gray><strikethrough>────────────────────</strikethrough> <gold>Tropicube Admin</gold> <dark_gray><strikethrough>────────────────────</strikethrough>"
   admin-footer: "<dark_gray><strikethrough>─────────────────────────────────────────────</strikethrough>"
   # /tropi list

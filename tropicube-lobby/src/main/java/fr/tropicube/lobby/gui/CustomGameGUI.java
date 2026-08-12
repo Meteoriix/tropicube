@@ -17,9 +17,9 @@ import org.jspecify.annotations.NonNull;
 import java.util.*;
 
 /**
- * Menu de création de partie personnalisée (Custom Game).
- * Chaque template disponible est affiché comme une option cliquable.
- * Accessible aux joueurs ayant la permission {@code tropicube.lobby.customgame}.
+ * Custom Game creation menu.
+ * Each available template is displayed as a clickable option.
+ * Accessible to players with {@code tropicube.lobby.customgame} permission.
  */
 public class CustomGameGUI {
 
@@ -28,7 +28,7 @@ public class CustomGameGUI {
     static final int STOP_SLOT  = 22;
 
     public static final class Holder implements InventoryHolder {
-        /** Mapping slot → templateId pour le routage des clics. */
+        /** Mapping slot → templateId for click routing. */
         private final Map<Integer, String> slotToTemplate;
         private final boolean hasStopButton;
         private final boolean whitelisted;
@@ -58,7 +58,7 @@ public class CustomGameGUI {
                 ? List.of()
                 : plugin.getLobbyServerManager().getCustomGameTemplates();
 
-        // Centre les templates dans la ligne du milieu (row 1)
+        // Center the templates in the middle row (row 1)
         int n = Math.min(templates.size(), 7);
         int startSlot = n == 0 ? 13 : 13 - (n - 1);
 
@@ -67,7 +67,7 @@ public class CustomGameGUI {
             slotToTemplate.put(startSlot + (i * 2), templates.get(i).id());
         }
 
-        // L'hôte peut arrêter sa partie tant qu'elle n'a pas commencé.
+        // The host can stop his game until it has started.
         boolean showStop = hostInstanceId != null
                 && !plugin.getRedisManager().exists("sw:game-started:" + hostInstanceId);
 

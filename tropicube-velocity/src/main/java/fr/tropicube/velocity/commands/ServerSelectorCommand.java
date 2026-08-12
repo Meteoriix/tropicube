@@ -13,9 +13,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 // ============================================================
-//  /server [nom] — Voir les serveurs ou se connecter
+// /server [name] — View servers or connect
 // ============================================================
-/** Liste les instances connues et connecte le joueur à celle demandée. */
+/** Lists known instances and connects the player to the requested one. */
 public class ServerSelectorCommand implements SimpleCommand {
     private final TropicubeVelocity plugin;
     private final TropiServerManager manager;

@@ -9,8 +9,8 @@ import java.util.concurrent.*;
 import java.util.logging.Level;
 
 /**
- * Gestionnaire central des données joueurs.
- * Charge/sauvegarde le profil complet de chaque joueur.
+ * Central player data manager.
+ * Load/save the full profile of each player.
  */
 public class PlayerDataManager {
 
@@ -44,15 +44,15 @@ public class PlayerDataManager {
 
     public void initialize() {
         loadActiveMutes();
-        // Sauvegarde périodique toutes les 5 minutes
+        // Periodic backup every 5 minutes
         plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin,
                 this::saveAll, 6000L, 6000L);
     }
 
-    // ===== Chargement joueur =====
+    // ===== Player Loading =====
 
     public CompletableFuture<PlayerProfile> loadPlayer(Player player) {
-        // Les propriétés Bukkit sont capturées avant de quitter le thread principal.
+        // Bukkit properties are captured before leaving the main thread.
         UUID uuid = player.getUniqueId();
         String username = player.getName();
         String displayName = player.getName();
@@ -60,7 +60,7 @@ public class PlayerDataManager {
             long now = System.currentTimeMillis();
 
             try (Connection conn = db.getConnection()) {
-                // Vérifier si joueur existant
+                // Check if existing player
                 try (PreparedStatement stmt = conn.prepareStatement(
                         "SELECT * FROM tropicube_players WHERE uuid = ?")) {
                     stmt.setString(1, uuid.toString());
@@ -68,7 +68,7 @@ public class PlayerDataManager {
 
                     PlayerProfile profile;
                     if (rs.next()) {
-                        // Joueur existant — mise à jour du last_join et username
+                        // Existing player — update last_join and username
                         profile = new PlayerProfile(
                                 uuid, username,
                                 rs.getString("display_name"),
@@ -85,7 +85,7 @@ public class PlayerDataManager {
                                 username, now, uuid.toString()
                         );
                     } else {
-                        // Nouveau joueur
+                        // New player
                         profile = new PlayerProfile(
                                 uuid, username, displayName,
                                 now, now, 0L, "fr", "JOUEUR",
@@ -103,7 +103,7 @@ public class PlayerDataManager {
                     profileCache.put(uuid, profile);
                     sessionStart.put(uuid, now);
 
-                    // Charger les sous-systèmes
+                    // Load subsystems
                     languageManager.loadPlayerLanguage(uuid, profile.language());
                     permissionManager.loadPlayer(uuid);
 
@@ -149,7 +149,7 @@ public class PlayerDataManager {
         });
     }
 
-    // ===== Modération =====
+    // ===== Moderation =====
 
     public void mutePlayer(UUID target, long durationSeconds, String reason, UUID staffUuid, String staffName) {
         long expiry = durationSeconds <= 0 ? -1 : (System.currentTimeMillis() / 1000) + durationSeconds;
@@ -247,7 +247,7 @@ public class PlayerDataManager {
         }
     }
 
-    // ===== Recherche joueur hors-ligne =====
+    // ===== Offline player search =====
 
     public Optional<UUID> getUuidByName(String name) {
         try (Connection conn = db.getConnection();

@@ -8,14 +8,14 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
 
-/** Contrat commun des capacités déclenchées au lancement et à l'impact d'un mouton. */
+/** Common contract of abilities triggered on launch and sheep impact. */
 public abstract class AbstractSheep {
 
     protected final SheepType type;
-    /** Injecté par {@link fr.tropicube.sheepwars.sheep.SheepManager} au moment de l'enregistrement. */
+    /** Injected by {@link fr.tropicube.sheepwars.sheep.SheepManager} at time of recording. */
     protected TropicubeSheepwars plugin;
 
-    /** Appelé par SheepManager après instanciation (injection de dépendance). */
+    /** Called by SheepManager after instantiation (dependency injection). */
     public void injectPlugin(TropicubeSheepwars plugin) {
         this.plugin = plugin;
     }
@@ -47,7 +47,7 @@ public abstract class AbstractSheep {
     /**
      * Applies radial explosion damage to all alive enemies in range.
      * Linear falloff: full damage at distance 0, zero at power*2 blocks.
-     * Complète {@code createExplosion} afin de garantir les dégâts aux joueurs.
+     * Completes {@code createExplosion} to guarantee damage to players.
      */
     protected void applyExplosionDamage(Player thrower, Location center, float power) {
         double radius = power * 2.0;
@@ -60,7 +60,7 @@ public abstract class AbstractSheep {
     }
 
     /**
-     * @return {@code true} si {@code target} est un ennemi vivant de {@code thrower}
+     * @return {@code true} if {@code target} is a living enemy of {@code thrower}
      * Used by AoE sheep to avoid hitting teammates.
      */
     protected boolean isEnemy(Player thrower, Player target) {

@@ -18,17 +18,17 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Menu principal : choix du type de serveur (Survival, PvP, Skyblock…).
+ * Main menu: choice of server type (Survival, PvP, Skyblock, etc.).
  *
- * Les icônes de types sont chargées depuis la section {@code server-types} du
- * config.yml du lobby, avec mise en cache après le premier chargement réussi.
+ * Type icons are loaded from the {@code server-types} section of the
+ * config.yml of the lobby, with caching after the first successful load.
  */
 public class ServerTypeSelectorGUI {
 
     private static final int SIZE = 27;
     private static final int CLOSE_SLOT = 26;
 
-    /** Positions centrées pour un à neuf types ; les types suivants ne sont pas affichés. */
+    /** Centered positions for one to nine types; the following types are not displayed. */
     private static final int[][] LAYOUTS = {
         {},
         {13},
@@ -42,7 +42,7 @@ public class ServerTypeSelectorGUI {
         {2, 4, 6, 11, 13, 15, 20, 22, 24},
     };
 
-    // Icônes par type — chargées lazily depuis config + HDB, puis mises en cache.
+    // Icons by type — loaded lazily from config + HDB, then cached.
     private static final Map<String, ItemStack> TYPE_ICON_CACHE = new ConcurrentHashMap<>();
 
     public static final class Holder implements InventoryHolder {

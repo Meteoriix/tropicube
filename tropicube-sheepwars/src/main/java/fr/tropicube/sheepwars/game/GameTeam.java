@@ -5,7 +5,7 @@ import org.bukkit.DyeColor;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-/** Équipes jouables et métadonnées visuelles associées. */
+/** Playable teams and associated visual metadata. */
 public enum GameTeam {
     RED("Rouge", NamedTextColor.RED, DyeColor.RED),
     BLUE("Bleu", NamedTextColor.BLUE, DyeColor.BLUE);

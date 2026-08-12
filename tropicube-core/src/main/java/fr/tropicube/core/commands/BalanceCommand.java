@@ -6,8 +6,8 @@ import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NonNull;
 
-// /balance [joueur]
-/** Affiche le solde TropiCoin du joueur ou celui d'une cible autorisée. */
+// /balance [player]
+/** Displays the player's TropiCoin balance or that of an authorized target. */
 public class BalanceCommand implements CommandExecutor {
     private final TropicubeCore plugin;
     public BalanceCommand(TropicubeCore p) { this.plugin = p; }

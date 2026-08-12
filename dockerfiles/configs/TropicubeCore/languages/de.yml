@@ -1,5 +1,5 @@
 ﻿# =====================================================
-#   Tropicube - Deutsch (de)
+#   Tropicube - German (de)
 # =====================================================
 
 general:
@@ -121,6 +121,7 @@ commands:
 # SheepWars
 sw:
   game-already-started: "<red>Es läuft bereits ein Spiel."
+  spectator-joined: "<aqua>Du bist dem Spiel als Zuschauer beigetreten."
   arena-not-ready: "<red>Die Arena ist nicht konfiguriert."
   game-full: "<red>Das Spiel ist voll! Versuch es gleich nochmal 🌊"
   player-joined: "<yellow>{0} <gray>ist dem Abenteuer beigetreten <dark_gray>({1}/{2}) 🌊"
@@ -235,6 +236,7 @@ sw:
   sb-red: "<red>Rote: <white>{0}"
   sb-blue: "<blue>Blaue: <white>{0}"
   sb-your-team: "<yellow>Dein Team: {0}"
+  sb-spectator: "<gray>Modus: <white>Zuschauer"
   sb-kills: "<yellow>Kills: <white>{0}"
   sb-time: "<gray>Zeit: <white>{0}"
   sb-ending: "<yellow>Spiel beendet!"
@@ -242,6 +244,7 @@ sw:
   sb-team-blue: "<blue>Blau"
   tab-header: "\n<aqua><b>SheepWars</b></aqua> <dark_gray>│</dark_gray> <gray>Tropicube\n"
   tab-footer: "\n<gray>Team: <white>{0}</white>  <dark_gray>│</dark_gray>  <red>Rote: <white>{1}</white></red>  <dark_gray>│</dark_gray>  <blue>Blaue: <white>{2}</white></blue>  <dark_gray>│</dark_gray>  <yellow>⏱ <white>{3}</white></yellow>\n"
+  tab-footer-spectator: "\n<gray>Zuschauer  <dark_gray>│</dark_gray>  <red>Rote: <white>{0}</white></red>  <dark_gray>│</dark_gray>  <blue>Blaue: <white>{1}</white></blue>  <dark_gray>│</dark_gray>  <yellow>⏱ <white>{2}</white></yellow>\n"
   # Teamauswahl
   team-selector-name: "<gold>Team"
   team-selector-lore: "<gray>Rechtsklick zum Wählen deines Teams"
@@ -255,7 +258,7 @@ sw:
   cant-leave-ingame: "<red>Du kannst während eines laufenden Spiels nicht verlassen."
   # Spielende
   replay-message: "<gray>Spiel beendet! Zurück in die Lobby..."
-  # Startschaltflächen (Einstellungsmenü)
+# Start buttons (settings menu)
   settings-launch-name: "▶ Spiel starten"
   settings-launch-lore: "Klicken um den Countdown zu starten"
   settings-cancel-launch-name: "✖ Start abbrechen"
@@ -263,7 +266,7 @@ sw:
   settings-no-launch-name: "✘ Start nicht möglich"
   # Anzeigetafel Spielende
   sb-sheep-thrown: "<yellow>Geworfene Schafe: <white>{0}"
-  # Tabliste (weitere Zustände)
+# Tab list (additional states)
   tab-footer-waiting: "\n<gray>Spieler: <yellow>{0}</yellow>  <dark_gray>│</dark_gray>  <gray>Warten...\n"
   tab-footer-starting: "\n<yellow>Spiel beginnt in <white>{0}s</white><yellow>!\n"
   tab-footer-ending: "\n<gold>Spiel beendet! Danke fürs Spielen 🏆\n"
@@ -331,9 +334,11 @@ lobby:
   server-players: "<gray>Spieler: <white>{0}<gray>/<white>{1}"
   server-template: "<gray>Template: <yellow>{0}"
   server-status-online: "<green>ONLINE"
+  server-status-playing: "<blue>LÄUFT"
   server-status-full: "<red>VOLL"
   server-status-starting: "<gold>WIRD GESTARTET"
   server-click-join: "<green>▶ Klicke zum Beitreten! 🌴"
+  server-click-spectate: "<blue>▶ Klicke, um zuzuschauen!"
   server-click-full: "<red>⚠ Server voll."
   server-click-full2: "<gray>Tritt der Warteschlange bei mit <yellow>/queue {0}"
   server-click-starting: "<gold>⧗ Server wird gestartet..."
@@ -374,7 +379,7 @@ lobby:
     - "<gray>• <light_purple>Eigener Partikel-<gray>Trail"
     - "<gray>• <light_purple>Eigener Nickname <gray>(/nick)"
     - "<gray>• <light_purple>Zugang <gray>zu Beta-Servern"
-  # Anzeigetafel & Tabliste Lobby
+# Lobby scoreboard and tab list
   sb-online: "<gray>Online: <white>{0}"
   sb-server-label: "<gray>Server:"
   sb-server-value: "<green>Lobby"

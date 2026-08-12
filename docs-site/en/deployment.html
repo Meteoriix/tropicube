@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Installation and operations on Windows and Linux">
+  <meta name="theme-color" content="#2d1b6b">
+  <title>Deployment · Tropicube</title>
+  <link rel="stylesheet" href="../styles.css?v=54e32bb45a59">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span><span><span class="brand-name-accent">Tropi</span>cube</span></a><a class="language-switch" href="../deployment.html" hreflang="fr">Français</a></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong><span class="brand-name-accent">Tropi</span>cube</strong><small>Network documentation</small></span></a>
+    <a class="language-switch" href="../deployment.html" hreflang="fr">Français</a>
+    <nav aria-label="Main documentation"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commands</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link active" href="deployment.html"><span class="nav-icon">⇧</span><span>Deployment</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link" href="fallen-kingdoms.html"><span class="nav-icon">♜</span><span>Fallen Kingdoms</span></a>
+<a class="nav-link" href="fallen-kingdoms-technical-spec.html"><span class="nav-icon">⌘</span><span>FK technical</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Development</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changes</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="content" class="main">
+    <section class="hero"><div class="eyebrow">Official documentation</div><h1>Deployment</h1><p>Installation and operations on Windows and Linux</p></section>
+    <div class="content-grid">
+      <article class="documentation"><h2 id="supported-platforms">Supported platforms<a class="heading-anchor" href="#supported-platforms" aria-label="Link to this section">#</a></h2>
+<p>The repository supports Windows through <code>deploy.ps1</code> and Linux through <code>deploy.sh</code>. Both paths build the same Maven reactor, redistribute plugin artifacts, validate Docker inputs, and rebuild the selected images. Java 25, Maven 3.9.11, Docker Compose, Git LFS, and Node.js are required.</p>
+<h2 id="initial-setup">Initial setup<a class="heading-anchor" href="#initial-setup" aria-label="Link to this section">#</a></h2>
+<ol><li>Clone the repository with Git LFS enabled.</li><li>Copy <code>.env.example</code> to <code>.env</code>.</li><li>Replace placeholder passwords and the forwarding secret locally.</li><li>Ensure <code>TROPICUBE_PROJECT_PATH</code> is an absolute path visible to the Docker host.</li><li>Validate Compose and scripts before starting services.</li></ol>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>git lfs pull
+docker compose --env-file .env.example config --quiet
+.\deploy.ps1 -OnlyImages -ValidateOnly</code></pre></div>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>git lfs pull
+docker compose --env-file .env.example config --quiet
+./deploy.sh --only-images --validate-only</code></pre></div>
+<p>Never commit <code>.env</code>, real passwords, tokens, SQL exports, forwarding secrets, or third-party JARs.</p>
+<h2 id="build-and-validation">Build and validation<a class="heading-anchor" href="#build-and-validation" aria-label="Link to this section">#</a></h2>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>.\mvnw.cmd clean verify
+node docs-site/build.mjs
+node docs-site/validate.mjs</code></pre></div>
+<p>The Maven build creates normal and shaded plugin JARs under each module's <code>target/</code> directory. Deployment scripts copy the runtime artifacts into the Docker build contexts. A red build must never be deployed.</p>
+<h2 id="windows-workflow">Windows workflow<a class="heading-anchor" href="#windows-workflow" aria-label="Link to this section">#</a></h2>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>.\deploy.ps1
+.\deploy.ps1 -OnlyImages
+.\deploy.ps1 -SkipRestart
+.\deploy.ps1 -OnlyImages -ValidateOnly</code></pre></div>
+<ul><li>the default path builds, redistributes artifacts, rebuilds images, and recreates the required services;</li><li><code>-OnlyImages</code> skips Maven when already validated artifacts are available;</li><li><code>-SkipRestart</code> avoids recreating Velocity;</li><li><code>-ValidateOnly</code> checks inputs and artifact redistribution without building an image.</li></ul>
+<h2 id="linux-workflow">Linux workflow<a class="heading-anchor" href="#linux-workflow" aria-label="Link to this section">#</a></h2>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>./deploy.sh
+./deploy.sh --only-images
+./deploy.sh --skip-restart
+./deploy.sh --only-images --validate-only</code></pre></div>
+<p>The Linux script mirrors the Windows behavior. Paths must remain portable and quoted. Validate shell syntax and, when available, run ShellCheck.</p>
+<h2 id="compose-services">Compose services<a class="heading-anchor" href="#compose-services" aria-label="Link to this section">#</a></h2>
+<div class="table-scroll"><table><thead><tr><th>Service</th><th>Role</th></tr></thead><tbody><tr><td><code>velocity</code></td><td>Public proxy, routing, queues, and instance orchestration</td></tr><tr><td><code>redis</code></td><td>Ephemeral state and event bus</td></tr><tr><td><code>mysql</code></td><td>Durable player and game data</td></tr><tr><td>Docker socket proxy</td><td>Restricted Docker API exposed to Velocity</td></tr></tbody></table></div>
+<p>Paper game servers are dynamic containers. Their Minecraft ports remain on the internal Docker network. Velocity registers and unregisters them at runtime.</p>
+<h2 id="worlds-and-git-lfs">Worlds and Git LFS<a class="heading-anchor" href="#worlds-and-git-lfs" aria-label="Link to this section">#</a></h2>
+<p>Minecraft <code>.mca</code> region files are tracked through Git LFS. Never replace them with regular Git blobs. Player data, logs, caches, runtime configuration, and generated server files must stay outside version control.</p>
+<p>Before committing a world change:</p>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>git lfs status
+git lfs ls-files</code></pre></div>
+<h2 id="forwarding">Forwarding<a class="heading-anchor" href="#forwarding" aria-label="Link to this section">#</a></h2>
+<p>Velocity and every Paper backend must receive the same modern-forwarding secret from the environment. Do not place a real secret in <code>velocity.toml</code>, <code>paper-global.yml</code>, an image layer, or Git.</p>
+<h2 id="dynamic-instance-lifecycle">Dynamic instance lifecycle<a class="heading-anchor" href="#dynamic-instance-lifecycle" aria-label="Link to this section">#</a></h2>
+<p>Velocity creates a container from the selected template, waits for health checks, registers it with the proxy, and stores its <code>ServerInstance</code> in Redis. Empty servers are stopped after their configured delay. A finished minigame asks Velocity to transfer players and immediately remove its container, anonymous volumes, and shared state.</p>
+<p>The proxy's normal shutdown may preserve or remove dynamic instances according to <code>remove-dynamic-servers-on-shutdown</code>. Production deployments should validate this choice explicitly.</p>
+<h2 id="operational-checks">Operational checks<a class="heading-anchor" href="#operational-checks" aria-label="Link to this section">#</a></h2>
+<ul><li>confirm Velocity can reach Redis, MySQL, and the Docker socket proxy;</li><li>confirm Paper receives forwarded identities and cannot be reached publicly;</li><li>confirm lobby selectors reflect <code>GAME_WAITING</code>, <code>GAME_STARTING</code>, <code>GAME_PLAYING</code>, and <code>GAME_ENDING</code> correctly;</li><li>confirm a playing SheepWars instance admits late arrivals as spectators;</li><li>confirm shutdown removes scheduled tasks, subscriptions, containers, and anonymous volumes as configured;</li><li>inspect logs without exposing credentials.</li></ul>
+<h2 id="rollback">Rollback<a class="heading-anchor" href="#rollback" aria-label="Link to this section">#</a></h2>
+<p>Keep image tags and deployment inputs reproducible. Roll back by restoring the prior code revision, rebuilding the affected images, and recreating services. Database changes must provide a compatible rollback or a documented forward-only migration. Never use destructive Git commands on a dirty worktree.</p></article>
+      <aside class="page-toc" aria-label="On this page"><span class="toc-title">On this page</span><a class="toc-level-2" href="#supported-platforms">Supported platforms</a><a class="toc-level-2" href="#initial-setup">Initial setup</a><a class="toc-level-2" href="#build-and-validation">Build and validation</a><a class="toc-level-2" href="#windows-workflow">Windows workflow</a><a class="toc-level-2" href="#linux-workflow">Linux workflow</a><a class="toc-level-2" href="#compose-services">Compose services</a><a class="toc-level-2" href="#worlds-and-git-lfs">Worlds and Git LFS</a><a class="toc-level-2" href="#forwarding">Forwarding</a><a class="toc-level-2" href="#dynamic-instance-lifecycle">Dynamic instance lifecycle</a><a class="toc-level-2" href="#operational-checks">Operational checks</a><a class="toc-level-2" href="#rollback">Rollback</a></aside>
+    </div>
+    <footer><span><span class="brand-name-accent">Tropi</span>cube</span><span>Static documentation generated from Markdown files</span></footer>
+  </main>
+</body>
+</html>

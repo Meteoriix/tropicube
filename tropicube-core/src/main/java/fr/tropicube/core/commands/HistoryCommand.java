@@ -10,8 +10,8 @@ import org.bukkit.entity.Player;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-// /history <joueur>
-/** Affiche l'historique des sanctions d'un joueur. */
+        // /history <player>
+/** Shows a player's penalty history. */
 public class HistoryCommand implements CommandExecutor {
     private final TropicubeCore plugin;
     public HistoryCommand(TropicubeCore p) { this.plugin = p; }

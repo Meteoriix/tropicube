@@ -15,7 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-/** Mouton de soutien qui renforce temporairement les alliés proches. */
+/** Support sheep that temporarily strengthens nearby allies. */
 public class StrengthSheep extends AbstractSheep {
 
     public StrengthSheep() {

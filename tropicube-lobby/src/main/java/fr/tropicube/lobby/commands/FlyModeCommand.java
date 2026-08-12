@@ -10,7 +10,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.UUID;
 
-/** Active ou désactive le vol permanent réservé au personnel du lobby. */
+/** Enables or disables permanent flight reserved for lobby staff. */
 public class FlyModeCommand implements CommandExecutor {
 
     private final TropicubeLobby plugin;

@@ -6,21 +6,21 @@ redis:
   password: ""
 
 default-settings:
-  # Nombre minimum et maximum de joueurs
+  # Minimum and maximum number of players
   min-players: 2
   max-players: 16
-  # Démarrage automatique lorsque le minimum de joueurs est atteint
+  # Automatic start when the minimum number of players is reached
   auto-start: true
-  # Durée du compte à rebours et de la partie (en secondes)
+  # Countdown and game duration (in seconds)
   countdown: 10
   game-duration: 600
-  # Kits aléatoires (ignore la sélection des joueurs)
+  # Random Kits (ignores player selection)
   random-kits: false
-  # Délai entre les apparitions de moutons (en secondes)
+  # Delay between sheep spawns (in seconds)
   sheep-give-delay: 20
-  # Vote de map : true = tous votent, false = l'hôte choisit
+  # Map vote: true = all vote, false = host chooses
   map-vote-enabled: true
-  # Poids relatifs d'apparition des moutons spéciaux
+  # Relative spawn weights of special sheep
   sheep-probabilities:
     boarding: 5
     tnt: 7
@@ -39,19 +39,19 @@ default-settings:
     fragmentation: 7
 
 custom-game-default-settings:
-  # Une partie personnalisée attend par défaut le lancement manuel de son hôte
+  # A custom game waits by default for its host to manually launch
   auto-start: false
 
 force-settings:
-  # IDs de classes désactivées (ex: ["DPS", "SUPPORT"])
+  # Disabled class IDs (ex: ["DPS", "SUPPORT"])
   classes-disabled: [ ]
-  # IDs de kits désactivés (ex: ["DPS_BOW", "TANK_HEARTS"])
+  # Disabled kit IDs (ex: ["DPS_BOW", "TANK_HEARTS"])
   kits-disabled: [ ]
-  # Types de moutons spéciaux désactivés (ex: ["TNT", "METEOR"])
+  # Disabled special sheep types (ex: ["TNT", "METEOR"])
   sheep-disabled: [ ]
 
-# Locations & Arènes sur la map
-# Les spawns sont enregistrés automatiquement sous spawns.red.spawn1, spawn2, ... (max 8 par équipe)
+# Rentals & Arenas on the map
+# Spawns are automatically saved under spawns.red.spawn1, spawn2, ... (max 8 per team)
 locations:
   world:
   lobby:

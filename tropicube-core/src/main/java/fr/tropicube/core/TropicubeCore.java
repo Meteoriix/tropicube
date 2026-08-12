@@ -19,90 +19,90 @@ import java.util.Objects;
 import java.util.logging.Level;
 
 /**
- * Classe principale du plugin Tropicube Core.
- * Gère l'initialisation et l'arrêt de tous les sous-systèmes :
+ * Main class of the Tropicube Core plugin.
+ * Handles the initialization and shutdown of all subsystems:
  *  - Monnaie (economy)
- *  - Permissions / Grades VIP & Modération
- *  - Système de langues
- *  - Données joueurs (MySQL + Redis)
+ * - Permissions / VIP Ranks & Moderation
+ * - Language system
+ * - Player data (MySQL + Redis)
  */
 public class TropicubeCore extends JavaPlugin {
-    // Gestionnaire Redis pour le cache et la communication inter-serveurs
+    // Redis manager for cache and inter-server communication
     private RedisManager redisManager;
 
-    // Gestionnaire de base de données MySQL
+    // MySQL Database Manager
     private DatabaseManager databaseManager;
 
-    // Gestionnaire des langues (multi-langue)
+    // Language manager (multi-language)
     private LanguageManager languageManager;
 
-    // Gestionnaire des permissions et grades
+    // Permissions and Ranks Manager
     private PermissionManager permissionManager;
 
-    // Gestionnaire des données joueurs (chargement / sauvegarde)
+    // Player data manager (loading/saving)
     private PlayerDataManager playerDataManager;
 
-    // Gestionnaire de l'économie (monnaie des joueurs)
+    // Economy Manager (player currency)
     private EconomyManager economyManager;
 
-    // Gestionnaire des têtes personnalisées (HeadDatabase)
+    // Custom Head Manager (HeadDatabase)
     private HeadDatabaseManager headDatabaseManager;
 
     /**
-     * Appelé par Paper lors de l'activation du plugin.
-     * Initialise dans l'ordre : config, base de données, Redis, managers, commandes et listeners.
+     * Called by Paper when activating the plugin.
+     * Initializes in order: config, database, Redis, managers, commands and listeners.
      */
     @Override
     public void onEnable() {
-        // Crée le dossier de données du plugin s'il n'existe pas
+        // Create the plugin data folder if it does not exist
         //noinspection ResultOfMethodCallIgnored
         getDataFolder().mkdirs();
 
-        // Copie config.yml et les fichiers de langue par défaut si absents
+        // Copy config.yml and default language files if missing
         saveDefaultConfig();
         saveDefaultLanguages();
 
-        // Met à jour les fichiers de configuration existants avec les nouvelles clés
+        // Updates existing configuration files with new keys
         updateConfigs();
 
-        // Initialisation de la base de données ; arrête le plugin en cas d'échec
+        // Database initialization; stop the plugin on failure
         if (!initDatabase()) return;
 
-        // Initialisation de Redis ; arrête le plugin en cas d'échec
+        // Initializing Redis; stop the plugin on failure
         if (!initRedis()) return;
 
-        // Initialise tous les managers métier
+        // Initializes all business managers
         if (!initManagers()) return;
 
-        // Enregistre les commandes et les écouteurs d'événements
+        // Registers commands and event listeners
         if (!registerCommands()) return;
 
         if (!registerListeners()) return;
 
-        // Désactive la barre de localisation (locator bar) sur tous les mondes chargés
+        // Disables the locator bar on all loaded worlds
         getServer().getWorlds().forEach(w -> w.setGameRule(GameRules.LOCATOR_BAR, false));
     }
 
     /**
-     * Appelé par Paper lors de la désactivation du plugin.
-     * Sauvegarde les données joueurs et ferme proprement les connexions.
+     * Called by Paper when deactivating the plugin.
+     * Backs up player data and properly closes connections.
      */
     @Override
     public void onDisable() {
-        // Sauvegarde les données de tous les joueurs encore connectés
+        // Saves data for all players still connected
         if (playerDataManager != null) playerDataManager.saveAll();
 
-        // Ferme la connexion à la base de données MySQL
+        // Close the connection to the MySQL database
         if (databaseManager != null) databaseManager.close();
 
-        // Ferme la connexion Redis
+        // Close the Redis connection
         if (redisManager != null) redisManager.close();
     }
 
     /**
-     * Initialise la connexion à la base de données MySQL.
+     * Initializes the connection to the MySQL database.
      *
-     * @return true si la connexion est établie, false en cas d'erreur (désactive le plugin)
+     * @return true if the connection is established, false on error (disables the plugin)
      */
     private boolean initDatabase() {
         try {
@@ -117,9 +117,9 @@ public class TropicubeCore extends JavaPlugin {
     }
 
     /**
-     * Initialise la connexion Redis à partir de la configuration du plugin.
+     * Initializes the Redis connection from the plugin configuration.
      *
-     * @return true si la connexion est établie, false en cas d'erreur (désactive le plugin)
+     * @return true if the connection is established, false on error (disables the plugin)
      */
     private boolean initRedis() {
         try {
@@ -138,9 +138,9 @@ public class TropicubeCore extends JavaPlugin {
     }
 
     /**
-     * Instancie et initialise tous les managers dans l'ordre de leurs dépendances.
-     * L'ordre est important : certains managers dépendent d'autres (ex. PlayerDataManager
-     * dépend de PermissionManager, EconomyManager et LanguageManager).
+     * Instantiates and initializes all managers in the order of their dependencies.
+     * The order is important: some managers depend on others (e.g. PlayerDataManager
+     * depends on PermissionManager, EconomyManager and LanguageManager).
      */
     private boolean initManagers() {
         try {
@@ -157,8 +157,8 @@ public class TropicubeCore extends JavaPlugin {
 
             headDatabaseManager = new HeadDatabaseManager();
 
-            // Démarre l'abonnement Redis pour la synchronisation des pseudos (Nick)
-            // Note : ce n'est pas un listener Bukkit, mais un abonné Redis
+            // Start Redis subscription for nickname synchronization (Nick)
+            // Note: this is not a Bukkit listener, but a Redis subscriber
             new NickApplyManager(this);
             return true;
         } catch (Exception e) {
@@ -169,12 +169,12 @@ public class TropicubeCore extends JavaPlugin {
     }
 
     /**
-     * Enregistre toutes les commandes du plugin et leurs TabCompleters.
-     * Les commandes doivent être déclarées dans plugin.yml.
+     * Logs all plugin commands and their TabCompleters.
+     * Commands must be declared in plugin.yml.
      */
     private boolean registerCommands() {
         try {
-            // --- Économie ---
+            // --- Economy ---
             Objects.requireNonNull(getCommand("money")).setExecutor(new BalanceCommand(this));
             Objects.requireNonNull(getCommand("eco")).setExecutor(new EcoAdminCommand(this));
 
@@ -188,13 +188,13 @@ public class TropicubeCore extends JavaPlugin {
             Objects.requireNonNull(getCommand("tropiperm")).setExecutor(permCmd);
             Objects.requireNonNull(getCommand("tropiperm")).setTabCompleter(permCmd);
 
-            // --- Langue ---
+        // --- Language ---
             Objects.requireNonNull(getCommand("lang")).setExecutor(new LanguageCommand(this));
 
-            // --- Administration générale ---
+            // --- General administration ---
             Objects.requireNonNull(getCommand("tropiadmin")).setExecutor(new TropicubeAdminPaperCommand(this));
 
-            // --- Modération ---
+            // --- Moderation ---
             Objects.requireNonNull(getCommand("mute")).setExecutor(new MuteCommand(this));
             Objects.requireNonNull(getCommand("unmute")).setExecutor(new MuteCommand(this)); // même handler
             Objects.requireNonNull(getCommand("kick")).setExecutor(new KickCommand(this));
@@ -210,20 +210,20 @@ public class TropicubeCore extends JavaPlugin {
     }
 
     /**
-     * Enregistre tous les listeners d'événements Bukkit du plugin.
+     * Registers all Bukkit event listeners of the plugin.
      */
     private boolean registerListeners() {
         try {
-            // Connexion / déconnexion des joueurs (chargement et sauvegarde des données)
+            // Connecting/disconnecting players (loading and saving data)
             getServer().getPluginManager().registerEvents(new PlayerJoinQuitListener(this), this);
 
-            // Chat : formatage des messages, gestion des mutes, etc.
+            // Chat: message formatting, mute management, etc.
             getServer().getPluginManager().registerEvents(new PlayerChatListener(this), this);
 
-            // Supprime certaines notifications système indésirables
+            // Removes some unwanted system notifications
             getServer().getPluginManager().registerEvents(new SuppressNotificationsListener(), this);
 
-            // Listener du gestionnaire de têtes personnalisées (HeadDatabase)
+            // Custom Head Manager Listener (HeadDatabase)
             getServer().getPluginManager().registerEvents(headDatabaseManager, this);
 
             return true;
@@ -235,8 +235,8 @@ public class TropicubeCore extends JavaPlugin {
     }
 
     /**
-     * Copie les fichiers de langue par défaut (fr, en, es, de) dans le dossier
-     * "languages/" du plugin s'ils n'existent pas encore.
+     * Copies the default language files (fr, en, es, de) to the folder
+     * plugin's "languages/" directory if they do not exist yet.
      */
     private void saveDefaultLanguages() {
         //noinspection ResultOfMethodCallIgnored
@@ -251,9 +251,9 @@ public class TropicubeCore extends JavaPlugin {
     }
 
     /**
-     * Met à jour les fichiers de configuration sur disque avec les nouvelles clés
-     * présentes dans les ressources embarquées du plugin (sans écraser les valeurs
-     * existantes définies par l'administrateur).
+     * Updates configuration files on disk with new keys
+     * present in the plugin's embedded resources (without overwriting the values
+     * existing ones defined by the administrator).
      */
     private void updateConfigs() {
         try {
@@ -270,7 +270,7 @@ public class TropicubeCore extends JavaPlugin {
     }
 
     // --- Accesseurs publics (getters) ---
-    // Permettent aux autres classes du plugin d'accéder aux managers via l'instance du plugin
+    // Allow other plugin classes to access managers via the plugin instance
 
     public DatabaseManager getDatabaseManager()     { return databaseManager; }
     public RedisManager getRedisManager()           { return redisManager; }

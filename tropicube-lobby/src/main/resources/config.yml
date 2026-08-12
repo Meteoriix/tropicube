@@ -8,7 +8,7 @@ redis:
   password: ""          # Laisser vide si pas de mot de passe
 
 lobby:
-  # Position de spawn dans le monde lobby
+  # Spawn position in lobby world
   spawn:
     world: "world"
     x: 0.5
@@ -17,17 +17,17 @@ lobby:
     yaw: 0.0
     pitch: 0.0
 
-  # Master switch du double-saut en lobby.
-  # Le nombre de sauts accordés dépend des permissions du joueur :
-  #   tropicube.lobby.jump        → 1 saut
-  #   tropicube.lobby.jump.double → 2 sauts
-  #   tropicube.lobby.infinitejump → sauts illimités
-  # Mettre à false désactive la fonctionnalité pour tout le monde.
+# Master switch for double jump in the lobby.
+  # The number of jumps granted depends on the player's permissions:
+#   tropicube.lobby.jump        → 1 jump
+#   tropicube.lobby.jump.double → 2 jumps
+  # tropicube.lobby.infinitejump → unlimited jumps
+  # Setting this to false disables the feature for everyone.
   double-jump: true
 
 # ──────────────────────────────────────────────────────────────────────────────
-#  Types de serveurs — icône affichée dans le sélecteur de mode de jeu.
-#  Utiliser soit material (nom de Material Bukkit) soit head-id (HeadDatabase).
+# Server Types — icon displayed in the game mode switcher.
+# Use either material (Material Bukkit name) or head-id (HeadDatabase).
 # ──────────────────────────────────────────────────────────────────────────────
 server-types:
   hub:
@@ -36,13 +36,13 @@ server-types:
     head-id: "79740"
 
 # ──────────────────────────────────────────────────────────────────────────────
-#  Boutique VIP — entrées affichées dans le menu /vip.
-#  grade-key   : nom du grade en base de données (ex. VIP, VIP_PLUS, PREMIUM).
-#  material    : Material Bukkit pour l'icône principale.
-#  display-name: nom MiniMessage affiché dans le menu et les messages.
-#  price       : coût en monnaie de jeu.
-#  Les avantages (perks) sont lus dans les fichiers de langue :
-#    lobby.vip-perks-<grade-key-en-minuscules-avec-tirets>
+# VIP Shop — entries displayed in the /vip menu.
+# grade-key: name of the grade in the database (e.g. VIP, VIP_PLUS, PREMIUM).
+# material: Material Bukkit for the main icon.
+# display-name: MiniMessage name displayed in menu and messages.
+# price: cost in game currency.
+# The perks are read in the language files:
+# lobby.vip-perks-<lowercase-hyphenated-grade-key>
 # ──────────────────────────────────────────────────────────────────────────────
 vip-shop:
   entries:
@@ -60,10 +60,10 @@ vip-shop:
       price: 40000
 
 # ──────────────────────────────────────────────────────────────────────────────
-#  Sélecteur de langue — icônes et libellés affichés dans le menu /lang.
-#  head-id   : identifiant HeadDatabase de la tête de joueur à afficher.
+# Language selector — icons and labels displayed in the /lang menu.
+# head-id: HeadDatabase identifier of the player head to display.
 #  display-name / lore1 / lore2 : texte MiniMessage.
-#  L'ordre de la liste détermine l'ordre d'affichage dans le menu.
+# The order of the list determines the order of display in the menu.
 # ──────────────────────────────────────────────────────────────────────────────
 lang-selector:
   languages:

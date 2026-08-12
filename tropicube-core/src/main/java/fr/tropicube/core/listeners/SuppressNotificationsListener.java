@@ -5,7 +5,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerRecipeDiscoverEvent;
 
-/** Masque les notifications Paper que le réseau remplace par sa propre interface. */
+/** Hides Paper notifications that the network replaces with its own interface. */
 public class SuppressNotificationsListener implements Listener {
 
     @EventHandler

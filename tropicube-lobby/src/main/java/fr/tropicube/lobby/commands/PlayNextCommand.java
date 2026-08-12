@@ -8,18 +8,18 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 /**
- * Reconnecte un joueur à une partie après la fin de la précédente.
+ * Reconnects a player to a game after the previous one has ended.
  *
- * Un mini-jeu déclenche ce flux en stockant la clé Redis générique
- * {@code post-game:<uuid> = <nextServer>|<serverType>} avant de renvoyer le
- * joueur au lobby. Le lobby consomme cette valeur, affiche un lien cliquable,
- * puis cette commande résout la connexion.
+ * A mini-game triggers this flow by storing the generic Redis key
+ * {@code post-game:<uuid> = <nextServer>|<serverType>} before returning the
+ * player in the lobby. The lobby consumes this value, displays a clickable link,
+ * then this command resolves the connection.
  *
- * Ordre de résolution :
+ * Order of resolution:
  * <ol>
- *   <li>instance précréée si elle est joignable ;</li>
- *   <li>meilleure instance disponible du même type ;</li>
- *   <li>demande de création depuis le template correspondant.</li>
+ * <li>pre-created instance if it can be reached;</li>
+ * <li>best available instance of the same type;</li>
+ * <li>creation request from the corresponding template.</li>
  * </ol>
  */
 public class PlayNextCommand implements CommandExecutor {
@@ -49,7 +49,7 @@ public class PlayNextCommand implements CommandExecutor {
             }
         }
 
-        // Priorité à l'instance précréée annoncée par le mini-jeu.
+        // Priority to the precreated instance announced by the mini-game.
         if (!nextServer.isEmpty()) {
             boolean isJoinable = plugin.getLobbyServerManager().getServer(nextServer)
                     .filter(server -> server.isMatchmakingJoinable())
@@ -61,7 +61,7 @@ public class PlayNextCommand implements CommandExecutor {
             }
         }
 
-        // Sinon, choisit la meilleure instance du type ou en demande une nouvelle.
+        // Otherwise, choose the best instance of the type or request a new one.
         if (serverType.isEmpty()) {
             player.sendMessage(LangHelper.component(player, "lobby.no-server"));
             return true;

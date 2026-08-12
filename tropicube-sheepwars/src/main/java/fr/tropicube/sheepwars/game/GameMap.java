@@ -7,7 +7,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-/** Décrit une carte, ses équipes, ses points d'apparition et ses objectifs. */
+/** Describes a map, its teams, its spawn points and its objectives. */
 public class GameMap {
     private String name;
     private int voidLimit;

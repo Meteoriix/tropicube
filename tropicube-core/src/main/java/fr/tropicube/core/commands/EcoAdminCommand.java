@@ -13,8 +13,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-// /eco <set|add|remove|top> <joueur> [montant]
-/** Modifie administrativement le solde de la monnaie TropiCoin. */
+        // /eco <set|add|remove|top> <player> [amount]
+/** Administratively modifies the TropiCoin currency balance. */
 public class EcoAdminCommand implements CommandExecutor {
     private final TropicubeCore plugin;
     public EcoAdminCommand(TropicubeCore p) { this.plugin = p; }

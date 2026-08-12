@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** File FIFO dédupliquée des joueurs attendant la création d'une instance classique. */
+/** Deduplicated FIFO file of players waiting for the creation of a classic instance. */
 final class MatchmakingWaitlist {
 
     private final Map<String, LinkedHashSet<UUID>> playersByTemplate = new HashMap<>();

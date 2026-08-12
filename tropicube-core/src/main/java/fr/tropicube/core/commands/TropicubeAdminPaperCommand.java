@@ -8,7 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 // /tropiadmin <reload|info>
-/** Fournit les opérations d'administration locale de TropicubeCore. */
+/** Provides TropicubeCore local administration operations. */
 public class TropicubeAdminPaperCommand implements CommandExecutor {
     private final TropicubeCore plugin;
     public TropicubeAdminPaperCommand(TropicubeCore p) { this.plugin = p; }

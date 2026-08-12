@@ -18,8 +18,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
- * Gère le cycle de vie complet des serveurs Minecraft dynamiques.
- * Crée/supprime des containers Docker et les enregistre/désenregistre auprès de Velocity.
+ * Manages the complete lifecycle of dynamic Minecraft servers.
+ * Creates/deletes Docker containers and registers/deregisters them with Velocity.
  */
 public class TropiServerManager {
 
@@ -30,7 +30,7 @@ public class TropiServerManager {
     private final Logger logger;
     private final VelocityLanguageManager languageManager;
 
-    // Templates disponibles (chargés depuis config)
+    // Available templates (loaded from config)
     private final Map<String, ServerTemplate> templates = new ConcurrentHashMap<>();
     // Instances actives : instanceId -> ServerInstance
     private final Map<String, ServerInstance> activeInstances = new ConcurrentHashMap<>();
@@ -41,7 +41,7 @@ public class TropiServerManager {
     private final Map<String, Long> lastHealthyAt = new ConcurrentHashMap<>();
     private final Map<String, Long> emptySince = new ConcurrentHashMap<>();
     private final Map<String, CompletableFuture<Boolean>> finishingGames = new ConcurrentHashMap<>();
-    // Scheduled executor pour les tâches périodiques
+    // Scheduled executor for periodic tasks
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
 
     public TropiServerManager(ProxyServer proxy,
@@ -116,8 +116,8 @@ public class TropiServerManager {
                         redisManager.publishCommand("LOBBY", "CREATE_HOST_FAILED:" + uuidStr);
                         return;
                     }
-                    // Le verrou NX couvre aussi les doubles clics et les requêtes traitées
-                    // simultanément avant que la clé host:<uuid> puisse être créée.
+                    // NX lock also covers double clicks and processed requests
+                    // simultaneously before the host:<uuid> key can be created.
                     creationReserved = redisManager.reserveUnlessBlocked(
                             creationKey, "host:" + uuidStr, templateId, 300);
                     if (!creationReserved) {
@@ -259,7 +259,7 @@ public class TropiServerManager {
                     template.setEnvironmentVariables(env);
                 }
 
-                // Volumes (bind mounts, chemins absolus sur l'hôte Docker)
+                // Volumes (bind mounts, absolute paths on Docker host)
                 ConfigurationNode volumesNode = node.node("volumes");
                 if (!volumesNode.virtual()) {
                     List<String> volumes = new ArrayList<>();
@@ -336,16 +336,16 @@ public class TropiServerManager {
     }
 
     /**
-     * Crée un nouveau serveur à partir d'un template.
-     * @return CompletableFuture avec l'instance créée
+     * Creates a new server from a template.
+     * @return CompletableFuture with the created instance
      */
     public CompletableFuture<ServerInstance> createServer(String templateId, String customName, boolean whitelisted) {
         return createServer(templateId, customName, whitelisted, Collections.emptyMap());
     }
 
     /**
-     * Crée un nouveau serveur avec des variables d'environnement supplémentaires
-     * qui s'ajoutent (et peuvent surcharger) celles du template.
+     * Creates a new server with additional environment variables
+     * that are added to (and may override) the template values.
      */
     public CompletableFuture<ServerInstance> createServer(String templateId, String customName, boolean whitelisted,
                                                           Map<String, String> extraEnv) {
@@ -407,8 +407,8 @@ public class TropiServerManager {
     }
 
     /**
-     * Ajoute un joueur à la file d'un template classique. Une instance déjà joignable est utilisée en priorité ;
-     * sinon tous les joueurs partagent la même création en cours et seront transférés lorsqu'elle sera prête.
+     * Adds a player to the queue of a classic template. An already reachable instance is used as a priority;
+     * otherwise all players share the same creation in progress and will be transferred when it is ready.
      */
     private void queueForMatchmaking(String templateId, UUID playerId) {
         matchmakingWaitlist.add(templateId, playerId);
@@ -417,7 +417,7 @@ public class TropiServerManager {
                 () -> ensureMatchmakingCreation(templateId));
     }
 
-    /** Retire un joueur déconnecté de toute attente de création classique. */
+    /** Removes a player disconnected from any expectation of classic creation. */
     public void removeFromMatchmaking(UUID playerId) {
         matchmakingWaitlist.remove(playerId);
     }
@@ -432,7 +432,7 @@ public class TropiServerManager {
                 .min(Comparator.comparingInt(ServerInstance::getOnlinePlayers));
     }
 
-    /** Retourne l'unique création classique en cours pour ce template, ou en démarre une. */
+    /** Returns the only classic creation in progress for this template, or starts one. */
     private CompletableFuture<ServerInstance> ensureMatchmakingCreation(String templateId) {
         CompletableFuture<ServerInstance> creation = matchmakingCreations.getOrCreate(
                 templateId, () -> createServer(templateId, null, false, Collections.emptyMap()));
@@ -498,7 +498,7 @@ public class TropiServerManager {
     }
 
     /**
-     * Arrête et supprime un serveur.
+     * Stops and deletes a server.
      */
     public CompletableFuture<Boolean> stopServer(String instanceId) {
         InstanceStopAttempt preparation = prepareStop(instanceId);
@@ -524,15 +524,15 @@ public class TropiServerManager {
     }
 
     /**
-     * Force l'arrêt immédiat d'un serveur (SIGKILL).
-     * Migre les joueurs, désenregistre de Velocity et nettoie Redis.
+     * Forces the immediate shutdown of a server (SIGKILL).
+     * Migrates players, unregisters from Velocity and cleans Redis.
      */
     public CompletableFuture<Boolean> killServer(String instanceId) {
         InstanceStopAttempt preparation = prepareStop(instanceId);
         if (preparation == null) return CompletableFuture.completedFuture(false);
         ServerInstance instance = preparation.instance();
         return transferPlayers(instance, 3).thenApplyAsync(_ -> {
-            // Retire l'instance du registre Velocity.
+            // Removes the instance from the Velocity registry.
             proxy.getServer(instance.getServerName()).ifPresent(s ->
                     proxy.unregisterServer(s.getServerInfo()));
 
@@ -565,7 +565,7 @@ public class TropiServerManager {
                 instance.getServerName(), preparation.previousStatus());
     }
 
-    /** Transfère réellement tous les joueurs puis détruit immédiatement une instance de mini-jeu terminée. */
+    /** Actually transfers all players and then immediately destroys a completed minigame instance. */
     public CompletableFuture<Boolean> finishGameServer(String instanceId) {
         ServerInstance instance = activeInstances.get(instanceId);
         if (instance == null || "LOBBY".equalsIgnoreCase(instance.getServerType())) {
@@ -641,9 +641,9 @@ public class TropiServerManager {
     }
 
     /**
-     * Arrête les tâches du gestionnaire et, si demandé, supprime les serveurs dynamiques.
-     * Un redémarrage normal du proxy conserve les conteneurs afin qu'ils soient restaurés
-     * par {@link #restoreActiveInstances()} au prochain démarrage.
+     * Stops manager tasks and, if requested, deletes dynamic servers.
+     * A normal proxy restart preserves the containers so they can be restored
+     * by {@link #restoreActiveInstances()} at the next startup.
      */
     public void shutdown(boolean stopDynamicServers) {
         matchmakingWaitlist.clear();
@@ -658,10 +658,10 @@ public class TropiServerManager {
     }
 
     /**
-     * Arrête et supprime tous les serveurs dynamiques.
-     * Les arrêts connus sont parallélisés pour rester dans le stop_grace_period de Compose.
-     * Un sweep final force-supprime tout container dynamique restant, y compris ceux
-     * encore en CREATING et donc absents de activeInstances.
+     * Stops and deletes all dynamic servers.
+     * Known stops are parallelized to stay within Compose's stop_grace_period.
+     * A final sweep forcibly removes every remaining dynamic container, including those
+     * still in CREATING and therefore absent from activeInstances.
      */
     public void stopAllServers() {
         logger.info("[Tropicube] Arrêt de tous les serveurs ({})...", activeInstances.size());
@@ -695,7 +695,7 @@ public class TropiServerManager {
         pendingCreations.clear();
         matchmakingCreations.clear();
         matchmakingWaitlist.clear();
-        // Sweep final : supprime tout container dynamique encore vivant (démarrage en cours, crash, etc.).
+        // Final sweep: removes any dynamic container still alive (startup in progress, crash, etc.).
         dockerManager.removeAllDynamicContainers();
     }
 
@@ -767,7 +767,7 @@ public class TropiServerManager {
                               && i.getStatus() != ServerInstance.Status.STOPPED)
                     .count();
 
-            // Scale UP si insuffisant (respecte auto-start : sans auto-start, le min n'est jamais forcé)
+            // Scale UP if insufficient (respects auto-start: without auto-start, the min is never forced)
             if (template.isAutoStart() && current < template.getMinInstances()) {
                 logger.info("[Tropicube] Auto-scale UP : {}", template.getId());
                 createServer(template.getId(), null, false)
@@ -777,7 +777,7 @@ public class TropiServerManager {
                         });
             }
 
-            // Auto-stop des serveurs vides
+            // Hitchhiking empty servers
             if (template.isAutoStop()) {
                 activeInstances.values().stream()
                         .filter(i -> i.getTemplateId().equals(template.getId()))
@@ -846,7 +846,7 @@ public class TropiServerManager {
     }
 
     /**
-     * Retourne le meilleur lobby disponible (le moins chargé).
+     * Returns the best available lobby (least loaded).
      */
     public Optional<RegisteredServer> getBestLobby() {
         return activeInstances.values().stream()
@@ -856,7 +856,7 @@ public class TropiServerManager {
     }
 
     /**
-     * Retourne toutes les instances d'un certain type.
+     * Returns all instances of a certain type.
      */
     public List<ServerInstance> getInstancesByType(String type) {
         return activeInstances.values().stream()

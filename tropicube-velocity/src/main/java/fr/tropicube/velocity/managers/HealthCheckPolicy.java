@@ -2,7 +2,7 @@ package fr.tropicube.velocity.managers;
 
 import fr.tropicube.docker.model.ServerInstance;
 
-/** Règles temporelles pures utilisées par la surveillance des instances actives. */
+/** Pure temporal rules used by active instance monitoring. */
 final class HealthCheckPolicy {
 
     private HealthCheckPolicy() {

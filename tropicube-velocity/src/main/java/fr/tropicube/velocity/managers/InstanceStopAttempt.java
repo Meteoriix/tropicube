@@ -4,7 +4,7 @@ import fr.tropicube.docker.model.ServerInstance;
 
 import java.util.Objects;
 
-/** Transition réversible d'une instance vers {@link ServerInstance.Status#STOPPING}. */
+/** Reversible transition of an instance to {@link ServerInstance.Status#STOPPING}. */
 final class InstanceStopAttempt {
 
     private final ServerInstance instance;
@@ -16,9 +16,9 @@ final class InstanceStopAttempt {
     }
 
     /**
-     * Prépare l'arrêt et mémorise l'état à restaurer si Docker refuse la commande.
+     * Prepares for shutdown and stores the state to restore if Docker refuses the command.
      *
-     * @return la tentative créée, ou {@code null} si un arrêt est déjà en cours ou terminé
+     * @return the attempt created, or {@code null} if a shutdown is already in progress or completed
      */
     static InstanceStopAttempt begin(ServerInstance instance) {
         Objects.requireNonNull(instance, "instance");

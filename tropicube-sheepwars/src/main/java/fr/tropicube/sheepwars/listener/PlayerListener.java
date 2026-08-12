@@ -32,7 +32,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-/** Applique les règles de connexion, combat, mort et interaction de SheepWars. */
+/** Applies SheepWars connection, combat, death and interaction rules. */
 public class PlayerListener implements Listener {
 
     private final TropicubeSheepwars plugin;
@@ -61,7 +61,7 @@ public class PlayerListener implements Listener {
         );
     }
 
-    /** Réduit de moitié la régénération naturelle de santé des joueurs en jeu uniquement. */
+    /** Halves the natural health regeneration of players in-game only. */
     @EventHandler
     public void onRegenerate(EntityRegainHealthEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
@@ -73,8 +73,9 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        if (plugin.getGameManager().getPlayer(player) != null) {
-            if (plugin.getGameManager().getState() == GameState.PLAYING) {
+        GamePlayer gamePlayer = plugin.getGameManager().getPlayer(player);
+        if (gamePlayer != null) {
+            if (plugin.getGameManager().getState() == GameState.PLAYING && gamePlayer.isAlive()) {
                 player.kill(DamageSource.builder(DamageType.GENERIC).build());
             }
             plugin.getGameManager().removePlayer(player);
@@ -128,7 +129,7 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        // Réglages et lancement réservés à l'hôte ou à l'administration.
+        // Settings and launch reserved for the host or administration.
         if (plugin.getGameSettingsMenu().isSelectorItem(item)) {
             event.setCancelled(true);
             if (!plugin.getGameManager().getHostUuid().equals(player.getUniqueId())) {
@@ -146,12 +147,12 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        // Le lit quitte toujours la partie vers le lobby principal.
+        // The bed always leaves the match for the main lobby.
         if (plugin.getGameManager().isLeaveItem(item)) {
             event.setCancelled(true);
             GameState state = plugin.getGameManager().getState();
             if (state == GameState.PLAYING) {
-                // Transmet l'instance exacte afin que /sw join puisse y reconnecter le joueur.
+                // Pass the exact instance so that /sw join can reconnect the player to it.
                 String instanceId = plugin.getGameManager().getInstanceId();
                 if (instanceId != null && !instanceId.isBlank()) {
                     plugin.getRedisManager().set("sw:left-game:" + player.getUniqueId(), instanceId, 300);
@@ -177,7 +178,7 @@ public class PlayerListener implements Listener {
     }
 
     /** SUPPORT_ARROWS: arrows heal teammates instead of damaging them.
-     * Le mouton de force augmente de 15 % les dégâts de mêlée et à distance. */
+     * Force Sheep increases melee and ranged damage by 15%. */
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onDamageByEntity(EntityDamageByEntityEvent event) {
         if (plugin.getGameManager().getState() != GameState.PLAYING) return;
@@ -204,7 +205,7 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        // Une flèche alliée soigne avec SUPPORT_ARROWS ; sinon ses dégâts sont annulés.
+        // An allied arrow heals with SUPPORT_ARROWS; otherwise its damage is canceled.
         if (isArrow && shooterGp.getTeam() == targetGp.getTeam()) {
             event.setCancelled(true);
             if (shooterGp.getKit() == PlayerKit.SUPPORT_ARROWS) {
@@ -274,7 +275,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
-        // Ne revérifie la hauteur qu'après un changement réel de bloc vertical.
+        // Only recheck the height after an actual vertical block change.
         if (event.getFrom().getBlockY() <= event.getTo().getBlockY()) return;
 
         GameState state = plugin.getGameManager().getState();

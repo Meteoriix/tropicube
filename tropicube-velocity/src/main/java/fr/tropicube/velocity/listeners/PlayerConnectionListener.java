@@ -22,7 +22,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Gère les connexions/déconnexions des joueurs sur le proxy Velocity.
+ * Manages player logins/disconnects on the Velocity proxy.
  */
 public class PlayerConnectionListener {
 
@@ -78,7 +78,7 @@ public class PlayerConnectionListener {
     public void onPlayerChooseInitialServer(PlayerChooseInitialServerEvent event) {
         Player player = event.getPlayer();
 
-        // Reconnexion automatique à la partie SheepWars quittée si elle existe encore.
+        // Automatic reconnection to the left SheepWars game if it still exists.
         String rejoinInstanceId = redisManager.get("sw:rejoin:" + player.getUniqueId());
         if (rejoinInstanceId != null) {
             serverManager.getInstanceById(rejoinInstanceId).ifPresent(instance ->
@@ -115,7 +115,7 @@ public class PlayerConnectionListener {
     public void onDisconnect(DisconnectEvent event) {
         Player player = event.getPlayer();
 
-        // Mémorise le serveur avant retrait pour permettre la reconnexion SheepWars.
+        // Remembers the server before removal to allow SheepWars reconnection.
         String instanceId = redisManager.getPlayerServer(player.getUniqueId().toString());
 
         redisManager.delete("player:online:" + player.getUniqueId());
@@ -126,8 +126,8 @@ public class PlayerConnectionListener {
         redisManager.publishPlayerEvent("PLAYER_QUIT",
                 player.getUniqueId() + ":" + player.getUsername());
 
-        // Si SheepWars signale une partie active dans Redis, conserve une clé de
-        // reconnexion afin que le joueur retrouve la même instance sous cinq minutes.
+        // If SheepWars reports an active game in Redis, keeps a game key
+        // reconnection so that the player finds the same instance within five minutes.
         if (instanceId != null && redisManager.exists("sw:game-started:" + instanceId)) {
             ServerInstance instance = redisManager.getInstance(instanceId);
             if (instance != null && "SHEEPWARS".equalsIgnoreCase(instance.getServerType())) {

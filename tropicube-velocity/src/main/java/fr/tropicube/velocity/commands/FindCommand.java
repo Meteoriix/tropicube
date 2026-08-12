@@ -7,9 +7,9 @@ import fr.tropicube.docker.client.RedisManager;
 import fr.tropicube.velocity.managers.VelocityLanguageManager;
 
 // ============================================================
-//  /find <joueur> — Trouver sur quel serveur est un joueur
+    // /find <player> — find which server a player is on
 // ============================================================
-/** Indique sur quelle instance se trouve un joueur connecté au proxy. */
+/** Indicates on which instance a player connected to the proxy is located. */
 public class FindCommand implements SimpleCommand {
     private final ProxyServer proxy;
     private final RedisManager redisManager;

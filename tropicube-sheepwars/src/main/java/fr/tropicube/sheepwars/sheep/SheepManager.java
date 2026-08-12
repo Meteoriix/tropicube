@@ -26,13 +26,13 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Registre les comportements des moutons, construit leurs objets et pilote leur
- * trajectoire jusqu'à l'impact. Toutes ses méthodes liées aux entités Bukkit
- * doivent être appelées sur le thread principal du serveur.
+ * Register the sheep's behaviors, construct their objects and manage their
+ * trajectory until impact. All its methods related to Bukkit entities
+ * must be called on the main server thread.
  */
 public class SheepManager {
 
-    /** Nettoie les entités et bonus temporaires au début et à la fin d'une partie. */
+    /** Cleans up temporary entities and bonuses at the start and end of a game. */
     public void reset() {
         strengthBuffCounts.clear();
         playerDrawDecks.clear();
@@ -50,17 +50,17 @@ public class SheepManager {
     private final TropicubeSheepwars plugin;
     private final Map<SheepType, AbstractSheep> sheepHandlers = new EnumMap<>(SheepType.class);
 
-    /** Associe chaque golem mécanique à son lanceur et à son passager. */
+    /** Match each mechanical golem to its launcher and passenger. */
     private final Map<UUID, MechaData> mechaGolems = new HashMap<>();
 
-    /** Compte les bonus de force actifs par joueur. */
+    /** Counts active strength bonuses per player. */
     private final Map<UUID, Integer> strengthBuffCounts = new HashMap<>();
 
-    /** Pondérations mises en cache et recalculées par {@link #buildWeightCache()}. */
+    /** Weights cached and recalculated by {@link #buildWeightCache()}. */
     private EnumMap<SheepType, Integer> sheepWeights;
     private int sheepWeightTotal;
 
-    /** Pioche indépendante par joueur afin d'éviter les séries individuelles. */
+    /** Independent draw per player to avoid individual series. */
     private final Map<UUID, SheepDrawDeck> playerDrawDecks = new HashMap<>();
 
     public final NamespacedKey sheepTypeKey;
@@ -105,7 +105,7 @@ public class SheepManager {
             sheepWeights.put(type, weight);
             sheepWeightTotal += weight;
         }
-        // Garantit une distribution valide même si toute la configuration est désactivée.
+        // Guarantees valid distribution even if all configuration is disabled.
         if (sheepWeightTotal == 0) {
             SheepType fallback = Arrays.stream(SheepType.values())
                     .filter(type -> plugin.getGameSettingsMenu() == null
@@ -185,7 +185,7 @@ public class SheepManager {
             case HEALING, STRENGTH -> velocity = thrower.getLocation().getDirection().multiply(0.1);
             default -> {
                 Vector dir = thrower.getLocation().getDirection();
-                // Ajoute un arc ascendant sauf si le joueur vise fortement vers le bas.
+                // Adds an upward arc unless the player is aiming hard downward.
                 double arcBoost = Math.max(0, 0.3 + dir.getY() * 0.5);
                 velocity = dir.multiply(3.6).add(new Vector(0, arcBoost, 0));
             }
@@ -240,12 +240,12 @@ public class SheepManager {
                     return;
                 }
 
-                // Attend deux ticks avant les collisions pour quitter la hitbox du lanceur.
+                // Waits two ticks before collisions to exit the caster's hitbox.
                 boolean impacted = false;
                 if (ticks > 2) {
                     Location loc = sheep.getLocation();
 
-                    // Les boîtes englobantes distinguent les blocs partiels des blocs pleins.
+                    // Bounding boxes distinguish partial blocks from full blocks.
                     BoundingBox sheepBB = sheep.getBoundingBox().expand(0.05);
                     int bx = (int) Math.floor(loc.getX());
                     int by = (int) Math.floor(loc.getY());
@@ -263,7 +263,7 @@ public class SheepManager {
                         }
                     }
 
-                    // Anticipe la trajectoire du tick afin d'éviter de traverser un bloc fin.
+                    // Anticipate the trajectory of the tick to avoid crossing a thin block.
                     if (!impacted) {
                         Vector vel = sheep.getVelocity();
                         if (vel.lengthSquared() > 0.0001) {

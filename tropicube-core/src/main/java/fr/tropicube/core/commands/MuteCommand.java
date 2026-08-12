@@ -9,8 +9,8 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
-// /mute <joueur> [durée] [raison]   /unmute <joueur>
-/** Mutualise les commandes de mise en sourdine et de levée de sourdine. */
+        // /mute <player> [duration] [reason] /unmute <player>
+/** Shares mute and unmute commands. */
 public class MuteCommand implements CommandExecutor {
     private final TropicubeCore plugin;
     public MuteCommand(TropicubeCore p) { this.plugin = p; }

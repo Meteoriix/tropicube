@@ -3,7 +3,7 @@ package fr.tropicube.docker.client;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 
-/** Réconcilie une commande Docker d'arrêt dont la réponse HTTP peut être perdue. */
+/** Reconciles a shutdown Docker command whose HTTP response may be lost. */
 final class DockerStopOperation {
 
     enum Result {
@@ -16,8 +16,8 @@ final class DockerStopOperation {
     }
 
     /**
-     * Exécute un arrêt idempotent et vérifie l'état réel du conteneur avant de conclure à un échec.
-     * Docker peut avoir terminé l'arrêt alors que son proxy HTTP ferme la connexion sans réponse.
+     * Performs an idempotent shutdown and checks the actual state of the container before concluding a failure.
+     * Docker may have completed the shutdown while its HTTP proxy closes the connection without response.
      */
     static Result execute(Runnable stopCommand, BooleanSupplier runningProbe) {
         Objects.requireNonNull(stopCommand, "stopCommand");

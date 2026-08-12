@@ -23,7 +23,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 
-/** Permet au joueur de sélectionner sa classe et son kit avant le départ. */
+/** Allows the player to select their class and kit before departure. */
 public class ClassKitSelectionMenu implements Listener {
 
     private static final int[] CLASS_SLOTS = {1, 3, 5, 7};
@@ -40,7 +40,7 @@ public class ClassKitSelectionMenu implements Listener {
         this.classMenuKey = new NamespacedKey(plugin, "class_menu_item");
     }
 
-    // Objet public placé dans la barre rapide du joueur
+    // Public item placed in the player's quickbar
 
     public ItemStack createSelectorItem(Player player) {
         return new ItemBuilder(Material.COMPASS)
@@ -73,8 +73,8 @@ public class ClassKitSelectionMenu implements Listener {
             inv.setItem(CLASS_SLOTS[i], classItem(classes[i], classes[i] == currentClass, enabled, player.getUniqueId()));
         }
 
-        // openInventory ferme le menu précédent et efface les suivis associés ;
-        // l'enregistrement du nouveau menu doit donc suivre cet appel.
+        // openInventory closes the previous menu and clears the associated tracking;
+        // the recording of the new menu must therefore follow this call.
         player.openInventory(inv);
         classMenuOpen.add(player.getUniqueId());
     }
@@ -94,7 +94,7 @@ public class ClassKitSelectionMenu implements Listener {
             inv.setItem(KIT_SLOTS[i], kitItem(kits[i], kits[i] == currentKit, enabled, player.getUniqueId()));
         }
 
-        // Même contrainte d'ordre : enregistre le suivi après openInventory.
+        // Same order constraint: saves tracking after openInventory.
         player.openInventory(inv);
         kitMenuOpen.put(player.getUniqueId(), playerClass);
     }

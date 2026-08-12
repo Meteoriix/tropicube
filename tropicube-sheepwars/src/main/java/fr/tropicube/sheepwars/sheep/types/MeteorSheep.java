@@ -9,7 +9,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-/** Mouton qui déclenche une frappe météorique sur la zone visée. */
+/** Sheep that triggers a meteor strike on the targeted area. */
 public class MeteorSheep extends AbstractSheep {
 
     public MeteorSheep() {
@@ -23,7 +23,7 @@ public class MeteorSheep extends AbstractSheep {
         sheep.getWorld().createExplosion(impact, impactPower, false, true, thrower);
         applyExplosionDamage(thrower, impact, impactPower);
 
-        // Fait pleuvoir 5 boules de feu autour de l'impact
+        // Rain 5 fireballs around the impact
         new BukkitRunnable() {
             int count = 0;
 

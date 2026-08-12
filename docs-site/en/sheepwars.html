@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Game design, rules, kits, and special sheep">
+  <meta name="theme-color" content="#2d1b6b">
+  <title>SheepWars · Tropicube</title>
+  <link rel="stylesheet" href="../styles.css?v=54e32bb45a59">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span><span><span class="brand-name-accent">Tropi</span>cube</span></a><a class="language-switch" href="../sheepwars.html" hreflang="fr">Français</a></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong><span class="brand-name-accent">Tropi</span>cube</strong><small>Network documentation</small></span></a>
+    <a class="language-switch" href="../sheepwars.html" hreflang="fr">Français</a>
+    <nav aria-label="Main documentation"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commands</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Deployment</span></a>
+<a class="nav-link active" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link" href="fallen-kingdoms.html"><span class="nav-icon">♜</span><span>Fallen Kingdoms</span></a>
+<a class="nav-link" href="fallen-kingdoms-technical-spec.html"><span class="nav-icon">⌘</span><span>FK technical</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Development</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changes</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="content" class="main">
+    <section class="hero"><div class="eyebrow">Official documentation</div><h1>SheepWars</h1><p>Game design, rules, kits, and special sheep</p></section>
+    <div class="content-grid">
+      <article class="documentation"><h2 id="overview">Overview<a class="heading-anchor" href="#overview" aria-label="Link to this section">#</a></h2>
+<p>SheepWars is a team PvP minigame played on opposing islands. Players fight with conventional weapons and throwable sheep that trigger special abilities. Tropicube uses a single-elimination round between red and blue: a team wins when the other team has no living participant. When time expires, the team with more survivors wins; equal survivor counts produce a draw.</p>
+<p>The implementation contains fifteen sheep types, three classes, nine kits, map voting, host-controlled custom games, Docker orchestration, four interface languages, reconnect support, replay matchmaking, and late-join spectators.</p>
+<h2 id="game-loop">Game loop<a class="heading-anchor" href="#game-loop" aria-label="Link to this section">#</a></h2>
+<ol><li>The instance waits while profiles, languages, kits, classes, teams, and map votes are loaded.</li><li>In a standard game, reaching the configured minimum starts the countdown automatically. A custom-game host may start manually or enable automatic start.</li><li>At match start, participants are assigned to shuffled team spawns and receive colored leather armor, a sword, an Infinity bow, one arrow, and one random special sheep.</li><li>Every living player receives another sheep at the configured interval. Members of the smaller team receive three additional sheep at the start.</li><li>Death is final for the round and changes the player to spectator mode.</li><li>Players joining after the match starts also become spectators. They have no team, cannot deal or receive game damage, and do not affect survivor counts or victory.</li><li>After the result screen, Velocity transfers everyone to a lobby and destroys the finished game container. A pre-created equivalent instance may be offered for replay.</li></ol>
+<p>Default values are a ten-second countdown, a 600-second match, and a twenty-second sheep distribution interval. Gameplay values remain configurable.</p>
+<h2 id="classes-and-kits">Classes and kits<a class="heading-anchor" href="#classes-and-kits" aria-label="Link to this section">#</a></h2>
+<p>Classes group kits by role; the selected kit provides the actual bonus.</p>
+<div class="table-scroll"><table><thead><tr><th>Class</th><th>Kit</th><th>Effect</th></tr></thead><tbody><tr><td>DPS</td><td>Swordsman</td><td>Sharpness I stone sword instead of a wooden sword</td></tr><tr><td>DPS</td><td>Archer</td><td>Power I in addition to Infinity</td></tr><tr><td>DPS</td><td>Death Shepherd</td><td>Sheep deal 50% more damage</td></tr><tr><td>Tank</td><td>Colossus</td><td>Four additional hearts</td></tr><tr><td>Tank</td><td>Anchor</td><td>80% knockback resistance</td></tr><tr><td>Tank</td><td>Steel Feather</td><td>80% less fall damage</td></tr><tr><td>Support</td><td>Breeder</td><td>Sheep have 40 health instead of 16</td></tr><tr><td>Support</td><td>Medic</td><td>Arrows heal teammates</td></tr><tr><td>Support</td><td>Acrobat</td><td>Permanent Jump Boost II</td></tr></tbody></table></div>
+<p>A host may disable classes or kits. Random-kit mode ignores personal selection and assigns an enabled kit at match start.</p>
+<h2 id="special-sheep">Special sheep<a class="heading-anchor" href="#special-sheep" aria-label="Link to this section">#</a></h2>
+<div class="table-scroll"><table><thead><tr><th>Sheep</th><th>Main behavior</th></tr></thead><tbody><tr><td>Boarding</td><td>Carries its thrower across the gap</td></tr><tr><td>TNT</td><td>Produces a strong explosion</td></tr><tr><td>Distortion</td><td>Animates and relocates blocks around impact</td></tr><tr><td>Darkness</td><td>Slows and blinds nearby enemies</td></tr><tr><td>Fire</td><td>Ignites enemies around impact</td></tr><tr><td>Poison</td><td>Creates a persistent poison area</td></tr><tr><td>Swap</td><td>Exchanges the thrower with a nearby target, or dashes without one</td></tr><tr><td>Meteor</td><td>Calls down a meteor shower</td></tr><tr><td>Searching</td><td>Pursues the nearest enemy</td></tr><tr><td>Healing</td><td>Heals the thrower and nearby allies</td></tr><tr><td>Lightning</td><td>Strikes a target and chains to nearby enemies</td></tr><tr><td>Gravity</td><td>Pulls enemies inward, then launches them upward</td></tr><tr><td>Mecha</td><td>Deploys a durable golem unit against the opposing team</td></tr><tr><td>Strength</td><td>Temporarily increases nearby allied damage</td></tr><tr><td>Fragmentation</td><td>Releases five secondary explosive sheep</td></tr></tbody></table></div>
+<p><code>default-settings.sheep-probabilities</code> controls relative weights. Each player owns an independent weighted draw deck. Tokens are consumed without replacement to smooth distribution, and consecutive duplicates are avoided whenever the configured weights permit it. Forced settings and host menus can disable individual types.</p>
+<h2 id="maps-and-teams">Maps and teams<a class="heading-anchor" href="#maps-and-teams" aria-label="Link to this section">#</a></h2>
+<p>A map defines a world, waiting lobby, void limit, and up to eight red plus eight blue spawns. Spawn lists are shuffled per match. A map cannot start when required locations are missing.</p>
+<p>Players may request a team during the waiting phase. The manager enforces balance and assigns a team automatically when needed. Team selection closes once play begins.</p>
+<p>Each viewer receives a personal scoreboard containing red, blue, and spectator teams. Entries use <code>PlayerProfile.getName()</code> rather than the historical Bukkit connection name, so <code>/nick</code> identities receive the correct nameplate, tablist, and glow color. Colored teams are installed before glow metadata is sent. Living teammates glow only for their own team; dead players and late arrivals appear gray as spectators.</p>
+<h2 id="custom-games-and-host-role">Custom games and host role<a class="heading-anchor" href="#custom-games-and-host-role" aria-label="Link to this section">#</a></h2>
+<p>Velocity atomically reserves <code>host-creation:&lt;uuid&gt;</code> before creating a custom instance, then records ownership with <code>host:&lt;uuid&gt;</code>. A player may own only one active or pending custom server.</p>
+<p>Before the match, the host can:</p>
+<ul><li>start or cancel the countdown;</li><li>change minimum and maximum players;</li><li>change countdown, duration, and sheep interval;</li><li>enable automatic start, random kits, and map voting;</li><li>enable or disable sheep, classes, and kits.</li></ul>
+<p>Automatic start defaults to off for custom games and on for standard games. Ownership remains until match completion, then is removed.</p>
+<h2 id="spectators-and-reconnects">Spectators and reconnects<a class="heading-anchor" href="#spectators-and-reconnects" aria-label="Link to this section">#</a></h2>
+<p><code>ServerInstance.Status.GAME_PLAYING</code> remains joinable while capacity is available. The lobby displays it as blue <code>PLAYING</code> and explains that clicking will spectate.</p>
+<p>When a player joins during <code>PLAYING</code>, SheepWars creates a non-living <code>GamePlayer</code> with no team, resets unsafe inventory and effects, teleports near an active participant when possible, and applies <code>GameMode.SPECTATOR</code>. Scoreboards and tablist show spectator state. The player remains included for end-of-game transfer but excluded from team lists, sheep distribution, combat, and victory checks.</p>
+<p>The lobby command <code>/sw join</code> uses <code>sw:left-game:&lt;uuid&gt;</code> for five minutes. Rejoining an active match follows the same spectator path; a disconnected living participant is eliminated before removal.</p>
+<h2 id="interface-and-languages">Interface and languages<a class="heading-anchor" href="#interface-and-languages" aria-label="Link to this section">#</a></h2>
+<p>All actions use hotbar items and inventory menus; the SheepWars Paper plugin declares no dedicated command. The sidebar shows state, survivor counts, personal team or spectator mode, kills, time, and end-of-game statistics. The tablist displays team colors, survivor counts, timer, or spectator status.</p>
+<p>Player-facing messages come from TropicubeCore and exist in French, English, German, and Spanish.</p>
+<h2 id="configuration">Configuration<a class="heading-anchor" href="#configuration" aria-label="Link to this section">#</a></h2>
+<p>The source file is <code>tropicube-sheepwars/src/main/resources/config.yml</code>. Main sections are:</p>
+<ul><li><code>redis</code>;</li><li><code>default-settings</code>;</li><li><code>custom-game-default-settings</code>;</li><li><code>force-settings</code>;</li><li><code>locations</code>.</li></ul>
+<p>At deployment, <code>INSTANCE_ID</code>, <code>SERVER_NAME</code>, <code>IS_HOST</code>, and <code>HOST_UUID</code> connect the Paper plugin to Velocity orchestration.</p>
+<h2 id="state-and-cleanup">State and cleanup<a class="heading-anchor" href="#state-and-cleanup" aria-label="Link to this section">#</a></h2>
+<p>The explicit game states are <code>WAITING</code>, <code>STARTING</code>, <code>PLAYING</code>, <code>ENDING</code>, and <code>ENDED</code>. Transitions publish corresponding <code>ServerInstance</code> states to Redis. Scheduled countdown, game tick, and sheep-distribution tasks are retained and cancelled on transition or shutdown. Late events cannot restart an ended match.</p>
+<p>After the result delay, SheepWars writes replay markers and sends <code>PROXY:FINISH_GAME:&lt;instanceId&gt;</code>. Velocity transfers players, retries lobby selection when required, unregisters the backend, removes the container and anonymous volumes, and clears Redis state.</p>
+<p>See <a href="deployment.html">Deployment</a> and <a href="configuration.html">Configuration</a> for maps, images, templates, and operational setup.</p></article>
+      <aside class="page-toc" aria-label="On this page"><span class="toc-title">On this page</span><a class="toc-level-2" href="#overview">Overview</a><a class="toc-level-2" href="#game-loop">Game loop</a><a class="toc-level-2" href="#classes-and-kits">Classes and kits</a><a class="toc-level-2" href="#special-sheep">Special sheep</a><a class="toc-level-2" href="#maps-and-teams">Maps and teams</a><a class="toc-level-2" href="#custom-games-and-host-role">Custom games and host role</a><a class="toc-level-2" href="#spectators-and-reconnects">Spectators and reconnects</a><a class="toc-level-2" href="#interface-and-languages">Interface and languages</a><a class="toc-level-2" href="#configuration">Configuration</a><a class="toc-level-2" href="#state-and-cleanup">State and cleanup</a></aside>
+    </div>
+    <footer><span><span class="brand-name-accent">Tropi</span>cube</span><span>Static documentation generated from Markdown files</span></footer>
+  </main>
+</body>
+</html>

@@ -10,7 +10,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 
-/** Charge et sauvegarde les statistiques SheepWars persistées dans MySQL. */
+/** Loads and saves persisted SheepWars statistics in MySQL. */
 public class PlayerDataManager {
 
     public record SheepwarsPlayerProfile(UUID uuid, String username, PlayerKit kit) {}

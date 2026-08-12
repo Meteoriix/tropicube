@@ -122,6 +122,7 @@ commands:
 sw:
   # addPlayer
   game-already-started: "<red>A game is already in progress."
+  spectator-joined: "<aqua>You joined the game as a spectator."
   arena-not-ready: "<red>The arena is not configured."
   game-full: "<red>The game is full! Try again soon 🌊"
   # Broadcasts
@@ -263,6 +264,7 @@ sw:
   sb-red: "<red>Red: <white>{0}"
   sb-blue: "<blue>Blue: <white>{0}"
   sb-your-team: "<yellow>Your team: {0}"
+  sb-spectator: "<gray>Mode: <white>Spectator"
   sb-kills: "<yellow>Kills: <white>{0}"
   sb-time: "<gray>Time: <white>{0}"
   sb-ending: "<yellow>Game over!"
@@ -270,6 +272,7 @@ sw:
   sb-team-blue: "<blue>Blue"
   tab-header: "\n<aqua><b>SheepWars</b></aqua> <dark_gray>│</dark_gray> <gray>Tropicube\n"
   tab-footer: "\n<gray>Team: <white>{0}</white>  <dark_gray>│</dark_gray>  <red>Reds: <white>{1}</white></red>  <dark_gray>│</dark_gray>  <blue>Blues: <white>{2}</white></blue>  <dark_gray>│</dark_gray>  <yellow>⏱ <white>{3}</white></yellow>\n"
+  tab-footer-spectator: "\n<gray>Spectator  <dark_gray>│</dark_gray>  <red>Reds: <white>{0}</white></red>  <dark_gray>│</dark_gray>  <blue>Blues: <white>{1}</white></blue>  <dark_gray>│</dark_gray>  <yellow>⏱ <white>{2}</white></yellow>\n"
   # Team selection
   team-selector-name: "<gold>Team"
   team-selector-lore: "<gray>Right-click to choose your team"
@@ -373,9 +376,11 @@ lobby:
   server-players: "<gray>Players: <white>{0}<gray>/<white>{1}"
   server-template: "<gray>Template: <yellow>{0}"
   server-status-online: "<green>ONLINE"
+  server-status-playing: "<blue>PLAYING"
   server-status-full: "<red>FULL"
   server-status-starting: "<gold>STARTING"
   server-click-join: "<green>▶ Click to join! 🌴"
+  server-click-spectate: "<blue>▶ Click to spectate the game!"
   server-click-full: "<red>⚠ Server full."
   server-click-full2: "<gray>Join the queue with <yellow>/queue {0}"
   server-click-starting: "<gold>⧗ Server is starting up..."

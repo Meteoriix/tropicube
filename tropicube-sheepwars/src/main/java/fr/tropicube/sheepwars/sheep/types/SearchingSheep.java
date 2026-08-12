@@ -14,7 +14,7 @@ import org.bukkit.util.Vector;
 import java.util.Comparator;
 import java.util.UUID;
 
-/** Mouton à tête chercheuse qui poursuit une cible ennemie. */
+/** Homing sheep pursuing an enemy target. */
 public class SearchingSheep extends AbstractSheep {
 
     private static final int WAIT_TICKS = 160;   // 8 seconds scanning phase
@@ -29,13 +29,13 @@ public class SearchingSheep extends AbstractSheep {
 
     @Override
     public boolean onImpact(Player thrower, Sheep sheep) {
-        // Immobilise le mouton pendant la recherche de cible.
+        // Keep the sheep stationary while it searches for a target.
         sheep.setGravity(false);
         sheep.setAware(false);
         sheep.setInvulnerable(true);
         sheep.setVelocity(new org.bukkit.util.Vector(0, 0, 0));
 
-        // Neutralise les dégâts de chute pendant la poursuite.
+        // Neutralizes fall damage while chasing.
         FallDamageBlocker blocker = new FallDamageBlocker(sheep.getUniqueId());
         plugin.getServer().getPluginManager().registerEvents(blocker, plugin);
 
@@ -59,7 +59,7 @@ public class SearchingSheep extends AbstractSheep {
                     return;
                 }
 
-                // Fait pulser la couleur et recherche une cible toutes les cinq ticks.
+                // Pulses the color and searches for a target every five ticks.
                 if (!pursuing) {
                     if (ticks % 5 == 0) {
                         sheep.setColor(ticks % 10 < 5 ? DyeColor.LIME : DyeColor.WHITE);
@@ -81,7 +81,7 @@ public class SearchingSheep extends AbstractSheep {
                     }
 
                     if (ticks >= WAIT_TICKS) {
-                        // Explose lorsque la recherche expire sans cible.
+        // Explode when the search expires without a target.
                         explodeAt(thrower, sheep);
                         org.bukkit.event.HandlerList.unregisterAll(blocker);
                         cancel();
@@ -101,7 +101,7 @@ public class SearchingSheep extends AbstractSheep {
                     Vector toTarget = target.getLocation().toVector().subtract(sheepLoc.toVector());
                     double hDist = Math.sqrt(toTarget.getX() * toTarget.getX() + toTarget.getZ() * toTarget.getZ());
 
-                    // Suit le déplacement horizontal pour détecter un blocage au bord du vide.
+                    // Follows the horizontal movement to detect a blockage at the edge of the void.
                     double movedH = Math.sqrt(Math.pow(sheepLoc.getX() - lastX, 2) + Math.pow(sheepLoc.getZ() - lastZ, 2));
                     lastX = sheepLoc.getX();
                     lastZ = sheepLoc.getZ();
@@ -110,13 +110,13 @@ public class SearchingSheep extends AbstractSheep {
                         // Direct velocity control — pathfinder is disabled
                         descentTicks++;
                         if (yDiff >= -1.0 || descentTicks > 80) {
-                            // Rend le contrôle au pathfinder après la descente ou son expiration.
+                            // Returns control to the pathfinder after descent or expiration.
                             descending = false;
                             descentTicks = 0;
                             stuckTicks = 0;
                             sheep.setAware(true);
                         } else {
-                            // Accélère horizontalement vers la cible et verticalement vers le bas.
+                            // Accelerates horizontally towards the target and vertically downwards.
                             if (hDist > 0.3) {
                                 Vector vel = sheep.getVelocity();
                                 double downVel = Math.max(vel.getY() - 0.10, -0.65);
@@ -184,7 +184,7 @@ public class SearchingSheep extends AbstractSheep {
     }
 
     /**
-     * Bloque les dégâts de chute du mouton chercheur pendant sa poursuite.
+     * Blocks falling damage from the Seeking Sheep while chasing.
      */
         private record FallDamageBlocker(UUID sheepId) implements Listener {
 

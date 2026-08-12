@@ -5,7 +5,7 @@ import com.velocitypowered.api.proxy.Player;
 import fr.tropicube.velocity.managers.TropiServerManager;
 import fr.tropicube.velocity.managers.VelocityLanguageManager;
 
-/** Transfère un joueur vers le lobby disponible le moins chargé. */
+/** Transfers a player to the least busy available lobby. */
 public class HubCommand implements SimpleCommand {
     private final TropiServerManager manager;
     private final VelocityLanguageManager lm;

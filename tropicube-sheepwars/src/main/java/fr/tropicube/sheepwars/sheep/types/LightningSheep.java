@@ -8,7 +8,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
 
-/** Mouton qui frappe les ennemis proches à l'aide d'éclairs. */
+/** Sheep that strikes nearby enemies with lightning. */
 public class LightningSheep extends AbstractSheep {
 
     public LightningSheep() {

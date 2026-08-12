@@ -9,7 +9,7 @@ redis:
   password: ""
 
 # Surcharge possible : TROPICUBE_DB_HOST, TROPICUBE_DB_PORT, TROPICUBE_DB_NAME,
-# TROPICUBE_DB_USER et TROPICUBE_DB_PASSWORD
+# TROPICUBE_DB_USER and TROPICUBE_DB_PASSWORD
 database:
   host: "mysql"
   port: 3306
@@ -28,11 +28,11 @@ language:
   default: "fr"
 
 # ──────────────────────────────────────────────────────────────────────────────
-#  Grades — définit tous les grades du réseau.
-#  Ces valeurs sont synchronisées dans la base de données à chaque démarrage
-#  (INSERT … ON DUPLICATE KEY UPDATE), donc les modifications ici s'appliquent
-#  au redémarrage. Les changements effectués via /tropiperm grade en jeu sont
-#  écrasés au prochain redémarrage.
+# Ranks — defines all ranks in the network.
+# These values ​​are synchronized into the database at each startup
+# (INSERT … ON DUPLICATE KEY UPDATE), so changes here apply
+# we reboot. Changes made via /tropiperm grade in game are
+# overwritten on the next reboot.
 # ──────────────────────────────────────────────────────────────────────────────
 grades:
   JOUEUR:

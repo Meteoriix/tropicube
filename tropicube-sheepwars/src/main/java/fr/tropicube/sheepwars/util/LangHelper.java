@@ -11,7 +11,7 @@ import org.bukkit.plugin.Plugin;
 import java.util.UUID;
 
 /**
- * Point d'accès typé au service de traduction partagé par TropicubeCore.
+ * Typed access point to the translation service shared by TropicubeCore.
  */
 public final class LangHelper {
 

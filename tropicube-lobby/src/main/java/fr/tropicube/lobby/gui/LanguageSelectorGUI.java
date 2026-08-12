@@ -19,20 +19,20 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Menu de sélection de la langue du joueur.
- * Utilise le LanguageManager du tropicube-core pour persister le choix.
+ * Player language selection menu.
+ * Uses the tropicube-core LanguageManager to persist the choice.
  */
 public class LanguageSelectorGUI {
 
-    /** Slot du bouton "fermer". */
+    /** “Close” button slot. */
     public static final int CLOSE_SLOT = 22;
 
     private static final int SIZE = 27;
 
-    // Slots centrés sur la 2e ligne (rangée du milieu d'un inventaire 27 cases)
+    // Slots centered on the 2nd row (middle row of a 27-square inventory)
     private static final int[] LANG_SLOTS = {10, 12, 14, 16};
 
-    /** Entrées chargées au premier affichage ; {@code null} signifie « non initialisé ». */
+    /** Entries loaded on first display; {@code null} means “uninitialized”. */
     private static volatile List<LanguageEntry> LANGUAGES = null;
 
     private static List<LanguageEntry> getLanguages() {
@@ -63,8 +63,8 @@ public class LanguageSelectorGUI {
     }
 
     /**
-     * Holder marker : permet au listener d'identifier cet inventaire de façon fiable
-     * via instanceof, sans dépendre du titre ni de la map GuiManager seule.
+     * Holder marker: allows the listener to reliably identify this inventory
+     * via instanceof, without depending on the title or the GuiManager map alone.
      */
     public static final class Holder implements InventoryHolder {
         private Inventory inventory;
@@ -82,11 +82,11 @@ public class LanguageSelectorGUI {
         Inventory inv = Bukkit.createInventory(holder, SIZE, LangHelper.component(player, "lobby.lang-selector-title"));
         holder.setInventory(inv);
 
-        // Fond décoratif
+        // Decorative background
         for (int i = 0; i < SIZE; i++)
             inv.setItem(i, new ItemBuilder(Material.LIGHT_BLUE_STAINED_GLASS_PANE).name(" ").build());
 
-        // Icônes de langue
+        // Language icons
         List<LanguageEntry> langs = getLanguages();
         for (int i = 0; i < langs.size() && i < LANG_SLOTS.length; i++) {
             LanguageEntry lang = langs.get(i);
@@ -106,7 +106,7 @@ public class LanguageSelectorGUI {
         return inv;
     }
 
-    /** @return le code de langue correspondant au slot cliqué, ou null si aucun. */
+    /** @return the language code corresponding to the clicked slot, or null if none. */
     public static String getLangForSlot(int slot) {
         List<LanguageEntry> langs = getLanguages();
         for (int i = 0; i < LANG_SLOTS.length; i++) {

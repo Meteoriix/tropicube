@@ -7,35 +7,35 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Représente un template de serveur Minecraft utilisé pour créer des conteneurs Docker.
+ * Represents a Minecraft server template used to create Docker containers.
  * <p>
- * Un template est la "recette" à partir de laquelle une ou plusieurs {@code ServerInstance}
- * sont instanciées. Il définit l'image Docker, les ressources allouées, les règles de
- * démarrage/arrêt automatique et les limites du nombre d'instances simultanées.
+ * A template is the "recipe" from which one or more {@code ServerInstance}
+ * are instantiated. It defines the Docker image, the allocated resources, the rules of
+ * auto start/stop and limits on the number of concurrent instances.
  * <p>
- * Les templates sont typiquement chargés depuis une base de données ou un fichier de
- * configuration, puis stockés dans Redis pour être accessibles à tous les services.
+ * Templates are typically loaded from a database or file.
+ * configuration, then stored in Redis to be accessible to all services.
  */
 public class ServerTemplate {
 
     /**
-     * Identifiant unique du template (ex. "lobby", "survival-1").
+     * Unique identifier of the template (e.g. "lobby", "survival-1").
      */
     private String id;
 
     /**
-     * Nom lisible du template, affiché dans les interfaces d'administration.
+     * Readable name of the template, displayed in the administration interfaces.
      */
     private String name;
 
     /**
-     * Image Docker utilisée pour créer les conteneurs (ex. "tropicube/paper:1.21").
+     * Docker image used to create the containers (e.g. "tropicube/paper:1.21").
      */
     private String dockerImage;
 
     /**
-     * Catégorie du serveur, utilisée pour le routage et l'affichage.
-     * Valeurs typiques : LOBBY, SURVIVAL, MINIGAME, CREATIVE, PROXY…
+     * Server category, used for routing and display.
+     * Typical values: LOBBY, SURVIVAL, MINIGAME, CREATIVE, PROXY…
      */
     private String serverType;
 
@@ -47,82 +47,82 @@ public class ServerTemplate {
     private int maxPort;
 
     /**
-     * Nombre maximum de joueurs acceptés par instance.
+     * Maximum number of players accepted per instance.
      */
     private int maxPlayers;
 
     /**
-     * Mémoire RAM minimale allouée au conteneur (en Mo, correspond à -Xms de la JVM).
+     * Minimum RAM memory allocated to the container (in MB, corresponds to -Xms of the JVM).
      */
     private int minRam;
 
     /**
-     * Mémoire RAM maximale allouée au conteneur (en Mo, correspond à -Xmx de la JVM).
+     * Maximum RAM memory allocated to the container (in MB, corresponds to -Xmx of the JVM).
      */
     private int maxRam;
 
     /**
-     * Si true, une instance est automatiquement créée et démarrée
-     * dès que le nombre d'instances actives passe en dessous de {@link #minInstances}.
+     * If true, an instance is automatically created and started
+     * as soon as the number of active instances drops below {@link #minInstances}.
      */
     private boolean autoStart;
 
     /**
-     * Si true, une instance vide est automatiquement arrêtée
-     * après {@link #autoStopDelay} secondes d'inactivité.
+     * If true, an empty instance is automatically stopped
+     * after {@link #autoStopDelay} seconds of inactivity.
      */
     private boolean autoStop;
 
     /**
-     * Délai en secondes avant l'arrêt automatique d'une instance vide.
-     * N'a d'effet que si {@link #autoStop} est activé.
-     * Valeur par défaut : 120 secondes.
+     * Delay in seconds before automatically shutting down an empty instance.
+     * Only has effect if {@link #autoStop} is enabled.
+     * Default: 120 seconds.
      */
     private int autoStopDelay;
 
     /**
-     * Variables d'environnement injectées dans le conteneur Docker au démarrage.
-     * Clé = nom de la variable, Valeur = valeur de la variable.
-     * Ex. : {"SERVER_NAME" → "Lobby #1", "EULA" → "true"}
+     * Environment variables injected into the Docker container on startup.
+     * Key = variable name, Value = variable value.
+     * Example: {"SERVER_NAME" → "Lobby #1", "EULA" → "true"}
      */
     private Map<String, String> environmentVariables;
 
     /**
-     * Liste des montages de volumes Docker au format "source:destination".
+     * List of Docker volume mounts in "source:destination" format.
      * Ex. : ["/data/maps:/minecraft/maps", "/data/plugins:/minecraft/plugins"]
      */
     private List<String> volumes;
 
     /**
-     * Nombre minimum d'instances actives à maintenir en permanence.
-     * L'auto-start s'appuie sur cette valeur pour créer des instances à l'avance.
-     * Valeur par défaut : 0.
+     * Minimum number of active instances to maintain at all times.
+     * Auto-start relies on this value to create instances in advance.
+     * Default value: 0.
      */
     private int minInstances;
 
     /**
-     * Nombre maximum d'instances simultanées autorisées pour ce template.
-     * Toute demande de création au-delà de cette limite sera refusée.
-     * Valeur par défaut : 10.
+     * Maximum number of simultaneous instances allowed for this template.
+     * Any creation request beyond this limit will be refused.
+     * Default value: 10.
      */
     private int maxInstances;
 
     /**
-     * Si true, le serveur est en maintenance : les joueurs ne peuvent pas le rejoindre.
-     * Les administrateurs peuvent toutefois y accéder selon la logique métier.
+     * If true, the server is under maintenance: players cannot join it.
+     * However, administrators can access it based on business logic.
      */
     private boolean maintenanceMode;
 
     /**
-     * Si false, le template est désactivé : aucune nouvelle instance ne peut être créée.
-     * Permet de retirer un template de la rotation sans le supprimer.
-     * Valeur par défaut : true.
+     * If false, the template is disabled: no new instances can be created.
+     * Allows you to remove a template from rotation without deleting it.
+     * Default value: true.
      */
     private boolean enabled = true;
 
     /**
-     * Constructeur par défaut.
-     * Initialise les collections et applique les valeurs par défaut :
+     * Default constructor.
+     * Initializes the collections and applies the default values:
      * <ul>
      *   <li>{@code autoStopDelay} = 120 secondes</li>
      *   <li>{@code minInstances} = 0</li>
@@ -284,9 +284,9 @@ public class ServerTemplate {
     }
 
     /**
-     * Vérifie que le template peut être utilisé pour créer un conteneur.
+     * Verifies that the template can be used to create a container.
      *
-     * @throws IllegalStateException si une valeur obligatoire ou une limite est invalide
+     * @throws IllegalStateException if a mandatory value or limit is invalid
      */
     public void validate() {
         requireNonBlank(id, "id");
@@ -333,8 +333,8 @@ public class ServerTemplate {
     }
 
     /**
-     * Représentation textuelle concise du template, utile pour les logs.
-     * Exemple : {@code ServerTemplate{id='lobby', name='Lobby', type='LOBBY', image='tropicube/paper:1.21'}}
+     * Concise textual representation of the template, useful for logs.
+     * Example: {@code ServerTemplate{id='lobby', name='Lobby', type='LOBBY', image='tropicube/paper:1.21'}}
      */
     @Override
     public String toString() {

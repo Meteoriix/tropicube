@@ -10,13 +10,13 @@ redis:
 language:
   default: "fr"
 
-# Supprime les serveurs dynamiques et leurs volumes anonymes à l'arrêt du proxy.
-# Mettre à false uniquement pour conserver les parties pendant un redéploiement de Velocity.
+# Deletes dynamic servers and their anonymous volumes when the proxy is stopped.
+# Set to false only to preserve games during a Velocity redeploy.
 shutdown:
   stop-dynamic-servers: true
 
 health-check:
-  # Une instance prête est sondée fréquemment et purgée après une minute sans succès.
+  # A ready instance is polled frequently and purged after a minute without success.
   interval-seconds: 10
   stale-timeout-seconds: 60
   connect-timeout-millis: 2000
@@ -30,7 +30,7 @@ docker:
   rcon-port-range-start: 25701
   rcon-port-range-end: 25801
   rcon-password: "${CFG_RCON_PASSWORD}"
-  # Chemin absolu du projet sur l'hôte Docker (utilisé pour résoudre les volumes relatifs)
+  # Absolute path of the project on the Docker host (used to resolve relative volumes)
   base-path: ""
 
 admin-uuids:
@@ -39,15 +39,15 @@ admin-uuids:
   - "62a69a13-11bc-4b74-9c19-5d0a5253af2d" # Flashoune
 
 # =====================================================
-#  Système de nick (/nick)
-#  skin-uuids : UUIDs Mojang supplémentaires utilisés
-#  comme source de skin aléatoire (sans tirets ou avec).
-#  Notch, jeb_ et Dinnerbone sont inclus par défaut.
+# Nick system (/nick)
+# skin-uuids: Additional Mojang UUIDs used
+# as a random skin source (without dashes or with).
+# Notch, jeb_ and Dinnerbone are included by default.
 # =====================================================
 nick:
-  # Grades autorisés à utiliser /nick (les grades staff sont inclus explicitement).
+  # Ranks allowed to use /nick (staff ranks are included explicitly).
   allowed-grades: ["PREMIUM", "HELPER", "MODERATEUR", "ADMIN", "OWNER"]
-  # UUIDs Mojang supplémentaires pour le pool de skins aléatoires.
+  # Additional Mojang UUIDs for the random skin pool.
   skin-uuids:
     - "96ac1c5a-de96-4556-9763-46011a868496"
     - "2398bc2f-6915-4048-8b48-999cdd4b1cb2"
@@ -55,16 +55,16 @@ nick:
     - "bbfc1ab2-f8b6-450d-ad6e-2a1169de59fb"
 
 # =====================================================
-#  Templates de serveurs
+# Server templates
 #  type: LOBBY | SHEEPWARS ...
 #
-#  Variables injectées AUTOMATIQUEMENT par DockerManager
-#  (ne pas les redéfinir ici sauf pour override intentionnel) :
+# Variables injected AUTOMATICALLY by DockerManager
+# (do not redefine them here except for intentional override):
 #    EULA, SERVER_NAME, INSTANCE_ID,
-#    MAX_PLAYERS  ← depuis max-players
-#    MEMORY       ← depuis ram-min  (ex. "1024M")
-#    MAX_MEMORY   ← depuis ram-max  (ex. "2048M")
-#    ENABLE_RCON, RCON_PORT, RCON_PASSWORD  ← depuis docker.rcon-*
+# MAX_PLAYERS ← from max-players
+# MEMORY ← from ram-min (ex. "1024M")
+# MAX_MEMORY ← from ram-max (e.g. "2048M")
+# ENABLE_RCON, RCON_PORT, RCON_PASSWORD ← from docker.rcon-*
 # =====================================================
 templates:
 
@@ -79,7 +79,7 @@ templates:
     ram-min: 1024
     ram-max: 2048
     auto-start: true
-    # Les instances vides s'arrêtent automatiquement après auto-stop-delay secondes.
+    # Empty instances automatically stop after auto-stop-delay seconds.
     auto-stop: true
     auto-stop-delay: 300
     min-instances: 1
@@ -89,11 +89,11 @@ templates:
       VERSION: "26.2"
       DIFFICULTY: "peaceful"
       SPAWN_PROTECTION: "0"
-      # Désactiver le mode en ligne : Velocity gère l'authentification (modern forwarding).
+      # Disable online mode: Velocity manages authentication (modern forwarding).
       ONLINE_MODE: "false"
-      # Nécessaire pour que le double-saut fonctionne (le serveur autorise le vol côté Paper).
+      # Necessary for double-jumping to work (the server allows paper-side flight).
       ALLOW_FLIGHT: "true"
-      # Réappliquer les env vars sur server.properties à chaque démarrage.
+      # Reapply env vars on server.properties on every startup.
       OVERRIDE_SERVER_PROPERTIES: "true"
       USE_AIKAR_FLAGS: "true"
       VIEW_DISTANCE: "10"
@@ -124,7 +124,7 @@ templates:
     ram-min: 1024
     ram-max: 2048
     auto-start: true
-    # Les instances vides s'arrêtent automatiquement après auto-stop-delay secondes.
+    # Empty instances automatically stop after auto-stop-delay seconds.
     auto-stop: true
     auto-stop-delay: 300
     min-instances: 1
@@ -134,9 +134,9 @@ templates:
       VERSION: "26.2"
       DIFFICULTY: "peaceful"
       SPAWN_PROTECTION: "0"
-      # Désactiver le mode en ligne : Velocity gère l'authentification (modern forwarding).
+      # Disable online mode: Velocity manages authentication (modern forwarding).
       ONLINE_MODE: "false"
-      # Réappliquer les env vars sur server.properties à chaque démarrage.
+      # Reapply env vars on server.properties on every startup.
       OVERRIDE_SERVER_PROPERTIES: "true"
       USE_AIKAR_FLAGS: "true"
       VIEW_DISTANCE: "8"

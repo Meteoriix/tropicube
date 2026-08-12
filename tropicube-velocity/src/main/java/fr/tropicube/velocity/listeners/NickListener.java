@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-/** Applique les informations de pseudonyme et de skin lors des connexions au proxy. */
+/** Applies nickname and skin information during proxy connections. */
 public class NickListener {
 
     private final NickManager nickManager;
@@ -27,7 +27,7 @@ public class NickListener {
         GameProfile original = event.getOriginalProfile();
         UUID        uuid     = original.getId();
 
-        // Conserve le profil Mojang réel pour permettre une restauration transparente.
+        // Retains the actual Mojang profile to enable seamless recovery.
         for (GameProfile.Property p : original.getProperties()) {
             if ("textures".equals(p.getName())) {
                 nickManager.storeOriginalProfile(uuid, original.getName(), p);
@@ -35,7 +35,7 @@ public class NickListener {
             }
         }
 
-        // Applique l'identité active lors de la connexion initiale ou d'un retour rapide.
+        // Applies the active identity during initial login or quick return.
         nickManager.getNick(uuid).ifPresent(nickData -> {
             List<GameProfile.Property> props = new ArrayList<>();
             for (GameProfile.Property p : original.getProperties()) {
@@ -47,7 +47,7 @@ public class NickListener {
                 nickData.skin().signature()
             ));
             event.setGameProfile(new GameProfile(uuid, nickData.nickName(), props));
-            // Restaure la durée de vie complète après une reconnexion rapide.
+            // Restores full life after quick reconnection.
             nickManager.refreshNickTtl(uuid);
             logger.debug("[Nick] Applied nick '{}' at login for '{}'", nickData.nickName(), original.getName());
         });
@@ -57,8 +57,8 @@ public class NickListener {
     public void onDisconnect(DisconnectEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
         if (nickManager.getNick(uuid).isPresent()) {
-            // Conserve l'identité 30 secondes pour absorber une reconnexion rapide.
-            // Les backends nettoient l'affichage à la déconnexion et le réappliquent au retour.
+            // Retains identity for 30 seconds to absorb rapid reconnection.
+            // The backends clean the display on logout and reapply it on return.
             nickManager.parkNick(uuid);
             nickManager.publishNickReset(uuid);
         } else {

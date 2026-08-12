@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Functional and technical project history">
+  <meta name="theme-color" content="#2d1b6b">
+  <title>Changelog · Tropicube</title>
+  <link rel="stylesheet" href="../styles.css?v=54e32bb45a59">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span><span><span class="brand-name-accent">Tropi</span>cube</span></a><a class="language-switch" href="../changelog.html" hreflang="fr">Français</a></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong><span class="brand-name-accent">Tropi</span>cube</strong><small>Network documentation</small></span></a>
+    <a class="language-switch" href="../changelog.html" hreflang="fr">Français</a>
+    <nav aria-label="Main documentation"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commands</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Deployment</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link" href="fallen-kingdoms.html"><span class="nav-icon">♜</span><span>Fallen Kingdoms</span></a>
+<a class="nav-link" href="fallen-kingdoms-technical-spec.html"><span class="nav-icon">⌘</span><span>FK technical</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Development</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link active" href="changelog.html"><span class="nav-icon">≡</span><span>Changes</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="content" class="main">
+    <section class="hero"><div class="eyebrow">Official documentation</div><h1>Changelog</h1><p>Functional and technical project history</p></section>
+    <div class="content-grid">
+      <article class="documentation"><p>This document records functional, technical, and operational changes. Entries are grouped under <strong>Unreleased</strong> until a version is published.</p>
+<h2 id="unreleased">Unreleased<a class="heading-anchor" href="#unreleased" aria-label="Link to this section">#</a></h2>
+<h3 id="added">Added<a class="heading-anchor" href="#added" aria-label="Link to this section">#</a></h3>
+<ul><li>Bilingual French/English Markdown documentation and static site, with a page-preserving language switch.</li><li>Blue <code>PLAYING</code> server presentation for active SheepWars matches.</li><li>Late-join SheepWars spectator mode: no team assignment and no effect on victory conditions.</li></ul>
+<h3 id="changed">Changed<a class="heading-anchor" href="#changed" aria-label="Link to this section">#</a></h3>
+<ul><li>SheepWars scoreboard teams now use the profile name actually visible to the client, including active nicknames.</li><li>Team entries are installed before glow metadata, and tablist names are colored explicitly for participants and spectators.</li></ul>
+<h3 id="fixed">Fixed<a class="heading-anchor" href="#fixed" aria-label="Link to this section">#</a></h3>
+<ul><li>The fake <code>/nick</code> display grade is persisted in the Redis identity and restored after reconnecting; legacy payloads remain compatible and default to <code>PREMIUM</code>.</li><li>Nickname profile changes no longer leave SheepWars tablist entries under the historical Bukkit name, which could produce white glowing and incorrect team colors.</li><li>Lobby recognition now matches the published <code>GAME_PLAYING</code> status instead of checking only the unused <code>PLAYING</code> spelling.</li><li><code>/nick</code> grade cache, concurrent requests, invalid arguments, <code>/nick off</code>, and multi-backend cleanup remain protected by the previous fixes.</li><li>SheepWars distribution, lobby instance visibility, orchestration stop handling, anonymous-volume cleanup, and documentation cache invalidation include their previously released regressions fixes.</li></ul>
+<h3 id="documentation">Documentation<a class="heading-anchor" href="#documentation" aria-label="Link to this section">#</a></h3>
+<ul><li>Architecture, commands, configuration, deployment, game design, development, Git/CI, and changelog are available in both languages.</li></ul></article>
+      <aside class="page-toc" aria-label="On this page"><span class="toc-title">On this page</span><a class="toc-level-2" href="#unreleased">Unreleased</a><a class="toc-level-3" href="#added">Added</a><a class="toc-level-3" href="#changed">Changed</a><a class="toc-level-3" href="#fixed">Fixed</a><a class="toc-level-3" href="#documentation">Documentation</a></aside>
+    </div>
+    <footer><span><span class="brand-name-accent">Tropi</span>cube</span><span>Static documentation generated from Markdown files</span></footer>
+  </main>
+</body>
+</html>

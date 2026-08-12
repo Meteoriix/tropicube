@@ -1,0 +1,28 @@
+# Changelog
+
+This document records functional, technical, and operational changes. Entries are grouped under **Unreleased** until a version is published.
+
+## Unreleased
+
+### Added
+
+- Bilingual French/English Markdown documentation and static site, with a page-preserving language switch.
+- Blue `PLAYING` server presentation for active SheepWars matches.
+- Late-join SheepWars spectator mode: no team assignment and no effect on victory conditions.
+
+### Changed
+
+- SheepWars scoreboard teams now use the profile name actually visible to the client, including active nicknames.
+- Team entries are installed before glow metadata, and tablist names are colored explicitly for participants and spectators.
+
+### Fixed
+
+- The fake `/nick` display grade is persisted in the Redis identity and restored after reconnecting; legacy payloads remain compatible and default to `PREMIUM`.
+- Nickname profile changes no longer leave SheepWars tablist entries under the historical Bukkit name, which could produce white glowing and incorrect team colors.
+- Lobby recognition now matches the published `GAME_PLAYING` status instead of checking only the unused `PLAYING` spelling.
+- `/nick` grade cache, concurrent requests, invalid arguments, `/nick off`, and multi-backend cleanup remain protected by the previous fixes.
+- SheepWars distribution, lobby instance visibility, orchestration stop handling, anonymous-volume cleanup, and documentation cache invalidation include their previously released regressions fixes.
+
+### Documentation
+
+- Architecture, commands, configuration, deployment, game design, development, Git/CI, and changelog are available in both languages.

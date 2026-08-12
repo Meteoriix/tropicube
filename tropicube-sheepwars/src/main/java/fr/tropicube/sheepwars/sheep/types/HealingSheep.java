@@ -14,7 +14,7 @@ import org.bukkit.util.Vector;
 
 import java.util.Objects;
 
-/** Mouton de soutien qui soigne les alliés dans sa zone. */
+/** Support sheep that heals allies in its area. */
 public class HealingSheep extends AbstractSheep {
 
     public HealingSheep() {

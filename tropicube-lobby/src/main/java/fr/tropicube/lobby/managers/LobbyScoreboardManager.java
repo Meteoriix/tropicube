@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** Construit et actualise le scoreboard personnel affiché dans le lobby. */
+/** Builds and updates the personal scoreboard displayed in the lobby. */
 public class LobbyScoreboardManager {
 
     private final TropicubeLobby plugin;

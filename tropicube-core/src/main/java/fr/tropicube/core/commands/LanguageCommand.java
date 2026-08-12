@@ -9,7 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 // /lang [code]
-/** Consulte ou change la langue persistée du joueur. */
+/** View or change the player's persistent language. */
 public class LanguageCommand implements CommandExecutor {
     private final TropicubeCore plugin;
     public LanguageCommand(TropicubeCore p) { this.plugin = p; }

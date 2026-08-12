@@ -4,9 +4,9 @@
 # Usage:
 #   .\deploy.ps1                  Full build + image rebuild
 #   .\deploy.ps1 -SkipTests       Skip unit tests (faster)
-#   .\deploy.ps1 -OnlyImages      Skip Maven, redistribue les artefacts target/ puis reconstruit les images
-#   .\deploy.ps1 -SkipRestart     Construit sans recréer le service Velocity
-#   .\deploy.ps1 -ValidateOnly    Vérifie et redistribue les artefacts sans construire d'image
+#   .\deploy.ps1 -OnlyImages      Skip Maven, redistribute target/ artifacts, then rebuild images
+# .\deploy.ps1 -SkipRestart Built without rebuilding the Velocity service
+# .\deploy.ps1 -ValidateOnly Checks and redistributes artifacts without building an image
 
 param(
     [switch]$SkipTests,

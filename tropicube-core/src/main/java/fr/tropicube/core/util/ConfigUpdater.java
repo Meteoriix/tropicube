@@ -12,23 +12,23 @@ import java.nio.file.Files;
 import java.util.*;
 
 /**
- * Fusionne les nouvelles clés d'une ressource embarquée avec le fichier sur disque,
- * sans modifier les valeurs existantes ni supprimer les commentaires utilisateur.
+ * Merges the new keys of an embedded resource with the file on disk,
+ * without changing existing values or removing user comments.
  * <p>
- * {@code YamlConfiguration} détecte les chemins absents, puis une insertion
- * textuelle les replace dans leur section tout en conservant la mise en forme.
+ * {@code YamlConfiguration} detects missing paths, then inserts
+ * text returns them to their section while retaining the formatting.
  */
 public final class ConfigUpdater {
 
     private ConfigUpdater() {}
 
     /**
-     * Ajoute les clés de la ressource absentes de {@code diskFile}.
-     * Le contenu existant n'est jamais modifié.
+     * Adds resource keys missing from {@code diskFile}.
+     * Existing content is never modified.
      *
-     * @param plugin plugin propriétaire de la ressource
-     * @param resourcePath chemin interne au JAR, par exemple {@code languages/fr.yml}
-     * @param diskFile fichier à mettre à jour sur disque
+     * @param plugin resource owner plugin
+     * @param resourcePath path inside the JAR, for example {@code languages/fr.yml}
+     * @param diskFile file to update on disk
      */
     public static void update(Plugin plugin, String resourcePath, File diskFile) throws IOException {
         if (!diskFile.exists()) return;
@@ -40,7 +40,7 @@ public final class ConfigUpdater {
         YamlConfiguration defaults = loadYaml(defaultsText);
         YamlConfiguration disk    = YamlConfiguration.loadConfiguration(diskFile);
 
-        // Recense les feuilles présentes par défaut mais absentes du disque.
+        // Lists the sheets present by default but absent from the disk.
         List<String> missing = new ArrayList<>();
         for (String key : defaults.getKeys(true)) {
             if (!defaults.isConfigurationSection(key) && !disk.isSet(key)) {
@@ -52,13 +52,13 @@ public final class ConfigUpdater {
         plugin.getLogger().info("[ConfigUpdater] " + diskFile.getName()
                 + ": inserting " + missing.size() + " missing key(s).");
 
-        // Travaille sur le texte brut pour préserver commentaires et ordre des clés.
+        // Works on raw text to preserve comments and key order.
         String diskRaw = Files.readString(diskFile.toPath(), StandardCharsets.UTF_8)
                               .replace("\r\n", "\n").replace('\r', '\n');
         List<String> lines   = new ArrayList<>(Arrays.asList(diskRaw.split("\n", -1)));
         List<String> defLines = Arrays.asList(defaultsText.replace("\r\n", "\n").replace('\r', '\n').split("\n", -1));
 
-        // Regroupe les clés par section ; une clé sans point est un scalaire racine.
+        // Groups keys by section; a key without a point is a root scalar.
         Map<String, List<String>> bySection = new LinkedHashMap<>();
         for (String key : missing) {
             int dot = key.indexOf('.');
@@ -66,7 +66,7 @@ public final class ConfigUpdater {
             bySection.computeIfAbsent(section, k -> new ArrayList<>()).add(key);
         }
 
-        // Prépare les insertions, ensuite appliquées du bas vers le haut.
+        // Prepare the inserts, then apply them from bottom to top.
         List<int[]> insertIndices = new ArrayList<>();
         List<List<String>> insertBlocks = new ArrayList<>();
         Set<String> insertedDeepPaths = new HashSet<>();
@@ -79,14 +79,14 @@ public final class ConfigUpdater {
             String realSection     = topLevelScalar ? section.substring(1) : section;
 
             if (topLevelScalar || !disk.isConfigurationSection(realSection)) {
-                // Ajoute en fin de fichier une section ou valeur racine entièrement absente.
+                // Adds an entirely missing section or root value to the end of the file.
                 String block = topLevelScalar
                         ? extractTopLevelKeyBlock(defLines, realSection)
                         : extractSectionBlock(defLines, realSection);
                 if (block.isEmpty()) continue;
 
                 List<String> blockLines = new ArrayList<>();
-                // Ajoute un séparateur seulement si le fichier n'en possède pas déjà un.
+                // Adds a separator only if the file does not already have one.
                 if (!lines.isEmpty() && !lines.get(lines.size() - 1).isBlank()) {
                     blockLines.add("");
                 }
@@ -94,7 +94,7 @@ public final class ConfigUpdater {
                 insertIndices.add(new int[]{lines.size(), insertBlocks.size()});
                 insertBlocks.add(blockLines);
             } else {
-                // Insère les sous-clés après le dernier contenu de leur section.
+                // Inserts subkeys after the last content of their section.
                 int insertAt = findSectionInsertPoint(lines, realSection);
                 List<String> blockLines = new ArrayList<>();
                 for (String fullKey : keys) {
@@ -128,7 +128,7 @@ public final class ConfigUpdater {
             }
         }
 
-        // Applique les insertions en ordre inverse afin de préserver les index précédents.
+        // Applies inserts in reverse order to preserve previous indexes.
         insertIndices.sort((a, b) -> b[0] - a[0]);
         for (int[] ip : insertIndices) {
             int at = Math.min(ip[0], lines.size());
@@ -139,7 +139,7 @@ public final class ConfigUpdater {
         plugin.getLogger().info("[ConfigUpdater] " + diskFile.getName() + " updated successfully.");
     }
 
-    // Analyse textuelle du YAML
+        // Parse the YAML as text
 
     private static YamlConfiguration loadYaml(String text) {
         YamlConfiguration cfg = new YamlConfiguration();
@@ -148,8 +148,8 @@ public final class ConfigUpdater {
     }
 
     /**
-     * Renvoie l'index suivant la dernière ligne indentée d'une section racine.
-     * Les lignes vides et commentaires séparant deux sections ne sont pas inclus.
+     * Returns the index following the last indented line of a root section.
+     * Blank lines and comments separating two sections are not included.
      */
     private static int findSectionInsertPoint(List<String> lines, String section) {
         int start = findSectionStart(lines, section);
@@ -182,7 +182,7 @@ public final class ConfigUpdater {
     }
 
     /**
-     * Extrait une section racine complète et ses commentaires contigus.
+     * Extracts a complete root section and its contiguous comments.
      */
     private static String extractSectionBlock(List<String> defLines, String section) {
         int sectionStart = -1;
@@ -191,14 +191,14 @@ public final class ConfigUpdater {
         }
         if (sectionStart == -1) return "";
 
-        // Remonte sur les commentaires contigus, sans franchir une ligne vide.
+        // Go back to the adjacent comments, without crossing an empty line.
         int blockStart = sectionStart;
         for (int i = sectionStart - 1; i >= 0; i--) {
             if (defLines.get(i).startsWith("#")) blockStart = i;
             else break;
         }
 
-        // La prochaine clé racine termine la section.
+        // The next root key completes the section.
         int end = defLines.size();
         for (int i = sectionStart + 1; i < defLines.size(); i++) {
             String line = defLines.get(i);
@@ -211,14 +211,14 @@ public final class ConfigUpdater {
     }
 
     /**
-     * Extrait une valeur scalaire isolée à la racine.
+     * Extracts an isolated scalar value from the root.
      */
     private static String extractTopLevelKeyBlock(List<String> defLines, String key) {
         String prefix = key + ":";
         for (int i = 0; i < defLines.size(); i++) {
             String line = defLines.get(i);
             if (line.equals(prefix) || line.startsWith(prefix + " ") || line.startsWith(prefix + "\t")) {
-                // Inclut les commentaires contigus précédents.
+                // Includes previous contiguous comments.
                 int blockStart = i;
                 for (int j = i - 1; j >= 0; j--) {
                     if (defLines.get(j).startsWith("#")) blockStart = j;
@@ -231,10 +231,10 @@ public final class ConfigUpdater {
     }
 
     /**
-     * Extrait une sous-clé et ses commentaires contigus dans une section donnée.
+     * Extracts a subkey and its contiguous comments in a given section.
      *
-     * @param section nom de la section racine
-     * @param subKey nom direct de la sous-clé, sans point
+     * @param section root section name
+     * @param subKey direct name of the subkey, without a dot
      */
     private static String extractSubKeyBlock(List<String> defLines, String section, String subKey) {
         int sectionStart = -1;
@@ -252,7 +252,7 @@ public final class ConfigUpdater {
             }
         }
 
-        // Localise la clé attendue avec deux espaces d'indentation.
+        // Locates the expected key with two indentation spaces.
         String keyPrefix = "  " + subKey + ":";
         int keyLine = -1;
         for (int i = sectionStart + 1; i < sectionEnd; i++) {
@@ -264,7 +264,7 @@ public final class ConfigUpdater {
         }
         if (keyLine == -1) return "";
 
-        // Inclut les commentaires contigus précédents dans la même section.
+        // Include previous contiguous comments in the same section.
         int blockStart = keyLine;
         for (int i = keyLine - 1; i > sectionStart; i--) {
             String line = defLines.get(i);
@@ -272,7 +272,7 @@ public final class ConfigUpdater {
             else break;
         }
 
-        // Inclut les descendants indentés d'au moins quatre espaces.
+        // Includes descendants indented by at least four spaces.
         int blockEnd = keyLine + 1;
         for (int i = keyLine + 1; i < sectionEnd; i++) {
             String line = defLines.get(i);

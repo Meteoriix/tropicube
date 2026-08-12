@@ -7,8 +7,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-// /servers — ouvre le sélecteur de serveurs
-/** Ouvre le sélecteur des instances de jeu disponibles. */
+// /servers — opens the server selector
+/** Opens the selector of available game instances. */
 public class ServersCommand implements CommandExecutor {
     private final TropicubeLobby plugin;
     public ServersCommand(TropicubeLobby plugin) { this.plugin = plugin; }

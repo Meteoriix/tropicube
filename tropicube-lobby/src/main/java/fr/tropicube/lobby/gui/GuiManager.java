@@ -12,13 +12,13 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Centralise l'ouverture et le suivi des menus GUI ouverts par joueur.
+ * Centralizes the opening and monitoring of GUI menus opened by player.
  */
 public class GuiManager {
 
     private final TropicubeLobby plugin;
 
-    /** Associe le joueur au type de GUI ouvert, pour router les clics. */
+    /** Associates the player with the open GUI type, to route clicks. */
     private final Map<UUID, GuiType> openGuis = new ConcurrentHashMap<>();
 
     public GuiManager(TropicubeLobby plugin) {
@@ -34,7 +34,7 @@ public class GuiManager {
         CUSTOM_GAME_TYPE_SELECTOR
     }
 
-    // ── Ouverture des menus ──────────────────────────────────────────────────
+    // ── Opening menus ───────────────────────── ─────────────────────────
 
     public void openServerSelector(Player player, String type, int page) {
         Inventory inv = ServerSelectorGUI.build(plugin, player, type, page);
@@ -102,7 +102,7 @@ public class GuiManager {
         player.openInventory(inv);
     }
 
-    /** Indique si le joueur possède déjà un serveur personnalisé ou si sa création est réservée. */
+    /** Indicates if the player already has a custom server or if its creation is reserved. */
     public boolean hasCustomGameOrCreation(UUID playerId) {
         return plugin.getRedisManager().exists("host:" + playerId)
                 || plugin.getRedisManager().exists("host-creation:" + playerId);
@@ -130,8 +130,8 @@ public class GuiManager {
     }
 
     /**
-     * Actualise sur place tous les menus de serveurs ouverts, sans rouvrir les
-     * inventaires. Cette méthode doit être appelée sur le thread principal.
+     * Refreshes all open server menus in place, without reopening them.
+     * inventories. This method must be called on the main thread.
      */
     public void refreshOpenServerGuis() {
         for (Map.Entry<UUID, GuiType> entry : openGuis.entrySet()) {

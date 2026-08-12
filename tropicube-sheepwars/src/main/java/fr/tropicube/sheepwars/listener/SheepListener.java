@@ -22,12 +22,12 @@ import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.persistence.PersistentDataType;
 
-/** Traduit l'utilisation des objets-moutons en lancement de capacités. */
+/** Translates the use of sheep items into ability casting. */
 public class SheepListener implements Listener {
 
     private final TropicubeSheepwars plugin;
 
-    /** Clé PDC des FallingBlocks du DistortSheep — mise en cache pour éviter des allocations répétées. */
+    /** DistortSheep FallingBlocks PDC key — cached to avoid repeated allocations. */
     private final NamespacedKey distortFbKey;
 
     public SheepListener(TropicubeSheepwars plugin) {
@@ -35,7 +35,7 @@ public class SheepListener implements Listener {
         this.distortFbKey = new NamespacedKey(plugin, DistortSheep.FB_KEY);
     }
 
-    // ── Comportement des moutons ───────────────────────────────────────────
+    // ── Sheep behavior ───────────────────── ──────────────────────
 
     @EventHandler
     public void onSheepDeath(EntityDeathEvent event) {
@@ -45,7 +45,7 @@ public class SheepListener implements Listener {
         event.setDroppedExp(0);
         event.getDrops().clear();
 
-        // Rend la laine du type logique, indépendamment de la couleur de clignotement.
+        // Makes wool logical type, regardless of flashing color.
         String typeName = sheep.getPersistentDataContainer()
                 .get(plugin.getSheepManager().sheepTypeKey, PersistentDataType.STRING);
         if (typeName != null) {
@@ -56,7 +56,7 @@ public class SheepListener implements Listener {
         }
     }
 
-    /** Empêche les moutons du jeu de cibler automatiquement (seul le ciblage CUSTOM via le code est autorisé). */
+    /** Prevents in-game sheep from automatically targeting (only CUSTOM targeting via code is allowed). */
     @EventHandler
     public void onSheepTarget(EntityTargetEvent event) {
         if (!(event.getEntity() instanceof Sheep sheep)) return;
@@ -66,9 +66,9 @@ public class SheepListener implements Listener {
         }
     }
 
-    // ── Golem Mécha ───────────────────────────────────────────────────────
+    // ── Mecha Golem ─────────────────────────── ────────────────────────────
 
-    /** Empêche le golem mécha d'attaquer les coéquipiers ou les non-joueurs. */
+    /** Prevents the mecha golem from attacking teammates or non-players. */
     @EventHandler(priority = EventPriority.HIGH)
     public void onGolemAttack(EntityDamageByEntityEvent event) {
         if (!(event.getDamager() instanceof IronGolem golem)) return;
@@ -98,7 +98,7 @@ public class SheepListener implements Listener {
         }
     }
 
-    /** Nettoie le mouton passager quand le golem mécha meurt. */
+    /** Clean up the passenger sheep when the mecha golem dies. */
     @EventHandler
     public void onGolemDeath(EntityDeathEvent event) {
         if (!(event.getEntity() instanceof IronGolem golem)) return;
@@ -110,7 +110,7 @@ public class SheepListener implements Listener {
         event.getDrops().clear();
     }
 
-    // ── Suivi des blocs pour la régénération ──────────────────────────────
+    // ── Tracking blocks for regeneration ──────────────────────────────
 
     /** Prevents item drops from explosions during the game (blocks still get destroyed). */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -146,7 +146,7 @@ public class SheepListener implements Listener {
         }
     }
 
-    /** Empêche les FallingBlocks du DistortSheep de se poser naturellement. */
+    /** Prevents DistortSheep's FallingBlocks from naturally landing. */
     @EventHandler(ignoreCancelled = true)
     public void onFallingBlockLand(EntityChangeBlockEvent event) {
         if (!(event.getEntity() instanceof FallingBlock fb)) return;

@@ -1,6 +1,6 @@
 package fr.tropicube.sheepwars.game;
 
-/** Règles pures déterminant l'activation et le déclenchement du démarrage automatique. */
+/** Pure rules determining the activation and triggering of automatic start. */
 final class AutoStartPolicy {
 
     private AutoStartPolicy() {

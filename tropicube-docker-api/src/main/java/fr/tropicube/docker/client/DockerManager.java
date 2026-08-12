@@ -28,72 +28,72 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 /**
- * Gestionnaire principal des containers Docker pour les serveurs Minecraft.
- * Gère le cycle de vie complet : création, démarrage, arrêt et suppression.
+ * Primary Docker container manager for Minecraft servers.
+ * Manages the complete lifecycle: creation, startup, shutdown, and deletion.
  */
 public class DockerManager implements Closeable {
 
     private static final System.Logger LOGGER = System.getLogger(DockerManager.class.getName());
     private static final Pattern ENVIRONMENT_NAME = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
 
-    /** Port interne utilisé par RCON à l'intérieur du container. */
+    /** Internal port used by RCON inside the container. */
     private static final int RCON_INTERNAL_PORT = 25575;
 
-    /** Client Docker utilisé pour interagir avec le daemon Docker. */
+    /** Docker client used to interact with the Docker daemon. */
     private final DockerClient dockerClient;
 
-    /** Nom du réseau Docker sur lequel les containers seront connectés. */
+    /** Name of the Docker network on which the containers will be connected. */
     private final String networkName;
 
-    /** Préfixe appliqué au nom de chaque container créé dynamiquement. */
+    /** Prefix applied to the name of each dynamically created container. */
     private final String containerPrefix;
 
     /**
-     * Pool des ports Minecraft disponibles.
-     * La clé est le numéro de port, la valeur indique s'il est déjà utilisé (true = occupé).
+     * Pool of available Minecraft ports.
+     * The key is the port number, the value indicates whether it is already in use (true = busy).
      */
     private final Map<Integer, Boolean> portPool;
 
-    /** Borne inférieure de la plage de ports Minecraft. */
+    /** Lower bound of the Minecraft ports range. */
     private final int portRangeStart;
 
-    /** Borne supérieure de la plage de ports Minecraft. */
+    /** Upper bound of the Minecraft ports range. */
     private final int portRangeEnd;
 
     /**
-     * Pool des ports RCON disponibles.
-     * Même principe que {@code portPool} mais pour les connexions RCON.
+     * Pool of available RCON ports.
+     * Same principle as {@code portPool} but for RCON connections.
      */
     private final Map<Integer, Boolean> rconPortPool;
 
-    /** Borne inférieure de la plage de ports RCON. */
+    /** Lower bound of the RCON port range. */
     private final int rconPortRangeStart;
 
-    /** Borne supérieure de la plage de ports RCON. */
+    /** Upper bound of the RCON port range. */
     private final int rconPortRangeEnd;
 
-    /** Mot de passe partagé pour toutes les connexions RCON. */
+    /** Shared password for all RCON connections. */
     private final String rconPassword;
 
     /**
-     * Répertoire de base sur l'hôte utilisé pour résoudre les chemins relatifs
-     * déclarés dans les volumes des templates.
+     * Base directory on host used to resolve relative paths
+     * declared in the template volumes.
      */
     private final String basePath;
     private final AtomicBoolean closed = new AtomicBoolean();
 
     /**
-     * Construit un {@code DockerManager} et initialise la connexion au daemon Docker.
+     * Builds a {@code DockerManager} and initializes the connection to the Docker daemon.
      *
-     * @param dockerHost          URI du daemon Docker (ex. {@code unix:///var/run/docker.sock}).
-     * @param networkName         Nom du réseau Docker à utiliser (créé s'il n'existe pas).
-     * @param containerPrefix     Préfixe des noms de containers.
-     * @param portRangeStart      Premier port de la plage Minecraft.
-     * @param portRangeEnd        Dernier port de la plage Minecraft.
-     * @param rconPortRangeStart  Premier port de la plage RCON.
-     * @param rconPortRangeEnd    Dernier port de la plage RCON.
-     * @param rconPassword        Mot de passe RCON (null ou vide pour désactiver RCON).
-     * @param basePath            Chemin de base pour la résolution des volumes relatifs.
+     * @param dockerHost          Docker daemon URI (for example {@code unix:///var/run/docker.sock}).
+     * @param networkName Name of the Docker network to use (created if it does not exist).
+     * @param containerPrefix Prefix of container names.
+     * @param portRangeStart      First port in the Minecraft range.
+     * @param portRangeEnd        Last port in the Minecraft range.
+     * @param rconPortRangeStart  First port in the RCON range.
+     * @param rconPortRangeEnd    Last port in the RCON range.
+     * @param rconPassword RCON password (null or empty to disable RCON).
+     * @param basePath Basic path for solving relative volumes.
      */
     public DockerManager(String dockerHost, String networkName, String containerPrefix,
                          int portRangeStart, int portRangeEnd,
@@ -114,31 +114,31 @@ public class DockerManager implements Closeable {
         this.rconPortRangeStart = rconPortRangeStart;
         this.rconPortRangeEnd = rconPortRangeEnd;
         this.rconPassword = rconPassword != null ? rconPassword : "";
-        // Supprime le slash final du basePath pour éviter les doubles séparateurs
+        // Remove trailing slash from basePath to avoid double separators
         this.basePath = basePath != null ? basePath.replaceAll("/+$", "") : "";
         this.portPool = new ConcurrentHashMap<>();
         this.rconPortPool = new ConcurrentHashMap<>();
 
-        // Initialise tous les ports de la plage Minecraft comme libres (false = disponible)
+        // Initializes all ports in the Minecraft range as free (false = available)
         for (int port = portRangeStart; port <= portRangeEnd; port++) {
             portPool.put(port, false);
         }
 
-        // Initialise tous les ports de la plage RCON comme libres
+        // Initializes all ports in the RCON range as free
         if (rconConfigured) {
             for (int port = rconPortRangeStart; port <= rconPortRangeEnd; port++) {
                 rconPortPool.put(port, false);
             }
         }
 
-        // Construction de la configuration du client Docker
+        // Build the Docker client configuration
         String validatedDockerHost = requireNonBlank(dockerHost, "dockerHost");
         URI dockerHostUri = URI.create(validatedDockerHost);
         DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
                 .withDockerHost(validatedDockerHost)
                 .build();
 
-        // Construction du client HTTP Apache sous-jacent avec des délais raisonnables
+        // Building the underlying Apache HTTP client with reasonable delays
         DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
                 .dockerHost(dockerHostUri)
                 .maxConnections(100)
@@ -148,7 +148,7 @@ public class DockerManager implements Closeable {
 
         this.dockerClient = DockerClientImpl.getInstance(config, httpClient);
 
-        // Assure que le réseau Docker existe avant toute opération
+        // Ensures that the Docker network exists before any operation
         try {
             ensureNetworkExists();
         } catch (RuntimeException e) {
@@ -173,8 +173,8 @@ public class DockerManager implements Closeable {
     }
 
     /**
-     * Vérifie que le réseau Docker {@code networkName} existe et le crée si nécessaire.
-     * Le réseau est créé en mode "bridge" (réseau isolé local à l'hôte).
+     * Verifies that the Docker network {@code networkName} exists and creates it if necessary.
+     * The network is created in “bridge” mode (isolated network local to the host).
      */
     private void ensureNetworkExists() {
         boolean exists = dockerClient.listNetworksCmd()
@@ -192,18 +192,18 @@ public class DockerManager implements Closeable {
     }
 
     /**
-     * Télécharge une image Docker depuis le registre si elle n'est pas déjà présente localement.
+     * Downloads a Docker image from the registry if it is not already present locally.
      *
-     * <p>L'attente est limitée à CINQ minutes. Si le thread est interrompu pendant le pull,
-     * le flag d'interruption est restauré.
+     * <p>The wait is limited to FIVE minutes. If the thread is interrupted during the pull,
+     * the interrupt flag is restored.
      *
-     * @param imageName Nom complet de l'image (ex. {@code itzg/minecraft-server:latest}).
+     * @param imageName Full name of the image (e.g. {@code itzg/minecraft-server:latest}).
      */
     public void pullImageIfAbsent(String imageName) {
         requireOpen();
         requireNonBlank(imageName, "imageName");
         try {
-            // Vérifie si l'image existe déjà localement via un filtre sur la référence
+            // Checks if the image already exists locally via a filter on the reference
             boolean imageExists = dockerClient.listImagesCmd()
                     .withFilter("reference", List.of(imageName))
                     .exec()
@@ -212,7 +212,7 @@ public class DockerManager implements Closeable {
                     .isPresent();
 
             if (!imageExists) {
-                // Téléchargement bloquant avec un délai maximum de 5 minutes
+                // Blocking download with a maximum delay of 5 minutes
                 boolean completed = dockerClient.pullImageCmd(imageName)
                         .start()
                         .awaitCompletion(5, TimeUnit.MINUTES);
@@ -221,7 +221,7 @@ public class DockerManager implements Closeable {
                 }
             }
         } catch (InterruptedException e) {
-            // Restaure le flag d'interruption conformément aux bonnes pratiques Java
+            // Restores the interrupt flag according to Java best practices
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Téléchargement de l'image interrompu : " + imageName, e);
         } catch (RuntimeException e) {
@@ -230,10 +230,10 @@ public class DockerManager implements Closeable {
     }
 
     /**
-     * Alloue un port Minecraft libre depuis le pool.
-     * Méthode synchronisée pour éviter les conditions de course lors d'allocations concurrentes.
+     * Allocates a free Minecraft port from the pool.
+     * Synchronized method to avoid race conditions during concurrent allocations.
      *
-     * @return Le numéro de port alloué, ou {@code -1} si aucun port n'est disponible.
+     * @return The allocated port number, or {@code -1} if no port is available.
      */
     private synchronized int allocatePort(int requestedStart, int requestedEnd) {
         int start = requestedStart == 0 ? portRangeStart : Math.max(requestedStart, portRangeStart);
@@ -251,10 +251,10 @@ public class DockerManager implements Closeable {
     }
 
     /**
-     * Alloue un port RCON libre depuis le pool.
-     * Méthode synchronisée pour éviter les conditions de course lors d'allocations concurrentes.
+     * Allocates a free RCON port from the pool.
+     * Synchronized method to avoid race conditions during concurrent allocations.
      *
-     * @return Le numéro de port RCON alloué, ou {@code -1} si aucun port n'est disponible.
+     * @return The allocated RCON port number, or {@code -1} if no port is available.
      */
     private synchronized int allocateRconPort() {
         for (int port = rconPortRangeStart; port <= rconPortRangeEnd; port++) {
@@ -266,7 +266,7 @@ public class DockerManager implements Closeable {
         return -1; // Aucun port RCON disponible
     }
 
-    /** Réserve les ports d'une instance restaurée après un redémarrage du proxy. */
+    /** Reserves ports for a restored instance after a proxy restart. */
     public synchronized void reservePorts(ServerInstance instance) {
         requireOpen();
         Objects.requireNonNull(instance, "instance");
@@ -288,7 +288,7 @@ public class DockerManager implements Closeable {
         pool.put(port, true);
     }
 
-    /** Indique si un conteneur existe encore et est actuellement en cours d'exécution. */
+    /** Indicates whether a container still exists and is currently running. */
     public boolean isContainerRunning(String containerId) {
         requireOpen();
         requireNonBlank(containerId, "containerId");
@@ -301,14 +301,14 @@ public class DockerManager implements Closeable {
     }
 
     /**
-     * Résout un chemin de volume en remplaçant les sources relatives par un chemin absolu
-     * construit à partir de {@code basePath}.
+     * Resolves a volume path by replacing relative sources with an absolute path
+     * built from {@code basePath}.
      *
-     * <p>Exemple : {@code "./data:/data"} avec {@code basePath="/opt/servers"} devient
+     * <p>Example: {@code "./data:/data"} with {@code basePath="/opt/servers"} becomes
      * {@code "/opt/servers/data:/data"}.
      *
-     * @param volume Déclaration de volume au format {@code source:destination[:mode]}.
-     * @return La déclaration de volume avec la source résolue en chemin absolu si nécessaire.
+     * @param volume Volume declaration in {@code source:destination[:mode]} format.
+     * @return The volume declaration with the source resolved to absolute path if necessary.
      */
     private String resolveVolume(String volume) {
         int firstColon = volume.indexOf(':');
@@ -317,7 +317,7 @@ public class DockerManager implements Closeable {
         String source = volume.substring(0, firstColon);
         String rest = volume.substring(firstColon); // Inclut ":" + destination [+ ":mode"]
 
-        // Si la source n'est pas un chemin absolu et qu'un basePath est défini, on la préfixe
+        // If the source is not an absolute path and a basePath is defined, we prefix it
         if (!source.startsWith("/") && !basePath.isEmpty()) {
             source = basePath + "/" + source.replaceFirst("^\\./", ""); // Supprime le "./" initial si présent
         }
@@ -325,27 +325,27 @@ public class DockerManager implements Closeable {
     }
 
     /**
-     * Crée et démarre un container Minecraft à partir d'un template.
+     * Creates and starts a Minecraft container from a template.
      *
-     * <p>Les étapes sont les suivantes :
+     * <p>The steps are as follows:
      * <ol>
-     *   <li>Allocation d'un port Minecraft libre (et d'un port RCON si activé).</li>
-     *   <li>Construction des variables d'environnement (EULA, mémoire, RCON, etc.).</li>
-     *   <li>Configuration des bindings de ports et des volumes.</li>
-     *   <li>Création puis démarrage du container.</li>
-     *   <li>Récupération de l'adresse IP interne sur le réseau Docker.</li>
+     * <li>Allocation of a free Minecraft port (and an RCON port if enabled).</li>
+     * <li>Construction of environment variables (EULA, memory, RCON, etc.).</li>
+     * <li>Configuration of port bindings and volumes.</li>
+     * <li>Creation then start of the container.</li>
+     * <li>Retrieving the internal IP address on the Docker network.</li>
      * </ol>
      *
-     * <p>Les entrées de {@code extraEnv} sont injectées <em>après</em> les variables du template,
-     * ce qui leur permet de les surcharger avant de produire une liste sans doublon.
+     * <p>The entries of {@code extraEnv} are injected <em>after</em> the template variables,
+     * which allows them to overload them before producing a list without duplicates.
      *
-     * @param template    Modèle de serveur décrivant l'image, la mémoire, les volumes, etc.
-     * @param instanceId  Identifiant unique de l'instance (UUID).
-     * @param serverName  Nom lisible du serveur (utilisé dans le nom du container).
-     * @param whitelisted Statut de la whitelist du serveur
-     * @param extraEnv    Variables d'environnement supplémentaires à injecter (peuvent écraser celles du template).
-     * @return            L'instance {@link ServerInstance} représentant le serveur créé et en cours de démarrage.
-     * @throws IllegalStateException si aucun port (Minecraft ou RCON) n'est disponible.
+     * @param template Server model describing image, memory, volumes, etc.
+     * @param instanceId Unique identifier of the instance (UUID).
+     * @param serverName Readable name of the server (used in the container name).
+     * @param whitelisted Server whitelist status
+     * @param extraEnv Additional environment variables to inject (can overwrite those in the template).
+     * @return The {@link ServerInstance} instance representing the server created and being started.
+     * @throws IllegalStateException if no port (Minecraft or RCON) is available.
      */
     public ServerInstance createServer(ServerTemplate template, String instanceId, String serverName, boolean whitelisted,
                                        Map<String, String> extraEnv) {
@@ -354,25 +354,25 @@ public class DockerManager implements Closeable {
         requireNonBlank(instanceId, "instanceId");
         requireNonBlank(serverName, "serverName");
         Map<String, String> effectiveExtraEnv = Objects.requireNonNullElse(extraEnv, Map.of());
-        // Tente d'allouer un port Minecraft disponible
+        // Try to allocate an available Minecraft port
         int port = allocatePort(template.getMinPort(), template.getMaxPort());
         if (port == -1) {
             throw new IllegalStateException("Aucun port disponible dans la plage " + portRangeStart + "-" + portRangeEnd);
         }
 
-        // RCON est activé uniquement si le pool RCON est non vide ET qu'un mot de passe est défini
+        // RCON is enabled only if the RCON pool is non-empty AND a password is set
         boolean rconEnabled = !rconPortPool.isEmpty() && !rconPassword.isEmpty();
         int rconPort = rconEnabled ? allocateRconPort() : 0;
         if (rconEnabled && rconPort == -1) {
-            // Libère le port Minecraft déjà alloué avant de lever l'exception
+            // Free the already allocated Minecraft port before throwing the exception
             releasePort(port);
             throw new IllegalStateException("Aucun port RCON disponible dans la plage " + rconPortRangeStart + "-" + rconPortRangeEnd);
         }
 
-        // Nom du container : préfixe + nom du serveur normalisé + 8 premiers caractères de l'UUID
+        // Container name: prefix + standardized server name + first 8 characters of the UUID
         String containerName = buildContainerName(serverName, instanceId);
 
-        // Création de l'objet ServerInstance avec les métadonnées de base
+        // Creating the ServerInstance object with basic metadata
         ServerInstance instance = new ServerInstance(instanceId, template.getId(), serverName, port, whitelisted);
         instance.setContainerName(containerName);
         instance.setMaxPlayers(template.getMaxPlayers());
@@ -382,7 +382,7 @@ public class DockerManager implements Closeable {
 
         String createdContainerId = null;
         try {
-            // --- Construction des variables d'environnement ---
+            // --- Construction of environment variables ---
             Map<String, String> environment = new LinkedHashMap<>();
             environment.put("EULA", "TRUE");
             environment.put("SERVER_NAME", serverName);
@@ -395,14 +395,14 @@ public class DockerManager implements Closeable {
                 environment.put("RCON_PORT", Integer.toString(RCON_INTERNAL_PORT));
                 environment.put("RCON_PASSWORD", rconPassword);
             }
-            // Variables du template en premier, puis extraEnv pour permettre la surcharge
+            // Template variables first, then extraEnv to allow overloading
             putEnvironment(environment, template.getEnvironmentVariables());
             putEnvironment(environment, effectiveExtraEnv);
             List<String> envVars = environment.entrySet().stream()
                     .map(entry -> entry.getKey() + "=" + entry.getValue())
                     .toList();
 
-            // --- Configuration des bindings de ports ---
+            // --- Configuring port bindings ---
             ExposedPort exposedMinecraft = ExposedPort.tcp(25565); // Port Minecraft standard
             Ports portBindings = new Ports();
             portBindings.bind(exposedMinecraft, Ports.Binding.bindIpAndPort("127.0.0.1", port));
@@ -416,14 +416,14 @@ public class DockerManager implements Closeable {
                 exposedPorts.add(exposedRcon);
             }
 
-            // --- Résolution et configuration des volumes ---
+            // ---Resolving and configuring volumes ---
             List<Bind> binds = new ArrayList<>();
             for (String volume : template.getVolumes()) {
                 if (volume == null || volume.isBlank()) throw new IllegalArgumentException("Volume Docker vide");
                 binds.add(Bind.parse(resolveVolume(volume)));
             }
 
-            // --- Configuration de l'hôte (ressources, réseau, redémarrage) ---
+            // --- Host configuration (resources, network, reboot) ---
             HostConfig hostConfig = HostConfig.newHostConfig()
                     .withPortBindings(portBindings)
                     .withNetworkMode(networkName)
@@ -433,7 +433,7 @@ public class DockerManager implements Closeable {
                     .withSecurityOpts(List.of("no-new-privileges:true"))
                     .withBinds(binds);
 
-            // --- Création du container ---
+            // --- Creation of the container ---
             CreateContainerResponse container = dockerClient.createContainerCmd(template.getDockerImage())
                     .withName(containerName)
                     .withEnv(envVars)
@@ -448,12 +448,12 @@ public class DockerManager implements Closeable {
             createdContainerId = container.getId();
             instance.setContainerId(createdContainerId);
 
-            // --- Démarrage du container ---
+            // --- Starting the container ---
             dockerClient.startContainerCmd(createdContainerId).exec();
             instance.setStatus(ServerInstance.Status.STARTING);
             instance.setStartedAt(Instant.now().getEpochSecond()); // Horodatage de démarrage
 
-            // --- Récupération de l'IP interne sur le réseau Docker ---
+            // --- Retrieving internal IP from Docker network ---
             InspectContainerResponse inspect = dockerClient.inspectContainerCmd(createdContainerId).exec();
             if (inspect.getNetworkSettings() != null && inspect.getNetworkSettings().getNetworks() != null) {
                 ContainerNetwork net = inspect.getNetworkSettings().getNetworks().get(networkName);
@@ -475,7 +475,7 @@ public class DockerManager implements Closeable {
                     e.addSuppressed(cleanupFailure);
                 }
             }
-            // En cas d'erreur, libère les ports alloués et marque l'instance en erreur
+            // On error, frees the allocated ports and marks the instance in error
             releasePort(port);
             if (rconEnabled && rconPort != 0) releaseRconPort(rconPort);
             instance.setStatus(ServerInstance.Status.ERROR);
@@ -522,17 +522,17 @@ public class DockerManager implements Closeable {
     }
 
     /**
-     * Surveille les logs du container et complète le {@link CompletableFuture} retourné
-     * dès que le serveur Minecraft est prêt à accepter des connexions.
+     * Monitors the container logs and completes the returned {@link CompletableFuture}
+     * as soon as the Minecraft server is ready to accept connections.
      *
-     * <p>La détection s'appuie sur le message {@code "Done (Xs)!"} émis par Paper/Spigot
-     * dans la sortie standard. Un timeout est appliqué : si le serveur ne démarre pas
-     * dans le délai imparti, le future échoue avec une {@link java.util.concurrent.TimeoutException}.
+     * <p>Detection is based on the {@code "Done (Xs)!"} message sent by Paper/Spigot
+     * in standard output. A timeout is applied: if the server does not start
+     * within the time limit, the future fails with a {@link java.util.concurrent.TimeoutException}.
      *
-     * @param containerId    Identifiant Docker du container à surveiller.
-     * @param timeoutSeconds Délai maximal d'attente en secondes avant échec.
-     * @return Un {@code CompletableFuture<Void>} complété quand le serveur est prêt,
-     *         ou échoué en cas de timeout ou d'erreur de log.
+     * @param containerId Docker identifier of the container to monitor.
+     * @param timeoutSeconds Maximum time to wait in seconds before failure.
+     * @return A {@code CompletableFuture<Void>} completed when the server is ready,
+     * or failed in case of timeout or log error.
      */
     public CompletableFuture<Void> waitForServerReadyViaLogs(String containerId, long timeoutSeconds) {
         requireOpen();
@@ -543,10 +543,10 @@ public class DockerManager implements Closeable {
         ResultCallback.Adapter<Frame> callback = new ResultCallback.Adapter<>() {
             @Override
             public void onNext(Frame frame) {
-                // Si le future est déjà résolu, on ignore les trames suivantes
+                // If the future is already resolved, we ignore the following frames
                 if (future.isDone()) return;
                 String line = new String(frame.getPayload(), StandardCharsets.UTF_8).trim();
-                // Détection du message de fin de démarrage de Paper/Spigot : "Done (Xs)!"
+                // Detection of Paper/Spigot end of startup message: “Done (Xs)!”
                 if (line.contains("Done (") && line.contains("s)!")) {
                     future.complete(null);
                     try { close(); } catch (IOException ignored) {}
@@ -555,7 +555,7 @@ public class DockerManager implements Closeable {
 
             @Override
             public void onError(Throwable t) {
-                // Propage l'erreur au future si celui-ci n'est pas encore résolu
+                // Propagate the error to the future if it is not yet resolved
                 if (!future.isDone()) future.completeExceptionally(t);
             }
 
@@ -569,7 +569,7 @@ public class DockerManager implements Closeable {
         };
 
         try {
-            // Démarre le suivi des logs en temps réel (stdout + stderr)
+            // Start real-time log tracking (stdout + stderr)
             dockerClient.logContainerCmd(containerId)
                     .withFollowStream(true)
                     .withStdOut(true)
@@ -579,7 +579,7 @@ public class DockerManager implements Closeable {
             future.completeExceptionally(e);
         }
 
-        // Applique le timeout ; ferme le flux de logs dans tous les cas (succès, timeout ou erreur)
+        // Apply the timeout; closes the log stream in all cases (success, timeout or error)
         CompletableFuture<Void> result = future.orTimeout(timeoutSeconds, TimeUnit.SECONDS);
         result.whenComplete((_, _) -> {
             try { callback.close(); } catch (IOException ignored) {}
@@ -588,31 +588,31 @@ public class DockerManager implements Closeable {
     }
 
     /**
-     * Libère un port Minecraft précédemment alloué, le rendant à nouveau disponible dans le pool.
+     * Frees a previously allocated Minecraft port, making it available in the pool again.
      *
-     * @param port Le numéro de port à libérer.
+     * @param port The port number to release.
      */
     private synchronized void releasePort(int port) {
         if (portPool.containsKey(port)) portPool.put(port, false);
     }
 
     /**
-     * Libère un port RCON précédemment alloué, le rendant à nouveau disponible dans le pool.
+     * Frees a previously allocated RCON port, making it available in the pool again.
      *
-     * @param port Le numéro de port RCON à libérer.
+     * @param port The RCON port number to release.
      */
     private synchronized void releaseRconPort(int port) {
         if (rconPortPool.containsKey(port)) rconPortPool.put(port, false);
     }
 
     /**
-     * Arrête proprement un container en envoyant un signal d'arrêt et en attendant
-     * jusqu'à 30 secondes que le processus se termine.
+     * Properly stops a container by sending a stop signal and waiting
+     * up to 30 seconds for the process to complete.
      *
-     * <p>Les ports alloués sont libérés après l'arrêt.
+     * <p>Allocated ports are freed after shutdown.
      *
-     * @param instance L'instance du serveur à arrêter.
-     * @return {@code true} si l'arrêt s'est déroulé sans exception, {@code false} sinon.
+     * @param instance The server instance to stop.
+     * @return {@code true} if the shutdown took place without exception, {@code false} otherwise.
      */
     public boolean stopServer(ServerInstance instance) {
         requireOpen();
@@ -640,14 +640,14 @@ public class DockerManager implements Closeable {
     }
 
     /**
-     * Force l'arrêt immédiat d'un container par envoi d'un signal SIGKILL.
+     * Forces the immediate shutdown of a container by sending a SIGKILL signal.
      *
-     * <p>Contrairement à {@link #stopServer}, cette méthode ne laisse pas au processus
-     * le temps de s'arrêter proprement. Les ports sont libérés immédiatement après.
+     * <p>Unlike {@link #stopServer}, this method does not leave the process
+     * time to stop properly. The ports are released immediately afterwards.
      *
-     * @param instance L'instance du serveur à tuer.
-     * @return {@code true} si l'opération a réussi ou si le container était déjà absent,
-     *         {@code false} en cas d'autre erreur.
+     * @param instance The server instance to kill.
+     * @return {@code true} if the operation was successful or if the container was already missing,
+     *         {@code false} for any other error.
      */
     public boolean killServer(ServerInstance instance) {
         requireOpen();
@@ -656,7 +656,7 @@ public class DockerManager implements Closeable {
         try {
             dockerClient.killContainerCmd(instance.getContainerId()).exec();
         } catch (NotFoundException _) {
-            // Container déjà absent : on considère quand même le kill comme réussi
+            // Container already absent: we still consider the kill as successful
         } catch (Exception e) {
             instance.setStatus(ServerInstance.Status.ERROR);
             LOGGER.log(System.Logger.Level.WARNING, "Impossible de tuer le conteneur " + instance.getContainerId(), e);
@@ -668,13 +668,13 @@ public class DockerManager implements Closeable {
     }
 
     /**
-     * Supprime définitivement un container Docker.
+     * Permanently delete a Docker container.
      *
-     * <p>Le container est supprimé en force (même s'il est encore en cours d'exécution)
-     * et ses volumes anonymes sont également supprimés.
-     * Si le container est introuvable (déjà supprimé ou crashé), l'opération est ignorée silencieusement.
+     * <p>The container is forcefully deleted (even if it is still running)
+     * and its anonymous volumes are also deleted.
+     * If the container is not found (already deleted or crashed), the operation is silently ignored.
      *
-     * @param instance L'instance du serveur à supprimer.
+     * @param instance The server instance to delete.
      */
     public void removeServer(ServerInstance instance) {
         requireOpen();
@@ -687,7 +687,7 @@ public class DockerManager implements Closeable {
                     .exec();
             removed = true;
         } catch (NotFoundException e) {
-            // Container déjà absent (ex. crash avant suppression explicite) — considéré comme un succès
+            // Container already missing (e.g. crash before explicit deletion) — considered a success
             removed = true;
         } catch (Exception e) {
             LOGGER.log(System.Logger.Level.WARNING, "Impossible de supprimer le conteneur " + instance.getContainerId(), e);
@@ -707,16 +707,16 @@ public class DockerManager implements Closeable {
     }
 
     /**
-     * Supprime en force tous les containers Docker marqués {@code fr.tropicube.dynamic=true}.
+     * Force delete all Docker containers marked {@code fr.tropicube.dynamic=true}.
      *
-     * <p>Cette méthode est appelée lors du shutdown de l'application pour garantir qu'aucun
-     * container dynamique ne survit, y compris ceux encore en cours de création et donc
-     * absents du cache d'instances.
+     * <p>This method is called during application shutdown to ensure that no
+     * dynamic container does not survive, including those still being created and therefore
+     * absent from the instance cache.
      */
     public void removeAllDynamicContainers() {
         requireOpen();
         try {
-            // Liste tous les containers dynamiques, qu'ils soient en cours d'exécution ou arrêtés
+            // Lists all dynamic containers, whether running or stopped
             List<Container> containers = dockerClient.listContainersCmd()
                     .withLabelFilter(List.of("fr.tropicube.dynamic=true"))
                     .withShowAll(true)
@@ -738,19 +738,19 @@ public class DockerManager implements Closeable {
     }
 
     /**
-     * Nettoie les containers orphelins laissés par un crash précédent.
+     * Cleans up orphaned containers left over from a previous crash.
      *
-     * <p>Parcourt tous les containers marqués {@code fr.tropicube.dynamic=true} et supprime
-     * ceux dont l'identifiant n'est pas dans l'ensemble {@code knownContainerIds} fourni.
-     * Cette méthode est typiquement appelée au démarrage de l'application.
+     * <p> Scans all containers marked {@code fr.tropicube.dynamic=true} and deletes
+     * those whose identifier is not in the {@code knownContainerIds} set provided.
+     * This method is typically called when the application starts.
      *
-     * @param knownContainerIds Ensemble des IDs de containers actuellement connus et gérés.
+     * @param knownContainerIds Set of currently known and managed container IDs.
      */
     public void cleanupOrphanContainers(Set<String> knownContainerIds) {
         requireOpen();
         Set<String> knownIds = Set.copyOf(Objects.requireNonNull(knownContainerIds, "knownContainerIds"));
         try {
-            // Liste tous les containers dynamiques, y compris ceux arrêtés
+            // List all dynamic containers, including stopped ones
             List<Container> candidates = dockerClient.listContainersCmd()
                     .withLabelFilter(List.of("fr.tropicube.dynamic=true"))
                     .withShowAll(true)
@@ -774,8 +774,8 @@ public class DockerManager implements Closeable {
     }
 
     /**
-     * Ferme le client Docker et libère les ressources associées (connexions HTTP, threads…).
-     * Implémentation de {@link Closeable} pour permettre l'utilisation dans un try-with-resources.
+     * Close the Docker client and release the associated resources (HTTP connections, threads, etc.).
+     * Implemented {@link Closeable} to allow use in a try-with-resources.
      */
     @Override
     public void close() {

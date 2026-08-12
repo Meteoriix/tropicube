@@ -121,6 +121,7 @@ commands:
 # SheepWars
 sw:
   game-already-started: "<red>Ya hay una partida en curso."
+  spectator-joined: "<aqua>Te has unido a la partida como espectador."
   arena-not-ready: "<red>La arena no está configurada."
   game-full: "<red>¡La partida está llena! Inténtalo más tarde 🌊"
   player-joined: "<yellow>{0} <gray>se ha unido a la aventura <dark_gray>({1}/{2}) 🌊"
@@ -253,6 +254,7 @@ sw:
   sb-red: "<red>Rojos: <white>{0}"
   sb-blue: "<blue>Azules: <white>{0}"
   sb-your-team: "<yellow>Tu equipo: {0}"
+  sb-spectator: "<gray>Modo: <white>Espectador"
   sb-kills: "<yellow>Kills: <white>{0}"
   sb-time: "<gray>Tiempo: <white>{0}"
   sb-ending: "<yellow>¡Partida terminada!"
@@ -260,7 +262,8 @@ sw:
   sb-team-blue: "<blue>Azul"
   tab-header: "\n<aqua><b>SheepWars</b></aqua> <dark_gray>│</dark_gray> <gray>Tropicube\n"
   tab-footer: "\n<gray>Equipo: <white>{0}</white>  <dark_gray>│</dark_gray>  <red>Rojos: <white>{1}</white></red>  <dark_gray>│</dark_gray>  <blue>Azules: <white>{2}</white></blue>  <dark_gray>│</dark_gray>  <yellow>⏱ <white>{3}</white></yellow>\n"
-  # Selección de equipo
+  tab-footer-spectator: "\n<gray>Espectador  <dark_gray>│</dark_gray>  <red>Rojos: <white>{0}</white></red>  <dark_gray>│</dark_gray>  <blue>Azules: <white>{1}</white></blue>  <dark_gray>│</dark_gray>  <yellow>⏱ <white>{2}</white></yellow>\n"
+# Team selection
   team-selector-name: "<gold>Equipo"
   team-selector-lore: "<gray>Clic derecho para elegir tu equipo"
   team-menu-title: "Elegir un Equipo"
@@ -268,19 +271,19 @@ sw:
   team-click-join: "<green>▶ Clic para unirse"
   team-joined: "<green>¡Te has unido al equipo <white>{0}<green>!"
   team-unbalanced: "<red>No puedes unirte a {0}: los equipos quedarían desequilibrados."
-  # Salir de la partida
+# Leave the match
   leave-item-name: "<red>Salir de la partida"
   leave-item-lore: "<gray>Clic derecho para volver al lobby"
   cant-leave-ingame: "<red>No puedes salir durante una partida en curso."
-  # Fin de partida
+# End of match
   replay-message: "<gray>¡Partida terminada! Volviendo al lobby..."
-  # Botones de lanzamiento (menú ajustes)
+# Start buttons (settings menu)
   settings-launch-name: "▶ Iniciar la partida"
   settings-launch-lore: "Clic para iniciar la cuenta atrás"
   settings-cancel-launch-name: "✖ Cancelar lanzamiento"
   settings-cancel-launch-lore: "Clic para detener la cuenta atrás"
   settings-no-launch-name: "✘ No se puede lanzar"
-  # Marcador fin de partida
+# End-of-match scoreboard
   sb-sheep-thrown: "<yellow>Ovejas lanzadas: <white>{0}"
   # Tablist (estados adicionales)
   tab-footer-waiting: "\n<gray>Jugadores: <yellow>{0}</yellow>  <dark_gray>│</dark_gray>  <gray>En espera...\n"
@@ -363,9 +366,11 @@ lobby:
   server-players: "<gray>Jugadores: <white>{0}<gray>/<white>{1}"
   server-template: "<gray>Plantilla: <yellow>{0}"
   server-status-online: "<green>EN LÍNEA"
+  server-status-playing: "<blue>EN PARTIDA"
   server-status-full: "<red>LLENO"
   server-status-starting: "<gold>INICIANDO"
   server-click-join: "<green>▶ ¡Haz clic para unirte! 🌴"
+  server-click-spectate: "<blue>▶ ¡Haz clic para observar la partida!"
   server-click-full: "<red>⚠ Servidor completo."
   server-click-full2: "<gray>Únete a la cola con <yellow>/queue {0}"
   server-click-starting: "<gold>⧗ El servidor está iniciando..."
@@ -406,7 +411,7 @@ lobby:
     - "<gray>• <light_purple>Trail <gray>de partículas personalizado"
     - "<gray>• <light_purple>Nick <gray>personalizado (/nick)"
     - "<gray>• <light_purple>Acceso <gray>a servidores beta"
-  # Marcador & Tablist lobby
+# Lobby scoreboard and tab list
   sb-online: "<gray>En línea: <white>{0}"
   sb-server-label: "<gray>Servidor:"
   sb-server-value: "<green>Lobby"

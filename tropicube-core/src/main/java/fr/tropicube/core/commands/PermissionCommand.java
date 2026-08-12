@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 // /tropiperm <add|remove|list|grade> ...
-/** Consulte et modifie les permissions associées aux grades Tropicube. */
+/** View and modify permissions associated with Tropicube grades. */
 public class PermissionCommand implements CommandExecutor, TabCompleter {
 
     private final TropicubeCore plugin;

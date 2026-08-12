@@ -5,7 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
 
-/** Mouton offensif qui provoque une explosion conventionnelle à l'impact. */
+/** Offensive sheep that causes a conventional explosion on impact. */
 public class TntSheep extends AbstractSheep {
 
     public TntSheep() {

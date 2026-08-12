@@ -22,7 +22,7 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-/** Organise le vote des joueurs pour la carte de la prochaine partie. */
+/** Organizes the players' vote for the map of the next game. */
 public class MapSelectionMenu implements Listener {
 
     private final TropicubeSheepwars plugin;
@@ -68,7 +68,7 @@ public class MapSelectionMenu implements Listener {
         } else if (player.getUniqueId().equals(plugin.getGameManager().getHostUuid())) {
             openPickMenu(player, maps);
         }
-        // Sans vote, seul l'hôte voit l'objet et peut ouvrir ce menu.
+        // Without voting, only the host sees the object and can open this menu.
     }
 
     // ── Vote menu (all players, vote mode enabled) ─────────────────────────
@@ -186,8 +186,8 @@ public class MapSelectionMenu implements Listener {
     // ── Vote resolution ────────────────────────────────────────────────────
 
     /**
-     * Compte les votes et choisit la carte majoritaire ; les égalités et l'absence
-     * de vote sont départagées aléatoirement. Les votes sont ensuite effacés.
+     * Counts the votes and chooses the majority card; equalities and the absence
+     * votes are decided randomly. The votes are then erased.
      */
     public GameMap resolveWinnerAndReset() {
         List<GameMap> maps = plugin.getGameManager().getGameMaps();

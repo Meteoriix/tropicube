@@ -10,9 +10,9 @@ import org.slf4j.Logger;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Suit les changements de serveur pour Redis.
- * Republié NICK_APPLY à chaque changement de serveur si le joueur est nické,
- * afin que le nouveau backend applique le bon skin immédiatement.
+ * Tracks server changes for Redis.
+ * Republished NICK_APPLY each time the server changes if the player is nicknamed,
+ * so that the new backend applies the correct skin immediately.
  */
 public class ServerSwitchListener {
 
@@ -39,7 +39,7 @@ public class ServerSwitchListener {
                     event.getPlayer().getUniqueId() + ":" + instance.getInstanceId());
         });
 
-        // Réapplique le skin sur le nouveau backend pour éviter un affichage transitoire.
+        // Reapplies the skin to the new backend to avoid transient display.
         nickManager.getNick(event.getPlayer().getUniqueId()).ifPresent(_ ->
             nickManager.publishNickApply(event.getPlayer().getUniqueId())
         );

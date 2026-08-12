@@ -21,7 +21,7 @@ Sources historiques : [présentation d'Epicube et origine du nom](https://www.mi
 3. En partie classique, le démarrage automatique déclenche le compte à rebours lorsque le minimum configuré est atteint. En partie personnalisée, l'hôte lance le compte à rebours depuis son menu de réglages ou active explicitement le démarrage automatique.
 4. Au début de la manche, chaque joueur rejoint un spawn libre de son équipe avec une armure en cuir colorée, une épée, un arc Infinité, une flèche et un mouton aléatoire.
 5. Un mouton spécial supplémentaire est distribué périodiquement à chaque survivant. L'équipe en sous-nombre reçoit aussi trois moutons par joueur au lancement.
-6. Une mort est définitive pour la manche et place le joueur en spectateur. La disparition de tous les survivants d'une équipe termine immédiatement la partie.
+6. Une mort est définitive pour la manche et place le joueur en spectateur. Tout joueur qui rejoint l'instance après le lancement arrive également en spectateur, sans équipe et sans influencer les conditions de victoire. La disparition de tous les survivants d'une équipe termine immédiatement la partie.
 7. Après l'écran de résultat, les joueurs sont renvoyés au lobby. Une prochaine instance est précréée lorsque possible et le lobby propose une revanche. Si elle démarre encore, les joueurs qui acceptent sont placés dans une file dédupliquée et la rejoignent automatiquement dès qu'elle est prête, sans multiplier les conteneurs.
 
 La durée par défaut est de 600 secondes, le compte à rebours de 10 secondes et la distribution des moutons de 10 secondes. Ces valeurs sont configurables.
@@ -72,7 +72,7 @@ Une carte jouable contient un monde, une limite de vide et jusqu'à huit spawns 
 
 Lorsque `map-vote-enabled` vaut `true`, chaque joueur vote et une carte est tirée au hasard parmi celles arrivées en tête. Sinon, l'hôte choisit directement la carte. Une partie ne démarre pas si la carte sélectionnée est incomplète ou désactivée.
 
-Les joueurs peuvent demander une équipe dans le menu d'attente. Le gestionnaire conserve des équipes équilibrées et attribue automatiquement une équipe lorsque nécessaire. Les coéquipiers bénéficient d'un contour coloré visible uniquement par leur équipe.
+Les joueurs peuvent demander une équipe dans le menu d'attente. Le gestionnaire conserve des équipes équilibrées et attribue automatiquement une équipe lorsque nécessaire. Les coéquipiers bénéficient d'un contour coloré visible uniquement par leur équipe. Les équipes scoreboard utilisent le nom de profil réellement envoyé au client afin que le contour et la tablist conservent la bonne couleur avec `/nick`.
 
 ## Partie personnalisée et rôle de l'hôte
 
@@ -96,7 +96,7 @@ Le backend SheepWars n'enregistre aucune commande Minecraft propre dans son `plu
 
 Le scoreboard affiche l'état de la partie, le temps restant, les survivants par équipe, la classe, le kit et les éliminations. La tablist identifie les équipes et les spectateurs. Les textes proviennent de TropicubeCore et sont disponibles en français, anglais, espagnol et allemand.
 
-La commande `/sw join`, fournie par TropicubeLobby, sert uniquement à rejoindre de nouveau une partie quittée mais encore active. Le lit de sortie transmet l'ID de l'instance pendant cinq minutes avant de transférer le joueur au lobby.
+La commande `/sw join`, fournie par TropicubeLobby, permet de rejoindre de nouveau une partie quittée mais encore active ; le joueur revient alors comme spectateur. Le lit de sortie transmet l'ID de l'instance pendant cinq minutes avant de transférer le joueur au lobby. Dans le sélecteur de serveurs, une partie en cours porte le statut bleu `PLAYING` et reste joignable comme spectateur tant que l'instance n'est pas pleine.
 
 ## Configuration technique
 

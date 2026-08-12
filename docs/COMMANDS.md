@@ -87,7 +87,7 @@ Le module est actuellement vide et n'ajoute donc aucune commande ni permission.
 | `/send <joueur|*> <serveur>` | — | `tropicube.admin.send` | Transfère un joueur ou tous les joueurs |
 | `/tropi ...` | `/tropicube`, `/cm` | `tropicube.admin` | Administration des instances |
 
-Les grades autorisés à activer `/nick` sont configurés dans `nick.allowed-grades`; les grades staff sont destinés à y figurer explicitement. `/nick off` reste toujours accessible et annule aussi une génération encore en attente. Le changement est propagé aux backends par Redis sans déconnexion volontaire du joueur et deux générations simultanées pour le même joueur sont refusées.
+Les grades autorisés à activer `/nick` sont configurés dans `nick.allowed-grades`; les grades staff sont destinés à y figurer explicitement. `/nick off` reste toujours accessible et annule aussi une génération encore en attente. Le changement est propagé aux backends par Redis sans déconnexion volontaire du joueur et deux générations simultanées pour le même joueur sont refusées. L'identité Redis conserve également le grade d'affichage factice `PREMIUM`, y compris après une reconnexion.
 
 ### Administration des instances
 

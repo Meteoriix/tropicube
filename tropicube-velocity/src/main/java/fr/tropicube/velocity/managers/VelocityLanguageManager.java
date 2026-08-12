@@ -16,7 +16,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Charge les traductions du proxy et résout la langue de chaque joueur via Redis. */
+/** Loads proxy translations and resolves each player's language via Redis. */
 public class VelocityLanguageManager {
 
     public static final List<String> SUPPORTED = List.of("fr", "en", "es", "de");

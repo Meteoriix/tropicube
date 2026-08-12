@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-/** Active ou retire l'identité anonymisée d'un joueur autorisé. */
+/** Enables or removes the anonymized identity of an authorized player. */
 public class NickCommand implements SimpleCommand {
 
     private final NickManager             nickManager;
@@ -40,8 +40,8 @@ public class NickCommand implements SimpleCommand {
             return;
         }
 
-        // La désactivation reste toujours possible afin de ne jamais enfermer
-        // un joueur dans une identité active après un changement de grade.
+        // Deactivation is always possible so as to never lock
+        // a player in an active identity after a rank change.
         if (action == NickAction.DISABLE) {
             handleNickOff(player);
             return;
@@ -61,7 +61,7 @@ public class NickCommand implements SimpleCommand {
         return NickAction.INVALID;
     }
 
-    /** Génère et applique une identité sans déconnecter le joueur. */
+    /** Generates and applies an identity without logging out the player. */
     private void handleNickOn(Player player) {
         UUID uuid = player.getUniqueId();
         Object requestToken = requests.begin(uuid);
@@ -73,7 +73,7 @@ public class NickCommand implements SimpleCommand {
         String nickName = nickManager.generateRandomName();
 
         nickManager.fetchRandomSkin().whenComplete((skinOpt, error) -> {
-            // /nick off ou une requête plus récente invalide ce callback.
+            // /nick off or a more recent request invalidates this callback.
             if (!requests.complete(uuid, requestToken)) return;
             if (!player.isActive()) return;
 
@@ -85,21 +85,21 @@ public class NickCommand implements SimpleCommand {
             NickManager.SkinData skin = skinOpt.get();
             nickManager.storeNick(player.getUniqueId(), nickName, skin);
 
-            // Met aussi à jour la session Velocity afin de conserver le skin lors des transferts.
-            // Le canal Redis côté Paper reste le mécanisme de repli si l'API interne est inaccessible.
+            // Also updates the Velocity session to preserve the skin during transfers.
+            // The Redis channel on the Paper side remains the fallback mechanism if the internal API is inaccessible.
             List<GameProfile.Property> props = new ArrayList<>();
             props.add(new GameProfile.Property("textures", skin.value(), skin.signature()));
             nickManager.tryUpdateSessionProfile(player,
                 new GameProfile(player.getUniqueId(), nickName, props));
 
-            // Demande à chaque backend d'actualiser le skin.
+            // Ask each backend to refresh the skin.
             nickManager.publishNickApply(player.getUniqueId());
 
             player.sendMessage(lm.getComponent(player.getUniqueId(), "proxy.nick-applied", nickName));
         });
     }
 
-    /** Restaure l'identité originale sans déconnecter le joueur. */
+    /** Restores original identity without disconnecting the player. */
     private void handleNickOff(Player player) {
         UUID uuid = player.getUniqueId();
         requests.cancel(uuid);
@@ -111,7 +111,7 @@ public class NickCommand implements SimpleCommand {
 
         nickManager.clearNick(uuid);
 
-        // Restaure le profil de session Velocity capturé à la connexion.
+        // Restores the captured Velocity session profile at login.
         nickManager.getOriginalProfile(uuid).ifPresent(orig -> {
             List<GameProfile.Property> props = new ArrayList<>();
             props.add(new GameProfile.Property("textures", orig.skin().value(), orig.skin().signature()));
@@ -119,7 +119,7 @@ public class NickCommand implements SimpleCommand {
                 new GameProfile(uuid, orig.name(), props));
         });
 
-        // Demande aux backends de restaurer le skin et purge l'état Redis associé.
+        // Requests backends to restore the skin and purges the associated Redis state.
         nickManager.publishNickClear(uuid);
 
         player.sendMessage(lm.getComponent(uuid, "proxy.nick-removed"));

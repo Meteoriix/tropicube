@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-/** Affiche les équipes disponibles et traite le choix du joueur. */
+/** Shows the available teams and processes the player's choice. */
 public class TeamSelectionMenu implements Listener {
 
     private static final int SLOT_RED  = 11;
@@ -138,7 +138,7 @@ public class TeamSelectionMenu implements Listener {
         if (Math.abs(blueCount - redCount) <= 1) {
             gp.setTeam(chosen);
             player.sendMessage(LangHelper.component(player, "sw.team-joined", chosen.getDisplayName()));
-            // Actualise l'objet de sélection d'équipe dans la barre rapide.
+            // Refreshes the team selection object in the quickbar.
             player.getInventory().setItem(0, createSelectorItem(player));
         } else {
             player.sendMessage(LangHelper.component(player, "sw.team-unbalanced", chosen.getDisplayName()));

@@ -14,7 +14,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Comparator;
 
-/** Mouton qui invoque une unité mécanique contrôlée et suivie par le gestionnaire. */
+/** Sheep who summons a mechanical unit controlled and monitored by the manager. */
 public class MechaSheep extends AbstractSheep {
 
     private static final double MECHA_HP    = 100.0;
@@ -29,12 +29,12 @@ public class MechaSheep extends AbstractSheep {
     public boolean onImpact(Player thrower, Sheep impactSheep) {
         Location loc = findSafeLocation(impactSheep.getLocation());
 
-        // Le mouton est le véhicule (en bas) — il garde son IA et pilote le golem
+        // The sheep is the vehicle (bottom) — it keeps its AI and pilots the golem
         Sheep pilot = loc.getWorld().spawn(loc, Sheep.class, s -> {
             s.setColor(SheepType.MECHA.getWool());
             s.setSilent(true);
             s.setInvulnerable(true);
-            // setAware(true) par défaut — le mouton conserve son IA et son pathfinding
+            // setAware(true) by default — the sheep keeps its AI and pathfinding
         });
 
         IronGolem golem = loc.getWorld().spawn(loc, IronGolem.class, g -> {
@@ -48,11 +48,11 @@ public class MechaSheep extends AbstractSheep {
             if (maxHp != null) maxHp.setBaseValue(MECHA_HP);
             g.setHealth(MECHA_HP);
 
-            // Pas besoin de vitesse sur le golem, c'est le mouton qui se déplace
+            // No need for speed on the golem, it's the sheep that moves
             g.setPlayerCreated(false);
         });
 
-        // Le golem est passager du mouton : le mouton pilote, le golem attaque
+        // The golem is a passenger of the sheep: the sheep pilots, the golem attacks
         pilot.addPassenger(golem);
 
         SheepManager sm = plugin.getSheepManager();
@@ -92,9 +92,9 @@ public class MechaSheep extends AbstractSheep {
                         .orElse(null);
 
                 if (nearestEnemy != null) {
-                    // On dirige le mouton (le pilote) vers l'ennemi
+                    // We direct the sheep (the pilot) towards the enemy
                     pilot.getPathfinder().moveTo(nearestEnemy, 1.0);
-                    // Le golem attaque la même cible
+                    // The golem attacks the same target
                     golem.setTarget(nearestEnemy);
                 } else {
                     pilot.getPathfinder().stopPathfinding();

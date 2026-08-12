@@ -14,11 +14,11 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.InventoryHolder;
 
 /**
- * Gère tous les clics dans les GUI Tropicube Lobby.
+ * Handles all clicks in Tropicube Lobby GUIs.
  *
- * <p>La détection des GUI repose sur le {@link InventoryHolder} custom de chaque inventaire
- * plutôt que sur la map {@code openGuis} du GuiManager. Cela garantit que l'événement est
- * toujours annulé dès qu'un de nos inventaires est visible, même si la map serait désynchronisée.
+ * <p> GUI detection is based on the custom {@link InventoryHolder} of each inventory
+ * rather than on the GuiManager map {@code openGuis}. This ensures that the event is
+ * always canceled as soon as one of our inventories is visible, even if the map would be out of sync.
  */
 public class GuiClickListener implements Listener {
 
@@ -28,22 +28,22 @@ public class GuiClickListener implements Listener {
         this.plugin = plugin;
     }
 
-    // ── Événements d'inventaire ──────────────────────────────────────────────
+    // ── Inventory Events ─────────────────────── ───────────────────────
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
         if (!(e.getWhoClicked() instanceof Player player)) return;
 
-        // Identification par holder — fiable même si la map GuiManager est désynchronisée.
+        // Identification by holder — reliable even if the GuiManager map is out of sync.
         InventoryHolder holder = e.getInventory().getHolder();
         if (!isOurGui(holder)) return;
 
-        // Annuler AVANT tout filtrage : empêche le ramassage d'items, shift-click, etc.
+        // Cancel BEFORE any filtering: prevents picking up of items, shift-click, etc.
         e.setCancelled(true);
 
         if (e.getCurrentItem() == null) return;
 
-        // Clic dans la partie basse (inventaire du joueur) → annulé mais sans action GUI.
+        // Click in the lower part (player inventory) → canceled but without GUI action.
         if (e.getClickedInventory() == null || e.getClickedInventory() == player.getInventory()) return;
 
         int slot = e.getRawSlot();
@@ -60,7 +60,7 @@ public class GuiClickListener implements Listener {
         }
     }
 
-    /** Empêche le drag d'items dans nos inventaires. */
+    /** Prevents items from being dragged into our inventories. */
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent e) {
         if (!(e.getWhoClicked() instanceof Player)) return;
@@ -72,8 +72,8 @@ public class GuiClickListener implements Listener {
         if (!(e.getPlayer() instanceof Player player)) return;
         if (!isOurGui(e.getView().getTopInventory().getHolder())) return;
 
-        // Différé d'un tick : si un autre GUI s'ouvre dans la même transition (ex: TypeSelector → ServerSelector),
-        // son holder sera visible au tick suivant → on ne nettoie pas à tort.
+        // Delayed by one tick: if another GUI opens in the same transition (ex: TypeSelector → ServerSelector),
+        // its holder will be visible on the next tick → we do not clean it wrongly.
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (!isOurGui(player.getOpenInventory().getTopInventory().getHolder())) {
                 plugin.getGuiManager().closeGui(player);
@@ -83,7 +83,7 @@ public class GuiClickListener implements Listener {
 
     // ── Identification ───────────────────────────────────────────────────────
 
-    /** @return true si ce holder appartient à l'un de nos GUI Tropicube. */
+    /** @return true if this holder belongs to one of our Tropicube GUIs. */
     public static boolean isOurGui(InventoryHolder holder) {
         return holder instanceof ServerTypeSelectorGUI.Holder
             || holder instanceof ServerSelectorGUI.Holder
@@ -159,7 +159,7 @@ public class GuiClickListener implements Listener {
             }
         }
 
-        // Clic sur un serveur
+        // Click on a server
         String serverId = serverHolder.getServerForSlot(slot);
         if (serverId == null) return;
 
@@ -281,9 +281,9 @@ public class GuiClickListener implements Listener {
 
     }
 
-    // Achat atomique : vérification, débit, attribution, puis compensation si nécessaire.
+    // Atomic purchase: verification, debit, allocation, then compensation if necessary.
 
-    /** @return true si la langue a bien été changée. */
+    /** @return true if the language has been changed. */
     private boolean setPlayerLanguage(Player player, String lang) {
         TropicubeCore core = getCore();
         if (core == null) return false;

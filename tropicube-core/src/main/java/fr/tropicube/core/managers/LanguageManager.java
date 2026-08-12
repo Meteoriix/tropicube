@@ -10,9 +10,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Gestionnaire du système de langues.
- * Chaque joueur peut choisir sa langue d'interface.
- * Langues supportées : fr, en, es, de
+ * Language system manager.
+ * Each player can choose their interface language.
+ * Supported languages: fr, en, es, de
  */
 public class LanguageManager {
 
@@ -42,7 +42,7 @@ public class LanguageManager {
         }
     }
 
-    /** Retourne le texte MiniMessage brut dans la langue du joueur, avec ses paramètres remplacés. */
+    /** Returns the raw MiniMessage text in the player's language, with its settings overridden. */
     public String get(UUID uuid, String key, Object... args) {
         String lang = playerLanguages.getOrDefault(uuid, defaultLanguage);
         YamlConfiguration config = languages.getOrDefault(lang, languages.get(defaultLanguage));
@@ -63,7 +63,7 @@ public class LanguageManager {
         return msg;
     }
 
-    /** Retourne une liste YAML dans la langue du joueur, avec repli sur la langue par défaut. */
+    /** Returns a YAML list in the player's language, with fallback to the default language. */
     public List<String> getList(UUID uuid, String key) {
         String lang = playerLanguages.getOrDefault(uuid, defaultLanguage);
         YamlConfiguration config = languages.getOrDefault(lang, languages.get(defaultLanguage));
@@ -76,7 +76,7 @@ public class LanguageManager {
         return list;
     }
 
-    /** Retourne le texte MiniMessage brut pour une langue explicite. */
+    /** Returns raw MiniMessage text for explicit language. */
     public String getForLang(String lang, String key, Object... args) {
         YamlConfiguration config = languages.getOrDefault(lang, languages.get(defaultLanguage));
         if (config == null) return key;
@@ -87,12 +87,12 @@ public class LanguageManager {
         return msg;
     }
 
-    /** Retourne un composant Adventure localisé pour le joueur. */
+    /** Returns a localized Adventure component for the player. */
     public Component getComponent(UUID uuid, String key, Object... args) {
         return MiniMessage.miniMessage().deserialize(get(uuid, key, args));
     }
 
-    /** Retourne un composant Adventure dans une langue explicite. */
+    /** Returns an Adventure component in an explicit language. */
     public Component getComponentForLang(String lang, String key, Object... args) {
         return MiniMessage.miniMessage().deserialize(getForLang(lang, key, args));
     }

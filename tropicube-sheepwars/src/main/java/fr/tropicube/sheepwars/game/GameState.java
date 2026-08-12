@@ -1,10 +1,10 @@
 package fr.tropicube.sheepwars.game;
 
-/** Phases successives du cycle de vie d'une instance SheepWars. */
+/** Successive phases in the lifecycle of a SheepWars instance. */
 public enum GameState {
-    WAITING,  // En attente de joueurs
-    STARTING, // Compte à rebours
-    PLAYING,  // Partie en cours
-    ENDING,   // Fin de partie (titre affiché)
-    ENDED    // Partie terminée, joueurs renvoyés au lobby
+    WAITING,  // Waiting for players
+    STARTING, // Countdown
+    PLAYING,  // Match in progress
+    ENDING,   // End screen is being displayed
+    ENDED     // Match ended and players returned to the lobby
 }

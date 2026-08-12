@@ -12,7 +12,7 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.Arrays;
 import java.util.List;
 
-/** Constructeur fluide d'objets Paper utilisant les composants de données modernes. */
+/** Smooth Paper object builder using modern data components. */
 public class ItemBuilder {
 
     private final ItemStack itemStack;

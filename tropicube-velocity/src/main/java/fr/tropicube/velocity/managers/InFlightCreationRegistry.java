@@ -4,7 +4,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-/** Registre concurrent garantissant une seule création en cours par clé. */
+/** Concurrent register guaranteeing only one creation in progress per key. */
 final class InFlightCreationRegistry<K, V> {
 
     private final ConcurrentHashMap<K, CompletableFuture<V>> creations = new ConcurrentHashMap<>();

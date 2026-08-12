@@ -8,143 +8,143 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Représente une instance en cours d'exécution d'un serveur Minecraft dans Docker.
- * Contient toutes les métadonnées d'un conteneur : état, réseau, joueurs, configuration.
- * Peut être sérialisée/désérialisée en JSON pour être stockée dans Redis ou échangée
- * entre les différents services de l'infrastructure.
+ * Represents a running instance of a Minecraft server in Docker.
+ * Contains all the metadata of a container: state, network, players, configuration.
+ * Can be serialized/deserialized to JSON for storage in Redis or exchanged
+ * between the different infrastructure services.
  */
 public class ServerInstance {
 
     private static final Gson GSON = new Gson();
 
     /**
-     * Cycle de vie d'une instance serveur :
+     * Lifecycle of a server instance:
      * <p>
      * CREATING → STARTING → GAME_WAITING → GAME_STARTING → GAME_PLAYING → GAME_ENDING → STOPPING → STOPPED
-     * ↘ ERROR (à n'importe quelle étape)
+     * ↘ ERROR (at any step)
      */
     public enum Status {
         /**
-         * Le conteneur Docker est en cours de création.
+         * The Docker container is being created.
          */
         CREATING,
         /**
-         * Le conteneur est démarré, le serveur Minecraft s'initialise.
+         * The container is started, the Minecraft server is initialized.
          */
         STARTING,
         /**
-         * Le serveur est démarré, pleinement opérationnel et accepte des connexions.
+         * The server is started, fully operational and accepting connections.
          */
         GAME_WAITING,
         /**
-         * Le serveur est en ligne, et le mini-jeu est sur le point de commencer
+         * The server is online, and the mini-game is about to begin
          */
         GAME_STARTING,
         /**
-         * Le serveur est en ligne, le mini-jeu est en cours : les joueurs qui rejoignent seront mis en spectateur
+         * The server is online, the mini-game is in progress: players who join will be put as spectators
          */
         GAME_PLAYING,
         /**
-         * Le serveur est en ligne, le mini-jeu est terminé, il n'accepte plus de connexions
+         * The server is online, the mini-game is over, it is no longer accepting connections
          */
         GAME_ENDING,
         /**
-         * Le serveur est en cours d'arrêt propre.
+         * The server is shutting down cleanly.
          */
         STOPPING,
         /**
-         * Le conteneur est arrêté.
+         * The container is stopped.
          */
         STOPPED,
         /**
-         * Une erreur irrécupérable s'est produite.
+         * An unrecoverable error has occurred.
          */
         ERROR
     }
 
     /**
-     * Identifiant unique de l'instance (UUID).
+     * Unique identifier of the instance (UUID).
      */
     private String instanceId;
 
     /**
-     * Identifiant complet du conteneur Docker (hash SHA-256).
+     * Full Docker container identifier (SHA-256 hash).
      */
     private String containerId;
 
     /**
-     * Nom lisible du conteneur Docker (ex. "tropicube-lobby-1").
+     * Readable name of the Docker container (e.g. "tropicube-lobby-1").
      */
     private String containerName;
 
     /**
-     * Identifiant du template utilisé pour créer cette instance.
+     * Identifier of the template used to create this instance.
      */
     private final String templateId;
 
     /**
-     * Nom affiché du serveur (visible dans les menus de sélection).
+     * Displayed name of the server (visible in the selection menus).
      */
     private final String serverName;
 
     /**
-     * Adresse IP interne du conteneur Docker.
+     * Internal IP address of the Docker container.
      */
     private String host;
 
     /**
-     * Port Minecraft sur lequel le serveur écoute.
+     * Minecraft port on which the server listens.
      */
     private int port;
 
     /**
-     * Port RCON exposé sur l'hôte pour l'administration à distance.
-     * ZÉRO signifie que le RCON est désactivé pour cette instance.
+     * RCON port exposed on host for remote administration.
+     * ZERO means RCON is disabled for this instance.
      */
     private int rconPort;
 
     /**
-     * Nombre de joueurs actuellement connectés.
+     * Number of players currently connected.
      */
     private int onlinePlayers;
 
     /**
-     * Capacité maximale du serveur.
+     * Maximum server capacity.
      */
     private int maxPlayers;
 
     /**
-     * État actuel du cycle de vie du serveur.
+     * Current state of the server lifecycle.
      */
     private Status status;
 
     /**
-     * Timestamp Unix (secondes) du démarrage effectif du serveur Minecraft.
+     * Unix timestamp (seconds) of the actual startup of the Minecraft server.
      */
     private long startedAt;
 
     /**
-     * Si true, seuls les joueurs sur la whitelist peuvent rejoindre le serveur.
+     * If true, only players on the whitelist can join the server.
      */
     private final boolean whitelisted;
 
     /**
-     * Liste des UUID de joueurs autorisés à rejoindre le serveur
+     * List of player UUIDs allowed to join the server
      */
     private List<UUID> whitelistedPlayers = new ArrayList<>();
 
     /**
-     * Type de serveur (ex. "PAPER", "VELOCITY", "MINESTOM"...).
+     * Server type (e.g. "PAPER", "VELOCITY", "MINESTOM"...).
      */
     private String serverType;
 
     /**
-     * Constructeur principal pour créer une nouvelle instance à partir d'un template.
+     * Main constructor to create a new instance from a template.
      *
-     * @param instanceId UUID unique de cette instance
-     * @param templateId Identifiant du template Docker source
-     * @param serverName Nom affiché du serveur
-     * @param port       Port Minecraft assigné
+     * @param instanceId Unique UUID of this instance
+     * @param templateId identifier of the source Docker template
+     * @param serverName Server Display Name
+     * @param port Minecraft port assigned
      */
     public ServerInstance(String instanceId, String templateId, String serverName, int port, boolean whitelisted) {
         this.whitelisted = whitelisted;
@@ -157,25 +157,25 @@ public class ServerInstance {
     }
 
     /**
-     * Indique si un joueur peut rejoindre ce serveur.
-     * Les trois conditions doivent être réunies simultanément :
+     * Indicates whether a player can join this server.
+     * The three conditions must be met simultaneously:
      * <ul>
-     *   <li>Le serveur est en statut {@link Status#GAME_WAITING} ou {@link Status#GAME_STARTING} ou {@link Status#GAME_PLAYING} (pour ce dernier les joueurs seront mis en spectateur)</li>
-     *   <li>La whitelist est désactivée ; utiliser {@link #isJoinable(UUID)} pour un joueur précis</li>
-     *   <li>Le serveur n'est pas plein</li>
+     * <li>The server is in status {@link Status#GAME_WAITING} or {@link Status#GAME_STARTING} or {@link Status#GAME_PLAYING} (for the latter the players will be put as spectators)</li>
+     * <li>The whitelist is disabled; use {@link #isJoinable(UUID)} for a specific player</li>
+     * <li>Server is not full</li>
      * </ul>
      *
-     * @return true si le serveur est accessible à un nouveau joueur
+     * @return true if the server is accessible to a new player
      */
     public boolean isJoinable() {
         return hasJoinableStatus() && !whitelisted && hasCapacity();
     }
 
     /**
-     * Indique si un joueur précis peut rejoindre, whitelist comprise.
+     * Indicates whether a specific player can join, including the whitelist.
      *
-     * @param playerId UUID du joueur à vérifier
-     * @return {@code true} si le statut, la capacité et la whitelist autorisent l'accès
+     * @param playerId UUID of the player to check
+     * @return {@code true} if status, capacity and whitelist allow access
      */
     public boolean isJoinable(UUID playerId) {
         return hasJoinableStatus()
@@ -192,31 +192,31 @@ public class ServerInstance {
     }
 
     /**
-     * Raccourci pour vérifier que le serveur est en statut {@link Status#GAME_WAITING}, {@link Status#GAME_STARTING}, {@link Status#GAME_PLAYING} ou {@link Status#GAME_ENDING}.
-     * Ne tient pas compte de la whitelist ni de la capacité.
+     * Shortcut to verify that the server is in status {@link Status#GAME_WAITING}, {@link Status#GAME_STARTING}, {@link Status#GAME_PLAYING} or {@link Status#GAME_ENDING}.
+     * Does not take whitelist or capacity into account.
      *
-     * @return true si le serveur est en ligne
+     * @return true if the server is online
      */
     public boolean isOnline() {
         return status == Status.GAME_WAITING || status == Status.GAME_STARTING || status == Status.GAME_PLAYING || status == Status.GAME_ENDING;
     }
 
     /**
-     * Sérialise cette instance en JSON.
-     * Utilisé notamment pour la persistance dans Redis.
+     * Serializes this instance to JSON.
+     * Used in particular for persistence in Redis.
      *
-     * @return représentation JSON de l'objet
+     * @return JSON representation of object
      */
     public String toJson() {
         return GSON.toJson(this);
     }
 
     /**
-     * Désérialise une instance depuis une chaîne JSON.
-     * Méthode de fabrique statique, inverse de {@link #toJson()}.
+     * Deserializes an instance from a JSON string.
+     * Static factory method, inverse of {@link #toJson()}.
      *
-     * @param json chaîne JSON représentant un {@code ServerInstance}
-     * @return l'objet reconstitué
+     * @param json JSON string representing a {@code ServerInstance}
+     * @return the reconstituted object
      */
     public static ServerInstance fromJson(String json) {
         if (json == null || json.isBlank()) {
@@ -379,8 +379,8 @@ public class ServerInstance {
     }
 
     /**
-     * Représentation textuelle concise de l'instance, utile pour les logs.
-     * Exemple : {@code ServerInstance{id='abc-123', name='Lobby', status=GAME_WAITING, port=25565, players=12/50, whitelist=true}}
+     * Concise textual representation of the instance, useful for logs.
+     * Example: {@code ServerInstance{id='abc-123', name='Lobby', status=GAME_WAITING, port=25565, players=12/50, whitelist=true}}
      */
     @Override
     public String toString() {

@@ -36,8 +36,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
         description = "Gestion dynamique de serveurs Minecraft via Docker"
 )
 /**
- * Point d'entrée Velocity du réseau Tropicube. Il initialise Redis, Docker,
- * la découverte des serveurs dynamiques, les files d'attente et les commandes proxy.
+ * Velocity entry point to the Tropicube network. It initializes Redis, Docker,
+ * discovery of dynamic servers, queues and proxy commands.
  */
 public class TropicubeVelocity {
 
@@ -109,9 +109,9 @@ public class TropicubeVelocity {
     }
 
     /**
-     * Détermine si les conteneurs dynamiques et leurs volumes anonymes doivent être supprimés.
-     * L'absence de configuration privilégie le nettoyage afin de ne pas laisser de données
-     * éphémères sur l'hôte après l'arrêt du proxy.
+     * Determines whether dynamic containers and their anonymous volumes should be deleted.
+     * The absence of configuration favors cleaning so as not to leave any data
+     * ephemeral on the host after stopping the proxy.
      */
     static boolean stopDynamicServersOnShutdown(ConfigurationNode config) {
         return config == null || config.node("shutdown", "stop-dynamic-servers").getBoolean(true);

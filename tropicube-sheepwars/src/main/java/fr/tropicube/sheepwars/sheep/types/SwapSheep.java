@@ -10,7 +10,7 @@ import org.bukkit.entity.Sheep;
 import java.util.Comparator;
 import java.util.List;
 
-/** Mouton tactique qui échange la position de joueurs adverses. */
+/** Tactical sheep that swaps the position of opposing players. */
 public class SwapSheep extends AbstractSheep {
 
     public SwapSheep() {

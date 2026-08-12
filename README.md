@@ -1,10 +1,13 @@
 # Tropicube
 
+[English version](README.en.md)
+
 Tropicube est une infrastructure Minecraft multi-serveurs pour **Minecraft 26.2**. Elle associe un proxy Velocity, des serveurs Paper créés dynamiquement dans Docker, Redis pour l'état partagé et les événements, et MySQL pour les données persistantes.
 
 ## Documentation
 
 - [Ouvrir le site de documentation HTML](docs-site/index.html)
+- [Ouvrir la documentation anglaise](docs-site/en/index.html)
 - [Architecture et fonctionnement](docs/ARCHITECTURE.md)
 - [Commandes Minecraft et permissions](docs/COMMANDS.md)
 - [Configuration](docs/CONFIGURATION.md)

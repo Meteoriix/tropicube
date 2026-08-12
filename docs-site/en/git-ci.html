@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Branches, commits, CI, Dependabot, and releases">
+  <meta name="theme-color" content="#2d1b6b">
+  <title>Git and CI · Tropicube</title>
+  <link rel="stylesheet" href="../styles.css?v=54e32bb45a59">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span><span><span class="brand-name-accent">Tropi</span>cube</span></a><a class="language-switch" href="../git-ci.html" hreflang="fr">Français</a></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong><span class="brand-name-accent">Tropi</span>cube</strong><small>Network documentation</small></span></a>
+    <a class="language-switch" href="../git-ci.html" hreflang="fr">Français</a>
+    <nav aria-label="Main documentation"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commands</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Deployment</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link" href="fallen-kingdoms.html"><span class="nav-icon">♜</span><span>Fallen Kingdoms</span></a>
+<a class="nav-link" href="fallen-kingdoms-technical-spec.html"><span class="nav-icon">⌘</span><span>FK technical</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Development</span></a>
+<a class="nav-link active" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changes</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="content" class="main">
+    <section class="hero"><div class="eyebrow">Official documentation</div><h1>Git and CI</h1><p>Branches, commits, CI, Dependabot, and releases</p></section>
+    <div class="content-grid">
+      <article class="documentation"><h2 id="branches-and-history">Branches and history<a class="heading-anchor" href="#branches-and-history" aria-label="Link to this section">#</a></h2>
+<p>Keep <code>main</code> buildable. Use short-lived branches for isolated work when collaboration requires them. Do not rewrite published history, force-push, create a tag, or push to a remote without explicit authorization.</p>
+<p>Preserve unrelated user changes in a dirty worktree. Never use destructive commands such as <code>git reset --hard</code> or <code>git checkout --</code> unless the user explicitly requests them.</p>
+<h2 id="commits">Commits<a class="heading-anchor" href="#commits" aria-label="Link to this section">#</a></h2>
+<p>Use one coherent commit per important change with the format:</p>
+<div class="code-block"><span class="code-language">text</span><pre class=""><code>type(scope): imperative French summary</code></pre></div>
+<p>Examples:</p>
+<div class="code-block"><span class="code-language">text</span><pre class=""><code>feat(sheepwars): ajoute le mode spectateur
+fix(velocity): conserve le grade du nick
+docs(site): ajoute la navigation anglaise</code></pre></div>
+<p>The body explains motivation, design choices, impact, migrations, tests, documentation, remaining manual validation, and risks. Never commit a red build.</p>
+<h2 id="before-committing">Before committing<a class="heading-anchor" href="#before-committing" aria-label="Link to this section">#</a></h2>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>git diff --check
+git diff
+git status --short
+git lfs status</code></pre></div>
+<p>Check that no secret, <code>.env</code>, password, token, SQL export, forwarding secret, runtime player data, generated cache, or local third-party JAR is included.</p>
+<h2 id="continuous-integration">Continuous integration<a class="heading-anchor" href="#continuous-integration" aria-label="Link to this section">#</a></h2>
+<p>CI must use Java 25 and Maven 3.9.11-compatible tooling. The core verification is:</p>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>.\mvnw.cmd clean verify
+node docs-site/build.mjs
+node docs-site/validate.mjs
+docker compose --env-file .env.example config --quiet</code></pre></div>
+<p>Script or Compose changes also require the relevant Windows and Linux validation paths. World changes require Git LFS checks.</p>
+<h2 id="dependency-updates">Dependency updates<a class="heading-anchor" href="#dependency-updates" aria-label="Link to this section">#</a></h2>
+<p>Review dependency updates across the complete reactor. Do not change Paper or Velocity mappings, repositories, or Minecraft numbering based only on outdated examples. A Minecraft migration must be explicit, verified against official sources, and validated in every module.</p>
+<p>Dependabot or other automated updates should remain narrowly scoped and must pass dependency convergence, compilation, tests, shading, and runtime compatibility checks.</p>
+<h2 id="releases">Releases<a class="heading-anchor" href="#releases" aria-label="Link to this section">#</a></h2>
+<p>Apply semantic versioning according to user-visible compatibility. Update <code>docs/CHANGELOG.md</code> and <code>docs/en/CHANGELOG.md</code>, rebuild both documentation languages, and ensure artifacts are reproducible before creating any release. Tags and remote publication require explicit authorization.</p>
+<h2 id="pull-request-evidence">Pull request evidence<a class="heading-anchor" href="#pull-request-evidence" aria-label="Link to this section">#</a></h2>
+<p>A change summary should list:</p>
+<ul><li>behavior and architecture impact;</li><li>tests and validation commands actually executed;</li><li>configuration, language, Redis, SQL, Docker, and documentation changes;</li><li>manual in-game scenarios still required;</li><li>known risks or assumptions.</li></ul></article>
+      <aside class="page-toc" aria-label="On this page"><span class="toc-title">On this page</span><a class="toc-level-2" href="#branches-and-history">Branches and history</a><a class="toc-level-2" href="#commits">Commits</a><a class="toc-level-2" href="#before-committing">Before committing</a><a class="toc-level-2" href="#continuous-integration">Continuous integration</a><a class="toc-level-2" href="#dependency-updates">Dependency updates</a><a class="toc-level-2" href="#releases">Releases</a><a class="toc-level-2" href="#pull-request-evidence">Pull request evidence</a></aside>
+    </div>
+    <footer><span><span class="brand-name-accent">Tropi</span>cube</span><span>Static documentation generated from Markdown files</span></footer>
+  </main>
+</body>
+</html>

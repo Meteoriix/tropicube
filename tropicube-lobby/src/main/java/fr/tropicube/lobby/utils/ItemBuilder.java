@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Builder fluide pour créer des ItemStack destinés aux GUI.
- * Accepte des chaînes MiniMessage pour les noms et lores.
+ * Fluid builder to create ItemStacks for GUIs.
+ * Accepts MiniMessage strings for names and lore.
  */
 public class ItemBuilder {
 
@@ -80,14 +80,14 @@ public class ItemBuilder {
         return item;
     }
 
-    // ── Méthodes statiques pratiques ──────────────────────────────────────────
+    // ── Practical static methods ───────────────────── ─────────────────────
 
-    /** Créer un séparateur (verre teinté sans nom). */
+    /** Create a separator (unnamed tinted glass). */
     public static ItemStack filler(Material glass) {
         return new ItemBuilder(glass).name(" ").build();
     }
 
-    /** Item de fermeture (localisé). */
+    /** Closing item (localized). */
     public static ItemStack closeButton(Player player) {
         return new ItemBuilder(Material.BARRIER)
                 .name(LangHelper.get(player, "lobby.close-button"))
@@ -95,7 +95,7 @@ public class ItemBuilder {
                 .build();
     }
 
-    /** Item de fermeture (fallback sans joueur). */
+    /** Closing item (fallback without player). */
     public static ItemStack closeButton() {
         return new ItemBuilder(Material.BARRIER)
                 .name("<red>✖ Fermer")
@@ -103,7 +103,7 @@ public class ItemBuilder {
                 .build();
     }
 
-    /** Flèche retour (localisé). */
+    /** Back arrow (located). */
     public static ItemStack backButton(Player player) {
         return new ItemBuilder(Material.ARROW)
                 .name(LangHelper.get(player, "lobby.back-button"))
@@ -111,7 +111,7 @@ public class ItemBuilder {
                 .build();
     }
 
-    /** Flèche retour (fallback sans joueur). */
+    /** Return arrow (fallback without player). */
     public static ItemStack backButton() {
         return new ItemBuilder(Material.ARROW)
                 .name("<yellow>← Retour")

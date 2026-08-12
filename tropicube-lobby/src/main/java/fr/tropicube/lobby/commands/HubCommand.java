@@ -9,8 +9,8 @@ import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
-// /hub — revient au spawn du lobby
-/** Informe le joueur qu'il se trouve déjà sur un lobby. */
+    // /hub — returns to the lobby spawn
+/** Informs the player that he is already in a lobby. */
 public class HubCommand implements CommandExecutor {
     private final TropicubeLobby plugin;
     public HubCommand(TropicubeLobby plugin) { this.plugin = plugin; }

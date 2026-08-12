@@ -11,8 +11,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Lit et met en cache les informations des serveurs disponibles depuis Redis.
- * Utilisé par les menus GUI et les commandes du lobby.
+ * Reads and caches information from servers available from Redis.
+ * Used by GUI menus and lobby commands.
  */
 public class LobbyServerManager {
 
@@ -20,7 +20,7 @@ public class LobbyServerManager {
     private final RedisManager redisManager;
     private final Gson gson = new Gson();
 
-    // Référence atomique : le remplacement de toute la map est atomique (pas de lecture partielle).
+    // Atomic reference: the replacement of the entire map is atomic (no partial reading).
     private final AtomicReference<Map<String, ServerInfo>> cacheRef =
             new AtomicReference<>(Collections.emptyMap());
     private final AtomicReference<List<TemplateInfo>> templateCacheRef =
@@ -31,7 +31,7 @@ public class LobbyServerManager {
         this.redisManager = redisManager;
     }
 
-    /** Rafraîchit la liste des serveurs depuis Redis (appelé de façon asynchrone). */
+    /** Refreshes the list of servers from Redis (called asynchronously). */
     public void refreshServerList() {
         try {
             List<ServerInstance> instances = redisManager.getAllInstances();
@@ -52,7 +52,7 @@ public class LobbyServerManager {
                 fresh.put(info.id(), info);
             }
 
-            // Remplacement atomique : les lectures concurrentes voient toujours un snapshot cohérent.
+            // Atomic replacement: Concurrent reads always see a consistent snapshot.
             cacheRef.set(Collections.unmodifiableMap(fresh));
         } catch (Exception e) {
             plugin.getLogger().warning("Erreur rafraîchissement serveurs : " + e.getMessage());
@@ -85,12 +85,12 @@ public class LobbyServerManager {
         }
     }
 
-    /** Retourne tous les serveurs (toutes catégories). */
+    /** Returns all servers (all categories). */
     public Collection<ServerInfo> getAllServers() {
         return List.copyOf(cacheRef.get().values());
     }
 
-    /** Retourne les serveurs filtrés par type (ex: "survival", "lobby", "pvp"), triés par id. */
+    /** Returns servers filtered by type (eg: "survival", "lobby", "pvp"), sorted by id. */
     public List<ServerInfo> getServersByType(String type) {
         List<ServerInfo> result = new ArrayList<>();
         for (ServerInfo info : cacheRef.get().values()) {
@@ -100,7 +100,7 @@ public class LobbyServerManager {
         return result;
     }
 
-    /** Retourne les types de serveurs distincts disponibles (hors lobby). */
+    /** Returns the distinct server types available (excluding lobby). */
     public Set<String> getAvailableTypes() {
         Set<String> types = new TreeSet<>();
         for (ServerInfo info : cacheRef.get().values()) {
@@ -111,7 +111,7 @@ public class LobbyServerManager {
         return types;
     }
 
-    /** Retourne les types distincts publiés par les templates Velocity (hors lobby). */
+    /** Returns distinct types published by Velocity templates (excluding lobby). */
     public Set<String> getAvailableTemplateTypes() {
         Set<String> types = new TreeSet<>();
         for (TemplateInfo t : getCustomGameTemplates()) {
@@ -126,7 +126,7 @@ public class LobbyServerManager {
         return Optional.ofNullable(cacheRef.get().get(id));
     }
 
-    /** Trouve le meilleur serveur disponible d'un type donné (moins de joueurs, ONLINE, non plein). */
+    /** Finds the best available server of a given type (fewer players, ONLINE, not full). */
     public Optional<ServerInfo> getBestServer(String type) {
         return getServersByType(type).stream()
                 .filter(ServerInfo::isMatchmakingJoinable)
@@ -137,12 +137,12 @@ public class LobbyServerManager {
         return cacheRef.get().values().stream().mapToInt(ServerInfo::playerCount).sum();
     }
 
-    /** Demande au proxy Velocity de transférer le joueur via Redis. */
+    /** Asks the Velocity proxy to transfer the player via Redis. */
     public void connectToServer(org.bukkit.entity.Player player, String serverName) {
         redisManager.publishCommand("PROXY", "CONNECT:" + player.getUniqueId() + ":" + serverName);
     }
 
-    /** Retourne le templateId pour un type de serveur donné. */
+    /** Returns the templateId for a given server type. */
     public Optional<String> getTemplateIdForType(String type) {
         return getCustomGameTemplates().stream()
                 .filter(t -> type.equalsIgnoreCase(t.type()))
@@ -151,8 +151,8 @@ public class LobbyServerManager {
     }
 
     /**
-     * Demande au proxy de créer et démarrer un nouveau serveur du type donné,
-     * puis d'y rediriger le joueur dès qu'il est prêt.
+     * Asks the proxy to create and start a new server of the given type,
+     * then redirect the player there as soon as he is ready.
      */
     public void requestStartGame(org.bukkit.entity.Player player, String type) {
         getTemplateIdForType(type).ifPresentOrElse(
@@ -162,20 +162,20 @@ public class LobbyServerManager {
     }
 
     /**
-     * Lit la liste des templates publiés par Velocity depuis Redis.
-     * Retourne une liste vide si aucun template n'est disponible.
+     * Reads the list of templates published by Velocity from Redis.
+     * Returns an empty list if no template is available.
      */
     public List<TemplateInfo> getCustomGameTemplates() {
         return templateCacheRef.get();
     }
 
     /**
-     * Données immuables d'un template de serveur (publiées par Velocity).
+     * Immutable data from a server template (published by Velocity).
      */
     public record TemplateInfo(String id, String name, String type, int maxPlayers) {}
 
     /**
-     * Données immuables d'un serveur (snapshot Redis).
+     * Immutable data from a server (Redis snapshot).
      */
     public record ServerInfo(
             String id,
@@ -202,10 +202,12 @@ public class LobbyServerManager {
             return ("GAME_WAITING".equalsIgnoreCase(status)
                     || "GAME_STARTING".equalsIgnoreCase(status)) && !isFull();
         }
-        /** Indique si l'instance doit apparaître dans les listes et totaux du lobby. */
+        /** Indicates whether the instance should appear in the lobby lists and totals. */
         public boolean isListed() { return isOnline() || isStarting(); }
         public boolean isStarting() { return "STARTING".equalsIgnoreCase(status); }
-        public boolean isPlaying() { return "PLAYING".equalsIgnoreCase(status); }
+        public boolean isPlaying() {
+            return "GAME_PLAYING".equalsIgnoreCase(status) || "PLAYING".equalsIgnoreCase(status);
+        }
         public boolean isFull()     { return playerCount >= maxPlayers; }
         public String displayName() {
             return id == null || id.isBlank()

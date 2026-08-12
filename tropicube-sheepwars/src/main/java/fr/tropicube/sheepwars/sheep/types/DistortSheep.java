@@ -20,14 +20,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-/** Mouton qui désoriente temporairement les joueurs touchés. */
+/** Sheep that temporarily disorients affected players. */
 public class DistortSheep extends AbstractSheep {
 
     public static final String FB_KEY = "ender_sheep_fb";
 
     private static final double MAX_RADIUS = 5;
     private static final double FLIGHT_TICKS = 12.0;
-    // Facteur de traînée horizontale : somme de 0,98^i sur la durée du vol.
+    // Horizontal drag factor: sum of 0.98^i over the duration of the flight.
     private static final double DRAG_FACTOR = (1.0 - Math.pow(0.98, FLIGHT_TICKS)) / 0.02;
 
     /** Cached key to avoid allocating a new NamespacedKey on every wave. */
@@ -39,7 +39,7 @@ public class DistortSheep extends AbstractSheep {
 
     @Override
     public void onLaunch(Player thrower, Sheep sheep) {
-        // Le plugin est injecté après construction ; initialise la clé au premier usage.
+        // The plugin is injected after construction; initializes the key on first use.
         if (fbKey == null) fbKey = new NamespacedKey(plugin, FB_KEY);
     }
 
@@ -49,7 +49,7 @@ public class DistortSheep extends AbstractSheep {
 
         sheep.getWorld().playSound(sheep.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1.5F, 0.7F);
 
-        // Déforme la zone pendant cinq secondes, puis disparaît.
+        // Distorts the area for five seconds, then disappears.
         new BukkitRunnable() {
             int elapsed = 0;
 
@@ -103,7 +103,7 @@ public class DistortSheep extends AbstractSheep {
         int r = (int) MAX_RADIUS;
 
         // Center-weighted candidate collection:
-        // La probabilité décroît quadratiquement avec la distance au centre.
+        // The probability decreases quadratically with the distance from the center.
         List<Block> candidates = new ArrayList<>();
         for (int x = -r; x <= r; x++) {
             for (int y = -r; y <= r; y++) {
@@ -144,7 +144,7 @@ public class DistortSheep extends AbstractSheep {
 
             if (dx == 0 && dy == 0 && dz == 0) continue;
 
-            // La destination sert uniquement au calcul de direction ; aucun bloc n'y est posé.
+            // The destination is used only for direction calculation; no block is placed there.
             Location srcCenter = source.getLocation().add(0.5, 0.5, 0.5);
             Location dstCenter = source.getLocation().add(dx + 0.5, dy + 0.5, dz + 0.5);
 
@@ -173,7 +173,7 @@ public class DistortSheep extends AbstractSheep {
             wave.add(fb);
         }
 
-        // Retire les blocs animés après 20 ticks avec un effet de particules.
+        // Removes animated blocks after 20 ticks with a particle effect.
         new BukkitRunnable() {
             @Override
             public void run() {

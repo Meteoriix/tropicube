@@ -4,7 +4,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/** Suit la génération de nick active de chaque joueur et invalide les callbacks obsolètes. */
+/** Tracks each player's active nick generation and invalidates obsolete callbacks. */
 final class NickRequestRegistry {
 
     private final ConcurrentMap<UUID, Object> requests = new ConcurrentHashMap<>();

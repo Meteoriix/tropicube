@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Historical game design, kingdoms, kits, and sieges">
+  <meta name="theme-color" content="#2d1b6b">
+  <title>Epicube Fallen Kingdoms — complete game-mode description · Tropicube</title>
+  <link rel="stylesheet" href="../styles.css?v=54e32bb45a59">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span><span><span class="brand-name-accent">Tropi</span>cube</span></a><a class="language-switch" href="../fallen-kingdoms.html" hreflang="fr">Français</a></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong><span class="brand-name-accent">Tropi</span>cube</strong><small>Network documentation</small></span></a>
+    <a class="language-switch" href="../fallen-kingdoms.html" hreflang="fr">Français</a>
+    <nav aria-label="Main documentation"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commands</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Deployment</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link active" href="fallen-kingdoms.html"><span class="nav-icon">♜</span><span>Fallen Kingdoms</span></a>
+<a class="nav-link" href="fallen-kingdoms-technical-spec.html"><span class="nav-icon">⌘</span><span>FK technical</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Development</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changes</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="content" class="main">
+    <section class="hero"><div class="eyebrow">Official documentation</div><h1>Epicube Fallen Kingdoms — complete game-mode description</h1><p>Historical game design, kingdoms, kits, and sieges</p></section>
+    <div class="content-grid">
+      <article class="documentation"><h2 id="document-purpose">Document purpose<a class="heading-anchor" href="#document-purpose" aria-label="Link to this section">#</a></h2>
+<p>This document preserves the historical design references for a future Tropicube adaptation. It describes the intended player experience and notable Epicube rules; it is not an implementation claim. Where sources are incomplete, the technical specification records explicit V1 decisions and temporary assumptions.</p>
+<h2 id="1-general-concept">1. General concept<a class="heading-anchor" href="#1-general-concept" aria-label="Link to this section">#</a></h2>
+<p>Fallen Kingdoms is a long-form team strategy mode combining survival, building, resource management, territorial defense, PvP, and sieges. Several kingdoms establish fortified bases around a destructible heart. Teams develop behind staged protections before combat and heart attacks become available.</p>
+<p>The game rewards specialization and coordination rather than isolated mechanical skill. Miners secure ore, farmers sustain the kingdom, scouts gather information, and enchanters improve equipment. A kingdom remains active while its heart and eligible players satisfy the current phase rules.</p>
+<h2 id="2-difference-from-the-original-community-mode">2. Difference from the original community mode<a class="heading-anchor" href="#2-difference-from-the-original-community-mode" aria-label="Link to this section">#</a></h2>
+<p>Epicube's interpretation automated the timeline, team assignment, kits, protected zones, hearts, scoreboards, and announcements. It converted a largely self-managed community format into a reliable public-server minigame with enforceable phases and clear victory rules.</p>
+<h2 id="3-lobby-and-preparation">3. Lobby and preparation<a class="heading-anchor" href="#3-lobby-and-preparation" aria-label="Link to this section">#</a></h2>
+<p>Before the match, players choose a kingdom and a kit from inventory menus. The lobby presents team capacity, selected kit, map, phase timings, and start conditions. A return item leaves the queue safely.</p>
+<p>Teams must remain balanced. Missing choices receive deterministic defaults when the countdown ends. The match does not start when the selected map lacks required kingdom regions, hearts, spawns, or resource areas.</p>
+<h2 id="4-kits">4. Kits<a class="heading-anchor" href="#4-kits" aria-label="Link to this section">#</a></h2>
+<h3 id="miner">Miner<a class="heading-anchor" href="#miner" aria-label="Link to this section">#</a></h3>
+<p>The miner accelerates underground progression and ore acquisition. Its tools and bonuses make it the main source of iron, gold, diamond, stone, and defensive blocks.</p>
+<h3 id="farmer">Farmer<a class="heading-anchor" href="#farmer" aria-label="Link to this section">#</a></h3>
+<p>The farmer establishes food production and renewable supplies. This role supports sustained defense, recovery after deaths, and long preparation phases.</p>
+<h3 id="scout">Scout<a class="heading-anchor" href="#scout" aria-label="Link to this section">#</a></h3>
+<p>The scout favors mobility, reconnaissance, surface exploration, and early warning. It discovers enemy development and prepares routes without bypassing phase protections.</p>
+<h3 id="enchanter">Enchanter<a class="heading-anchor" href="#enchanter" aria-label="Link to this section">#</a></h3>
+<p>The enchanter develops experience and enchantment infrastructure, then converts shared resources into stronger team equipment.</p>
+<h3 id="role-complementarity">Role complementarity<a class="heading-anchor" href="#role-complementarity" aria-label="Link to this section">#</a></h3>
+<p>No kit should replace the others. Shared storage, negotiated priorities, and coordinated distribution of scarce resources are part of the intended experience. Kits provide direction without permanently preventing players from performing basic survival tasks.</p>
+<h2 id="5-maps">5. Maps<a class="heading-anchor" href="#5-maps" aria-label="Link to this section">#</a></h2>
+<p>Maps contain multiple symmetric kingdom territories around a contested central area. Each territory defines a protected base, heart location, team spawn, build boundary, and access routes. Neutral land supplies exploration and combat space.</p>
+<p>Historical references include the Cactus, Apocalypse, and Yeti themes. A Tropicube map catalog may reproduce their strategic principles without copying proprietary assets.</p>
+<h2 id="6-kingdom-base">6. Kingdom base<a class="heading-anchor" href="#6-kingdom-base" aria-label="Link to this section">#</a></h2>
+<h3 id="build-zone">Build zone<a class="heading-anchor" href="#build-zone" aria-label="Link to this section">#</a></h3>
+<p>Players may freely develop their own territory within phase rules. Outside territory, restrictions prevent griefing, impassable structures, and abuse of protected blocks.</p>
+<h3 id="heart">Heart<a class="heading-anchor" href="#heart" aria-label="Link to this section">#</a></h3>
+<p>The heart is the kingdom's strategic objective. It remains invulnerable until the siege phase. Damage, destruction, restoration, and ownership are server-controlled and announced globally.</p>
+<h3 id="heart-defense">Heart defense<a class="heading-anchor" href="#heart-defense" aria-label="Link to this section">#</a></h3>
+<p>Teams may build layered defenses, routes, traps allowed by configuration, and fallback positions. Protections prevent burying the heart beyond legal limits, surrounding it with forbidden materials, or exploiting map boundaries.</p>
+<h2 id="7-resource-economy">7. Resource economy<a class="heading-anchor" href="#7-resource-economy" aria-label="Link to this section">#</a></h2>
+<p>Essential resources include food, wood, stone, iron, gold, diamonds, experience, enchanting supplies, arrows, and defensive blocks. The map and kits distribute acquisition opportunities while preserving contestable neutral areas.</p>
+<p>Death carries a meaningful cost through dropped or lost equipment and respawn delay. Teams therefore maintain reserve equipment and protected storage. Exact item retention rules belong to configuration and the V1 technical contract.</p>
+<h2 id="8-match-phases">8. Match phases<a class="heading-anchor" href="#8-match-phases" aria-label="Link to this section">#</a></h2>
+<h3 id="phase-1-start-and-occupation">Phase 1 — Start and occupation<a class="heading-anchor" href="#phase-1-start-and-occupation" aria-label="Link to this section">#</a></h3>
+<p>Players reach their kingdom, inspect the heart, claim roles, and establish initial gathering routes. Direct aggression is blocked.</p>
+<h3 id="phase-2-kingdom-development">Phase 2 — Kingdom development<a class="heading-anchor" href="#phase-2-kingdom-development" aria-label="Link to this section">#</a></h3>
+<p>Teams build defenses, farms, mines, storage, and equipment. Cross-border griefing and PvP remain restricted.</p>
+<h3 id="phase-3-pvp-opens">Phase 3 — PvP opens<a class="heading-anchor" href="#phase-3-pvp-opens" aria-label="Link to this section">#</a></h3>
+<p>Players may fight in authorized areas, scout enemy approaches, and contest neutral resources. Hearts remain protected.</p>
+<h3 id="phase-4-siege-preparation">Phase 4 — Siege preparation<a class="heading-anchor" href="#phase-4-siege-preparation" aria-label="Link to this section">#</a></h3>
+<p>Teams finalize assault equipment, rally points, diplomatic choices, and defensive rotations. Announcements make the upcoming vulnerability explicit.</p>
+<h3 id="phase-5-assaults-open">Phase 5 — Assaults open<a class="heading-anchor" href="#phase-5-assaults-open" aria-label="Link to this section">#</a></h3>
+<p>Enemy bases and hearts become attackable under controlled rules. Teams coordinate breaches while retaining defenders.</p>
+<h3 id="phase-6-kingdom-destruction">Phase 6 — Kingdom destruction<a class="heading-anchor" href="#phase-6-kingdom-destruction" aria-label="Link to this section">#</a></h3>
+<p>When a heart is destroyed, the kingdom enters a ruined or last-life condition defined by the technical specification. Eliminations become permanent according to the confirmed V1 rules.</p>
+<h3 id="phase-7-end-game">Phase 7 — End game<a class="heading-anchor" href="#phase-7-end-game" aria-label="Link to this section">#</a></h3>
+<p>The final surviving kingdom wins. A time limit may trigger sudden death or a deterministic ranking rather than allowing an endless stalemate.</p>
+<h2 id="9-building-restrictions">9. Building restrictions<a class="heading-anchor" href="#9-building-restrictions" aria-label="Link to this section">#</a></h2>
+<p>Inside their own base, players receive the broadest construction freedom. Neutral land allows tactical structures within anti-grief limits. Enemy territory becomes modifiable only in authorized phases and must prevent lava, water, obsidian, bedrock, portal, height-limit, and unbreakable-containment abuse.</p>
+<p>The server records changed blocks or restores the world from an immutable template after each match.</p>
+<h2 id="10-combat-and-assaults">10. Combat and assaults<a class="heading-anchor" href="#10-combat-and-assaults" aria-label="Link to this section">#</a></h2>
+<p>Combat uses normal Minecraft mechanics enhanced by kits and phase rules. Death should matter without making early mistakes permanently remove a player before hearts become vulnerable. Successful attacks require equipment, navigation, distraction, breach work, and coordinated timing.</p>
+<p>Defenders use terrain, fortifications, reserves, callouts, and counterattacks. Spawn protection must prevent camping without becoming an exploitable combat shield.</p>
+<h2 id="11-diplomacy-and-strategy">11. Diplomacy and strategy<a class="heading-anchor" href="#11-diplomacy-and-strategy" aria-label="Link to this section">#</a></h2>
+<p>Temporary alliances, non-aggression arrangements, shared threats, and betrayals naturally emerge in multi-kingdom games. The server does not need to enforce political agreements, but chat, team identity, and objective announcements must keep decisions understandable.</p>
+<h2 id="12-interface-and-automation">12. Interface and automation<a class="heading-anchor" href="#12-interface-and-automation" aria-label="Link to this section">#</a></h2>
+<p>The interface exposes current phase, next transition, kingdom, heart status, living or eligible players, and match time. Announcements cover phase changes, PvP opening, siege opening, heart damage, kingdom ruin, elimination, sudden death, and victory.</p>
+<p>Menus handle team and kit selection. Administrative commands support controlled setup and diagnostics without becoming normal gameplay tools.</p>
+<h2 id="13-key-design-qualities">13. Key design qualities<a class="heading-anchor" href="#13-key-design-qualities" aria-label="Link to this section">#</a></h2>
+<ul><li>a readable multi-stage timeline;</li><li>strong team roles without rigid class locks;</li><li>visible kingdom objectives;</li><li>meaningful preparation and reserve management;</li><li>attacks that require coordination;</li><li>reliable anti-abuse protections;</li><li>deterministic cleanup and replayability.</li></ul>
+<h2 id="14-example-match">14. Example match<a class="heading-anchor" href="#14-example-match" aria-label="Link to this section">#</a></h2>
+<p>Four kingdoms enter their bases and divide work. Miners and farmers establish the economy while scouts map routes and enchanters prepare upgrades. PvP then opens in neutral land, revealing team strength. As siege time approaches, teams reinforce hearts and assemble assault groups. One kingdom breaches a rival, destroys its heart, and hunts its remaining last-life players while another attacks the weakened victor. Sudden death prevents a fortified stalemate, and the final kingdom receives the result before all players return to the lobby.</p>
+<h2 id="15-reliability-of-information">15. Reliability of information<a class="heading-anchor" href="#15-reliability-of-information" aria-label="Link to this section">#</a></h2>
+<p>Historical details should be treated according to source confidence. Confirmed Tropicube V1 rules in the <a href="fallen-kingdoms-technical-spec.html">technical specification</a> override uncertain memories or third-party descriptions. Reversible balance values remain configurable; architectural or experience-changing ambiguity must be resolved before implementation.</p></article>
+      <aside class="page-toc" aria-label="On this page"><span class="toc-title">On this page</span><a class="toc-level-2" href="#document-purpose">Document purpose</a><a class="toc-level-2" href="#1-general-concept">1. General concept</a><a class="toc-level-2" href="#2-difference-from-the-original-community-mode">2. Difference from the original community mode</a><a class="toc-level-2" href="#3-lobby-and-preparation">3. Lobby and preparation</a><a class="toc-level-2" href="#4-kits">4. Kits</a><a class="toc-level-3" href="#miner">Miner</a><a class="toc-level-3" href="#farmer">Farmer</a><a class="toc-level-3" href="#scout">Scout</a><a class="toc-level-3" href="#enchanter">Enchanter</a><a class="toc-level-3" href="#role-complementarity">Role complementarity</a><a class="toc-level-2" href="#5-maps">5. Maps</a><a class="toc-level-2" href="#6-kingdom-base">6. Kingdom base</a><a class="toc-level-3" href="#build-zone">Build zone</a><a class="toc-level-3" href="#heart">Heart</a><a class="toc-level-3" href="#heart-defense">Heart defense</a><a class="toc-level-2" href="#7-resource-economy">7. Resource economy</a><a class="toc-level-2" href="#8-match-phases">8. Match phases</a><a class="toc-level-3" href="#phase-1-start-and-occupation">Phase 1 — Start and occupation</a><a class="toc-level-3" href="#phase-2-kingdom-development">Phase 2 — Kingdom development</a><a class="toc-level-3" href="#phase-3-pvp-opens">Phase 3 — PvP opens</a><a class="toc-level-3" href="#phase-4-siege-preparation">Phase 4 — Siege preparation</a><a class="toc-level-3" href="#phase-5-assaults-open">Phase 5 — Assaults open</a><a class="toc-level-3" href="#phase-6-kingdom-destruction">Phase 6 — Kingdom destruction</a><a class="toc-level-3" href="#phase-7-end-game">Phase 7 — End game</a><a class="toc-level-2" href="#9-building-restrictions">9. Building restrictions</a><a class="toc-level-2" href="#10-combat-and-assaults">10. Combat and assaults</a><a class="toc-level-2" href="#11-diplomacy-and-strategy">11. Diplomacy and strategy</a><a class="toc-level-2" href="#12-interface-and-automation">12. Interface and automation</a><a class="toc-level-2" href="#13-key-design-qualities">13. Key design qualities</a><a class="toc-level-2" href="#14-example-match">14. Example match</a><a class="toc-level-2" href="#15-reliability-of-information">15. Reliability of information</a></aside>
+    </div>
+    <footer><span><span class="brand-name-accent">Tropi</span>cube</span><span>Static documentation generated from Markdown files</span></footer>
+  </main>
+</body>
+</html>

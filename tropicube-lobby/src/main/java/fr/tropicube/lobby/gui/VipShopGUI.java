@@ -16,11 +16,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Menu boutique VIP.
+ * VIP shop menu.
  *
- * Les entrées (grade, material, prix, nom affiché) sont lues depuis la section
- * {@code vip-shop.entries} du config.yml du lobby.
- * Les avantages sont lus dans les fichiers de langue :
+ * The entries (grade, material, price, displayed name) are read from the section
+ * {@code vip-shop.entries} section of the lobby config.yml.
+ * The advantages are read in the language files:
  *   {@code lobby.vip-perks-<grade-key-lowercase-with-dashes>}
  */
 public class VipShopGUI {
@@ -89,7 +89,7 @@ public class VipShopGUI {
         return inv;
     }
 
-    // Métadonnées consultées par le gestionnaire de clics.
+    // Metadata consulted by the click manager.
 
     /** Returns the grade key at the given slot, or null if not a grade slot. */
     public static String getEntryForSlot(int slot) {
@@ -178,7 +178,7 @@ public class VipShopGUI {
     }
 
     private static String hardcodedKeyForSlot(int slot) {
-        // Repli utilisé si l'instance Lobby n'est pas disponible, notamment pendant les tests.
+        // Fallback used if the Lobby instance is not available, especially during tests.
         return switch (slot) {
             case 11 -> "VIP";
             case 22 -> "VIP_PLUS";

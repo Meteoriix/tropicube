@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="V1 specification, states, protections, and technical contracts">
+  <meta name="theme-color" content="#2d1b6b">
+  <title>Fallen Kingdoms — technical specification · Tropicube</title>
+  <link rel="stylesheet" href="../styles.css?v=54e32bb45a59">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span><span><span class="brand-name-accent">Tropi</span>cube</span></a><a class="language-switch" href="../fallen-kingdoms-technical-spec.html" hreflang="fr">Français</a></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong><span class="brand-name-accent">Tropi</span>cube</strong><small>Network documentation</small></span></a>
+    <a class="language-switch" href="../fallen-kingdoms-technical-spec.html" hreflang="fr">Français</a>
+    <nav aria-label="Main documentation"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commands</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Deployment</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link" href="fallen-kingdoms.html"><span class="nav-icon">♜</span><span>Fallen Kingdoms</span></a>
+<a class="nav-link active" href="fallen-kingdoms-technical-spec.html"><span class="nav-icon">⌘</span><span>FK technical</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Development</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changes</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="content" class="main">
+    <section class="hero"><div class="eyebrow">Official documentation</div><h1>Fallen Kingdoms — technical specification</h1><p>V1 specification, states, protections, and technical contracts</p></section>
+    <div class="content-grid">
+      <article class="documentation"><h2 id="document-status">Document status<a class="heading-anchor" href="#document-status" aria-label="Link to this section">#</a></h2>
+<p>This specification defines the approved direction for the first Tropicube Fallen Kingdoms implementation. The Maven module is currently an empty placeholder. No runtime behavior should be inferred until the module is implemented and tested.</p>
+<h2 id="first-version-scope">First-version scope<a class="heading-anchor" href="#first-version-scope" aria-label="Link to this section">#</a></h2>
+<p>V1 must deliver a complete match lifecycle: waiting lobby, balanced kingdom selection, kits, map validation, timed phase transitions, protections, PvP, hearts, last lives, elimination, sudden death, victory, statistics, reconnect handling, world restoration, Redis/Velocity integration, localization, Docker templates, and cleanup.</p>
+<p>The implementation must remain independent from SheepWars business classes. Only genuinely shared services belong in Core or Docker API.</p>
+<h2 id="confirmed-rules">Confirmed rules<a class="heading-anchor" href="#confirmed-rules" aria-label="Link to this section">#</a></h2>
+<h3 id="players-and-kingdoms">Players and kingdoms<a class="heading-anchor" href="#players-and-kingdoms" aria-label="Link to this section">#</a></h3>
+<p>The match supports several kingdoms with configurable capacity and balanced assignment. Each player owns one kingdom membership and one kit for the match. Late arrivals follow the explicit spectator or replacement policy and never receive an unsafe implicit active role.</p>
+<h3 id="timeline">Timeline<a class="heading-anchor" href="#timeline" aria-label="Link to this section">#</a></h3>
+<p>Preparation, PvP opening, siege opening, sudden death, and final timeout are explicit scheduled transitions. Default durations are configurable and validated. Repeated or late scheduler callbacks must be idempotent.</p>
+<h3 id="combat">Combat<a class="heading-anchor" href="#combat" aria-label="Link to this section">#</a></h3>
+<p>PvP is disabled before its opening transition. Base and heart protections depend on the current phase, attacker kingdom, target kingdom, material, location, and objective state. Damage and interaction listeners remain thin adapters over pure policy objects.</p>
+<h3 id="hearts-last-lives-and-elimination">Hearts, last lives, and elimination<a class="heading-anchor" href="#hearts-last-lives-and-elimination" aria-label="Link to this section">#</a></h3>
+<p>Each kingdom owns a heart with an explicit healthy/destroyed state. Before destruction, normal death follows configured respawn rules. After destruction, affected players enter their last-life condition; their next qualifying death eliminates them. A kingdom is ruined when its objective and eligible players satisfy the configured ruin rule.</p>
+<h3 id="death-disconnect-and-late-arrival">Death, disconnect, and late arrival<a class="heading-anchor" href="#death-disconnect-and-late-arrival" aria-label="Link to this section">#</a></h3>
+<p>Disconnect state is retained for a bounded reconnect window. A reconnect restores the same kingdom, kit, life state, and safe location when the match still accepts it. Disconnecting must not evade death, last-life, or elimination rules. Late arrival cannot change kingdom balance or victory unexpectedly.</p>
+<h3 id="sudden-death-and-final-result">Sudden death and final result<a class="heading-anchor" href="#sudden-death-and-final-result" aria-label="Link to this section">#</a></h3>
+<p>Sudden death prevents an indefinite fortified stalemate by tightening protections or applying configured pressure. At the hard time limit, a deterministic comparator ranks kingdoms using documented objective and survivor criteria; an exact tie may produce a draw.</p>
+<h2 id="configurable-rules">Configurable rules<a class="heading-anchor" href="#configurable-rules" aria-label="Link to this section">#</a></h2>
+<ul><li>minimum and maximum players;</li><li>kingdom count and capacity;</li><li>countdown and phase durations;</li><li>PvP, siege, sudden-death, and final timeout timings;</li><li>respawn delay and reconnect grace period;</li><li>heart health or destruction mechanics;</li><li>last-life behavior;</li><li>enabled kits and kit balance;</li><li>permitted and forbidden blocks by phase and region;</li><li>map catalog, spawns, hearts, regions, and world boundaries;</li><li>victory comparator and tie handling.</li></ul>
+<p>Every option requires a safe default, startup validation, and documentation.</p>
+<h2 id="temporary-assumptions">Temporary assumptions<a class="heading-anchor" href="#temporary-assumptions" aria-label="Link to this section">#</a></h2>
+<p>Unconfirmed historical details remain explicit assumptions, never hidden constants. Reversible values use configuration. Any ambiguity that changes persistence, architecture, kingdom balance, elimination, or player experience must be raised before implementation.</p>
+<h2 id="state-machine">State machine<a class="heading-anchor" href="#state-machine" aria-label="Link to this section">#</a></h2>
+<div class="code-block"><span class="code-language">text</span><pre class=""><code>LOADING -&gt; WAITING -&gt; STARTING -&gt; PREPARATION -&gt; PVP -&gt; SIEGE
+                                              -&gt; SUDDEN_DEATH
+                                              -&gt; ENDING -&gt; ENDED
+Any active state -&gt; ABORTED on unrecoverable failure</code></pre></div>
+<h3 id="state-invariants">State invariants<a class="heading-anchor" href="#state-invariants" aria-label="Link to this section">#</a></h3>
+<ul><li>only one state is active;</li><li>transitions validate their expected source;</li><li>a completed transition may be called again without duplicating effects;</li><li><code>ENDING</code>, <code>ENDED</code>, and <code>ABORTED</code> reject gameplay events;</li><li>every state-owned task is cancelled when leaving that state;</li><li>world mutations occur only on the Paper scheduler.</li></ul>
+<h3 id="trigger-events">Trigger events<a class="heading-anchor" href="#trigger-events" aria-label="Link to this section">#</a></h3>
+<p>Player thresholds trigger countdown evaluation. Scheduled deadlines trigger phase changes. Heart destruction and eligible-player counts trigger ruin or victory evaluation. Proxy shutdown, plugin disable, invalid map state, or unrecoverable persistence failure trigger controlled abort and cleanup.</p>
+<h2 id="component-responsibilities">Component responsibilities<a class="heading-anchor" href="#component-responsibilities" aria-label="Link to this section">#</a></h2>
+<div class="table-scroll"><table><thead><tr><th>Component</th><th>Responsibility</th></tr></thead><tbody><tr><td><code>FallenKingdomsPlugin</code></td><td>Dependency wiring and lifecycle only</td></tr><tr><td><code>GameManager</code></td><td>State machine and transition orchestration</td></tr><tr><td><code>KingdomService</code></td><td>Balanced assignment and kingdom state</td></tr><tr><td><code>HeartService</code></td><td>Objective ownership, damage, destruction, and events</td></tr><tr><td><code>LifeService</code></td><td>Death, respawn, last life, elimination, reconnect</td></tr><tr><td><code>ProtectionPolicy</code></td><td>Pure region/material/phase decisions</td></tr><tr><td><code>KitCatalog</code></td><td>Validated immutable kit definitions</td></tr><tr><td><code>MapCatalog</code></td><td>Validated maps, regions, spawns, and hearts</td></tr><tr><td>Paper listeners</td><td>Translate API events into domain operations</td></tr><tr><td>Redis gateway</td><td>Instance state, reconnect markers, and proxy commands</td></tr><tr><td>Statistics repository</td><td>Asynchronous durable match results</td></tr></tbody></table></div>
+<h2 id="domain-model">Domain model<a class="heading-anchor" href="#domain-model" aria-label="Link to this section">#</a></h2>
+<h3 id="match">Match<a class="heading-anchor" href="#match" aria-label="Link to this section">#</a></h3>
+<p>Stores immutable settings and current state, transition timestamps, selected map, kingdom registry, player registry, and result. Mutable access remains encapsulated.</p>
+<h3 id="kingdoms-and-bases">Kingdoms and bases<a class="heading-anchor" href="#kingdoms-and-bases" aria-label="Link to this section">#</a></h3>
+<p>A kingdom owns its ID, display color, members, base region, spawn, heart, and ruin state. Region operations use a dedicated immutable geometry model testable without Bukkit.</p>
+<h3 id="players">Players<a class="heading-anchor" href="#players" aria-label="Link to this section">#</a></h3>
+<p>A match player stores UUID, kingdom, kit, connection state, eliminated state, last-life state, kills, deaths, objective contribution, and reconnect deadline.</p>
+<h3 id="hearts">Hearts<a class="heading-anchor" href="#hearts" aria-label="Link to this section">#</a></h3>
+<p>Hearts expose explicit ownership and state. Damage validates phase, attacker, position, protection, and duplicate-destruction behavior atomically on the server thread.</p>
+<h3 id="kits-and-maps">Kits and maps<a class="heading-anchor" href="#kits-and-maps" aria-label="Link to this section">#</a></h3>
+<p>Catalogs load configuration into validated immutable definitions. Invalid IDs, duplicate locations, overlapping mandatory regions, missing spawns, invalid world names, or unsafe bounds fail startup with actionable messages.</p>
+<h2 id="yaml-configuration">YAML configuration<a class="heading-anchor" href="#yaml-configuration" aria-label="Link to this section">#</a></h2>
+<p>The future module configuration will contain Redis access, general timings, player and kingdom limits, reconnect policy, protection matrices, kit definitions, map definitions, heart locations, spawns, build regions, world boundaries, and forced operational overrides.</p>
+<p>Deployment copies must remain synchronized with embedded resources. Player messages remain in the four Core languages with placeholder parity.</p>
+<h2 id="target-commands-and-permissions">Target commands and permissions<a class="heading-anchor" href="#target-commands-and-permissions" aria-label="Link to this section">#</a></h2>
+<p>Normal gameplay should use menus and items. Administrative setup may expose commands for map selection, region points, kingdom spawns, heart locations, validation, forced phase transitions, and diagnostics. Every command and permission must be documented when implemented.</p>
+<h2 id="protection-matrix">Protection matrix<a class="heading-anchor" href="#protection-matrix" aria-label="Link to this section">#</a></h2>
+<p>Protection decisions combine match state, actor state, actor kingdom, target region, target kingdom, material, and action type. Unit tests cover own base, neutral land, enemy base, heart area, forbidden materials, liquids, explosions, fire, entities, containers, and boundary heights for every phase.</p>
+<h2 id="death-and-respawn">Death and respawn<a class="heading-anchor" href="#death-and-respawn" aria-label="Link to this section">#</a></h2>
+<p>Death handling is idempotent. It records the cause, updates statistics, applies inventory policy, evaluates last life and elimination, chooses a safe respawn or spectator state, and then evaluates kingdom ruin and match victory. Late death events after match completion are ignored.</p>
+<h2 id="kingdom-ruin">Kingdom ruin<a class="heading-anchor" href="#kingdom-ruin" aria-label="Link to this section">#</a></h2>
+<p>Heart destruction is announced once. The ruined kingdom's eligible players receive their last-life state. Eliminated players become spectators and lose gameplay interaction. The kingdom remains represented for statistics even after all members are eliminated.</p>
+<h2 id="victory-and-cleanup">Victory and cleanup<a class="heading-anchor" href="#victory-and-cleanup" aria-label="Link to this section">#</a></h2>
+<p>Victory produces an immutable result, persists statistics asynchronously, updates interfaces, cancels tasks, blocks further world changes, writes replay markers, and asks Velocity to transfer players. Cleanup removes entities, subscriptions, caches, Redis keys, and the dynamic container or restores a local development world.</p>
+<h2 id="custom-paper-events">Custom Paper events<a class="heading-anchor" href="#custom-paper-events" aria-label="Link to this section">#</a></h2>
+<p>Domain transitions may publish typed Paper events for phase change, heart damage, heart destruction, player elimination, kingdom ruin, and match end. Events are informational adapters and cannot bypass state invariants.</p>
+<h2 id="map-restoration">Map restoration<a class="heading-anchor" href="#map-restoration" aria-label="Link to this section">#</a></h2>
+<p>Production games use immutable world templates or disposable containers. Local development may restore from a clean directory. Player data and runtime world changes are never committed. <code>.mca</code> templates remain in Git LFS.</p>
+<h2 id="core-redis-and-velocity">Core, Redis, and Velocity<a class="heading-anchor" href="#core-redis-and-velocity" aria-label="Link to this section">#</a></h2>
+<p>Core supplies language, player, grade, permission, economy, and database services where their responsibility is network-wide. MySQL stores durable statistics. Redis stores bounded ephemeral state with documented TTLs. Velocity creates, registers, routes, and destroys instances without learning Fallen Kingdoms business rules.</p>
+<h2 id="mandatory-edge-cases">Mandatory edge cases<a class="heading-anchor" href="#mandatory-edge-cases" aria-label="Link to this section">#</a></h2>
+<ul><li>countdown threshold gained and lost repeatedly;</li><li>host or team member disconnect during every phase;</li><li>reconnect before and after grace expiry;</li><li>simultaneous lethal events and heart destruction;</li><li>all kingdoms eliminated in the same tick;</li><li>invalid or partially configured map;</li><li>plugin disable during an active transition;</li><li>Redis, SQL, or proxy command failure;</li><li>full server receiving a late join;</li><li>duplicate scheduled callbacks;</li><li>world event received after <code>ENDING</code>;</li><li>no valid winner at hard timeout.</li></ul>
+<h2 id="testable-acceptance-criteria">Testable acceptance criteria<a class="heading-anchor" href="#testable-acceptance-criteria" aria-label="Link to this section">#</a></h2>
+<h3 id="unit-tests">Unit tests<a class="heading-anchor" href="#unit-tests" aria-label="Link to this section">#</a></h3>
+<p>State transitions, team balancing, phase deadlines, protection matrices, heart invariants, last lives, elimination, reconnect policy, victory comparison, kit and map validation, and repeated cleanup calls work without a Paper server.</p>
+<h3 id="resource-and-module-tests">Resource and module tests<a class="heading-anchor" href="#resource-and-module-tests" aria-label="Link to this section">#</a></h3>
+<p>Configuration loads, four-language keys and placeholders match, embedded and deployment resources agree, plugin descriptors are valid, Maven dependencies preserve game boundaries, and documentation links build in both languages.</p>
+<h3 id="paper-and-docker-scenarios">Paper and Docker scenarios<a class="heading-anchor" href="#paper-and-docker-scenarios" aria-label="Link to this section">#</a></h3>
+<p>Manual validation covers a complete match, every phase boundary, combat opening, legal and illegal building, heart destruction, reconnects, late arrival, sudden death, result transfer, container removal, world reset, <code>/lang</code>, and shutdown during play.</p>
+<h2 id="approved-implementation-sequence">Approved implementation sequence<a class="heading-anchor" href="#approved-implementation-sequence" aria-label="Link to this section">#</a></h2>
+<ol><li>Validate unresolved game-design decisions.</li><li>Add the Maven module resources and pure state machine.</li><li>Implement immutable configuration catalogs and tests.</li><li>Add kingdoms, hearts, lives, protections, and unit tests.</li><li>Add thin Paper adapters and interfaces.</li><li>Integrate Core, Redis, Velocity, Docker, and persistence.</li><li>Add maps and deployment templates through Git LFS.</li><li>Run targeted tests after every coherent step.</li><li>Finish with the complete reactor, Docker validation, documentation site, diff review, and staged in-game acceptance scenarios.</li></ol></article>
+      <aside class="page-toc" aria-label="On this page"><span class="toc-title">On this page</span><a class="toc-level-2" href="#document-status">Document status</a><a class="toc-level-2" href="#first-version-scope">First-version scope</a><a class="toc-level-2" href="#confirmed-rules">Confirmed rules</a><a class="toc-level-3" href="#players-and-kingdoms">Players and kingdoms</a><a class="toc-level-3" href="#timeline">Timeline</a><a class="toc-level-3" href="#combat">Combat</a><a class="toc-level-3" href="#hearts-last-lives-and-elimination">Hearts, last lives, and elimination</a><a class="toc-level-3" href="#death-disconnect-and-late-arrival">Death, disconnect, and late arrival</a><a class="toc-level-3" href="#sudden-death-and-final-result">Sudden death and final result</a><a class="toc-level-2" href="#configurable-rules">Configurable rules</a><a class="toc-level-2" href="#temporary-assumptions">Temporary assumptions</a><a class="toc-level-2" href="#state-machine">State machine</a><a class="toc-level-3" href="#state-invariants">State invariants</a><a class="toc-level-3" href="#trigger-events">Trigger events</a><a class="toc-level-2" href="#component-responsibilities">Component responsibilities</a><a class="toc-level-2" href="#domain-model">Domain model</a><a class="toc-level-3" href="#match">Match</a><a class="toc-level-3" href="#kingdoms-and-bases">Kingdoms and bases</a><a class="toc-level-3" href="#players">Players</a><a class="toc-level-3" href="#hearts">Hearts</a><a class="toc-level-3" href="#kits-and-maps">Kits and maps</a><a class="toc-level-2" href="#yaml-configuration">YAML configuration</a><a class="toc-level-2" href="#target-commands-and-permissions">Target commands and permissions</a><a class="toc-level-2" href="#protection-matrix">Protection matrix</a><a class="toc-level-2" href="#death-and-respawn">Death and respawn</a><a class="toc-level-2" href="#kingdom-ruin">Kingdom ruin</a><a class="toc-level-2" href="#victory-and-cleanup">Victory and cleanup</a><a class="toc-level-2" href="#custom-paper-events">Custom Paper events</a><a class="toc-level-2" href="#map-restoration">Map restoration</a><a class="toc-level-2" href="#core-redis-and-velocity">Core, Redis, and Velocity</a><a class="toc-level-2" href="#mandatory-edge-cases">Mandatory edge cases</a><a class="toc-level-2" href="#testable-acceptance-criteria">Testable acceptance criteria</a><a class="toc-level-3" href="#unit-tests">Unit tests</a><a class="toc-level-3" href="#resource-and-module-tests">Resource and module tests</a><a class="toc-level-3" href="#paper-and-docker-scenarios">Paper and Docker scenarios</a><a class="toc-level-2" href="#approved-implementation-sequence">Approved implementation sequence</a></aside>
+    </div>
+    <footer><span><span class="brand-name-accent">Tropi</span>cube</span><span>Static documentation generated from Markdown files</span></footer>
+  </main>
+</body>
+</html>

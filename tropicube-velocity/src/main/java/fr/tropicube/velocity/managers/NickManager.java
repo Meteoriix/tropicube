@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.util.GameProfile;
 import fr.tropicube.docker.client.RedisManager;
+import fr.tropicube.docker.model.NickIdentity;
 import fr.tropicube.docker.model.PlayerGradeCache;
 import org.slf4j.Logger;
 
@@ -21,12 +22,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
-/** Gère la génération, la persistance Redis et la suppression des identités anonymisées. */
+/** Handles generation, Redis persistence, and deletion of anonymized identities. */
 public class NickManager {
 
-    private static final String KEY_NICK     = "nick:";
     private static final String KEY_ORIGINAL = "nick:original:";
-    private static final int    NICK_TTL     = 86400;
     private static final Pattern COMPACT_UUID = Pattern.compile("[0-9a-fA-F]{32}");
 
     private static final List<String> ADJECTIVES = List.of(
@@ -91,7 +90,7 @@ public class NickManager {
         return PlayerGradeCache.isAllowed(grade, allowedGrades);
     }
 
-    // Génération du pseudonyme
+    // Pseudonym generation
 
     public String generateRandomName() {
         ThreadLocalRandom random = ThreadLocalRandom.current();
@@ -102,7 +101,7 @@ public class NickManager {
         return name.length() > 16 ? name.substring(0, 16) : name;
     }
 
-    // Récupération des skins Mojang
+    // Recovery of Mojang skins
 
     public CompletableFuture<Optional<SkinData>> fetchRandomSkin() {
         String uuid = skinUuids.get(ThreadLocalRandom.current().nextInt(skinUuids.size()));
@@ -145,55 +144,48 @@ public class NickManager {
     // Persistance Redis
 
     public void storeNick(UUID uuid, String nickName, SkinData skin) {
-        JsonObject obj = new JsonObject();
-        obj.addProperty("n", nickName);
-        obj.addProperty("v", skin.value());
-        if (skin.signature() != null) obj.addProperty("s", skin.signature());
-        redis.set(KEY_NICK + uuid, gson.toJson(obj), NICK_TTL);
+        NickIdentity identity = new NickIdentity(
+                nickName, skin.value(), skin.signature(), NickIdentity.DEFAULT_DISPLAY_GRADE);
+        redis.set(NickIdentity.key(uuid), identity.toJson(), NickIdentity.TTL_SECONDS);
     }
 
     public Optional<NickData> getNick(UUID uuid) {
-        String raw = redis.get(KEY_NICK + uuid);
-        if (raw == null) return Optional.empty();
-        try {
-            JsonObject obj  = JsonParser.parseString(raw).getAsJsonObject();
-            String     name = obj.get("n").getAsString();
-            String     val  = obj.get("v").getAsString();
-            String     sig  = obj.has("s") ? obj.get("s").getAsString() : null;
-            return Optional.of(new NickData(name, new SkinData(val, sig)));
-        } catch (Exception e) {
-            logger.warn("[Nick] Corrupted nick data for {}: {}", uuid, e.getMessage());
-            redis.delete(KEY_NICK + uuid);
-            return Optional.empty();
+        String raw = redis.get(NickIdentity.key(uuid));
+        Optional<NickIdentity> identity = NickIdentity.fromJson(raw);
+        if (raw != null && identity.isEmpty()) {
+            logger.warn("[Nick] Corrupted nick data for {}", uuid);
+            redis.delete(NickIdentity.key(uuid));
         }
+        return identity.map(value -> new NickData(
+                value.name(), new SkinData(value.skinValue(), value.skinSignature())));
     }
 
     public void clearNick(UUID uuid) {
-        redis.delete(KEY_NICK + uuid);
+        redis.delete(NickIdentity.key(uuid));
     }
 
     /**
-     * Conserve l'identité 30 secondes après une déconnexion afin que
-     * {@code GameProfileRequestEvent} la restaure lors d'un retour rapide.
+     * Retains identity for 30 seconds after disconnection so that
+     * {@code GameProfileRequestEvent} restores it during a fast return.
      */
     public void parkNick(UUID uuid) {
-        String raw = redis.get(KEY_NICK + uuid);
-        if (raw != null) redis.set(KEY_NICK + uuid, raw, 30);
+        String raw = redis.get(NickIdentity.key(uuid));
+        if (raw != null) redis.set(NickIdentity.key(uuid), raw, 30);
         String origRaw = redis.get(KEY_ORIGINAL + uuid);
         if (origRaw != null) redis.set(KEY_ORIGINAL + uuid, origRaw, 35);
     }
 
     /**
-     * Rétablit la durée de vie complète après une reconnexion rapide.
+     * Restores full life after quick reconnection.
      */
     public void refreshNickTtl(UUID uuid) {
-        String raw = redis.get(KEY_NICK + uuid);
-        if (raw != null) redis.set(KEY_NICK + uuid, raw, NICK_TTL);
+        String raw = redis.get(NickIdentity.key(uuid));
+        if (raw != null) redis.set(NickIdentity.key(uuid), raw, NickIdentity.TTL_SECONDS);
         String origRaw = redis.get(KEY_ORIGINAL + uuid);
-        if (origRaw != null) redis.set(KEY_ORIGINAL + uuid, origRaw, NICK_TTL);
+        if (origRaw != null) redis.set(KEY_ORIGINAL + uuid, origRaw, NickIdentity.TTL_SECONDS);
     }
 
-    // Profil original utilisé par /nick off
+    // Original profile used by /nick off
 
     /** Called at GameProfileRequestEvent to remember the real Mojang skin. */
     public void storeOriginalProfile(UUID uuid, String realName, GameProfile.Property textures) {
@@ -201,7 +193,7 @@ public class NickManager {
         obj.addProperty("n", realName);
         obj.addProperty("v", textures.getValue());
         if (textures.getSignature() != null) obj.addProperty("s", textures.getSignature());
-        redis.set(KEY_ORIGINAL + uuid, gson.toJson(obj), NICK_TTL);
+        redis.set(KEY_ORIGINAL + uuid, gson.toJson(obj), NickIdentity.TTL_SECONDS);
     }
 
     public Optional<OriginalProfile> getOriginalProfile(UUID uuid) {
@@ -224,7 +216,7 @@ public class NickManager {
         redis.delete(KEY_ORIGINAL + uuid);
     }
 
-    // Notifications envoyées aux backends
+    // Notifications sent to backends
 
     public void publishNickApply(UUID uuid) {
         redis.publishPlayerEvent("NICK_APPLY", uuid.toString());
@@ -239,13 +231,13 @@ public class NickManager {
         redis.publishPlayerEvent("NICK_CLEAR", uuid.toString());
     }
 
-    // Profil de session Velocity : compatibilité isolée avec une API interne.
+    // Velocity session profile: Isolated compatibility with an internal API.
 
     /**
-     * Tente de mettre à jour le GameProfile interne de la session Velocity afin
-     * que les transferts conservent le skin sans reconnexion complète au proxy.
-     * Une indisponibilité de l'API interne n'est pas bloquante : le canal Redis
-     * applique toujours le pseudonyme sur les serveurs Paper.
+     * Attempts to update the internal GameProfile of the Velocity session in order to
+     * that transfers retain the skin without completely reconnecting to the proxy.
+     * Unavailability of the internal API is not blocking: the Redis channel
+     * always applies the pseudonym on Paper servers.
      */
     public void tryUpdateSessionProfile(Player player, GameProfile newProfile) {
         Class<?> cls = player.getClass();
@@ -265,7 +257,7 @@ public class NickManager {
         logger.debug("[Nick] Could not update session profile for {} via reflection", player.getUsername());
     }
 
-    // Données sérialisées
+    // Serialized data
 
     public record SkinData(String value, String signature) {}
     public record NickData(String nickName, SkinData skin) {}

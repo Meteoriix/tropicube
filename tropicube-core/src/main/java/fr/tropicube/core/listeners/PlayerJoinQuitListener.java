@@ -12,7 +12,7 @@ import org.bukkit.entity.Player;
 import java.util.UUID;
 
 /**
- * Gère les événements de connexion/déconnexion.
+ * Handles login/logout events.
  */
 public class PlayerJoinQuitListener implements Listener {
 
@@ -28,17 +28,17 @@ public class PlayerJoinQuitListener implements Listener {
         UUID uuid = player.getUniqueId();
         event.joinMessage(null); // L'événement ne doit pas être modifié après sa clôture.
 
-        // Charger les données du joueur de façon async
+        // Load player data async
         plugin.getPlayerDataManager().loadPlayer(player)
                 .thenAccept(profile -> {
                     if (profile == null) return;
 
-                    // Distingue un transfert réseau grâce au marqueur posé par Velocity.
+                    // Distinguishes a network transfer using the marker placed by Velocity.
                     String transferKey = "transfer:" + uuid;
                     boolean isTransfer = plugin.getRedisManager().exists(transferKey);
                     if (isTransfer) plugin.getRedisManager().delete(transferKey);
 
-                    // Message de bienvenue (privé, supprimé en cas de transfert)
+                    // Welcome message (private, deleted if transferred)
                     plugin.getServer().getScheduler().runTask(plugin, () -> {
                         if (!player.isOnline()) {
                             plugin.getPlayerDataManager().unloadPlayer(uuid);
@@ -75,7 +75,7 @@ public class PlayerJoinQuitListener implements Listener {
 
         event.quitMessage(null);
 
-        // Décharger les données
+        // Unload data
         plugin.getPlayerDataManager().unloadPlayer(player.getUniqueId());
     }
 }

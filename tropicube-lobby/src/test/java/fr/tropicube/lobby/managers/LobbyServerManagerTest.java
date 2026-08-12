@@ -20,6 +20,14 @@ class LobbyServerManagerTest {
         assertFalse(server("ERROR").isListed());
     }
 
+    @Test
+    void recognizesThePublishedPlayingStatusAndKeepsItJoinableForSpectators() {
+        assertTrue(server("GAME_PLAYING").isPlaying());
+        assertTrue(server("PLAYING").isPlaying());
+        assertTrue(server("GAME_PLAYING").isJoinable());
+        assertFalse(server("GAME_WAITING").isPlaying());
+    }
+
     private static LobbyServerManager.ServerInfo server(String status) {
         return new LobbyServerManager.ServerInfo(
                 "Sheepwars-test", "SHEEPWARS", "127.0.0.1", 25_625,

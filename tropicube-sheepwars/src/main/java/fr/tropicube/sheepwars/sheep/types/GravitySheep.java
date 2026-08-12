@@ -9,7 +9,7 @@ import org.bukkit.entity.Sheep;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-/** Mouton qui attire les entités voisines vers son point d'impact. */
+/** Sheep that attracts neighboring entities towards its point of impact. */
 public class GravitySheep extends AbstractSheep {
 
     public GravitySheep() {
@@ -29,7 +29,7 @@ public class GravitySheep extends AbstractSheep {
                 center.getWorld().spawnParticle(Particle.PORTAL, center, 25, 4, 2, 4);
 
                 if (ticks <= 20) {
-                    // Attire uniquement les ennemis vers le centre
+                    // Only attracts enemies to the center
                     for (Player target : center.getNearbyPlayers(10)) {
                         if (!isEnemy(thrower, target)) continue;
                         Vector pull = center.toVector()
@@ -39,7 +39,7 @@ public class GravitySheep extends AbstractSheep {
                         target.setVelocity(pull);
                     }
                 } else if (ticks == 21) {
-                    // Projette les ennemis en l'air
+        // Launch enemies into the air
                     center.getWorld().playSound(center, Sound.ENTITY_GENERIC_EXPLODE, 1.5F, 0.4F);
                     for (Player target : center.getNearbyPlayers(7)) {
                         if (!isEnemy(thrower, target)) continue;

@@ -15,7 +15,7 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 
 /**
- * Protection anti-grief et règles de jeu globales.
+ * Anti-grievance protection and global game rules.
  */
 public class ProtectionListener implements Listener {
 
@@ -26,7 +26,7 @@ public class ProtectionListener implements Listener {
     }
 
     /**
-     * Empêcher la destruction de blocs hors jeu par les joueurs, et empêcher les drops d'objets et d'XP quoiqu'il arrive
+     * Prevent players from destroying out-of-game blocks, and prevent item and XP drops no matter what
      */
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
@@ -37,7 +37,7 @@ public class ProtectionListener implements Listener {
     }
 
     /**
-     * Empêcher la destruction de blocs hors jeu par les explosions, et empêcher les drops d'objets et d'XP quoiqu'il arrive
+     * Prevent out-of-game blocks from being destroyed by explosions, and prevent item and XP drops no matter what
      */
     @EventHandler
     public void onBlockDestroy(BlockDestroyEvent event) {
@@ -48,7 +48,7 @@ public class ProtectionListener implements Listener {
     }
 
     /**
-     * Empêcher la pose de blocs
+     * Prevent the laying of blocks
      */
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
@@ -56,7 +56,7 @@ public class ProtectionListener implements Listener {
     }
 
     /**
-     * Empêcher la perte de nourriture des joueurs
+     * Prevent player food loss
      */
     @EventHandler
     public void onFoodChange(FoodLevelChangeEvent event) {
@@ -69,7 +69,7 @@ public class ProtectionListener implements Listener {
         event.setCancelled(true);
     }
 
-    /** Empêche le friendly fire entre coéquipiers. */
+    /** Prevents friendly fire between teammates. */
     @EventHandler
     public void onPvP(EntityDamageByEntityEvent event) {
         if (!(event.getEntity() instanceof Player victim)) return;
@@ -81,7 +81,7 @@ public class ProtectionListener implements Listener {
         if (victimGp != null && attackerGp != null && victimGp.getTeam() == attackerGp.getTeam()) event.setCancelled(true);
     }
 
-    /** Empêche le flow d'eau pour préserver les maps. */
+    /** Prevents water flow to preserve maps. */
     @EventHandler
     public void onWaterFlow(BlockFromToEvent event) {
         if (event.getBlock().getType().name().contains("WATER")) event.setCancelled(true);

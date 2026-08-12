@@ -3,7 +3,7 @@ package fr.tropicube.sheepwars.player;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 
-/** Classes de combat disponibles et bonus appliqué par chacune. */
+/** Combat classes available and bonuses applied by each. */
 public enum PlayerClass {
     NONE("Aucun", Material.BARRIER, NamedTextColor.WHITE,
             "Aucun bonus accordé"),

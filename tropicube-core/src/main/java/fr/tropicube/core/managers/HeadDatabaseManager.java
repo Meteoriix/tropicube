@@ -6,9 +6,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 /**
- * Suit le chargement de HeadDatabase et expose son API aux plugins Paper Tropicube.
- * L'API reste {@code null} tant que {@link DatabaseLoadEvent} n'a pas été reçu ;
- * les appelants doivent donc toujours prévoir une icône de repli.
+ * Tracks HeadDatabase loading and exposes its API to Tropicube Paper plugins.
+ * The API remains {@code null} until {@link DatabaseLoadEvent} has been received;
+ * callers must therefore always provide a fallback icon.
  */
 public class HeadDatabaseManager implements Listener {
 

@@ -12,18 +12,18 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Point d'accès typé aux services de langue et de permissions de TropicubeCore.
- * Les valeurs de repli permettent au lobby de rester explicite lors d'un arrêt
- * incomplet du serveur, même si TropicubeCore est une dépendance obligatoire.
+ * Typed access point to TropicubeCore language and permissions services.
+ * Fallback values ​​allow the lobby to remain explicit during shutdown
+ * incomplete server, even though TropicubeCore is a required dependency.
  */
 public final class LangHelper {
 
     private LangHelper() {}
 
     /**
-     * Résout {@code key} dans la langue du joueur et remplace les paramètres
-     * positionnels {@code {0}}, {@code {1}}, etc. Une clé visible est renvoyée
-     * si TropicubeCore est indisponible afin de rendre l'erreur diagnostiquable.
+     * Resolves {@code key} in player language and replaces settings
+     * positional {@code {0}}, {@code {1}}, etc. A visible key is returned
+     * if TropicubeCore is unavailable in order to make the error diagnosable.
      */
     public static String get(Player player, String key, Object... args) {
         return get(player.getUniqueId(), key, args);
@@ -50,8 +50,8 @@ public final class LangHelper {
     }
 
     /**
-     * Renvoie le nom MiniMessage incluant préfixe et couleur du grade.
-     * Le nom brut fourni est utilisé comme repli si Core est indisponible.
+     * Returns the MiniMessage name including prefix and grade color.
+     * The raw name provided is used as a fallback if Core is unavailable.
      */
     public static String getFormattedName(UUID uuid, String fallbackName) {
         TropicubeCore core = getCore();
@@ -60,7 +60,7 @@ public final class LangHelper {
     }
 
     /**
-     * Résout une liste YAML traduite, notamment les avantages de la boutique VIP.
+     * Resolves a translated YAML listing, including VIP store benefits.
      */
     public static List<String> getList(Player player, String key) {
         return getList(player.getUniqueId(), key);

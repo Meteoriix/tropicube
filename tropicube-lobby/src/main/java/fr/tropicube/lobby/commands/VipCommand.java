@@ -7,8 +7,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-// /vip — ouvre la boutique VIP
-/** Ouvre la boutique de grades VIP du lobby. */
+    // /vip — opens the VIP shop
+/** Open the VIP rank shop in the lobby. */
 public class VipCommand implements CommandExecutor {
     private final TropicubeLobby plugin;
     public VipCommand(TropicubeLobby plugin) { this.plugin = plugin; }

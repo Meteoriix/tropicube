@@ -7,7 +7,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-/** Reconnecte un joueur à l'instance SheepWars qu'il vient de quitter volontairement. */
+/** Reconnects a player to the SheepWars instance they just left voluntarily. */
 public class SheepwarsRejoinCommand implements CommandExecutor {
 
     private final TropicubeLobby plugin;

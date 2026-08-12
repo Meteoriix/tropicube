@@ -6,7 +6,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
 
-/** Mouton incendiaire qui embrase sa zone d'impact. */
+/** Incendiary sheep that sets its impact zone ablaze. */
 public class FireSheep extends AbstractSheep {
 
     public FireSheep() {

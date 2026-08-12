@@ -39,8 +39,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 /**
- * Machine d'état principale d'une partie SheepWars. Elle pilote l'attente,
- * les votes, le compte à rebours, le jeu, la victoire et le retour au lobby.
+ * Main state machine of a SheepWars game. She drives the wait,
+ * the votes, the countdown, the game, the victory and the return to the lobby.
  */
 public class GameManager {
 
@@ -129,11 +129,11 @@ public class GameManager {
     public void setSelectedMap(GameMap map) { this.selectedMap = map; }
 
     // ============================================================
-    //                     GESTION DES JOUEURS
+    // PLAYER MANAGEMENT
     // ============================================================
 
     public boolean canJoin() {
-        return state == GameState.WAITING || state == GameState.STARTING;
+        return GameJoinPolicy.admissionFor(state) != GameJoinPolicy.Admission.REJECTED;
     }
 
     public void addPlayer(Player player) {
@@ -143,6 +143,11 @@ public class GameManager {
         }
 
         if (players.containsKey(player.getUniqueId())) return;
+
+        if (GameJoinPolicy.admissionFor(state) == GameJoinPolicy.Admission.SPECTATOR) {
+            addSpectator(player);
+            return;
+        }
 
         int maxPlayers = getMaxPlayers();
         if (players.size() >= maxPlayers) {
@@ -166,7 +171,7 @@ public class GameManager {
 
         players.put(player.getUniqueId(), gp);
 
-        // Réinitialise le joueur et envoie au lobby
+        // Resets player and sends to lobby
         resetPlayer(player);
         if (lobby != null) player.teleport(lobby);
         player.setGameMode(GameMode.ADVENTURE);
@@ -176,6 +181,25 @@ public class GameManager {
         broadcastLang("sw.player-joined", player.getName(), players.size(), maxPlayers);
 
         evaluateAutoStart();
+    }
+
+    private void addSpectator(Player player) {
+        GamePlayer spectator = new GamePlayer(player.getUniqueId());
+        spectator.setAlive(false);
+        players.put(player.getUniqueId(), spectator);
+
+        resetPlayer(player);
+        Location destination = getAlivePlayers().stream()
+                .map(GamePlayer::getBukkitPlayer)
+                .filter(Objects::nonNull)
+                .map(Player::getLocation)
+                .findFirst()
+                .orElse(lobby);
+        if (destination != null) player.teleport(destination);
+        player.setGameMode(GameMode.SPECTATOR);
+        player.getInventory().setItem(8, createLeaveItem(player.getUniqueId()));
+        player.sendMessage(LangHelper.component(player, "sw.spectator-joined"));
+        plugin.getScoreboardManager().updateAll();
     }
 
     public void removePlayer(Player player) {
@@ -195,7 +219,7 @@ public class GameManager {
             }
         }
 
-        // Annule le countdown si plus assez de joueurs
+        // Cancels the countdown if there are not enough players
         int min = getMinPlayers();
         if (state == GameState.STARTING && players.size() < min) {
             cancelCountdown();
@@ -254,7 +278,7 @@ public class GameManager {
     }
 
     private void resetPlayer(Player player) {
-        // Restaure les attributs modifiés par les kits avant de vider l'état de santé.
+        // Restores attributes changed by kits before draining health.
         Objects.requireNonNull(player.getAttribute(Attribute.MAX_HEALTH)).setBaseValue(20.0);
         var knockbackAttr = player.getAttribute(Attribute.KNOCKBACK_RESISTANCE);
         if (knockbackAttr != null) knockbackAttr.setBaseValue(0.0);
@@ -270,7 +294,7 @@ public class GameManager {
     }
 
     // ============================================================
-    //                    COMPTE À REBOURS
+    // COUNTDOWN
     // ============================================================
 
     public void startCountdown() {
@@ -308,7 +332,7 @@ public class GameManager {
         plugin.getScoreboardManager().updateAll();
     }
 
-    /** Lance le compte à rebours si le réglage automatique et le nombre de joueurs le permettent. */
+    /** Starts the countdown if the automatic setting and the number of players allow it. */
     public void evaluateAutoStart() {
         boolean enabled = plugin.getConfig().getBoolean("default-settings.auto-start", true);
         if (AutoStartPolicy.shouldStart(enabled, state, players.size(), getMinPlayers())) {
@@ -317,7 +341,7 @@ public class GameManager {
     }
 
     // ============================================================
-    //                    DÉBUT DE PARTIE
+    // START OF GAME
     // ============================================================
 
     public void startGame() {
@@ -371,7 +395,7 @@ public class GameManager {
 
         boolean randomKits = plugin.getConfig().getBoolean("default-settings.random-kits", false);
 
-        // Pré-mélange des spawns par équipe pour éviter les doublons
+        // Pre-mix spawns per team to avoid duplicates
         Map<GameTeam, List<Location>> shuffledSpawns = new EnumMap<>(GameTeam.class);
         Map<GameTeam, Integer> spawnIndex = new EnumMap<>(GameTeam.class);
         for (GameTeam team : GameTeam.values()) {
@@ -381,12 +405,12 @@ public class GameManager {
             spawnIndex.put(team, 0);
         }
 
-        // Téléporte chaque joueur au spawn de son équipe
+        // Teleport each player to their team's spawn
         for (GamePlayer gp : players.values()) {
             Player p = gp.getBukkitPlayer();
             if (p == null) continue;
 
-            // Résolution du kit : aléatoire ou vérification que le kit sélectionné est encore actif
+            // Kit resolution: random or checking that the selected kit is still active
             if (randomKits) {
                 gp.setKit(randomEnabledKit());
             } else if (!plugin.getGameSettingsMenu().isKitEnabled(gp.getKit())) {
@@ -405,11 +429,11 @@ public class GameManager {
             p.setGameMode(GameMode.SURVIVAL);
             resetPlayer(p);
 
-            // Kit de départ (modifié selon la classe choisie)
+            // Starter kit (modified depending on the class chosen)
             giveBaseKit(p, gp);
             applyKitEffects(p, gp);
 
-            // Titre de bienvenue
+        // Welcome title
             p.showTitle(Title.title(
                     Component.text(LangHelper.get(p.getUniqueId(), "sw.title-start"), gp.getTeam().getColor()),
                     Component.text(LangHelper.get(p.getUniqueId(), "sw.subtitle-start", gp.getTeam().getDisplayName()), NamedTextColor.GRAY),
@@ -433,28 +457,29 @@ public class GameManager {
             }
         }
 
+        // Install the colored scoreboard teams before sending glow metadata.
+        plugin.getScoreboardManager().updateAll();
         enableTeamGlowing();
 
         broadcastLang("sw.game-started");
 
-        // Tâche périodique pendant la partie
+        // Periodic task during the game
         currentTask = Bukkit.getScheduler().runTaskTimer(plugin, this::gameTick, 20L, 20L);
 
-        // Tâche distribution de moutons spéciaux (stockée pour pouvoir être annulée)
+        // Special sheep distribution task (stored for cancellation)
         int delay = sheepDelaySeconds * 20;
         sheepTask = Bukkit.getScheduler().runTaskTimer(plugin, this::distributeSpecialSheep, delay, delay);
 
-        plugin.getScoreboardManager().updateAll();
     }
 
     // ============================================================
-    //                      GESTION DES KITS
+    // KIT MANAGEMENT
     // ============================================================
 
     private void giveBaseKit(Player p, GamePlayer gp) {
         PlayerKit kit = gp.getKit();
 
-        // Épée
+        // Sword
         ItemStack sword;
         if (kit == PlayerKit.DPS_SWORD) {
             sword = new ItemStack(Material.STONE_SWORD);
@@ -482,7 +507,7 @@ public class GameManager {
         p.give(new ItemStack(Material.ARROW));
         p.give(bow);
 
-        //Armure
+        // Armor
         LeatherArmorMeta leatherArmorMeta = (LeatherArmorMeta) new ItemStack(Material.LEATHER_HELMET).getItemMeta();
         leatherArmorMeta.setUnbreakable(true);
         leatherArmorMeta.setHideTooltip(true);
@@ -506,7 +531,7 @@ public class GameManager {
         p.getInventory().setItem(EquipmentSlot.LEGS, leggings);
         p.getInventory().setItem(EquipmentSlot.FEET, boots);
 
-        // Mouton de départ
+        // Starting sheep
         p.getInventory().addItem(plugin.getSheepManager().createSheepItem(
                 plugin.getSheepManager().randomSheepType(p.getUniqueId())));
     }
@@ -544,7 +569,7 @@ public class GameManager {
         gameTime--;
 
         if (gameTime <= 0) {
-            // Égalité par timeout : l'équipe avec le plus de joueurs en vie gagne
+            // Tie by timeout: the team with the most players alive wins
             int red = getAliveTeamPlayers(GameTeam.RED).size();
             int blue = getAliveTeamPlayers(GameTeam.BLUE).size();
             GameTeam winner = (red > blue) ? GameTeam.RED : (blue > red) ? GameTeam.BLUE : null;
@@ -567,7 +592,7 @@ public class GameManager {
     }
 
     // ============================================================
-    //                       MORT / VICTOIRE
+    //                      DEATH / VICTORY
     // ============================================================
 
     public void onPlayerDeath(Player player, Player killer) {
@@ -646,7 +671,7 @@ public class GameManager {
         // Update scoreboard to end-of-game state immediately
         plugin.getScoreboardManager().updateAll();
 
-        // Renvoie tous les joueurs au lobby après huit secondes et propose une revanche.
+        // Returns all players to the lobby after eight seconds and offers a rematch.
         Bukkit.getScheduler().runTaskLater(plugin, this::sendAllToLobbyAndReset, 160L);
     }
 
@@ -657,13 +682,13 @@ public class GameManager {
         String nextServer = instanceId != null ? plugin.getRedisManager().get("sw:next-game:" + instanceId) : null;
         if (nextServer != null) plugin.getRedisManager().delete("sw:next-game:" + instanceId);
 
-        // Transmet le type afin que le lobby trouve ou crée une partie équivalente.
+        // Pass the type so the lobby can find or create an equivalent match.
         var selfInstance = instanceId != null ? plugin.getRedisManager().getInstance(instanceId) : null;
         String serverType = selfInstance != null && selfInstance.getServerType() != null
                 ? selfInstance.getServerType() : "sheepwars";
 
-        // La commande /playnext consomme ce marqueur au format serveur|type.
-        // Le serveur reste vide lorsqu'aucune instance n'a été précréée.
+        // The /playnext command consumes this marker in server|type format.
+        // The server remains empty when no instances have been pre-created.
         String postGameValue = (nextServer != null ? nextServer : "") + "|" + serverType;
         for (UUID uuid : players.keySet()) {
             plugin.getRedisManager().set("post-game:" + uuid, postGameValue, 120);
@@ -678,10 +703,10 @@ public class GameManager {
         }
 
         if (instanceId != null && !instanceId.isBlank()) {
-            // Velocity attend la fin des transferts, puis tue le conteneur et purge Redis.
+            // Velocity waits for the transfers to complete, then kills the container and purges Redis.
             plugin.getRedisManager().publishCommand("PROXY", "FINISH_GAME:" + instanceId);
         } else {
-            // Mode local sans orchestration : conserve uniquement le retour au lobby.
+            // Local mode without orchestration: only preserve the return to the lobby.
             for (UUID uuid : new HashSet<>(players.keySet())) {
                 Player player = Bukkit.getPlayer(uuid);
                 if (player != null) sendToLobby(player);
@@ -730,7 +755,7 @@ public class GameManager {
     }
 
     private int getMaxPlayers() {
-        // MapsUtil charge au maximum huit spawns par équipe.
+        // MapsUtil loads a maximum of eight spawns per team.
         return Math.min(16, Math.max(1,
                 plugin.getConfig().getInt("default-settings.max-players", 16)));
     }
@@ -778,7 +803,7 @@ public class GameManager {
         return gameTime;
     }
 
-    /** Retourne l'identifiant Redis de l'instance courante, ou {@code null} hors orchestration. */
+    /** Returns the Redis identifier of the current instance, or {@code null} outside orchestration. */
     public String getInstanceId() {
         return instanceId;
     }
@@ -792,8 +817,8 @@ public class GameManager {
                     Entity teammateEntity = teammate.getBukkitPlayer();
                     if (teammateEntity == null) continue;
                     try {
-                        // Le scoreboard personnel reste l'unique propriétaire de l'équipe et de sa couleur.
-                        // Fournir une couleur ici créerait une seconde équipe glow-* côté client.
+                        // The personal scoreboard remains the sole owner of the team and its color.
+                        // Providing a color here would create a second glow-* team on the client side.
                         glowingEntities.setGlowing(teammateEntity, bukkitTeamPlayer);
                     } catch (ReflectiveOperationException e) {
                         plugin.getLogger().log(java.util.logging.Level.WARNING,
@@ -822,7 +847,7 @@ public class GameManager {
     }
 
     // ============================================================
-    //                  CHARGEMENT DE L'ARENE
+    //                       ARENA LOADING
     // ============================================================
 
     public void loadGame() {

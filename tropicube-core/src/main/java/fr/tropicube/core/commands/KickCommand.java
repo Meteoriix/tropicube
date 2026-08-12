@@ -8,8 +8,8 @@ import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 
-// /kick <joueur> [raison]
-/** Expulse un joueur et conserve la sanction dans l'historique de modération. */
+        // /kick <player> [reason]
+/** Kicks a player out and keeps the sanction in the moderation history. */
 public class KickCommand implements CommandExecutor {
     private final TropicubeCore plugin;
     public KickCommand(TropicubeCore p) { this.plugin = p; }

@@ -7,8 +7,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-// /languages — ouvre le sélecteur de langue du lobby sans masquer /lang du Core
-/** Ouvre le sélecteur graphique de langue. */
+// /languages ​​— opens the lobby language selector without hiding /lang from Core
+/** Opens the graphical language switcher. */
 public class LangCommand implements CommandExecutor {
     private final TropicubeLobby plugin;
     public LangCommand(TropicubeLobby plugin) { this.plugin = plugin; }

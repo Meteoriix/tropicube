@@ -91,6 +91,8 @@ La valeur `false` conserve les backends et leurs volumes afin qu'un redémarrage
 
 Core publie le grade courant sous `player:grade:<uuid>` avec une durée de vie de 24 heures. La valeur est actualisée au chargement et à chaque changement de grade, et n'est pas supprimée pendant un transfert entre backends.
 
+Une identité active est enregistrée sous `nick:<uuid>` avec le pseudonyme, le skin signé et le grade d'affichage factice. Les anciens payloads sans grade restent compatibles et utilisent `PREMIUM`. La durée de vie de 24 heures est renouvelée lors d'une reconnexion rapide.
+
 ## Velocity natif
 
 Fichiers : `dockerfiles/configs/Velocity/velocity.toml` et `forwarding.secret`.

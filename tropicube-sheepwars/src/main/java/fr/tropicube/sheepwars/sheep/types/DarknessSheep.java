@@ -7,7 +7,7 @@ import org.bukkit.entity.Sheep;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-/** Mouton qui plonge les adversaires proches dans l'obscurité. */
+/** Sheep that plunges nearby opponents into darkness. */
 public class DarknessSheep extends AbstractSheep {
 
     public DarknessSheep() {

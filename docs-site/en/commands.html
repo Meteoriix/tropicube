@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Minecraft commands, aliases, and permissions">
+  <meta name="theme-color" content="#2d1b6b">
+  <title>Commands · Tropicube</title>
+  <link rel="stylesheet" href="../styles.css?v=54e32bb45a59">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span><span><span class="brand-name-accent">Tropi</span>cube</span></a><a class="language-switch" href="../commands.html" hreflang="fr">Français</a></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong><span class="brand-name-accent">Tropi</span>cube</strong><small>Network documentation</small></span></a>
+    <a class="language-switch" href="../commands.html" hreflang="fr">Français</a>
+    <nav aria-label="Main documentation"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link active" href="commands.html"><span class="nav-icon">>_</span><span>Commands</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Deployment</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link" href="fallen-kingdoms.html"><span class="nav-icon">♜</span><span>Fallen Kingdoms</span></a>
+<a class="nav-link" href="fallen-kingdoms-technical-spec.html"><span class="nav-icon">⌘</span><span>FK technical</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Development</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changes</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="content" class="main">
+    <section class="hero"><div class="eyebrow">Official documentation</div><h1>Commands</h1><p>Minecraft commands, aliases, and permissions</p></section>
+    <div class="content-grid">
+      <article class="documentation"><h2 id="velocity-commands">Velocity commands<a class="heading-anchor" href="#velocity-commands" aria-label="Link to this section">#</a></h2>
+<div class="table-scroll"><table><thead><tr><th>Command</th><th>Alias</th><th>Permission</th><th>Purpose</th></tr></thead><tbody><tr><td><code>/server [name]</code></td><td>—</td><td>none</td><td>Lists known instances or connects to one</td></tr><tr><td><code>/queue &lt;server&gt;</code></td><td><code>/file</code></td><td>none</td><td>Joins the queue for a full instance; Premium and staff grades have priority</td></tr><tr><td><code>/hub</code></td><td><code>/lobby</code></td><td>none</td><td>Connects to the least loaded lobby</td></tr><tr><td><code>/nick</code></td><td>—</td><td>configured grade</td><td>Generates and applies a random name and signed skin</td></tr><tr><td><code>/nick off</code></td><td>—</td><td>none</td><td>Restores the original identity, even after losing the required grade</td></tr><tr><td><code>/find &lt;player&gt;</code></td><td>—</td><td><code>tropicube.admin.find</code></td><td>Locates a connected player</td></tr><tr><td><code>/send &lt;player|*&gt; &lt;server&gt;</code></td><td>—</td><td><code>tropicube.admin.send</code></td><td>Transfers one or all players</td></tr><tr><td><code>/tropi ...</code></td><td><code>/tropicube</code>, <code>/cm</code></td><td><code>tropicube.admin</code></td><td>Administers dynamic instances</td></tr></tbody></table></div>
+<p><code>nick.allowed-grades</code> controls who may enable a nick. Disabling is always allowed and cancels an outstanding skin request. The Redis identity includes the fake <code>PREMIUM</code> display grade, so the same presentation survives reconnects. Concurrent generations for the same player are rejected.</p>
+<h2 id="core-commands">Core commands<a class="heading-anchor" href="#core-commands" aria-label="Link to this section">#</a></h2>
+<div class="table-scroll"><table><thead><tr><th>Command</th><th>Permission</th><th>Purpose</th></tr></thead><tbody><tr><td><code>/money [player]</code></td><td>own balance: none; other player: administrative</td><td>Displays TropiCoin balance</td></tr><tr><td><code>/eco &lt;set|add|remove|top&gt; ...</code></td><td>economy administration</td><td>Changes balances or displays the ranking</td></tr><tr><td><code>/rank &lt;set|info|list&gt; ...</code></td><td>grade administration</td><td>Reads and assigns grades, including temporary grades</td></tr><tr><td><code>/tropiperm ...</code></td><td>permission administration</td><td>Manages individual and grade permissions</td></tr><tr><td><code>/lang [fr|en|de|es]</code></td><td>none</td><td>Reads or changes the persistent language</td></tr><tr><td><code>/mute</code>, <code>/unmute</code>, <code>/kick</code>, <code>/warn</code>, <code>/history</code></td><td>moderation permissions</td><td>Performs and audits moderation actions</td></tr><tr><td><code>/tropiadmin reload</code></td><td>Core administration</td><td>Reloads supported Core configuration</td></tr></tbody></table></div>
+<h2 id="lobby-commands">Lobby commands<a class="heading-anchor" href="#lobby-commands" aria-label="Link to this section">#</a></h2>
+<div class="table-scroll"><table><thead><tr><th>Command</th><th>Purpose</th></tr></thead><tbody><tr><td><code>/servers</code></td><td>Opens the server selector</td></tr><tr><td><code>/sw join</code></td><td>Rejoins the remembered active SheepWars instance as a spectator</td></tr><tr><td><code>/playnext</code></td><td>Joins or waits for the suggested replay instance</td></tr><tr><td><code>/lang</code></td><td>Opens or updates language selection</td></tr><tr><td><code>/fly</code></td><td>Toggles authorized lobby flight</td></tr><tr><td><code>/vip</code></td><td>Opens the VIP presentation interface</td></tr></tbody></table></div>
+<h2 id="sheepwars-controls">SheepWars controls<a class="heading-anchor" href="#sheepwars-controls" aria-label="Link to this section">#</a></h2>
+<p>SheepWars registers no standalone Paper command. Team, class, kit, map, host settings, start/cancel, and return-to-lobby actions use hotbar items and inventory menus. Late arrivals and reconnecting players enter spectator mode when the game is already in progress.</p>
+<h2 id="administration-principles">Administration principles<a class="heading-anchor" href="#administration-principles" aria-label="Link to this section">#</a></h2>
+<p>Command handlers validate arguments and permissions at the boundary. Player-facing text comes from the four language files. Operations involving SQL, Redis, Docker, or disk must not block the Paper or Velocity event thread.</p></article>
+      <aside class="page-toc" aria-label="On this page"><span class="toc-title">On this page</span><a class="toc-level-2" href="#velocity-commands">Velocity commands</a><a class="toc-level-2" href="#core-commands">Core commands</a><a class="toc-level-2" href="#lobby-commands">Lobby commands</a><a class="toc-level-2" href="#sheepwars-controls">SheepWars controls</a><a class="toc-level-2" href="#administration-principles">Administration principles</a></aside>
+    </div>
+    <footer><span><span class="brand-name-accent">Tropi</span>cube</span><span>Static documentation generated from Markdown files</span></footer>
+  </main>
+</body>
+</html>

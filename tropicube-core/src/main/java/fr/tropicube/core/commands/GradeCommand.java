@@ -13,8 +13,8 @@ import org.bukkit.entity.Player;
 import java.util.*;
 import java.util.stream.Collectors;
 
-// /rank <set|info|list> [joueur] [grade] [durée]
-/** Administre les grades, leurs priorités et leur attribution aux joueurs. */
+// /rank <set|info|list> [player] [rank] [duration]
+/** Administers ranks, their priorities and their allocation to players. */
 public class GradeCommand implements CommandExecutor, TabCompleter {
 
     private final TropicubeCore plugin;

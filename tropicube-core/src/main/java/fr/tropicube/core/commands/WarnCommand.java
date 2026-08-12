@@ -10,8 +10,8 @@ import org.bukkit.entity.Player;
 import java.util.Arrays;
 import java.util.UUID;
 
-// /warn <joueur> <raison>
-/** Enregistre un avertissement de modération à l'encontre d'un joueur. */
+        // /warn <player> <reason>
+/** Logs a moderation warning against a player. */
 public class WarnCommand implements CommandExecutor {
     private final TropicubeCore plugin;
     private static final int MAX_WARNS = 3;

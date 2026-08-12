@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Services, modules, data, and network flows">
+  <meta name="theme-color" content="#2d1b6b">
+  <title>Architecture · Tropicube</title>
+  <link rel="stylesheet" href="../styles.css?v=54e32bb45a59">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span><span><span class="brand-name-accent">Tropi</span>cube</span></a><a class="language-switch" href="../architecture.html" hreflang="fr">Français</a></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong><span class="brand-name-accent">Tropi</span>cube</strong><small>Network documentation</small></span></a>
+    <a class="language-switch" href="../architecture.html" hreflang="fr">Français</a>
+    <nav aria-label="Main documentation"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+<a class="nav-link active" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commands</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Deployment</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link" href="fallen-kingdoms.html"><span class="nav-icon">♜</span><span>Fallen Kingdoms</span></a>
+<a class="nav-link" href="fallen-kingdoms-technical-spec.html"><span class="nav-icon">⌘</span><span>FK technical</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Development</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changes</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="content" class="main">
+    <section class="hero"><div class="eyebrow">Official documentation</div><h1>Architecture</h1><p>Services, modules, data, and network flows</p></section>
+    <div class="content-grid">
+      <article class="documentation"><h2 id="overview">Overview<a class="heading-anchor" href="#overview" aria-label="Link to this section">#</a></h2>
+<p>Tropicube separates proxy orchestration, shared network services, lobby presentation, and game-specific rules. Velocity is the only public player entry point. Paper backends are created dynamically and communicate through Redis without becoming directly accessible from the Internet.</p>
+<h2 id="maven-modules">Maven modules<a class="heading-anchor" href="#maven-modules" aria-label="Link to this section">#</a></h2>
+<div class="table-scroll"><table><thead><tr><th>Module</th><th>Main contracts</th></tr></thead><tbody><tr><td>Docker API</td><td><code>ServerTemplate</code>, <code>ServerInstance</code>, Redis access, Docker lifecycle, shared nick and grade payloads</td></tr><tr><td>Velocity</td><td>Dynamic registration, routing, queues, health checks, nick profiles, and proxy commands</td></tr><tr><td>Core</td><td>SQL profiles, economy, grades, permissions, localization, moderation, and Paper-side nick application</td></tr><tr><td>Lobby</td><td>Server catalogs, menus, custom game creation, reconnect and replay entry points</td></tr><tr><td>SheepWars</td><td>Explicit game state machine, teams, kits, sheep abilities, scoreboard, spectators, and match cleanup</td></tr><tr><td>Fallen Kingdoms</td><td>Empty implementation slot governed by the separate design and technical specification</td></tr></tbody></table></div>
+<p>Game modules may depend on Core and Docker API, but they must never depend on another game's business classes.</p>
+<h2 id="runtime-topology">Runtime topology<a class="heading-anchor" href="#runtime-topology" aria-label="Link to this section">#</a></h2>
+<div class="code-block"><span class="code-language">text</span><pre class=""><code>Internet
+  -&gt; Velocity
+      -&gt; Lobby Paper containers
+      -&gt; SheepWars Paper containers
+      -&gt; Redis
+      -&gt; Docker socket proxy
+Paper containers -&gt; MySQL</code></pre></div>
+<p>Velocity forwards authenticated profiles to Paper using modern forwarding. Dynamic Paper ports remain private. Docker access is restricted through a socket proxy, and secrets come from the environment.</p>
+<h2 id="server-lifecycle">Server lifecycle<a class="heading-anchor" href="#server-lifecycle" aria-label="Link to this section">#</a></h2>
+<p><code>ServerInstance.Status</code> describes infrastructure and game availability:</p>
+<div class="code-block"><span class="code-language">text</span><pre class=""><code>CREATING -&gt; STARTING -&gt; GAME_WAITING -&gt; GAME_STARTING
+                                      -&gt; GAME_PLAYING -&gt; GAME_ENDING
+                                      -&gt; STOPPING -&gt; STOPPED
+Any stage may transition to ERROR.</code></pre></div>
+<p>SheepWars publishes each game transition back to Redis. The lobby renders <code>GAME_PLAYING</code> as a blue <code>PLAYING</code> state. A playing SheepWars instance remains joinable while it has capacity because late arrivals become spectators.</p>
+<h2 id="redis-contracts">Redis contracts<a class="heading-anchor" href="#redis-contracts" aria-label="Link to this section">#</a></h2>
+<div class="table-scroll"><table><thead><tr><th>Key or channel</th><th>Producer</th><th>Consumers</th><th>Semantics</th></tr></thead><tbody><tr><td><code>instance:&lt;id&gt;</code></td><td>Velocity / game backend</td><td>Velocity, Lobby, games</td><td>Serialized instance snapshot</td></tr><tr><td><code>player:server:&lt;uuid&gt;</code></td><td>Velocity</td><td>Core, Lobby, commands</td><td>Current instance assignment</td></tr><tr><td><code>player:grade:&lt;uuid&gt;</code></td><td>Core</td><td>Velocity</td><td>Current network grade, 24-hour TTL</td></tr><tr><td><code>player:language:&lt;uuid&gt;</code></td><td>Core</td><td>Velocity</td><td>Current interface language</td></tr><tr><td><code>nick:&lt;uuid&gt;</code></td><td>Velocity</td><td>Core and games</td><td>Nickname, signed skin, persistent fake display grade; 24-hour TTL</td></tr><tr><td><code>nick:original:&lt;uuid&gt;</code></td><td>Velocity</td><td>Core</td><td>Original name and signed skin used by <code>/nick off</code></td></tr><tr><td><code>sw:game-started:&lt;id&gt;</code></td><td>SheepWars</td><td>Velocity, Lobby</td><td>Active match marker</td></tr><tr><td><code>sw:left-game:&lt;uuid&gt;</code></td><td>SheepWars</td><td>Lobby, Velocity</td><td>Five-minute reconnect target</td></tr><tr><td><code>sw:next-game:&lt;id&gt;</code></td><td>Velocity</td><td>SheepWars</td><td>Pre-created replay instance</td></tr><tr><td><code>post-game:&lt;uuid&gt;</code></td><td>SheepWars</td><td>Lobby</td><td>Replay suggestion, 120-second TTL</td></tr><tr><td><code>host-creation:&lt;uuid&gt;</code></td><td>Velocity</td><td>Velocity / Lobby</td><td>Atomic custom-server creation lock</td></tr></tbody></table></div>
+<p>Redis subscriber callbacks must not mutate Bukkit state. Paper plugins always schedule entity, inventory, world, and profile changes back onto the server scheduler.</p>
+<h2 id="persistence">Persistence<a class="heading-anchor" href="#persistence" aria-label="Link to this section">#</a></h2>
+<p>MySQL stores durable profiles, grades, permissions, balances, moderation history, and SheepWars preferences. Redis accelerates reads and coordinates ephemeral network state. Any SQL schema change requires a compatible migration and suitable indexes; any Redis contract change must document its key, TTL, atomicity, and consumers.</p>
+<h2 id="shutdown">Shutdown<a class="heading-anchor" href="#shutdown" aria-label="Link to this section">#</a></h2>
+<p>Every plugin cancels scheduled work and closes pools or subscriptions during shutdown. A completed game sends <code>PROXY:FINISH_GAME:&lt;instanceId&gt;</code>; Velocity transfers remaining players, unregisters the backend, removes the container and anonymous volumes, and clears Redis state.</p></article>
+      <aside class="page-toc" aria-label="On this page"><span class="toc-title">On this page</span><a class="toc-level-2" href="#overview">Overview</a><a class="toc-level-2" href="#maven-modules">Maven modules</a><a class="toc-level-2" href="#runtime-topology">Runtime topology</a><a class="toc-level-2" href="#server-lifecycle">Server lifecycle</a><a class="toc-level-2" href="#redis-contracts">Redis contracts</a><a class="toc-level-2" href="#persistence">Persistence</a><a class="toc-level-2" href="#shutdown">Shutdown</a></aside>
+    </div>
+    <footer><span><span class="brand-name-accent">Tropi</span>cube</span><span>Static documentation generated from Markdown files</span></footer>
+  </main>
+</body>
+</html>

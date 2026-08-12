@@ -6,7 +6,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import fr.tropicube.velocity.managers.TropiServerManager;
 import fr.tropicube.velocity.managers.VelocityLanguageManager;
 
-/** Implémente la commande administrative {@code /send <joueur|*> <serveur>}. */
+/** Implements the administrative command {@code /send <player|*> <server>}. */
 public class SendCommand implements SimpleCommand {
     private final ProxyServer proxy;
     private final TropiServerManager manager;

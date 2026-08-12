@@ -23,31 +23,31 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Gère l'arrivée des joueurs dans le lobby, leur hotbar, et le double-saut.
+ * Manages the arrival of players in the lobby, their hotbar, and the double jump.
  */
 public class PlayerLobbyListener implements Listener {
 
     private final TropicubeLobby plugin;
 
-    /** Sauts aériens restants ; {@link Integer#MAX_VALUE} représente un accès illimité. */
+    /** Remaining aerial jumps; {@link Integer#MAX_VALUE} represents unlimited access. */
     private final Map<UUID, Integer> remainingJumps = new HashMap<>();
 
-    /** Joueurs utilisant le vol permanent réservé au personnel. */
+    /** Players using the permanent staff-only flight. */
     private final Set<UUID> staffFlyMode = new HashSet<>();
 
-    /** Cibles de revanche transmises par les mini-jeux au format {@code serveur|type}. */
+    /** Revenge targets transmitted by mini-games in {@code server|type} format. */
     private final Map<UUID, String> postGameTargets = new HashMap<>();
 
-    /** Instance SheepWars active que le joueur peut rejoindre après une sortie volontaire. */
+    /** Active SheepWars instance that the player can join after a voluntary exit. */
     private final Map<UUID, String> rejoinTargets = new HashMap<>();
 
-    // Items de la hotbar lobby
+    // Lobby hotbar items
     private static final int SLOT_SERVERS     = 0;
     private static final int SLOT_CUSTOM_GAME = 2;
     private static final int SLOT_LANG        = 4;
     private static final int SLOT_VIP         = 8;
 
-    /** Priorité minimale du grade autorisé à héberger une partie personnalisée. */
+    /** Minimum priority of rank allowed to host a custom game. */
     private static final int VIP_PLUS_MIN_PRIORITY = 20;
 
     public PlayerLobbyListener(TropicubeLobby plugin) {
@@ -66,10 +66,10 @@ public class PlayerLobbyListener implements Listener {
         Player player = e.getPlayer();
         UUID uuid = player.getUniqueId();
 
-        // Capture le marqueur avant que le chargement asynchrone de Core ne le supprime.
+        // Captures the marker before Core's asynchronous loading deletes it.
         boolean isTransfer = plugin.getRedisManager().exists("transfer:" + uuid);
 
-        // Recherche une partie SheepWars quittée volontairement mais toujours active.
+        // Search for a SheepWars game that has been left voluntarily but is still active.
         String rejoinInstanceId = plugin.getRedisManager().get("sw:left-game:" + uuid);
         boolean hasRejoinFlag = rejoinInstanceId != null;
         if (rejoinInstanceId != null) {
@@ -77,17 +77,17 @@ public class PlayerLobbyListener implements Listener {
             rejoinTargets.put(uuid, rejoinInstanceId);
         }
 
-        // Récupère la proposition de revanche publiée par le mini-jeu précédent.
+        // Collect the revenge proposal published by the previous mini-game.
         String postGameValue = plugin.getRedisManager().get("post-game:" + uuid);
         if (postGameValue != null) {
             plugin.getRedisManager().delete("post-game:" + uuid);
             postGameTargets.put(uuid, postGameValue);
         }
 
-        // Téléportation au spawn lobby
+        // Teleport to spawn lobby
         teleportToSpawn(player);
 
-        // Donner la hotbar et configurer le scoreboard après un tick
+        // Give the hotbar and configure the scoreboard after a tick
         new BukkitRunnable() {
             @Override public void run() {
                 if (!player.isOnline()) return;
@@ -99,20 +99,20 @@ public class PlayerLobbyListener implements Listener {
                 plugin.getScoreboardManager().setup(player);
                 plugin.getScoreboardManager().updateAll();
 
-                // Propose de rejoindre à nouveau la partie encore active.
+                // Offer to rejoin the still active part.
                 if (hasRejoinFlag) {
                     player.sendMessage(LangHelper.component(player, "lobby.sw-rejoin-message"));
                 }
 
-                // Propose un lien de revanche après une partie terminée.
+                // Offers a revenge link after a game is completed.
                 if (postGameTargets.containsKey(uuid)) {
                     player.sendMessage(LangHelper.component(player, "lobby.post-game-message"));
                 }
             }
         }.runTaskLater(plugin, 5L);
 
-        // Le délai laisse le chargement asynchrone de Core appliquer le grade.
-        // Un transfert interne n'est pas annoncé comme une nouvelle connexion.
+        // The delay lets Core's asynchronous loading apply the grade.
+        // An internal transfer is not announced as a new connection.
         if (!isTransfer) {
             new BukkitRunnable() {
                 @Override public void run() {
@@ -130,8 +130,8 @@ public class PlayerLobbyListener implements Listener {
     }
 
     /**
-     * Bascule entre le vol permanent du personnel et les sauts aériens illimités.
-     * @return {@code true} si le vol vient d'être activé, sinon {@code false}
+     * Switches between permanent staff flight and unlimited aerial jumps.
+     * @return {@code true} if the flight has just been activated, otherwise {@code false}
      */
     public boolean toggleFlyMode(Player player) {
         UUID uuid = player.getUniqueId();
@@ -219,8 +219,8 @@ public class PlayerLobbyListener implements Listener {
             remainingJumps.put(player.getUniqueId(), remaining);
         }
 
-        // Réactive le vol au tick suivant afin que le client traite d'abord sa désactivation.
-        // Sans saut restant, attend que l'atterrissage réinitialise le compteur.
+        // Reactivates the flight on the next tick so that the client processes its deactivation first.
+        // With no jump remaining, wait for landing to reset the counter.
         if (remaining > 0) {
             new BukkitRunnable() {
                 @Override public void run() {
@@ -235,7 +235,7 @@ public class PlayerLobbyListener implements Listener {
         Player player = e.getPlayer();
         if (player.getAllowFlight()) return;       // nothing to restore
         if (e.getTo().clone().subtract(0, 0.1, 0).getBlock().isPassable()) return;
-        // En mode saut, même un membre du personnel réarme ses sauts au sol.
+        // In jump mode, even a staff member resets their jumps on the ground.
         if (player.hasPermission("tropicube.lobby.fly") && !remainingJumps.containsKey(player.getUniqueId())) return;
 
         UUID uuid = player.getUniqueId();
@@ -250,12 +250,12 @@ public class PlayerLobbyListener implements Listener {
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
-    /** Consomme la cible de revanche mémorisée pour ce joueur. */
+    /** Consumes the revenge target stored for this player. */
     public String removePostGameTarget(UUID uuid) {
         return postGameTargets.remove(uuid);
     }
 
-    /** Consomme l'instance SheepWars proposée pour une reconnexion volontaire. */
+    /** Consumes the SheepWars instance offered for voluntary reconnection. */
     public String removeRejoinTarget(UUID uuid) {
         return rejoinTargets.remove(uuid);
     }

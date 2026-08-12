@@ -4,7 +4,7 @@ import fr.tropicube.sheepwars.sheep.SheepType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
 
-/** Mouton de mobilité qui transporte son lanceur vers la cible. */
+/** Mobility sheep that transports its launcher to the target. */
 public class BoardingSheep extends AbstractSheep {
 
     public BoardingSheep() {
