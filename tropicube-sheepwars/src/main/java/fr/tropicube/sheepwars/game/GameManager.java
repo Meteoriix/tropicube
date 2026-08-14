@@ -52,6 +52,7 @@ public class GameManager {
     private final Map<UUID, GamePlayer> players = new ConcurrentHashMap<>();
     private static final UUID NO_HOST = new UUID(0, 0);
     private final UUID hostUuid;
+    private final boolean privateCustomGame;
     private final String instanceId = System.getenv("INSTANCE_ID");
     private GameMap selectedMap;
 
@@ -70,6 +71,7 @@ public class GameManager {
         this.gameStartCancelKey = new NamespacedKey(plugin, "game_start_cancel_item");
         this.leaveItemKey = new NamespacedKey(plugin, "leave_game_item");
         this.hostUuid = parseHostUuid(System.getenv("HOST_UUID"));
+        this.privateCustomGame = Boolean.parseBoolean(System.getenv("CUSTOM_GAME_PRIVATE"));
         boolean initialAutoStart = AutoStartPolicy.initialValue(
                 !hostUuid.equals(NO_HOST),
                 plugin.getConfig().getBoolean("default-settings.auto-start", true),
@@ -122,6 +124,11 @@ public class GameManager {
 
     public UUID getHostUuid() {
         return hostUuid;
+    }
+
+    /** Returns whether this hosted instance requires the proxy-managed player whitelist. */
+    public boolean isPrivateCustomGame() {
+        return privateCustomGame;
     }
 
     public GameMap getSelectedMap() { return selectedMap; }
@@ -252,6 +259,9 @@ public class GameManager {
         // Slot 4: Settings+Launch (host)
         if (player.getUniqueId().equals(hostUuid)) {
             player.getInventory().setItem(4, plugin.getGameSettingsMenu().createSelectorItem(player));
+            if (privateCustomGame) {
+                player.getInventory().setItem(6, plugin.getWhitelistMenu().createSelectorItem(player));
+            }
         }
         // Slot 8: Leave game (bed)
         player.getInventory().setItem(8, createLeaveItem(player.getUniqueId()));

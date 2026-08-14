@@ -59,6 +59,22 @@ public final class LangHelper {
         return core.getPermissionManager().getFormattedName(uuid, fallbackName);
     }
 
+    /** Returns the current profile name, including an active nick, without changing the real grade lookup. */
+    public static String getVisibleName(Player player) {
+        String profileName = player.getPlayerProfile().getName();
+        return profileName == null || profileName.isBlank() ? player.getName() : profileName;
+    }
+
+    /** Returns the current visible name decorated with the grade attached to the real UUID. */
+    public static Component getFormattedNameComponent(Player player) {
+        String visibleName = getVisibleName(player);
+        TropicubeCore core = getCore();
+        if (core == null) return Component.text(visibleName);
+        return core.getPermissionManager().getCachedFormattedName(player.getUniqueId(), visibleName)
+                .map(MiniMessage.miniMessage()::deserialize)
+                .orElseGet(() -> Component.text(visibleName));
+    }
+
     /**
      * Resolves a translated YAML listing, including VIP store benefits.
      */

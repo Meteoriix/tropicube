@@ -46,6 +46,7 @@ Main sections:
 - `redis`: shared-state connection;
 - `default-settings`: player limits, automatic start, countdown, duration, sheep interval, random kits, map voting, and sheep weights;
 - `custom-game-default-settings`: defaults for host-created games;
+- `CUSTOM_GAME_PRIVATE`: an internal Velocity-injected environment flag that enables the private-host whitelist item; it must not be configured manually in a template;
 - `force-settings`: disabled classes, kits, and sheep types;
 - `locations`: world, waiting lobby, void limits, maps, and red/blue spawns.
 

@@ -64,7 +64,7 @@ Le plugin proxy :
 - crée, restaure, surveille et retire les serveurs dynamiques ;
 - choisit le lobby le moins chargé à la connexion et comme solution de repli ;
 - gère les files VIP, les transferts et leurs erreurs ;
-- applique la whitelist d'une partie personnalisée ;
+- détient l'autorité de la whitelist d'une partie personnalisée, pour la commande, le menu et chaque tentative de connexion ;
 - propose les commandes réseau et l'identité `/nick`.
 
 À l'arrêt propre de Velocity, le comportement par défaut (`shutdown.stop-dynamic-servers: true`) arrête et supprime tous les conteneurs dynamiques. La suppression Docker inclut leurs volumes anonymes `/data`, qui ne contiennent que l'état éphémère de l'instance. Les volumes nommés de MySQL et Redis sont hors de ce périmètre et restent persistants. Un redéploiement qui doit préserver les parties peut temporairement utiliser la valeur `false` ; les backends sont alors restaurés au démarrage suivant.
@@ -97,6 +97,8 @@ Le lobby prépare le joueur, fournit son inventaire de navigation et rafraîchit
 - utiliser un, deux ou une infinité de doubles-sauts selon les permissions ;
 - rejoindre la prochaine partie proposée après un match.
 
+Une vue d'instance privée contient son indicateur de confidentialité et les UUID admis. Le lobby filtre cette vue avant les compteurs, la pagination, le meilleur serveur et le clic final : une partie privée n'est donc jamais rendue pour un joueur non admis. Velocity répète néanmoins le contrôle dans `ServerPreConnectEvent`, qui constitue la frontière de sécurité.
+
 Le matchmaking classique est coordonné par Velocity par template. Tant qu'une création est en cours, les clics du menu et les demandes `/playnext` réutilisent la même `CompletableFuture` au lieu de créer un conteneur supplémentaire. Les UUID sont conservés dans une file FIFO dédupliquée en mémoire, puis transférés automatiquement quand l'instance est enregistrée. Si sa capacité ne suffit pas, les joueurs restants déclenchent une unique instance suivante. Ce mécanisme ne s'applique ni aux parties personnalisées ni aux créations administratives.
 
 HeadDatabase est optionnel au moment précis du rendu : une icône Material ou une tête générique est utilisée tant que sa base n'est pas chargée.
@@ -109,6 +111,7 @@ Une instance SheepWars suit les phases attente, sélection, compte à rebours, j
 - le choix ou vote de carte ;
 - la sélection des équipes, classes et kits ;
 - les règles forcées ou personnalisées ;
+- l'item et les inventaires de whitelist de l'hôte privé, dont les lectures Redis sont exécutées hors du thread Paper ;
 - les scores et statistiques persistantes ;
 - les moutons spéciaux issus d'une pioche pondérée indépendante par joueur, sans répétition consécutive lorsque les poids actifs le permettent ;
 - le retour au lobby et la proposition de revanche.
@@ -125,15 +128,16 @@ Ce module est pour l'instant un squelette Maven sans classe, ressource, dépenda
 
 | Clé ou canal logique | Producteur | Consommateur | Fonction |
 |---|---|---|---|
-| `instance:<id>` | Velocity | Tous | JSON de l'instance |
+| `instance:<id>` | Velocity | Tous | JSON de l'instance, dont confidentialité et UUID whitelistés ; TTL 24 h renouvelé à chaque sauvegarde |
 | `instances:active` | Velocity | Lobby/Velocity | Ensemble des identifiants actifs |
 | `instances:type:<type>` | Velocity | Lobby/Velocity | Index par type |
 | canal `servers` | Velocity | Intégrations | `SERVER_STARTED` / `SERVER_STOPPED` |
-| canal `commands` | Lobby/SheepWars/Velocity | Velocity | Commandes ciblées, notamment `PROXY:CONNECT:<uuid>:<serveur>` et `PROXY:FINISH_GAME:<instanceId>` |
+| canal `commands` | Lobby/SheepWars/Velocity | Velocity | Commandes ciblées, notamment `PROXY:CONNECT:<uuid>:<serveur>`, `PROXY:HOST_WHITELIST:<hôte>:<opération>:<joueur>` et `PROXY:FINISH_GAME:<instanceId>` |
 | canal `players` | Velocity | Intégrations | Changements de serveur d'un joueur |
 | `transfer:<uuid>` | Velocity | Core/Lobby | Marqueur court évitant de traiter un transfert comme une première arrivée |
 | `host:<uuid>` | Velocity | Lobby/SheepWars | Partie personnalisée administrée par le joueur |
 | `host-creation:<uuid>` | Velocity | Lobby/Velocity | Verrou atomique et temporaire empêchant deux créations personnalisées simultanées |
+| `player:uuid:<pseudo>` / `player:name:<uuid>` | Velocity | Velocity/SheepWars | Résolution des membres de whitelist déjà vus ; TTL 30 jours renouvelé à la connexion |
 | `post-game:<uuid>` | SheepWars | Lobby | Cible et type proposés par `/playnext`, TTL 120 s |
 | `nick:<uuid>` | Velocity | Core/mini-jeux | Pseudonyme, skin et grade d'affichage factice actifs, TTL 24 h renouvelé après reconnexion |
 | `player:grade:<uuid>` | Core | Velocity | Grade réseau courant, TTL 24 h, utilisé par `/nick` et la priorité de file |

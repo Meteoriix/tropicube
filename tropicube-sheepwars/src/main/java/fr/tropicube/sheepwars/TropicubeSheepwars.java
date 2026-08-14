@@ -12,6 +12,7 @@ import fr.tropicube.sheepwars.menu.ClassKitSelectionMenu;
 import fr.tropicube.sheepwars.menu.GameSettingsMenu;
 import fr.tropicube.sheepwars.menu.MapSelectionMenu;
 import fr.tropicube.sheepwars.menu.TeamSelectionMenu;
+import fr.tropicube.sheepwars.menu.WhitelistMenu;
 import fr.tropicube.sheepwars.player.PlayerDataManager;
 import fr.tropicube.sheepwars.scoreboard.ScoreboardManager;
 import fr.tropicube.sheepwars.sheep.SheepManager;
@@ -36,6 +37,7 @@ public final class TropicubeSheepwars extends JavaPlugin {
     private TeamSelectionMenu teamMenu;
     private MapSelectionMenu mapSelectionMenu;
     private GameSettingsMenu gameSettingsMenu;
+    private WhitelistMenu whitelistMenu;
 
     @Override
     public void onEnable() {
@@ -83,6 +85,7 @@ public final class TropicubeSheepwars extends JavaPlugin {
         this.teamMenu = new TeamSelectionMenu(this);
         this.mapSelectionMenu = new MapSelectionMenu(this);
         this.gameSettingsMenu = new GameSettingsMenu(this);
+        this.whitelistMenu = new WhitelistMenu(this);
         this.sheepManager.buildWeightCache();
 
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
@@ -92,6 +95,7 @@ public final class TropicubeSheepwars extends JavaPlugin {
         getServer().getPluginManager().registerEvents(teamMenu, this);
         getServer().getPluginManager().registerEvents(classKitMenu, this);
         getServer().getPluginManager().registerEvents(gameSettingsMenu, this);
+        getServer().getPluginManager().registerEvents(whitelistMenu, this);
 
         gameManager.loadGame();
     }
@@ -113,4 +117,5 @@ public final class TropicubeSheepwars extends JavaPlugin {
     public TeamSelectionMenu getTeamMenu() { return teamMenu; }
     public GameSettingsMenu getGameSettingsMenu() { return gameSettingsMenu; }
     public MapSelectionMenu getMapVoteMenu() { return mapSelectionMenu; }
+    public WhitelistMenu getWhitelistMenu() { return whitelistMenu; }
 }

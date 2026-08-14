@@ -23,6 +23,16 @@ proxy:
   # /hub
   hub-transfer: "<green>Transfert vers le lobby <yellow>{0}<green>..."
   hub-none: "<red>Aucun lobby disponible pour le moment."
+  hub-already: "<yellow>Vous êtes déjà au lobby."
+  whitelist-usage: '<yellow>Usage : /whitelist \<add|remove> \<joueur>'
+  whitelist-no-host: "<red>Vous n'avez aucune partie personnalisée active."
+  whitelist-not-private: "<red>Votre partie personnalisée est publique."
+  whitelist-player-unknown: "<red>Joueur inconnu : <white>{0}"
+  whitelist-host-protected: "<red>L'hôte ne peut pas être retiré de la whitelist."
+  whitelist-already-added: "<yellow>{0} est déjà dans la whitelist."
+  whitelist-not-added: "<yellow>{0} n'est pas dans la whitelist."
+  whitelist-added: "<green>{0} a été ajouté à la whitelist."
+  whitelist-removed: "<green>{0} a été retiré de la whitelist."
   # /server
   servers-header: "<dark_gray><strikethrough>──────────</strikethrough> <gold>Serveurs disponibles</gold> <dark_gray><strikethrough>──────────</strikethrough>"
   servers-entry: "  <yellow>{0} <dark_gray>[<gray>{1}<dark_gray>]</dark_gray> <gray>— <white>{2}/{3} joueurs"

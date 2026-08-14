@@ -255,6 +255,17 @@ sw:
   # Spiel verlassen
   leave-item-name: "<red>Spiel verlassen"
   leave-item-lore: "<gray>Rechtsklick um zur Lobby zurückzukehren"
+  whitelist-item-name: "<gold>Private Whitelist"
+  whitelist-item-lore: "<gray>Rechtsklick, um erlaubte Spieler zu verwalten"
+  whitelist-loading: "<gray>Whitelist wird geladen..."
+  whitelist-unavailable: "<red>Die Whitelist dieses Spiels ist nicht mehr verfügbar."
+  whitelist-menu-title: "<dark_gray>» <gold>Private Whitelist"
+  whitelist-remove-lore: "<red>Klicken, um diesen Spieler zu entfernen"
+  whitelist-add-name: "<green>Spieler hinzufügen"
+  whitelist-add-lore: "<gray>Klicken und dann den Spielernamen eingeben"
+  whitelist-close: "<red>Schließen"
+  whitelist-anvil-title: "<dark_gray>» <gold>Spieler hinzufügen"
+  whitelist-anvil-placeholder: "<gray>Spielername"
   cant-leave-ingame: "<red>Du kannst während eines laufenden Spiels nicht verlassen."
   # Spielende
   replay-message: "<gray>Spiel beendet! Zurück in die Lobby..."

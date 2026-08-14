@@ -6,6 +6,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Ajouté
 
+- Gestion complète des parties personnalisées privées : commande proxy `/whitelist`, item hôte SheepWars, saisie enclume, retrait par menu, persistance Redis et filtrage du lobby par joueur.
 - Dépôt Git local initialisé avec une branche principale `main`.
 - Maven Wrapper 3.9.11 pour des builds reproductibles sous Windows et Linux.
 - CI GitHub Actions couvrant Maven, JUnit, JaCoCo, le site documentaire, Docker Compose et les scripts de déploiement.
@@ -28,6 +29,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Corrigé
 
+- `/lobby` affiche désormais un message neutre quand le joueur est déjà au lobby ; la tablist du lobby montre le grade réel et le message de connexion conserve ce grade avec un nick actif.
 - Persistance du grade d'affichage factice de `/nick` après reconnexion et compatibilité des anciens payloads Redis ; les noms nickés utilisent désormais la bonne couleur d'équipe dans la tablist SheepWars et le glowing ne retombe plus en blanc lorsque le nom de profil change.
 - Les instances SheepWars en cours sont affichées avec le statut bleu `PLAYING` et acceptent les nouvelles connexions en mode spectateur, sans équipe ni impact sur les conditions de victoire.
 - Accès à `/nick` refusé aux grades autorisés à cause d'une clé Redis incohérente ; le contrat de grade est désormais partagé avec Core, stable pendant les transferts et actualisé lors des changements de grade. `/nick off`, les arguments invalides, les requêtes concurrentes et la purge multi-backend sont également sécurisés.

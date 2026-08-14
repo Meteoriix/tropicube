@@ -79,6 +79,8 @@ Le module est actuellement vide et n'ajoute donc aucune commande ni permission.
 | Commande | Alias | Permission | Description |
 |---|---|---|---|
 | `/hub` | `/lobby` | aucune | Transfère vers le lobby disponible le moins chargé |
+| `/whitelist add <joueur>` | — | hôte d'une partie privée | Ajoute un joueur connu à la partie personnalisée privée |
+| `/whitelist remove <joueur>` | — | hôte d'une partie privée | Retire un joueur de la partie, sauf l'hôte lui-même |
 | `/server [nom]` | — | aucune | Liste les instances ou se connecte à une instance joignable |
 | `/queue <serveur>` | `/file` | aucune | Entre dans la file d'une instance pleine ; VIP+ et Premium sont prioritaires |
 | `/nick` | — | grade autorisé | Génère un pseudonyme et un skin aléatoires |
@@ -88,6 +90,8 @@ Le module est actuellement vide et n'ajoute donc aucune commande ni permission.
 | `/tropi ...` | `/tropicube`, `/cm` | `tropicube.admin` | Administration des instances |
 
 Les grades autorisés à activer `/nick` sont configurés dans `nick.allowed-grades`; les grades staff sont destinés à y figurer explicitement. `/nick off` reste toujours accessible et annule aussi une génération encore en attente. Le changement est propagé aux backends par Redis sans déconnexion volontaire du joueur et deux générations simultanées pour le même joueur sont refusées. L'identité Redis conserve également le grade d'affichage factice `PREMIUM`, y compris après une reconnexion.
+
+`/whitelist` est validée par Velocity : l'émetteur doit posséder une partie personnalisée active et privée. Un pseudo est résolu parmi les joueurs actuellement ou précédemment vus par le proxy ; un UUID est aussi accepté. L'item de whitelist remis à l'hôte dans la hotbar SheepWars utilise le même flux proxy.
 
 ### Administration des instances
 

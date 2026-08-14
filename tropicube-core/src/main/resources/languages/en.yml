@@ -284,6 +284,17 @@ sw:
   # Leave item (bed)
   leave-item-name: "<red>Leave the game"
   leave-item-lore: "<gray>Right-click to return to lobby"
+  whitelist-item-name: "<gold>Private whitelist"
+  whitelist-item-lore: "<gray>Right-click to manage allowed players"
+  whitelist-loading: "<gray>Loading the whitelist..."
+  whitelist-unavailable: "<red>This game's whitelist is no longer available."
+  whitelist-menu-title: "<dark_gray>» <gold>Private whitelist"
+  whitelist-remove-lore: "<red>Click to remove this player"
+  whitelist-add-name: "<green>Add a player"
+  whitelist-add-lore: "<gray>Click, then enter their username"
+  whitelist-close: "<red>Close"
+  whitelist-anvil-title: "<dark_gray>» <gold>Add a player"
+  whitelist-anvil-placeholder: "<gray>Player username"
   cant-leave-ingame: "<red>You cannot leave during an active game."
   # End of game
   replay-message: "<gray>Game over! Returning to the lobby..."

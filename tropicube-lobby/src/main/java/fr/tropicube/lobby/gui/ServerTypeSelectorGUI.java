@@ -98,7 +98,8 @@ public class ServerTypeSelectorGUI {
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private static ItemStack buildTypeItem(TropicubeLobby plugin, Player player, String type) {
-        List<LobbyServerManager.ServerInfo> servers = plugin.getLobbyServerManager().getServersByType(type).stream()
+            List<LobbyServerManager.ServerInfo> servers = plugin.getLobbyServerManager()
+                    .getServersByType(type, player.getUniqueId()).stream()
                 .filter(LobbyServerManager.ServerInfo::isListed)
                 .toList();
         int totalPlayers  = servers.stream().mapToInt(LobbyServerManager.ServerInfo::playerCount).sum();

@@ -47,7 +47,9 @@ public class LobbyServerManager {
                         instance.getOnlinePlayers(),
                         instance.getMaxPlayers(),
                         instance.getStatus() != null ? instance.getStatus().name() : "UNKNOWN",
-                        instance.getTemplateId() != null ? instance.getTemplateId() : ""
+                        instance.getTemplateId() != null ? instance.getTemplateId() : "",
+                        instance.isWhitelisted(),
+                        instance.getWhitelistedPlayers()
                 );
                 fresh.put(info.id(), info);
             }
@@ -91,10 +93,10 @@ public class LobbyServerManager {
     }
 
     /** Returns servers filtered by type (eg: "survival", "lobby", "pvp"), sorted by id. */
-    public List<ServerInfo> getServersByType(String type) {
+    public List<ServerInfo> getServersByType(String type, UUID playerId) {
         List<ServerInfo> result = new ArrayList<>();
         for (ServerInfo info : cacheRef.get().values()) {
-            if (info.type().equalsIgnoreCase(type)) result.add(info);
+            if (info.type().equalsIgnoreCase(type) && info.isVisibleTo(playerId)) result.add(info);
         }
         result.sort(Comparator.comparing(ServerInfo::id));
         return result;
@@ -127,8 +129,8 @@ public class LobbyServerManager {
     }
 
     /** Finds the best available server of a given type (fewer players, ONLINE, not full). */
-    public Optional<ServerInfo> getBestServer(String type) {
-        return getServersByType(type).stream()
+    public Optional<ServerInfo> getBestServer(String type, UUID playerId) {
+        return getServersByType(type, playerId).stream()
                 .filter(ServerInfo::isMatchmakingJoinable)
                 .min(Comparator.comparingInt(ServerInfo::playerCount));
     }
@@ -185,8 +187,18 @@ public class LobbyServerManager {
             int playerCount,
             int maxPlayers,
             String status,
-            String templateName
+            String templateName,
+            boolean privateGame,
+            List<UUID> whitelistedPlayers
     ) {
+        public ServerInfo {
+            whitelistedPlayers = List.copyOf(Objects.requireNonNullElse(whitelistedPlayers, List.of()));
+        }
+
+        /** Private instances are invisible unless this UUID was explicitly admitted. */
+        public boolean isVisibleTo(UUID playerId) {
+            return !privateGame || (playerId != null && whitelistedPlayers.contains(playerId));
+        }
         public boolean isOnline()   {
             return "GAME_WAITING".equalsIgnoreCase(status)
                     || "GAME_STARTING".equalsIgnoreCase(status)

@@ -36,6 +36,7 @@ public class ServerSelectorCommand implements SimpleCommand {
             source.sendMessage(lm.getComponent(source, "proxy.servers-header"));
             manager.getActiveInstances().values().stream()
                     .filter(i -> i.getStatus() == ServerInstance.Status.GAME_WAITING)
+                    .filter(i -> isVisibleTo(source, i))
                     .forEach(i -> source.sendMessage(lm.getComponent(source, "proxy.servers-entry",
                             i.getServerName(), i.getServerType(),
                             i.getOnlinePlayers(), i.getMaxPlayers())));
@@ -50,7 +51,11 @@ public class ServerSelectorCommand implements SimpleCommand {
 
         manager.getInstanceByName(args[0]).ifPresentOrElse(
                 instance -> {
-                    if (!instance.isJoinable()) {
+                    if (!isVisibleTo(player, instance)) {
+                        player.sendMessage(lm.getComponent(player.getUniqueId(), "proxy.server-not-found", args[0]));
+                        return;
+                    }
+                    if (!instance.isJoinable(player.getUniqueId())) {
                         player.sendMessage(lm.getComponent(player.getUniqueId(), "proxy.server-unavailable",
                                 instance.getStatus()));
                         return;
@@ -77,9 +82,15 @@ public class ServerSelectorCommand implements SimpleCommand {
         if (invocation.arguments().length <= 1) {
             return manager.getActiveInstances().values().stream()
                     .filter(i -> i.getStatus() == ServerInstance.Status.GAME_WAITING)
+                    .filter(i -> isVisibleTo(invocation.source(), i))
                     .map(ServerInstance::getServerName)
                     .collect(Collectors.toList());
         }
         return Collections.emptyList();
+    }
+
+    private static boolean isVisibleTo(CommandSource source, ServerInstance instance) {
+        if (!instance.isWhitelisted()) return true;
+        return source instanceof Player player && instance.isWhitelistedPlayer(player.getUniqueId());
     }
 }

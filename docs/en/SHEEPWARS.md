@@ -80,6 +80,8 @@ Before the match, the host can:
 
 Automatic start defaults to off for custom games and on for standard games. Ownership remains until match completion, then is removed.
 
+At creation time, the host chooses public or private access. A private game is absent from lobby selectors and counts for players who are not admitted. The host is automatically whitelisted and receives an iron-door item in waiting-hotbar slot 6. Its menu adds players through an anvil text field and removes existing members by clicking their heads. `/whitelist add|remove <player>` exposes the same operation. Velocity validates ownership, protects the host from removal, and checks the UUID again on every connection.
+
 ## Spectators and reconnects
 
 `ServerInstance.Status.GAME_PLAYING` remains joinable while capacity is available. The lobby displays it as blue `PLAYING` and explains that clicking will spectate.
@@ -104,7 +106,7 @@ The source file is `tropicube-sheepwars/src/main/resources/config.yml`. Main sec
 - `force-settings`;
 - `locations`.
 
-At deployment, `INSTANCE_ID`, `SERVER_NAME`, `IS_HOST`, and `HOST_UUID` connect the Paper plugin to Velocity orchestration.
+At deployment, `INSTANCE_ID`, `SERVER_NAME`, `IS_HOST`, `HOST_UUID`, and the internal `CUSTOM_GAME_PRIVATE` flag connect the Paper plugin to Velocity orchestration.
 
 ## State and cleanup
 

@@ -130,6 +130,21 @@ public class PlayerListener implements Listener {
         }
 
         // Settings and launch reserved for the host or administration.
+        if (plugin.getWhitelistMenu().isSelectorItem(item)) {
+            event.setCancelled(true);
+            if (!plugin.getGameManager().getHostUuid().equals(player.getUniqueId())
+                    || !plugin.getGameManager().isPrivateCustomGame()) {
+                player.sendMessage(LangHelper.component(player, "sw.cmd-no-permission"));
+                player.getInventory().remove(item);
+                return;
+            }
+            GameState state = plugin.getGameManager().getState();
+            if (state == GameState.ENDING) return;
+            plugin.getWhitelistMenu().open(player);
+            return;
+        }
+
+        // Settings and launch reserved for the host or administration.
         if (plugin.getGameSettingsMenu().isSelectorItem(item)) {
             event.setCancelled(true);
             if (!plugin.getGameManager().getHostUuid().equals(player.getUniqueId())) {

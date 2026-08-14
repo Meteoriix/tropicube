@@ -272,6 +272,17 @@ sw:
   # Leave the game
   leave-item-name: "<red>Quitter la partie"
   leave-item-lore: "<gray>Clic droit pour retourner au lobby"
+  whitelist-item-name: "<gold>Whitelist privée"
+  whitelist-item-lore: "<gray>Clic droit pour gérer les joueurs autorisés"
+  whitelist-loading: "<gray>Chargement de la whitelist..."
+  whitelist-unavailable: "<red>La whitelist de cette partie n'est plus disponible."
+  whitelist-menu-title: "<dark_gray>» <gold>Whitelist privée"
+  whitelist-remove-lore: "<red>Clique pour retirer ce joueur"
+  whitelist-add-name: "<green>Ajouter un joueur"
+  whitelist-add-lore: "<gray>Clique puis saisis son pseudo"
+  whitelist-close: "<red>Fermer"
+  whitelist-anvil-title: "<dark_gray>» <gold>Ajouter un joueur"
+  whitelist-anvil-placeholder: "<gray>Pseudo du joueur"
   cant-leave-ingame: "<red>Tu ne peux pas quitter pendant une partie en cours."
   # End of game
   replay-message: "<gray>Partie terminée ! Retour au lobby dans quelques instants..."

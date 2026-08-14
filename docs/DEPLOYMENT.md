@@ -249,6 +249,15 @@ Après modification du secret, reconstruire les images Paper et recréer Velocit
 
 Une partie terminée n'est jamais détruite tant que ses joueurs ne peuvent pas rejoindre un lobby. Velocity réessaie le transfert chaque seconde ; restaurer au moins un lobby permet alors de terminer automatiquement la destruction en attente.
 
+### Whitelist d'une partie privée indisponible
+
+- vérifier que la partie a été créée comme privée depuis le lobby ;
+- contrôler la présence de `HOST_UUID` et `CUSTOM_GAME_PRIVATE=true` dans le conteneur dynamique ; ces valeurs sont injectées par Velocity et ne doivent pas être ajoutées au template ;
+- vérifier `host:<uuid>` et le champ `whitelistedPlayers` de `instance:<id>` dans Redis ;
+- confirmer que le joueur ciblé s'est déjà connecté au réseau, ou utiliser directement son UUID dans `/whitelist add`.
+
+Les parties privées ne publient aucun port supplémentaire et restent accessibles uniquement via Velocity.
+
 ### Redis ou MySQL inaccessible
 
 - vérifier les healthchecks et les mots de passe `.env` ;

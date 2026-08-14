@@ -21,6 +21,14 @@ public class HubCommand implements SimpleCommand {
             invocation.source().sendMessage(lm.getComponent(invocation.source(), "general.player-only"));
             return;
         }
+        if (player.getCurrentServer()
+                .flatMap(connection -> manager.getInstanceByName(
+                        connection.getServerInfo().getName()))
+                .map(instance -> "LOBBY".equalsIgnoreCase(instance.getServerType()))
+                .orElse(false)) {
+            player.sendMessage(lm.getComponent(player.getUniqueId(), "proxy.hub-already"));
+            return;
+        }
         manager.getBestLobby().ifPresentOrElse(
                 lobby -> {
                     player.createConnectionRequest(lobby).connect().whenComplete((result, error) -> {

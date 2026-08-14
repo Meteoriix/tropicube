@@ -63,6 +63,18 @@ class ServerInstanceTest {
     }
 
     @Test
+    void whitelistMutationsAreIdempotentAndDeduplicated() {
+        UUID playerId = UUID.randomUUID();
+        ServerInstance instance = readyInstance(true);
+
+        assertTrue(instance.addWhitelistedPlayer(playerId));
+        assertFalse(instance.addWhitelistedPlayer(playerId));
+        assertEquals(List.of(playerId), instance.getWhitelistedPlayers());
+        assertTrue(instance.removeWhitelistedPlayer(playerId));
+        assertFalse(instance.removeWhitelistedPlayer(playerId));
+    }
+
+    @Test
     void nullWhitelistIsNormalizedAndNullMembersAreRejected() {
         ServerInstance instance = readyInstance(true);
 

@@ -90,6 +90,8 @@ Le démarrage automatique est désactivé par défaut pour une partie personnali
 
 Le lobby permet d'arrêter le serveur tant que la manche n'a pas commencé. Après le lancement, l'association d'hôte est conservée jusqu'à la fin de partie, puis supprimée automatiquement.
 
+À la création, l'hôte choisit une partie publique ou privée. Une partie privée est absente du sélecteur et des compteurs des joueurs non admis. L'hôte est ajouté automatiquement à sa whitelist et reçoit, au slot 6 de la hotbar d'attente, une porte en fer ouvrant la gestion des accès. L'ajout utilise une saisie par enclume ; les têtes déjà admises permettent leur retrait. Les mêmes mutations sont disponibles avec `/whitelist add|remove <joueur>` sur Velocity. Le proxy valide la propriété de l'instance, interdit le retrait de l'hôte et contrôle de nouveau l'UUID lors de chaque connexion.
+
 ## Interface, langues et commandes
 
 Le backend SheepWars n'enregistre aucune commande Minecraft propre dans son `plugin.yml`. Toutes les actions pendant la partie passent par les objets de la hotbar et les inventaires : équipe, carte, classe/kit, réglages de l'hôte et retour au lobby.
@@ -108,7 +110,7 @@ La configuration source se trouve dans `tropicube-sheepwars/src/main/resources/c
 - `force-settings` : fonctionnalités interdites par l'exploitation ;
 - `locations` : monde, lobby, limite du vide, cartes et spawns d'équipe.
 
-En déploiement Docker, `INSTANCE_ID`, `SERVER_NAME`, `IS_HOST` et `HOST_UUID` relient le plugin à Velocity. L'état de l'instance passe successivement par attente, démarrage, jeu, fin et arrêt. Redis porte les marqueurs de partie commencée, de reconnexion, de revanche et de propriété du serveur.
+En déploiement Docker, `INSTANCE_ID`, `SERVER_NAME`, `IS_HOST`, `HOST_UUID` et l'indicateur interne `CUSTOM_GAME_PRIVATE` relient le plugin à Velocity. L'état de l'instance passe successivement par attente, démarrage, jeu, fin et arrêt. Redis porte les marqueurs de partie commencée, de reconnexion, de revanche, de propriété du serveur et les UUID admis aux parties privées.
 
 Après l'écran de fin, SheepWars publie `PROXY:FINISH_GAME:<instanceId>`. Velocity transfère tous les joueurs vers le meilleur lobby disponible, réessaie chaque seconde en cas d'échec, puis tue et supprime immédiatement le conteneur ainsi que son état Redis. La disparition du backend n'est donc plus différée par l'auto-stop générique.
 

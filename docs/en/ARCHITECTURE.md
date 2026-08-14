@@ -48,7 +48,7 @@ SheepWars publishes each game transition back to Redis. The lobby renders `GAME_
 
 | Key or channel | Producer | Consumers | Semantics |
 |---|---|---|---|
-| `instance:<id>` | Velocity / game backend | Velocity, Lobby, games | Serialized instance snapshot |
+| `instance:<id>` | Velocity / game backend | Velocity, Lobby, games | Serialized instance snapshot, including privacy and admitted UUIDs; refreshed 24-hour TTL |
 | `player:server:<uuid>` | Velocity | Core, Lobby, commands | Current instance assignment |
 | `player:grade:<uuid>` | Core | Velocity | Current network grade, 24-hour TTL |
 | `player:language:<uuid>` | Core | Velocity | Current interface language |
@@ -59,8 +59,12 @@ SheepWars publishes each game transition back to Redis. The lobby renders `GAME_
 | `sw:next-game:<id>` | Velocity | SheepWars | Pre-created replay instance |
 | `post-game:<uuid>` | SheepWars | Lobby | Replay suggestion, 120-second TTL |
 | `host-creation:<uuid>` | Velocity | Velocity / Lobby | Atomic custom-server creation lock |
+| `host:<uuid>` | Velocity | Velocity, Lobby, SheepWars | Host ownership of one custom instance |
+| `player:uuid:<name>` / `player:name:<uuid>` | Velocity | Velocity, SheepWars | Previously seen player-name resolution; refreshed 30-day TTL |
 
 Redis subscriber callbacks must not mutate Bukkit state. Paper plugins always schedule entity, inventory, world, and profile changes back onto the server scheduler.
+
+Velocity is the only whitelist writer. Both `/whitelist` and the SheepWars GUI reach the same ownership-checked mutation. Lobby snapshots are filtered before counts, pagination, best-server selection, and final clicks, while `ServerPreConnectEvent` independently enforces the boundary so hidden instances cannot be reached by a stale menu or direct command.
 
 ## Persistence
 

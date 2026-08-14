@@ -144,6 +144,7 @@ Fichier : `dockerfiles/configs/TropicubeSheepwars/config.yml`.
 - `default-settings` fixe capacité, démarrage, durées, kits, vote et fréquence des moutons ; `sheep-give-delay` vaut 20 secondes par défaut, soit au plus 30 distributions périodiques par survivant pendant une partie complète de 10 minutes ;
 - `default-settings.auto-start` vaut `true` par défaut pour les parties classiques et lance le compte à rebours dès que `min-players` est atteint ;
 - `custom-game-default-settings.auto-start` vaut `false` par défaut et remplace cette valeur à l'initialisation d'une instance possédant un `HOST_UUID` ; l'hôte peut ensuite la modifier pour la partie courante ;
+- `CUSTOM_GAME_PRIVATE`, injecté automatiquement par Velocity avec `HOST_UUID`, indique au backend si l'item de whitelist doit être remis à l'hôte ; cette variable interne ne doit pas être configurée manuellement dans le template ;
 - `sheep-probabilities` contient des poids relatifs, pas nécessairement un total de 100 ; ils alimentent une pioche indépendante par joueur qui évite deux types identiques consécutifs lorsque la pondération le permet ;
 - `force-settings` désactive des classes, kits ou moutons ;
 - `locations` décrit le lobby, la limite du vide et les cartes activées ;

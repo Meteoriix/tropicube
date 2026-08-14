@@ -123,6 +123,7 @@ public class PermissionManager {
                         uuid.toString(), System.currentTimeMillis() / 1000);
                 plugin.getRedisManager().set(PlayerGradeCache.key(uuid),
                         playerGrades.getOrDefault(uuid, "JOUEUR"), PlayerGradeCache.TTL_SECONDS);
+                plugin.getRedisManager().publishPlayerEvent("GRADE_LOADED", uuid.toString());
             } catch (SQLException e) {
                 plugin.getLogger().log(Level.SEVERE, "[Tropicube-Perms] Erreur chargement joueur " + uuid, e);
             }
@@ -205,6 +206,7 @@ public class PermissionManager {
         db.executeUpdate("UPDATE tropicube_players SET grade = ?, grade_expiry = ? WHERE uuid = ?",
                 gradeName, expiryEpoch, uuid.toString());
         plugin.getRedisManager().set(PlayerGradeCache.key(uuid), gradeName, PlayerGradeCache.TTL_SECONDS);
+        plugin.getRedisManager().publishPlayerEvent("GRADE_CHANGED", uuid.toString());
 
         plugin.getServer().getScheduler().runTask(plugin, () -> {
             Player player = plugin.getServer().getPlayer(uuid);
@@ -289,6 +291,17 @@ public class PermissionManager {
         Grade grade = getGradeInfo(uuid);
         if (grade == null) return "<white>" + username;
         return grade.prefix() + grade.color() + username;
+    }
+
+    /**
+     * Formats a name only when the asynchronous player-grade load has completed.
+     * This prevents lobby rendering from falling back to a blocking SQL lookup on the Paper thread.
+     */
+    public Optional<String> getCachedFormattedName(UUID uuid, String username) {
+        String gradeName = playerGrades.get(uuid);
+        if (gradeName == null) return Optional.empty();
+        Grade grade = gradeRegistry.get(gradeName);
+        return Optional.of(grade == null ? "<white>" + username : grade.prefix() + grade.color() + username);
     }
 
     public String getPrefix(UUID uuid) {

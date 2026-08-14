@@ -105,7 +105,7 @@ public class GuiClickListener implements Listener {
         if (type == null) return;
 
         if (leftClick) {
-            plugin.getLobbyServerManager().getBestServer(type).ifPresentOrElse(
+            plugin.getLobbyServerManager().getBestServer(type, player.getUniqueId()).ifPresentOrElse(
                     s -> {
                         player.closeInventory();
                         player.sendMessage(LangHelper.component(player, "lobby.connect", s.id()));
@@ -133,7 +133,8 @@ public class GuiClickListener implements Listener {
                 return;
             }
             case ServerSelectorGUI.SLOT_BEST -> {
-                plugin.getLobbyServerManager().getBestServer(serverHolder.getType()).ifPresentOrElse(
+                plugin.getLobbyServerManager().getBestServer(
+                        serverHolder.getType(), player.getUniqueId()).ifPresentOrElse(
                         s -> {
                             player.closeInventory();
                             player.sendMessage(LangHelper.component(player, "lobby.connect", s.id()));
@@ -165,6 +166,10 @@ public class GuiClickListener implements Listener {
 
         plugin.getLobbyServerManager().getServer(serverId).ifPresentOrElse(
                 s -> {
+                    if (!s.isVisibleTo(player.getUniqueId())) {
+                        player.sendMessage(LangHelper.component(player, "lobby.server-not-found"));
+                        return;
+                    }
                     if (!s.isOnline()) {
                         player.sendMessage(LangHelper.component(player, "lobby.server-offline"));
                         return;

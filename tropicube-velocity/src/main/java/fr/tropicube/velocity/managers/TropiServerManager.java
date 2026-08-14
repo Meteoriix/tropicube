@@ -1,6 +1,7 @@
 package fr.tropicube.velocity.managers;
 
 import com.velocitypowered.api.proxy.ProxyServer;
+import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
@@ -124,9 +125,16 @@ public class TropiServerManager {
                         redisManager.publishCommand("LOBBY", "CREATE_HOST_EXISTS:" + uuidStr);
                         return;
                     }
-                    Map<String, String> extraEnv = Map.of("IS_HOST", "true", "HOST_UUID", uuidStr);
+                    Map<String, String> extraEnv = Map.of(
+                            "IS_HOST", "true",
+                            "HOST_UUID", uuidStr,
+                            "CUSTOM_GAME_PRIVATE", Boolean.toString(whitelisted));
                     createServer(templateId, null, whitelisted, extraEnv)
                             .thenAccept(instance -> {
+                                if (whitelisted) {
+                                    instance.addWhitelistedPlayer(UUID.fromString(uuidStr));
+                                    redisManager.saveInstance(instance);
+                                }
                                 redisManager.set("host:" + uuidStr, instance.getInstanceId(), 14400);
                                 redisManager.delete(creationKey);
                                 redisManager.publishCommand("PROXY", "CONNECT:" + uuidStr + ":" + instance.getServerName());
@@ -220,6 +228,23 @@ public class TropiServerManager {
                             redisManager.publishCommand("LOBBY", "STOP_HOST_FAILED:" + uuidStr);
                             return null;
                         });
+                return;
+            }
+
+            // Format: "PROXY:HOST_WHITELIST:<hostUuid>:<ADD|REMOVE>:<nameOrUuid>"
+            if (message.startsWith("PROXY:HOST_WHITELIST:")) {
+                String[] args = message.substring("PROXY:HOST_WHITELIST:".length()).split(":", 3);
+                if (args.length != 3) return;
+                try {
+                    UUID hostId = UUID.fromString(args[0]);
+                    boolean add = "ADD".equalsIgnoreCase(args[1]);
+                    if (!add && !"REMOVE".equalsIgnoreCase(args[1])) return;
+                    WhitelistUpdate update = updateHostedWhitelist(hostId, args[2], add);
+                    proxy.getPlayer(hostId).ifPresent(player -> player.sendMessage(
+                            languageManager.getComponent(hostId, update.messageKey(), update.targetName())));
+                } catch (IllegalArgumentException e) {
+                    logger.warn("[Tropicube] Commande HOST_WHITELIST invalide : {}", e.getMessage());
+                }
             }
         });
     }
@@ -876,6 +901,67 @@ public class TropiServerManager {
                 .filter(i -> i.getServerName().equalsIgnoreCase(name))
                 .findFirst();
     }
+
+    /**
+     * Mutates the private instance owned by a host. This method is the sole whitelist write path.
+     * It validates ownership again even for trusted Redis commands coming from a backend.
+     */
+    public WhitelistUpdate updateHostedWhitelist(UUID hostId, String playerIdentifier, boolean add) {
+        Objects.requireNonNull(hostId, "hostId");
+        String hostedInstanceId = redisManager.get("host:" + hostId);
+        ServerInstance instance = hostedInstanceId == null ? null : activeInstances.get(hostedInstanceId);
+        if (instance == null) return new WhitelistUpdate("proxy.whitelist-no-host", "");
+        if (!instance.isWhitelisted()) return new WhitelistUpdate("proxy.whitelist-not-private", "");
+
+        UUID targetId = resolveKnownPlayer(playerIdentifier);
+        if (targetId == null) return new WhitelistUpdate("proxy.whitelist-player-unknown", playerIdentifier);
+        String targetName = resolveKnownPlayerName(targetId, playerIdentifier);
+        if (!add && targetId.equals(hostId)) {
+            return new WhitelistUpdate("proxy.whitelist-host-protected", targetName);
+        }
+
+        synchronized (instance) {
+            boolean changed = add
+                    ? instance.addWhitelistedPlayer(targetId)
+                    : instance.removeWhitelistedPlayer(targetId);
+            if (!changed) {
+                return new WhitelistUpdate(add
+                        ? "proxy.whitelist-already-added"
+                        : "proxy.whitelist-not-added", targetName);
+            }
+            redisManager.saveInstance(instance);
+        }
+        return new WhitelistUpdate(add ? "proxy.whitelist-added" : "proxy.whitelist-removed", targetName);
+    }
+
+    private UUID resolveKnownPlayer(String identifier) {
+        if (identifier == null || identifier.isBlank()) return null;
+        try {
+            return UUID.fromString(identifier);
+        } catch (IllegalArgumentException ignored) {
+            // Player names are resolved from the proxy first, then from the durable Redis cache.
+        }
+        Optional<Player> online = proxy.getPlayer(identifier);
+        if (online.isPresent()) return online.get().getUniqueId();
+        String cached = redisManager.get("player:uuid:" + identifier.toLowerCase(Locale.ROOT));
+        if (cached == null) return null;
+        try {
+            return UUID.fromString(cached);
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
+    }
+
+    private String resolveKnownPlayerName(UUID playerId, String fallback) {
+        return proxy.getPlayer(playerId).map(Player::getUsername)
+                .orElseGet(() -> {
+                    String cached = redisManager.get("player:name:" + playerId);
+                    return cached == null || cached.isBlank() ? fallback : cached;
+                });
+    }
+
+    /** Localized result returned to both the proxy command and the backend GUI. */
+    public record WhitelistUpdate(String messageKey, String targetName) {}
 
     public void updateInstancePlayers(String instanceId, int count) {
         ServerInstance instance = activeInstances.get(instanceId);

@@ -6,6 +6,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Added
 
+- Complete private custom-game access control: proxy `/whitelist`, SheepWars host item and anvil input, removal menu, Redis persistence, and per-player lobby filtering.
 - Bilingual French/English Markdown documentation and static site, with a page-preserving language switch.
 - Blue `PLAYING` server presentation for active SheepWars matches.
 - Late-join SheepWars spectator mode: no team assignment and no effect on victory conditions.
@@ -17,6 +18,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Fixed
 
+- `/lobby` now reports that the player is already there; the lobby tablist displays real grades, and join announcements retain the real grade while a nick is active.
 - The fake `/nick` display grade is persisted in the Redis identity and restored after reconnecting; legacy payloads remain compatible and default to `PREMIUM`.
 - Nickname profile changes no longer leave SheepWars tablist entries under the historical Bukkit name, which could produce white glowing and incorrect team colors.
 - Lobby recognition now matches the published `GAME_PLAYING` status instead of checking only the unused `PLAYING` spelling.

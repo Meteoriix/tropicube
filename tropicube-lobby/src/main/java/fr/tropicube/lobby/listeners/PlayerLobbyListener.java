@@ -118,7 +118,8 @@ public class PlayerLobbyListener implements Listener {
                 @Override public void run() {
                     if (!player.isOnline()) return;
                     if (!player.hasPermission("tropicube.announce.join")) return;
-                    String formattedName = LangHelper.getFormattedName(player.getUniqueId(), player.getName());
+                    String formattedName = LangHelper.getFormattedName(
+                            player.getUniqueId(), LangHelper.getVisibleName(player));
                     for (Player online : Bukkit.getOnlinePlayers()) {
                         online.sendMessage(LangHelper.component(online, "join.message", formattedName));
                     }

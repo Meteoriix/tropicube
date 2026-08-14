@@ -7,6 +7,8 @@
 | `/server [name]` | — | none | Lists known instances or connects to one |
 | `/queue <server>` | `/file` | none | Joins the queue for a full instance; Premium and staff grades have priority |
 | `/hub` | `/lobby` | none | Connects to the least loaded lobby |
+| `/whitelist add <player>` | — | private-game host | Adds a known player to the private custom game |
+| `/whitelist remove <player>` | — | private-game host | Removes a player, except the host, from the private game |
 | `/nick` | — | configured grade | Generates and applies a random name and signed skin |
 | `/nick off` | — | none | Restores the original identity, even after losing the required grade |
 | `/find <player>` | — | `tropicube.admin.find` | Locates a connected player |
@@ -14,6 +16,8 @@
 | `/tropi ...` | `/tropicube`, `/cm` | `tropicube.admin` | Administers dynamic instances |
 
 `nick.allowed-grades` controls who may enable a nick. Disabling is always allowed and cancels an outstanding skin request. The Redis identity includes the fake `PREMIUM` display grade, so the same presentation survives reconnects. Concurrent generations for the same player are rejected.
+
+Velocity validates `/whitelist`: the sender must own an active private custom game. Names resolve among players currently or previously seen by the proxy, and UUIDs are accepted directly. The SheepWars host hotbar item uses the same proxy-owned mutation path.
 
 ## Core commands
 

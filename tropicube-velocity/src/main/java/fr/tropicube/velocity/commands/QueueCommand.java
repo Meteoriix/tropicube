@@ -63,6 +63,7 @@ public class QueueCommand implements SimpleCommand {
         if (invocation.arguments().length <= 1) {
             return serverManager.getActiveInstances().values().stream()
                     .filter(i -> i.isOnline() && i.getOnlinePlayers() >= i.getMaxPlayers())
+                    .filter(i -> !i.isWhitelisted())
                     .map(i -> i.getServerName())
                     .sorted()
                     .toList();

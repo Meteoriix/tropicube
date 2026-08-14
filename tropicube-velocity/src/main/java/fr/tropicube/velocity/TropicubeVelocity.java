@@ -223,6 +223,10 @@ public class TropicubeVelocity {
                 server.getCommandManager().metaBuilder("queue").aliases("file").build(),
                 new QueueCommand(tropiServerManager, queueManager, redisManager, languageManager)
         );
+        server.getCommandManager().register(
+                server.getCommandManager().metaBuilder("whitelist").build(),
+                new WhitelistCommand(this, tropiServerManager, languageManager)
+        );
         logger.info("[Tropicube] Commandes enregistrées.");
     }
 

@@ -67,7 +67,7 @@ public class PlayNextCommand implements CommandExecutor {
             return true;
         }
         final String type = serverType;
-        plugin.getLobbyServerManager().getBestServer(type).ifPresentOrElse(
+        plugin.getLobbyServerManager().getBestServer(type, player.getUniqueId()).ifPresentOrElse(
                 s -> {
                     player.sendMessage(LangHelper.component(player, "lobby.connect", s.id()));
                     plugin.getLobbyServerManager().connectToServer(player, s.id());

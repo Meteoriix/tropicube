@@ -69,7 +69,7 @@ public class ServerSelectorGUI {
     public static Inventory build(TropicubeLobby plugin, Player player, String type, int page) {
         if (page < 0) page = 0;
 
-        List<LobbyServerManager.ServerInfo> servers = filteredServers(plugin, type);
+        List<LobbyServerManager.ServerInfo> servers = filteredServers(plugin, player, type);
         int totalPages = Math.max(1, (int) Math.ceil(servers.size() / (double) PAGE_SIZE));
         if (page >= totalPages) page = totalPages - 1;
 
@@ -109,7 +109,7 @@ public class ServerSelectorGUI {
         String type = holder.type;
         int page    = holder.page; // page is immutable — don't jump pages on refresh
 
-        List<LobbyServerManager.ServerInfo> servers = filteredServers(plugin, type);
+        List<LobbyServerManager.ServerInfo> servers = filteredServers(plugin, player, type);
         List<Integer> innerSlots = computeInnerSlots();
         int fromIndex = page * PAGE_SIZE;
         int toIndex   = Math.min(fromIndex + PAGE_SIZE, servers.size());
@@ -142,8 +142,9 @@ public class ServerSelectorGUI {
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
-    private static List<LobbyServerManager.ServerInfo> filteredServers(TropicubeLobby plugin, String type) {
-        return plugin.getLobbyServerManager().getServersByType(type).stream()
+    private static List<LobbyServerManager.ServerInfo> filteredServers(
+            TropicubeLobby plugin, Player player, String type) {
+        return plugin.getLobbyServerManager().getServersByType(type, player.getUniqueId()).stream()
                 .filter(LobbyServerManager.ServerInfo::isListed)
                 .toList();
     }

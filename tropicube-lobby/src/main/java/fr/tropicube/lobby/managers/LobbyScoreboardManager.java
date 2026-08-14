@@ -55,6 +55,7 @@ public class LobbyScoreboardManager {
     }
 
     public void updateTablist(Player player) {
+        player.playerListName(LangHelper.getFormattedNameComponent(player));
         player.sendPlayerListHeaderAndFooter(
                 LangHelper.component(player, "lobby.tab-header"),
                 LangHelper.component(player, "lobby.tab-footer",

@@ -105,6 +105,9 @@ public class PlayerConnectionListener {
         lm.loadPlayerLanguage(player.getUniqueId());
 
         redisManager.set("player:online:" + player.getUniqueId(), player.getUsername(), 86400);
+        redisManager.set("player:uuid:" + player.getUsername().toLowerCase(java.util.Locale.ROOT),
+                player.getUniqueId().toString(), 2_592_000);
+        redisManager.set("player:name:" + player.getUniqueId(), player.getUsername(), 2_592_000);
         redisManager.publishPlayerEvent("PLAYER_JOIN",
                 player.getUniqueId() + ":" + player.getUsername());
 
@@ -146,9 +149,8 @@ public class PlayerConnectionListener {
     public void onServerPreConnect(ServerPreConnectEvent event) {
         String serverName = event.getOriginalServer().getServerInfo().getName();
         serverManager.getInstanceByName(serverName).ifPresent(instance -> {
-            String hostedInstance = redisManager.get("host:" + event.getPlayer().getUniqueId());
-            boolean isHost = instance.getInstanceId().equals(hostedInstance);
-            if (instance.isWhitelisted() && !isHost
+            if (instance.isWhitelisted()
+                    && !instance.isWhitelistedPlayer(event.getPlayer().getUniqueId())
                     && !event.getPlayer().hasPermission("tropicube.bypass.whitelist")) {
                 event.setResult(ServerPreConnectEvent.ServerResult.denied());
                 event.getPlayer().sendMessage(lm.getComponent(event.getPlayer().getUniqueId(), "proxy.whitelist"));

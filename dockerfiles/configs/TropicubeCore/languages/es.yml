@@ -255,6 +255,17 @@ sw:
 # Leave the match
   leave-item-name: "<red>Salir de la partida"
   leave-item-lore: "<gray>Clic derecho para volver al lobby"
+  whitelist-item-name: "<gold>Whitelist privada"
+  whitelist-item-lore: "<gray>Clic derecho para gestionar jugadores autorizados"
+  whitelist-loading: "<gray>Cargando la whitelist..."
+  whitelist-unavailable: "<red>La whitelist de esta partida ya no está disponible."
+  whitelist-menu-title: "<dark_gray>» <gold>Whitelist privada"
+  whitelist-remove-lore: "<red>Haz clic para eliminar a este jugador"
+  whitelist-add-name: "<green>Añadir un jugador"
+  whitelist-add-lore: "<gray>Haz clic y escribe su nombre"
+  whitelist-close: "<red>Cerrar"
+  whitelist-anvil-title: "<dark_gray>» <gold>Añadir un jugador"
+  whitelist-anvil-placeholder: "<gray>Nombre del jugador"
   cant-leave-ingame: "<red>No puedes salir durante una partida en curso."
 # End of match
   replay-message: "<gray>¡Partida terminada! Volviendo al lobby..."

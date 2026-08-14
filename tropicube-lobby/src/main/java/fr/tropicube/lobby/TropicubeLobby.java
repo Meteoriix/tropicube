@@ -111,6 +111,21 @@ public class TropicubeLobby extends JavaPlugin {
         // Synchronizes localized elements when a language changes from the
         // lobby menu, /lang or another network instance.
         redisManager.subscribeToPlayerEvents(message -> {
+            if (message.startsWith("NICK_APPLY:") || message.startsWith("NICK_RESET:")
+                    || message.startsWith("NICK_CLEAR:") || message.startsWith("GRADE_LOADED:")
+                    || message.startsWith("GRADE_CHANGED:")) {
+                String payload = message.substring(message.indexOf(':') + 1);
+                try {
+                    java.util.UUID playerId = java.util.UUID.fromString(payload);
+                    Bukkit.getScheduler().runTaskLater(this, () -> {
+                        org.bukkit.entity.Player player = Bukkit.getPlayer(playerId);
+                        if (player != null) scoreboardManager.updateTablist(player);
+                    }, 2L);
+                } catch (IllegalArgumentException e) {
+                    getLogger().warning("Événement d'identité avec UUID invalide : " + payload);
+                }
+                return;
+            }
             if (!message.startsWith("LANG_CHANGED:")) return;
             String payload = message.substring("LANG_CHANGED:".length());
             int separator = payload.indexOf(':');

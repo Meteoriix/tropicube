@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -336,6 +337,25 @@ public class ServerInstance {
         this.whitelistedPlayers = copyWhitelist(whitelistedPlayers);
     }
 
+    /** Returns whether the player is explicitly allowed on this private instance. */
+    public boolean isWhitelistedPlayer(UUID playerId) {
+        return playerId != null && whitelistedPlayers.contains(playerId);
+    }
+
+    /** Adds a player once while preserving the stable display order. */
+    public boolean addWhitelistedPlayer(UUID playerId) {
+        Objects.requireNonNull(playerId, "playerId");
+        if (whitelistedPlayers.contains(playerId)) return false;
+        whitelistedPlayers.add(playerId);
+        return true;
+    }
+
+    /** Removes a player from this instance whitelist. */
+    public boolean removeWhitelistedPlayer(UUID playerId) {
+        Objects.requireNonNull(playerId, "playerId");
+        return whitelistedPlayers.remove(playerId);
+    }
+
     public String getServerType() {
         return serverType;
     }
@@ -362,7 +382,7 @@ public class ServerInstance {
         if (copy.stream().anyMatch(Objects::isNull)) {
             throw new IllegalArgumentException("whitelistedPlayers ne peut pas contenir de valeur nulle");
         }
-        return copy;
+        return new ArrayList<>(new LinkedHashSet<>(copy));
     }
 
     private static String requireNonBlank(String value, String field) {
