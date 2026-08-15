@@ -8,6 +8,7 @@ import fr.tropicube.sheepwars.util.LangHelper;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
@@ -178,16 +179,39 @@ public class ScoreboardManager {
             default -> player.sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
         }
 
-        NamedTextColor color = gp.getTeam() == null || !gp.isAlive()
-                ? NamedTextColor.GRAY : gp.getTeam().getColor();
-        player.playerListName(Component.text("❤ ", color)
-                .append(Component.text(visibleProfileName(player), color)));
+        applyPlayerListName(player, gp);
+    }
+
+    /**
+     * Reasserts the SheepWars-owned tablist identity after Core changes a nick
+     * profile or display grade. Scoreboard teams are rebuilt because their
+     * entries depend on the profile name sent to the client.
+     */
+    public void refreshIdentity(UUID playerId) {
+        Player player = Bukkit.getPlayer(playerId);
+        if (player == null) return;
+        GamePlayer gamePlayer = plugin.getGameManager().getPlayer(player);
+        if (gamePlayer == null) return;
+
+        applyPlayerListName(player, gamePlayer);
+        GameState state = plugin.getGameManager().getState();
+        boards.values().forEach(board -> setupTeamBoards(board, state));
+    }
+
+    private void applyPlayerListName(Player player, GamePlayer gamePlayer) {
+        NamedTextColor color = gamePlayer.getTeam() == null || !gamePlayer.isAlive()
+                ? NamedTextColor.GRAY : gamePlayer.getTeam().getColor();
+        player.playerListName(teamColoredName(visibleDisplayName(player), color));
+    }
+
+    static Component teamColoredName(String visibleName, NamedTextColor color) {
+        return Component.text("❤ ", color).append(Component.text(visibleName, color));
     }
 
     public void clear(Player player) {
         boards.remove(player.getUniqueId());
         player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-        player.playerListName(Component.text(visibleProfileName(player)));
+        player.playerListName(Component.text(visibleDisplayName(player)));
         player.sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
     }
 
@@ -214,5 +238,10 @@ public class ScoreboardManager {
     private String visibleProfileName(Player player) {
         String profileName = player.getPlayerProfile().getName();
         return profileName == null || profileName.isBlank() ? player.getName() : profileName;
+    }
+
+    private String visibleDisplayName(Player player) {
+        String displayName = PlainTextComponentSerializer.plainText().serialize(player.displayName());
+        return displayName.isBlank() ? visibleProfileName(player) : displayName;
     }
 }

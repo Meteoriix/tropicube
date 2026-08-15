@@ -18,6 +18,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Fixed
 
+- The SheepWars tablist now consistently hides grades and reapplies the visible name alone in the team color, or gray for spectators, after every identity change.
 - `/nick off` now restores the real name in the lobby tablist as well; a deferred refresh can no longer reapply the stale nicked profile name.
 - After reconnecting with `/nick`, the lobby join announcement now uses the restored nick name and fake grade without exposing the real grade.
 - Deferred lobby tablist refreshes now retain the `/nick` name together with its fake grade instead of restoring the real profile name.

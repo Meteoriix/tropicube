@@ -19,6 +19,7 @@ import fr.tropicube.sheepwars.sheep.SheepManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.util.UUID;
 import java.util.logging.Level;
 
 /** Initializes a Paper SheepWars instance and coordinates its game cycle. */
@@ -88,6 +89,8 @@ public final class TropicubeSheepwars extends JavaPlugin {
         this.whitelistMenu = new WhitelistMenu(this);
         this.sheepManager.buildWeightCache();
 
+        redisManager.subscribeToPlayerEvents(this::handlePlayerIdentityEvent);
+
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
         getServer().getPluginManager().registerEvents(new SheepListener(this), this);
         getServer().getPluginManager().registerEvents(new ProtectionListener(this), this);
@@ -98,6 +101,21 @@ public final class TropicubeSheepwars extends JavaPlugin {
         getServer().getPluginManager().registerEvents(whitelistMenu, this);
 
         gameManager.loadGame();
+    }
+
+    private void handlePlayerIdentityEvent(String message) {
+        if (!message.startsWith("NICK_APPLY:") && !message.startsWith("NICK_RESET:")
+                && !message.startsWith("NICK_CLEAR:") && !message.startsWith("GRADE_LOADED:")
+                && !message.startsWith("GRADE_CHANGED:")) return;
+
+        String payload = message.substring(message.indexOf(':') + 1);
+        try {
+            UUID playerId = UUID.fromString(payload);
+            getServer().getScheduler().runTaskLater(this,
+                    () -> scoreboardManager.refreshIdentity(playerId), 2L);
+        } catch (IllegalArgumentException exception) {
+            getLogger().warning("Événement d'identité avec UUID invalide : " + payload);
+        }
     }
 
     @Override

@@ -72,7 +72,7 @@ Une carte jouable contient un monde, une limite de vide et jusqu'à huit spawns 
 
 Lorsque `map-vote-enabled` vaut `true`, chaque joueur vote et une carte est tirée au hasard parmi celles arrivées en tête. Sinon, l'hôte choisit directement la carte. Une partie ne démarre pas si la carte sélectionnée est incomplète ou désactivée.
 
-Les joueurs peuvent demander une équipe dans le menu d'attente. Le gestionnaire conserve des équipes équilibrées et attribue automatiquement une équipe lorsque nécessaire. Les coéquipiers bénéficient d'un contour coloré visible uniquement par leur équipe. Les équipes scoreboard utilisent le nom de profil réellement envoyé au client afin que le contour et la tablist conservent la bonne couleur avec `/nick`.
+Les joueurs peuvent demander une équipe dans le menu d'attente. Le gestionnaire conserve des équipes équilibrées et attribue automatiquement une équipe lorsque nécessaire. Les coéquipiers bénéficient d'un contour coloré visible uniquement par leur équipe. Les équipes scoreboard utilisent le nom de profil réellement envoyé au client pour préserver le contour avec `/nick`. La tablist SheepWars masque toujours le grade réseau ou fictif : elle affiche uniquement `❤ <pseudo>` dans la couleur de l'équipe, ou en gris pour un spectateur. Ce rendu est réappliqué après chaque événement de nick ou de grade afin que Core ne puisse pas le remplacer par le format du lobby.
 
 ## Partie personnalisée et rôle de l'hôte
 

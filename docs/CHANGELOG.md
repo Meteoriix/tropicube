@@ -29,6 +29,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Corrigé
 
+- La tablist SheepWars masque désormais systématiquement les grades et réapplique, après chaque changement d'identité, le pseudonyme seul dans la couleur de l'équipe ou en gris pour un spectateur.
 - `/nick off` restaure désormais aussi le pseudonyme réel dans la tablist du lobby ; un rafraîchissement différé ne peut plus réinjecter l'ancien nom de profil nické.
 - Après reconnexion avec `/nick`, le message d'entrée du lobby utilise désormais le pseudonyme et le grade fictif restaurés, sans révéler le grade réel.
 - Le rafraîchissement différé de la tablist du lobby conserve désormais le pseudonyme `/nick` en plus du grade fictif, au lieu de réafficher le nom réel du profil.

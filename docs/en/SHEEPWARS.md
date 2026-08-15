@@ -64,7 +64,7 @@ A map defines a world, waiting lobby, void limit, and up to eight red plus eight
 
 Players may request a team during the waiting phase. The manager enforces balance and assigns a team automatically when needed. Team selection closes once play begins.
 
-Each viewer receives a personal scoreboard containing red, blue, and spectator teams. Entries use `PlayerProfile.getName()` rather than the historical Bukkit connection name, so `/nick` identities receive the correct nameplate, tablist, and glow color. Colored teams are installed before glow metadata is sent. Living teammates glow only for their own team; dead players and late arrivals appear gray as spectators.
+Each viewer receives a personal scoreboard containing red, blue, and spectator teams. Entries use `PlayerProfile.getName()` rather than the historical Bukkit connection name, so `/nick` identities receive the correct nameplate and glow color. Colored teams are installed before glow metadata is sent. Living teammates glow only for their own team; dead players and late arrivals appear gray as spectators. The SheepWars tablist always hides both network and fake grades: it displays only `❤ <name>` in the player's team color, or gray for a spectator. This rendering is reapplied after every nick or grade event so Core cannot replace it with the lobby format.
 
 ## Custom games and host role
 
