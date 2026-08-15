@@ -19,11 +19,8 @@ public class SheepwarsRejoinCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) return true;
-        boolean canonical = label.equalsIgnoreCase("rejoin") && args.length == 0;
-        boolean legacy = args.length == 1 && "join".equalsIgnoreCase(args[0]);
-        if (!canonical && !legacy) {
-            player.sendMessage(LangHelper.component(player, "lobby.sw-rejoin-unavailable"));
-            return true;
+        if (!acceptsArguments(args)) {
+            return false;
         }
 
         String instanceId = plugin.getPlayerLobbyListener().removeRejoinTarget(player.getUniqueId());
@@ -41,5 +38,9 @@ public class SheepwarsRejoinCommand implements CommandExecutor {
         player.sendMessage(LangHelper.component(player, "lobby.connect", instance.getServerName()));
         plugin.getLobbyServerManager().connectToServer(player, instance.getServerName());
         return true;
+    }
+
+    static boolean acceptsArguments(String[] args) {
+        return args.length == 0;
     }
 }

@@ -120,7 +120,7 @@ Le scoreboard affiche sous le titre tropical `🐑 SHEEPWARS` des sections aér�
 
 Les annonces système autonomes utilisent l'identité `SHEEPWARS >` sans crochets. Les arrivées et départs de joueurs restent narratifs, sans préfixe, et indiquent qu'un joueur « a rejoint la partie ». Les menus, titles, scoreboards et tablists restent sans préfixe afin de préserver leur lisibilité.
 
-La commande `/sw join`, fournie par TropicubeLobby, permet de rejoindre de nouveau une partie quittée mais encore active ; le joueur revient alors comme spectateur. Le lit de sortie transmet l'ID de l'instance pendant cinq minutes avant de transférer le joueur au lobby. Dans le sélecteur de serveurs, une partie en cours porte le statut bleu `PLAYING` et reste joignable comme spectateur tant que l'instance n'est pas pleine.
+La commande `/rejoin`, fournie par TropicubeLobby et utilisée sans argument, permet de rejoindre de nouveau une partie quittée mais encore active ; le joueur revient alors comme spectateur. Le lit de sortie transmet l'ID de l'instance pendant cinq minutes avant de transférer le joueur au lobby. Dans le sélecteur de serveurs, une partie en cours porte le statut bleu `PLAYING` et reste joignable comme spectateur tant que l'instance n'est pas pleine.
 
 ## Configuration technique
 

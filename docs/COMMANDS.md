@@ -51,7 +51,7 @@ Attention : les permissions de grade présentes dans `TropicubeCore/config.yml` 
 | `/vip` | `/boutique`, `/shop` | aucune | Ouvre la boutique de grades VIP |
 | `/fly` | `/flymode`, `/fm` | `tropicube.lobby.fly` | Bascule entre vol permanent et sauts aériens |
 | `/replay` | `/playnext`, `/playagain`, `/rejouer` | aucune | Rejoint la partie suivante ou attend sa création avec connexion automatique |
-| `/rejoin` | `/sw join` | aucune | Rejoint une partie SheepWars quittée volontairement si elle est encore active |
+| `/rejoin` | — | aucune | Rejoint une partie SheepWars quittée volontairement si elle est encore active ; aucun argument n'est accepté |
 
 Permissions fonctionnelles du lobby :
 

@@ -38,7 +38,7 @@ Velocity validates `/whitelist`: the sender must own an active private custom ga
 | Command | Purpose |
 |---|---|
 | `/play` | Opens the server selector (`/servers` remains an alias) |
-| `/rejoin` | Rejoins the remembered active SheepWars instance as a spectator (`/sw join` remains compatible) |
+| `/rejoin` | Rejoins the remembered active SheepWars instance as a spectator; no arguments are accepted |
 | `/replay` | Joins or waits for the suggested replay instance (`/playnext` remains an alias) |
 | `/lang` | Opens or updates language selection |
 | `/fly` | Toggles authorized lobby flight |

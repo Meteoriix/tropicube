@@ -181,7 +181,6 @@ public class TropicubeLobby extends JavaPlugin {
         Objects.requireNonNull(getCommand("replay"), "Commande replay absente de plugin.yml").setExecutor(new PlayNextCommand(this));
         var rejoinCommand = new SheepwarsRejoinCommand(this);
         Objects.requireNonNull(getCommand("rejoin"), "Commande rejoin absente de plugin.yml").setExecutor(rejoinCommand);
-        Objects.requireNonNull(getCommand("sw"), "Commande sw absente de plugin.yml").setExecutor(rejoinCommand);
     }
 
     public static TropicubeLobby getInstance() { return instance; }

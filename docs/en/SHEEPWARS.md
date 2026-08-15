@@ -94,7 +94,7 @@ At creation time, the host chooses public or private access. A private game is a
 
 When a player joins during `PLAYING`, SheepWars creates a non-living `GamePlayer` with no team, resets unsafe inventory and effects, teleports near an active participant when possible, and applies `GameMode.SPECTATOR`. Scoreboards and tablist show spectator state. The player remains included for end-of-game transfer but excluded from team lists, sheep distribution, combat, and victory checks.
 
-The lobby command `/sw join` uses `sw:left-game:<uuid>` for five minutes. Rejoining an active match follows the same spectator path; a disconnected living participant is eliminated before removal.
+The argumentless lobby command `/rejoin` uses `sw:left-game:<uuid>` for five minutes. Rejoining an active match follows the same spectator path; a disconnected living participant is eliminated before removal.
 
 ## Interface and languages
 

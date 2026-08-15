@@ -37,9 +37,6 @@ commands:
   rejoin:
     description: "Rejoint une partie SheepWars quittée mais toujours active"
     usage: /rejoin
-  sw:
-    description: "Rejoint une partie SheepWars quittée mais toujours active"
-    usage: /sw join
 
 permissions:
   tropicube.lobby.build:
