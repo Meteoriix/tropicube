@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 import java.lang.reflect.Proxy;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
@@ -62,6 +63,61 @@ class YamlResourcesTest {
     }
 
     @Test
+    void translationsKeepTheSamePositionalPlaceholders() {
+        assertLanguagePlaceholdersMatch(Path.of("src/main/resources/languages"));
+        assertLanguagePlaceholdersMatch(Path.of("../tropicube-velocity/src/main/resources/languages"));
+    }
+
+    @Test
+    void everyTranslationIsValidMiniMessage() {
+        for (Path directory : List.of(
+                Path.of("src/main/resources/languages"),
+                Path.of("../tropicube-velocity/src/main/resources/languages"))) {
+            for (String language : List.of("fr", "en", "es", "de")) {
+                Map<String, Object> values = leafValues(directory.resolve(language + ".yml"));
+                values.forEach((key, value) -> {
+                    List<?> messages = value instanceof List<?> list ? list : List.of(value);
+                    for (Object message : messages) {
+                        String resolved = String.valueOf(message).replaceAll("\\{\\d+}", "valeur");
+                        assertDoesNotThrow(() -> MessageStyle.component(resolved),
+                                () -> "MiniMessage invalide pour " + language + ": " + key);
+                    }
+                });
+            }
+        }
+    }
+
+    @Test
+    void legacyDecorativePrefixesAreGone() throws Exception {
+        List<Path> roots = List.of(
+                Path.of("src/main/resources"),
+                Path.of("../tropicube-lobby/src/main/resources"),
+                Path.of("../tropicube-sheepwars/src/main/resources"),
+                Path.of("../tropicube-velocity/src/main/resources"),
+                Path.of("src/main/java"),
+                Path.of("../tropicube-lobby/src/main/java"),
+                Path.of("../tropicube-sheepwars/src/main/java"),
+                Path.of("../tropicube-velocity/src/main/java"),
+                Path.of("../dockerfiles/configs")
+        );
+        for (Path root : roots) {
+            try (var paths = Files.walk(root)) {
+                for (Path file : paths.filter(Files::isRegularFile)
+                        .filter(path -> path.toString().endsWith(".java")
+                                || path.toString().endsWith(".yml")
+                                || path.toString().endsWith(".yaml"))
+                        .toList()) {
+                    String content = Files.readString(file);
+                    assertFalse(content.contains("[Tropicube"), () -> "Ancien préfixe dans " + file);
+                    assertFalse(content.contains("[SW]"), () -> "Ancien préfixe SheepWars dans " + file);
+                    assertFalse(content.matches("(?s).*\\[(VIP\\+?|Premium|Joueur|Helper|Modo|Admin|Owner)] .*"),
+                            () -> "Ancien grade décoratif dans " + file);
+                }
+            }
+        }
+    }
+
+    @Test
     void deployedLanguagesMatchBundledLanguageKeys() {
         assertLanguageKeysMatch(
                 Path.of("src/main/resources/languages"),
@@ -84,6 +140,24 @@ class YamlResourcesTest {
                         "Traduction déployée différente pour " + language + ": " + key);
             }
         }
+    }
+
+    private static void assertLanguagePlaceholdersMatch(Path languageDirectory) {
+        Map<String, Object> french = leafValues(languageDirectory.resolve("fr.yml"));
+        for (String language : List.of("en", "es", "de")) {
+            Map<String, Object> translated = leafValues(languageDirectory.resolve(language + ".yml"));
+            for (String key : french.keySet()) {
+                assertEquals(placeholders(french.get(key)), placeholders(translated.get(key)),
+                        "Placeholders différents pour " + language + ": " + key);
+            }
+        }
+    }
+
+    private static Set<String> placeholders(Object value) {
+        var matcher = Pattern.compile("\\{\\d+}").matcher(String.valueOf(value));
+        Set<String> result = new HashSet<>();
+        while (matcher.find()) result.add(matcher.group());
+        return result;
     }
 
     @Test

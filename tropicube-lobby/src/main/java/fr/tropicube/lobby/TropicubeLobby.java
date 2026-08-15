@@ -1,5 +1,6 @@
 package fr.tropicube.lobby;
 
+import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.core.util.ConfigUpdater;
 import fr.tropicube.docker.client.RedisManager;
 import fr.tropicube.lobby.commands.FlyModeCommand;
@@ -44,7 +45,7 @@ public class TropicubeLobby extends JavaPlugin {
             ConfigUpdater.update(this, "config.yml", new File(getDataFolder(), "config.yml"));
             reloadConfig();
         } catch (Exception e) {
-            getLogger().warning("[ConfigUpdater] config.yml: " + e.getMessage());
+            getLogger().warning(MessageStyle.log("tc", "CONFIG", "<yellow>config.yml: " + e.getMessage()));
         }
 
         // Init Redis
@@ -54,9 +55,9 @@ public class TropicubeLobby extends JavaPlugin {
         try {
             redisManager = new RedisManager(redisHost, redisPort, redisPassword);
             redisManager.initialize();
-            getLogger().info("Connexion Redis établie.");
+            getLogger().info(MessageStyle.log("tc", "LOBBY", "<gray>Connexion Redis établie."));
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Impossible de se connecter à Redis !", e);
+            getLogger().log(Level.SEVERE, MessageStyle.log("tc", "LOBBY", "<red>Impossible de se connecter à Redis !"), e);
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
@@ -122,7 +123,7 @@ public class TropicubeLobby extends JavaPlugin {
                         if (player != null) scoreboardManager.updateTablist(player);
                     }, 2L);
                 } catch (IllegalArgumentException e) {
-                    getLogger().warning("Événement d'identité avec UUID invalide : " + payload);
+                    getLogger().warning(MessageStyle.log("tc", "LOBBY", "<yellow>Événement d'identité avec UUID invalide : " + payload));
                 }
                 return;
             }
@@ -139,11 +140,11 @@ public class TropicubeLobby extends JavaPlugin {
                     scoreboardManager.setup(player);
                 });
             } catch (IllegalArgumentException e) {
-                getLogger().warning("Événement LANG_CHANGED avec UUID invalide : " + payload);
+                getLogger().warning(MessageStyle.log("tc", "LOBBY", "<yellow>Événement LANG_CHANGED avec UUID invalide : " + payload));
             }
         });
 
-        getLogger().info("Tropicube Lobby activé !");
+        getLogger().info(MessageStyle.log("tc", "LOBBY", "<gray>Tropicube Lobby activé !"));
     }
 
     @Override
@@ -152,7 +153,7 @@ public class TropicubeLobby extends JavaPlugin {
         if (guiManager != null) guiManager.clearAll();
         if (redisManager != null) redisManager.close();
         instance = null;
-        getLogger().info("Tropicube Lobby désactivé.");
+        getLogger().info(MessageStyle.log("tc", "LOBBY", "<gray>Tropicube Lobby désactivé."));
     }
 
     private void notifyPlayer(String uuidStr, String langKey) {
@@ -164,7 +165,7 @@ public class TropicubeLobby extends JavaPlugin {
                     player.sendMessage(fr.tropicube.lobby.utils.LangHelper.component(player, langKey));
             });
         } catch (IllegalArgumentException e) {
-            getLogger().warning("Réponse proxy avec UUID invalide : " + uuidStr);
+            getLogger().warning(MessageStyle.log("tc", "LOBBY", "<yellow>Réponse proxy avec UUID invalide : " + uuidStr));
         }
     }
 

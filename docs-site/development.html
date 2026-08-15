@@ -23,6 +23,7 @@
 <a class="nav-link" href="fallen-kingdoms.html"><span class="nav-icon">♜</span><span>Fallen Kingdoms</span></a>
 <a class="nav-link" href="fallen-kingdoms-technical-spec.html"><span class="nav-icon">⌘</span><span>FK technique</span></a>
 <a class="nav-link active" href="development.html"><span class="nav-icon">{ }</span><span>Développement</span></a>
+<a class="nav-link" href="messaging-style.html"><span class="nav-icon">✦</span><span>Messages</span></a>
 <a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
 <a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changements</span></a></nav>
     <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
@@ -48,6 +49,7 @@
 <div class="code-block"><span class="code-language">bash</span><pre class=""><code>bash ./mvnw -pl tropicube-sheepwars -am test</code></pre></div>
 <p>Les tests existants couvrent notamment les modèles Docker/Redis, la conversion des durées, la validité des ressources YAML et les invariants du catalogue SheepWars. Toute correction de bug devrait ajouter un test de non-régression lorsque le comportement peut être isolé de Paper ou Velocity.</p>
 <p>Les interactions nécessitant un serveur réel — inventaires Bukkit, événements réseau, démarrage d'instances et routage Velocity — restent à valider sur une pile Docker de développement. Si leur volume augmente, l'étape suivante recommandée est de créer des tests d'intégration avec des adaptateurs Paper/Velocity plutôt que de simuler toute l'API serveur.</p>
+<p>Tout nouveau texte joueur ou log technique doit respecter la <a href="messaging-style.html">charte des messages Tropicube</a>. Les textes sont écrits en MiniMessage ; les logs sont convertis en ANSI uniquement lorsque la console le permet.</p>
 <h2 id="controles-d-infrastructure">Contrôles d'infrastructure<a class="heading-anchor" href="#controles-d-infrastructure" aria-label="Lien vers cette section">#</a></h2>
 <p>Créer au préalable un <code>.env</code> local à partir du modèle. Les contrôles sans déploiement complet sont :</p>
 <div class="code-block"><span class="code-language">bash</span><pre class=""><code>docker compose --env-file .env.example config --quiet

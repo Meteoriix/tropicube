@@ -116,6 +116,8 @@ Le backend SheepWars n'enregistre aucune commande Minecraft propre dans son `plu
 
 Le scoreboard affiche l'état de la partie, le temps restant, les survivants par équipe, la classe, le kit et les éliminations. La tablist identifie les équipes et les spectateurs. Les textes proviennent de TropicubeCore et sont disponibles en français, anglais, espagnol et allemand.
 
+Les annonces autonomes utilisent l'identité `SHEEPWARS >` sans crochets. Les menus, titles, scoreboards et tablists restent sans préfixe afin de préserver leur lisibilité.
+
 La commande `/sw join`, fournie par TropicubeLobby, permet de rejoindre de nouveau une partie quittée mais encore active ; le joueur revient alors comme spectateur. Le lit de sortie transmet l'ID de l'instance pendant cinq minutes avant de transférer le joueur au lobby. Dans le sélecteur de serveurs, une partie en cours porte le statut bleu `PLAYING` et reste joignable comme spectateur tant que l'instance n'est pas pleine.
 
 ## Configuration technique

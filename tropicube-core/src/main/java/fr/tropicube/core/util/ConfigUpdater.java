@@ -1,5 +1,6 @@
 package fr.tropicube.core.util;
 
+import fr.tropicube.core.util.MessageStyle;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
@@ -49,8 +50,8 @@ public final class ConfigUpdater {
         }
         if (missing.isEmpty()) return;
 
-        plugin.getLogger().info("[ConfigUpdater] " + diskFile.getName()
-                + ": inserting " + missing.size() + " missing key(s).");
+        plugin.getLogger().info(MessageStyle.log("tc", "CONFIG", "<gray>" + diskFile.getName()
+                + ": inserting " + missing.size() + " missing key(s)."));
 
         // Works on raw text to preserve comments and key order.
         String diskRaw = Files.readString(diskFile.toPath(), StandardCharsets.UTF_8)
@@ -136,7 +137,7 @@ public final class ConfigUpdater {
         }
 
         Files.writeString(diskFile.toPath(), String.join("\n", lines), StandardCharsets.UTF_8);
-        plugin.getLogger().info("[ConfigUpdater] " + diskFile.getName() + " updated successfully.");
+        plugin.getLogger().info(MessageStyle.log("tc", "CONFIG", "<gray>" + diskFile.getName() + " mis à jour avec succès."));
     }
 
         // Parse the YAML as text

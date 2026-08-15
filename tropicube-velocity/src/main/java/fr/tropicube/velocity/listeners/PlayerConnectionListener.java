@@ -1,5 +1,6 @@
 package fr.tropicube.velocity.listeners;
 
+import fr.tropicube.velocity.util.MessageStyle;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.LoginEvent;
@@ -62,7 +63,7 @@ public class PlayerConnectionListener {
                         : Tristate.UNDEFINED);
             }
         } catch (Exception e) {
-            logger.warn("[Tropicube] Erreur lecture liste admins", e);
+            logger.warn(MessageStyle.log("PROXY", "<yellow>Erreur lecture liste admins"), e);
         }
     }
 
@@ -85,7 +86,7 @@ public class PlayerConnectionListener {
                 plugin.getServer().getServer(instance.getServerName()).ifPresent(srv -> {
                     event.setInitialServer(srv);
                     redisManager.delete("sw:rejoin:" + player.getUniqueId());
-                    logger.debug("[SW] Rejoin auto de {} vers {}", player.getUsername(), instance.getServerName());
+                    logger.debug(MessageStyle.log("SHEEPWARS", "<dark_gray>" + "Rejoin auto de {} vers {}"), player.getUsername(), instance.getServerName());
                 })
             );
             if (event.getInitialServer().isPresent()) return;
@@ -93,7 +94,7 @@ public class PlayerConnectionListener {
 
         serverManager.getBestLobby().ifPresentOrElse(
                 event::setInitialServer,
-                () -> logger.warn("[Tropicube] Aucun lobby disponible pour {}", event.getPlayer().getUsername())
+                () -> logger.warn(MessageStyle.log("PROXY", "<yellow>Aucun lobby disponible pour {}"), event.getPlayer().getUsername())
         );
     }
 
@@ -111,7 +112,7 @@ public class PlayerConnectionListener {
         redisManager.publishPlayerEvent("PLAYER_JOIN",
                 player.getUniqueId() + ":" + player.getUsername());
 
-        logger.debug("[Tropicube] Joueur connecté : {}", player.getUsername());
+        logger.debug(MessageStyle.log("PROXY", "<dark_gray>" + "Joueur connecté : {}"), player.getUsername());
     }
 
     @Subscribe
@@ -135,14 +136,14 @@ public class PlayerConnectionListener {
             ServerInstance instance = redisManager.getInstance(instanceId);
             if (instance != null && "SHEEPWARS".equalsIgnoreCase(instance.getServerType())) {
                 redisManager.set("sw:rejoin:" + player.getUniqueId(), instanceId, 300);
-                logger.debug("[SW] Rejoin stocké pour {} (instance {})", player.getUsername(), instanceId);
+                logger.debug(MessageStyle.log("SHEEPWARS", "<dark_gray>" + "Rejoin stocké pour {} (instance {})"), player.getUsername(), instanceId);
             }
         }
 
         plugin.getServer().getScheduler().buildTask(plugin, serverManager::refreshPlayerCounts)
                 .delay(100, TimeUnit.MILLISECONDS).schedule();
 
-        logger.debug("[Tropicube] Joueur déconnecté : {}", player.getUsername());
+        logger.debug(MessageStyle.log("PROXY", "<dark_gray>" + "Joueur déconnecté : {}"), player.getUsername());
     }
 
     @Subscribe

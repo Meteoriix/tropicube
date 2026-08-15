@@ -22,7 +22,7 @@ Shared network contracts belong in Docker API or Core only when they are genuine
 - keep Paper and Velocity adapters thin and move pure rules into testable Java classes;
 - validate configuration at startup with actionable error messages;
 - expose immutable collections where callers must not mutate internal state;
-- use Adventure Components and MiniMessage for player text;
+- use Adventure Components and MiniMessage for player text and technical logs, following the [Tropicube message style guide](MESSAGING_STYLE.md);
 - keep code comments and JavaDoc in English.
 
 ## Threading

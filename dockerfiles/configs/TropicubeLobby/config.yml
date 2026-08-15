@@ -17,4 +17,4 @@ lobby:
     pitch: 0.0
   double-jump: true
   join-message: true
-  welcome-message: "<dark_gray>[<gold>Tropicube<dark_gray>] <gray>Bienvenue <yellow>%player% <gray>! <dark_gray>(<green>%online%<gray>/<red>%max%<dark_gray>)"
+  welcome-message: "<tc><gray>Bienvenue <yellow>%player% <gray>! <dark_gray>(<green>%online%<gray>/<red>%max%<dark_gray>)"

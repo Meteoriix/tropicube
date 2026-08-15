@@ -1,5 +1,6 @@
 package fr.tropicube.velocity;
 
+import fr.tropicube.velocity.util.MessageStyle;
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
@@ -63,9 +64,7 @@ public class TropicubeVelocity {
 
     @Subscribe
     public void onProxyInitialize(ProxyInitializeEvent event) {
-        logger.info("╔══════════════════════════════╗");
-        logger.info("║   Tropicube Velocity v1.0.0    ║");
-        logger.info("╚══════════════════════════════╝");
+        logger.info(MessageStyle.log("PROXY", "<gray>Velocity <white>v1.0.0</white> démarre."));
 
         try {
             loadConfig();
@@ -77,17 +76,17 @@ public class TropicubeVelocity {
             registerCommands();
             registerListeners();
         } catch (RuntimeException e) {
-            logger.error("[Tropicube] Initialisation interrompue.", e);
+            logger.error(MessageStyle.log("PROXY", "<red>Initialisation interrompue."), e);
             shutdownComponents();
             throw e;
         }
 
-        logger.info("[Tropicube] Plugin initialisé avec succès !");
+        logger.info(MessageStyle.log("PROXY", "<gray>Plugin initialisé avec succès !"));
     }
 
     @Subscribe
     public void onProxyShutdown(ProxyShutdownEvent event) {
-        logger.info("[Tropicube] Arrêt en cours...");
+        logger.info(MessageStyle.log("PROXY", "<gray>Arrêt en cours..."));
         shutdownComponents();
     }
 
@@ -133,7 +132,7 @@ public class TropicubeVelocity {
                     .path(configPath)
                     .build();
             config = loader.load();
-            logger.info("[Tropicube] Configuration chargée.");
+            logger.info(MessageStyle.log("PROXY", "<gray>Configuration chargée."));
         } catch (IOException e) {
             throw new IllegalStateException("Impossible de charger la configuration Velocity", e);
         }
@@ -145,7 +144,7 @@ public class TropicubeVelocity {
         String password = environmentOrConfig("REDIS_PASSWORD", "redis", "password");
         redisManager = new RedisManager(host, port, password);
         redisManager.initialize();
-        logger.info("[Tropicube] Redis connecté sur {}:{}", host, port);
+        logger.info(MessageStyle.log("PROXY", "<gray>Redis connecté sur {}:{}"), host, port);
     }
 
     private void initDocker() {
@@ -160,7 +159,7 @@ public class TropicubeVelocity {
         String basePath = config.node("docker", "base-path").getString("");
         dockerManager = new DockerManager(dockerHost, networkName, prefix, portStart, portEnd,
                 rconPortStart, rconPortEnd, rconPassword, basePath);
-        logger.info("[Tropicube] Docker manager initialisé (base-path: {}).", basePath.isEmpty() ? "none" : basePath);
+        logger.info(MessageStyle.log("PROXY", "<gray>Docker manager initialisé (base-path: {})."), basePath.isEmpty() ? "none" : basePath);
     }
 
     private String environmentOrConfig(String environmentName, Object... configPath) {
@@ -171,7 +170,7 @@ public class TropicubeVelocity {
     private void initLanguageManager() {
         String defaultLang = config.node("language", "default").getString("fr");
         languageManager = new VelocityLanguageManager(dataDirectory, redisManager, logger, defaultLang);
-        logger.info("[Tropicube] Gestionnaire de langue initialisé.");
+        logger.info(MessageStyle.log("PROXY", "<gray>Gestionnaire de langue initialisé."));
     }
 
     private void initManagers() {
@@ -187,10 +186,10 @@ public class TropicubeVelocity {
             extraUuids    = config.node("nick", "skin-uuids").getList(String.class, List.of());
             allowedGrades = config.node("nick", "allowed-grades").getList(String.class, List.of());
         } catch (Exception e) {
-            logger.warn("[Nick] Could not read nick config: {}", e.getMessage());
+            logger.warn(MessageStyle.log("NICK", "<yellow>Impossible de lire la configuration nick : {}"), e.getMessage());
         }
         nickManager = new NickManager(redisManager, logger, extraUuids, allowedGrades);
-        logger.info("[Tropicube] Nick manager initialisé ({} grades autorisés, {} UUIDs dans le pool).",
+        logger.info(MessageStyle.log("PROXY", "<gray>Nick manager initialisé ({} grades autorisés, {} UUIDs dans le pool)."),
             allowedGrades.size(), extraUuids.size() + 3);
     }
 
@@ -227,14 +226,14 @@ public class TropicubeVelocity {
                 server.getCommandManager().metaBuilder("whitelist").build(),
                 new WhitelistCommand(this, tropiServerManager, languageManager)
         );
-        logger.info("[Tropicube] Commandes enregistrées.");
+        logger.info(MessageStyle.log("PROXY", "<gray>Commandes enregistrées."));
     }
 
     private void registerListeners() {
         server.getEventManager().register(this, new PlayerConnectionListener(this, tropiServerManager, redisManager, logger, languageManager));
         server.getEventManager().register(this, new ServerSwitchListener(this, redisManager, nickManager, logger));
         server.getEventManager().register(this, new NickListener(nickManager, logger));
-        logger.info("[Tropicube] Listeners enregistrés.");
+        logger.info(MessageStyle.log("PROXY", "<gray>Listeners enregistrés."));
     }
 
     // ===== Getters =====

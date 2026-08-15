@@ -1,5 +1,6 @@
 package fr.tropicube.sheepwars;
 
+import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.core.managers.DatabaseManager;
 import fr.tropicube.core.util.ConfigUpdater;
@@ -49,13 +50,13 @@ public final class TropicubeSheepwars extends JavaPlugin {
         try {
             ConfigUpdater.update(this, "config.yml", new File(getDataFolder(), "config.yml"));
         } catch (Exception e) {
-            getLogger().warning("[ConfigUpdater] config.yml: " + e.getMessage());
+            getLogger().warning(MessageStyle.log("sw", "CONFIG", "<yellow>config.yml: " + e.getMessage()));
         }
 
         try {
             gameplayBalance = GameplayBalance.load(getConfig());
         } catch (IllegalArgumentException exception) {
-            getLogger().severe(exception.getMessage());
+            getLogger().severe(MessageStyle.log("sw", "SYSTEM", "<red>" + exception.getMessage()));
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -68,16 +69,16 @@ public final class TropicubeSheepwars extends JavaPlugin {
         try {
             redisManager = new RedisManager(redisHost, redisPort, redisPassword);
             redisManager.initialize();
-            getLogger().info("Connexion Redis établie.");
+            getLogger().info(MessageStyle.log("sw", "SYSTEM", "<gray>Connexion Redis établie."));
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Impossible de se connecter à Redis !", e);
+            getLogger().log(Level.SEVERE, MessageStyle.log("sw", "SYSTEM", "<red>Impossible de se connecter à Redis !"), e);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
 
         TropicubeCore core = (TropicubeCore) getServer().getPluginManager().getPlugin("TropicubeCore");
         if (core == null) {
-            getLogger().severe("TropicubeCore introuvable — SheepWars ne peut pas démarrer.");
+            getLogger().severe(MessageStyle.log("sw", "SYSTEM", "<red>TropicubeCore introuvable — SheepWars ne peut pas démarrer."));
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -124,7 +125,7 @@ public final class TropicubeSheepwars extends JavaPlugin {
             getServer().getScheduler().runTaskLater(this,
                     () -> scoreboardManager.refreshIdentity(playerId), 2L);
         } catch (IllegalArgumentException exception) {
-            getLogger().warning("Événement d'identité avec UUID invalide : " + payload);
+            getLogger().warning(MessageStyle.log("sw", "SYSTEM", "<yellow>Événement d'identité avec UUID invalide : " + payload));
         }
     }
 

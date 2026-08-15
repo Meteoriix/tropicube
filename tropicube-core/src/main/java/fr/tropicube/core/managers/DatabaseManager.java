@@ -1,5 +1,6 @@
 package fr.tropicube.core.managers;
 
+import fr.tropicube.core.util.MessageStyle;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import fr.tropicube.core.TropicubeCore;
@@ -170,7 +171,7 @@ public class DatabaseManager {
             migrateLegacySchema(conn);
             migrateEconomyAmounts(conn);
             syncGradesFromConfig(conn);
-            plugin.getLogger().info("[Tropicube-DB] Tables créées/vérifiées.");
+            plugin.getLogger().info(MessageStyle.log("tc", "DB", "<gray>Tables créées/vérifiées."));
         }
     }
 
@@ -191,7 +192,7 @@ public class DatabaseManager {
         try (Statement stmt = conn.createStatement()) {
             stmt.executeUpdate("ALTER TABLE " + table + " MODIFY COLUMN " + column + " " + definition);
         }
-        plugin.getLogger().info("[Tropicube-DB] Colonne monétaire normalisée : " + table + "." + column);
+        plugin.getLogger().info(MessageStyle.log("tc", "DB", "<gray>Colonne monétaire normalisée : " + table + "." + column));
     }
 
     /** Upgrades tables created by older versions without deleting data. */
@@ -218,7 +219,7 @@ public class DatabaseManager {
         try (Statement stmt = conn.createStatement()) {
             stmt.executeUpdate("ALTER TABLE " + table + " ADD COLUMN " + column + " " + definition);
         }
-        plugin.getLogger().info("[Tropicube-DB] Colonne ajoutée : " + table + "." + column);
+        plugin.getLogger().info(MessageStyle.log("tc", "DB", "<gray>Colonne ajoutée : " + table + "." + column));
     }
 
     private boolean hasColumn(Connection conn, String table, String column) throws SQLException {
@@ -236,7 +237,7 @@ public class DatabaseManager {
     private void syncGradesFromConfig(Connection conn) throws SQLException {
         var gradesSection = plugin.getConfig().getConfigurationSection("grades");
         if (gradesSection == null) {
-            plugin.getLogger().warning("[Tropicube-DB] Aucune section 'grades' dans config.yml — grades non synchronisés.");
+            plugin.getLogger().warning(MessageStyle.log("tc", "DB", "<yellow>Aucune section 'grades' dans config.yml — grades non synchronisés."));
             return;
         }
 
@@ -273,7 +274,7 @@ public class DatabaseManager {
             }
             stmt.executeBatch();
         }
-        plugin.getLogger().info("[Tropicube-DB] " + gradesSection.getKeys(false).size() + " grades synchronisés depuis config.yml.");
+        plugin.getLogger().info(MessageStyle.log("tc", "DB", "<gray>" + gradesSection.getKeys(false).size() + " grades synchronisés depuis config.yml."));
     }
 
     public Connection getConnection() throws SQLException {
@@ -288,7 +289,7 @@ public class DatabaseManager {
             }
             return stmt.executeUpdate();
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.SEVERE, "[Tropicube-DB] Erreur update: " + sql, e);
+            plugin.getLogger().log(Level.SEVERE, MessageStyle.log("tc", "DB", "<red>Erreur update: " + sql), e);
             throw new DatabaseOperationException("Échec de la mise à jour SQL", e);
         }
     }
@@ -313,7 +314,7 @@ public class DatabaseManager {
         }
         if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();
-            plugin.getLogger().info("[Tropicube-DB] Pool de connexions fermé.");
+            plugin.getLogger().info(MessageStyle.log("tc", "DB", "<gray>Pool de connexions fermé."));
         }
     }
 

@@ -1,5 +1,6 @@
 package fr.tropicube.core.managers;
 
+import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.core.TropicubeCore;
 import org.bukkit.entity.Player;
 
@@ -97,7 +98,7 @@ public class PlayerDataManager {
                                 uuid.toString(), username, displayName, now, now
                         );
                         economyManager.createAccount(uuid);
-                        plugin.getLogger().info("[Tropicube] Nouveau joueur : " + username);
+                        plugin.getLogger().info(MessageStyle.log("tc", "CORE", "<gray>Nouveau joueur : " + username));
                     }
 
                     profileCache.put(uuid, profile);
@@ -110,7 +111,7 @@ public class PlayerDataManager {
                     return profile;
                 }
             } catch (SQLException e) {
-                plugin.getLogger().log(Level.SEVERE, "[Tropicube] Erreur chargement joueur " + username, e);
+                plugin.getLogger().log(Level.SEVERE, MessageStyle.log("tc", "CORE", "<red>Erreur chargement joueur " + username), e);
                 return null;
             }
         });
@@ -203,7 +204,7 @@ public class PlayerDataManager {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) return rs.getInt(1);
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, "Erreur getWarnCount", e);
+            plugin.getLogger().log(Level.WARNING, MessageStyle.log("tc", "PLAYER_DATA", "<yellow>Erreur getWarnCount"), e);
         }
         return 0;
     }
@@ -226,7 +227,7 @@ public class PlayerDataManager {
                 history.add(entry);
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, "Erreur historique sanctions", e);
+            plugin.getLogger().log(Level.WARNING, MessageStyle.log("tc", "PLAYER_DATA", "<yellow>Erreur historique sanctions"), e);
         }
         return history;
     }
@@ -241,9 +242,9 @@ public class PlayerDataManager {
             while (rs.next()) {
                 activeMutes.put(UUID.fromString(rs.getString("player_uuid")), rs.getLong("expiry"));
             }
-            plugin.getLogger().info("[Tropicube] " + activeMutes.size() + " mutes actifs chargés.");
+            plugin.getLogger().info(MessageStyle.log("tc", "CORE", "<gray>" + activeMutes.size() + " mutes actifs chargés."));
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, "Erreur chargement mutes", e);
+            plugin.getLogger().log(Level.WARNING, MessageStyle.log("tc", "PLAYER_DATA", "<yellow>Erreur chargement mutes"), e);
         }
     }
 
@@ -257,7 +258,7 @@ public class PlayerDataManager {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) return Optional.of(UUID.fromString(rs.getString("uuid")));
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, "Erreur recherche UUID " + name, e);
+            plugin.getLogger().log(Level.WARNING, MessageStyle.log("tc", "PLAYER_DATA", "<yellow>Erreur recherche UUID " + name), e);
         }
         return Optional.empty();
     }

@@ -31,7 +31,7 @@ Source: `tropicube-core/src/main/resources/config.yml`; deployment copy: `docker
 
 Core configuration covers Redis, MySQL, the default language, economy cache rules, and the complete grade catalog. Grade definitions are synchronized to MySQL at startup. Existing values are preserved by the configuration updater when new keys are introduced.
 
-Supported language resources are `fr`, `en`, `de`, and `es`. Embedded and deployment copies must expose identical key trees and placeholders.
+Supported language resources are `fr`, `en`, `de`, and `es`. Embedded and deployment copies must expose identical key trees and placeholders. The internal `<tc>` and `<sw>` tags insert the network and SheepWars identities. Their use is defined in the [message style guide](MESSAGING_STYLE.md) and is limited to standalone notifications.
 
 ## Lobby
 

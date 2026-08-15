@@ -1,5 +1,6 @@
 package fr.tropicube.sheepwars.sheep;
 
+import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.sheepwars.TropicubeSheepwars;
 import fr.tropicube.sheepwars.player.GamePlayer;
 import fr.tropicube.sheepwars.player.PlayerKit;
@@ -116,8 +117,8 @@ public class SheepManager {
         sheepWeightTable = SheepWeightTable.create(configuredWeights, enabledTypes);
         sheepSequencePicker = new SheepSequencePicker(sheepWeightTable.weights());
         if (sheepWeightTable.fallback() != null) {
-            plugin.getLogger().warning("Tous les poids de moutons actifs valent zéro : "
-                    + sheepWeightTable.fallback().name() + " devient le type de secours à 100 %.");
+            plugin.getLogger().warning(MessageStyle.log("sw", "SHEEP", "<yellow>Tous les poids de moutons actifs valent zéro : "
+                    + sheepWeightTable.fallback().name() + " devient le type de secours à 100 %."));
         }
     }
 
@@ -380,7 +381,7 @@ public class SheepManager {
 
             if (shouldRemove) sheep.remove();
         } catch (Exception e) {
-            plugin.getLogger().warning("Erreur dans onImpact pour " + handler.getType() + ": " + e.getMessage());
+            plugin.getLogger().warning(MessageStyle.log("sw", "SHEEP", "<yellow>Erreur dans onImpact pour " + handler.getType() + ": " + e.getMessage()));
             sheep.remove();
         }
     }

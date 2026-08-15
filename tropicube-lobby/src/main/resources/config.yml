@@ -48,15 +48,15 @@ vip-shop:
   entries:
     - grade-key: "VIP"
       material: EMERALD
-      display-name: "<green>[VIP]"
+      display-name: "<green><bold>VIP</bold></green>"
       price: 5000
     - grade-key: "VIP_PLUS"
       material: EMERALD_BLOCK
-      display-name: "<gold>[VIP+]"
+      display-name: "<gold><bold>VIP+</bold></gold>"
       price: 15000
     - grade-key: "PREMIUM"
       material: DIAMOND
-      display-name: "<light_purple>[Premium]"
+      display-name: "<light_purple><bold>PREMIUM</bold></light_purple>"
       price: 40000
 
 # ──────────────────────────────────────────────────────────────────────────────

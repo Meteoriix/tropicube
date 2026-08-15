@@ -1,5 +1,6 @@
 package fr.tropicube.core.listeners;
 
+import fr.tropicube.core.util.MessageStyle;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 import com.google.gson.JsonObject;
@@ -46,7 +47,7 @@ public class NickApplyManager {
                         identity -> plugin.getServer().getScheduler().runTask(plugin,
                                 () -> applyNick(uuid, identity)),
                         () -> {
-                            if (raw != null) plugin.getLogger().warning("[Nick] Invalid identity payload for " + uuid);
+                            if (raw != null) plugin.getLogger().warning(MessageStyle.log("tc", "NICK", "<yellow>Identité invalide pour " + uuid));
                         });
                 return;
             }
@@ -90,7 +91,7 @@ public class NickApplyManager {
         if (target == null) return false;
         plugin.getPermissionManager().clearDisplayIdentityOverride(uuid);
         if (raw == null) {
-            plugin.getLogger().warning("[Nick] Missing original profile while resetting " + uuid);
+            plugin.getLogger().warning(MessageStyle.log("tc", "NICK", "<yellow>Profil original manquant pendant la restauration de " + uuid));
             return false;
         }
 
@@ -103,7 +104,7 @@ public class NickApplyManager {
             swapSkin(target, origName, skinVal, skinSig);
             return true;
         } catch (Exception e) {
-            plugin.getLogger().warning("[Nick] Failed to reset nick for " + uuid + ": " + e.getMessage());
+            plugin.getLogger().warning(MessageStyle.log("tc", "NICK", "<yellow>Échec de la restauration du nick pour " + uuid + " : " + e.getMessage()));
             return false;
         }
     }

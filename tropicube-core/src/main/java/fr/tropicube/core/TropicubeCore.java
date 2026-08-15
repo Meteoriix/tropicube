@@ -1,5 +1,6 @@
 package fr.tropicube.core;
 
+import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.core.commands.*;
 import fr.tropicube.core.managers.DatabaseManager;
 import fr.tropicube.core.managers.EconomyManager;
@@ -110,7 +111,7 @@ public class TropicubeCore extends JavaPlugin {
             databaseManager.initialize();
             return true;
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Impossible d'initialiser la base de données.", e);
+            getLogger().log(Level.SEVERE, MessageStyle.log("tc", "CORE", "<red>Impossible d'initialiser la base de données."), e);
             getServer().getPluginManager().disablePlugin(this);
             return false;
         }
@@ -131,7 +132,7 @@ public class TropicubeCore extends JavaPlugin {
             redisManager.initialize();
             return true;
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Impossible d'initialiser Redis.", e);
+            getLogger().log(Level.SEVERE, MessageStyle.log("tc", "CORE", "<red>Impossible d'initialiser Redis."), e);
             getServer().getPluginManager().disablePlugin(this);
             return false;
         }
@@ -162,7 +163,7 @@ public class TropicubeCore extends JavaPlugin {
             new NickApplyManager(this);
             return true;
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Impossible d'initialiser les gestionnaires du plugin.", e);
+            getLogger().log(Level.SEVERE, MessageStyle.log("tc", "CORE", "<red>Impossible d'initialiser les gestionnaires du plugin."), e);
             getServer().getPluginManager().disablePlugin(this);
             return false;
         }
@@ -203,7 +204,7 @@ public class TropicubeCore extends JavaPlugin {
 
             return true;
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Impossible d'enregistrer les commandes.", e);
+            getLogger().log(Level.SEVERE, MessageStyle.log("tc", "CORE", "<red>Impossible d'enregistrer les commandes."), e);
             getServer().getPluginManager().disablePlugin(this);
             return false;
         }
@@ -228,7 +229,7 @@ public class TropicubeCore extends JavaPlugin {
 
             return true;
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Impossible d'enregistrer les listeners.", e);
+            getLogger().log(Level.SEVERE, MessageStyle.log("tc", "CORE", "<red>Impossible d'enregistrer les listeners."), e);
             getServer().getPluginManager().disablePlugin(this);
             return false;
         }
@@ -265,7 +266,7 @@ public class TropicubeCore extends JavaPlugin {
                 ConfigUpdater.update(this, path, new File(getDataFolder(), path));
             }
         } catch (Exception e) {
-            getLogger().warning("[ConfigUpdater] config.yml: " + e.getMessage());
+            getLogger().warning(MessageStyle.log("tc", "CONFIG", "<yellow>config.yml: " + e.getMessage()));
         }
     }
 

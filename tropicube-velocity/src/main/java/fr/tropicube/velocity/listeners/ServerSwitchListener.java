@@ -1,5 +1,6 @@
 package fr.tropicube.velocity.listeners;
 
+import fr.tropicube.velocity.util.MessageStyle;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import fr.tropicube.docker.client.RedisManager;
@@ -44,7 +45,7 @@ public class ServerSwitchListener {
             nickManager.publishNickApply(event.getPlayer().getUniqueId())
         );
 
-        logger.debug("[Tropicube] {} -> {}", event.getPlayer().getUsername(), serverName);
+        logger.debug(MessageStyle.log("PROXY", "<dark_gray>" + "{} -> {}"), event.getPlayer().getUsername(), serverName);
         plugin.getServer().getScheduler().buildTask(plugin,
                 plugin.getTropiServerManager()::refreshPlayerCounts)
                 .delay(100, TimeUnit.MILLISECONDS).schedule();

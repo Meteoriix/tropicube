@@ -163,6 +163,8 @@ La section `gameplay-balance` est validée au démarrage. Une valeur manquante, 
 
 Core et Velocity prennent en charge `fr`, `en`, `es` et `de`. Les textes utilisent MiniMessage et les paramètres positionnels `{0}`, `{1}`, etc. Pour ajouter une clé :
 
+Les balises internes `<tc>` et `<sw>` insèrent respectivement les marques réseau et SheepWars. Leur usage est défini dans la [charte des messages](MESSAGING_STYLE.md) ; elles sont réservées aux notifications autonomes et ne doivent pas être ajoutées aux contenus compacts d'interface.
+
 1. l'ajouter dans les quatre ressources du module ;
 2. ajouter les traductions correspondantes sous `dockerfiles/configs` ;
 3. lancer `mvn test` pour vérifier les ressources Core ;

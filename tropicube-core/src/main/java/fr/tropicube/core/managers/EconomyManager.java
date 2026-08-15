@@ -1,5 +1,6 @@
 package fr.tropicube.core.managers;
 
+import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.docker.client.RedisManager;
 
@@ -74,7 +75,7 @@ public class EconomyManager {
         try {
             cached = redis.get("economy:balance:" + uuid);
         } catch (RuntimeException e) {
-            plugin.getLogger().log(Level.WARNING, "[Tropicube-Economy] Redis indisponible, repli MySQL", e);
+            plugin.getLogger().log(Level.WARNING, MessageStyle.log("tc", "ECONOMY", "<yellow>Redis indisponible, repli MySQL"), e);
         }
         if (cached != null) {
             try {
@@ -107,7 +108,7 @@ public class EconomyManager {
                 return balance;
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.SEVERE, "[Tropicube-Economy] Erreur lecture balance " + uuid, e);
+            plugin.getLogger().log(Level.SEVERE, MessageStyle.log("tc", "ECONOMY", "<red>Erreur lecture balance " + uuid), e);
         }
         return 0.0;
     }
@@ -228,7 +229,7 @@ public class EconomyManager {
                 uuid.toString(), money(startingBalance), System.currentTimeMillis());
         invalidateCache(uuid);
         if (inserted > 0) {
-            plugin.getLogger().info("[Tropicube-Economy] Compte créé pour " + uuid + " avec " + startingBalance + " " + currencyName);
+            plugin.getLogger().info(MessageStyle.log("tc", "ECONOMY", "<gray>Compte créé pour " + uuid + " avec " + startingBalance + " " + currencyName));
         }
     }
 
@@ -237,7 +238,7 @@ public class EconomyManager {
         try {
             redis.set("economy:balance:" + uuid, String.valueOf(balance), 3600);
         } catch (RuntimeException e) {
-            plugin.getLogger().log(Level.WARNING, "[Tropicube-Economy] Impossible de mettre le solde en cache Redis", e);
+            plugin.getLogger().log(Level.WARNING, MessageStyle.log("tc", "ECONOMY", "<yellow>Impossible de mettre le solde en cache Redis"), e);
         }
     }
 
@@ -246,7 +247,7 @@ public class EconomyManager {
         try {
             redis.publishPlayerEvent("ECONOMY_INVALIDATE", uuid.toString());
         } catch (RuntimeException e) {
-            plugin.getLogger().log(Level.WARNING, "[Tropicube-Economy] Synchronisation inter-serveurs impossible", e);
+            plugin.getLogger().log(Level.WARNING, MessageStyle.log("tc", "ECONOMY", "<yellow>Synchronisation inter-serveurs impossible"), e);
         }
     }
 
@@ -339,7 +340,7 @@ public class EconomyManager {
                 ));
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, "[Tropicube-Economy] Erreur historique", e);
+            plugin.getLogger().log(Level.WARNING, MessageStyle.log("tc", "ECONOMY", "<yellow>Erreur historique"), e);
         }
         return transactions;
     }
@@ -359,7 +360,7 @@ public class EconomyManager {
                 top.add(Map.entry(rs.getString("username"), rs.getDouble("balance")));
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, "[Tropicube-Economy] Erreur top balances", e);
+            plugin.getLogger().log(Level.WARNING, MessageStyle.log("tc", "ECONOMY", "<yellow>Erreur top balances"), e);
         }
         return top;
     }
@@ -369,7 +370,7 @@ public class EconomyManager {
         try {
             redis.delete("economy:balance:" + uuid);
         } catch (RuntimeException e) {
-            plugin.getLogger().log(Level.FINE, "Cache Redis déjà indisponible", e);
+            plugin.getLogger().log(Level.FINE, MessageStyle.log("tc", "ECONOMY", "<gray>Cache Redis déjà indisponible"), e);
         }
     }
 

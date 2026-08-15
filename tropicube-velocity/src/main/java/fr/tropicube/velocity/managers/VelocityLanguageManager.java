@@ -3,8 +3,8 @@ package fr.tropicube.velocity.managers;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import fr.tropicube.docker.client.RedisManager;
+import fr.tropicube.velocity.util.MessageStyle;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.slf4j.Logger;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
@@ -49,15 +49,15 @@ public class VelocityLanguageManager {
                         if (in != null) Files.copy(in, file);
                     }
                 } catch (IOException e) {
-                    logger.warn("[Lang] Could not copy {}.yml: {}", lang, e.getMessage());
+                    logger.warn(MessageStyle.log("LANG", "<yellow>Impossible de copier {}.yml : {}"), lang, e.getMessage());
                 }
             }
             if (Files.exists(file)) {
                 try {
                     loaded.put(lang, YamlConfigurationLoader.builder().path(file).build().load());
-                    logger.info("[Lang] Loaded: {}", lang);
+                    logger.info(MessageStyle.log("LANG", "<gray>Langue chargée : {}"), lang);
                 } catch (IOException e) {
-                    logger.warn("[Lang] Failed to load {}.yml: {}", lang, e.getMessage());
+                    logger.warn(MessageStyle.log("LANG", "<yellow>Impossible de charger {}.yml : {}"), lang, e.getMessage());
                 }
             }
         }
@@ -90,24 +90,24 @@ public class VelocityLanguageManager {
 
     private String format(String lang, String key, Object... args) {
         ConfigurationNode cfg = languages.getOrDefault(lang, languages.get(defaultLang));
-        if (cfg == null) return "<red>[lang:" + key + "]";
+        if (cfg == null) return "<tc><red>Langue indisponible : <white>" + key;
         String[] parts = key.split("\\.");
         String msg = cfg.node((Object[]) parts).getString();
         if (msg == null) {
             ConfigurationNode fb = languages.get(defaultLang);
             if (fb != null) msg = fb.node((Object[]) parts).getString();
         }
-        if (msg == null) return "<red>[lang:" + key + "]";
+        if (msg == null) return "<tc><red>Clé de traduction manquante : <white>" + key;
         for (int i = 0; i < args.length; i++) msg = msg.replace("{" + i + "}", String.valueOf(args[i]));
         return msg;
     }
 
     public Component getComponent(UUID uuid, String key, Object... args) {
-        return MiniMessage.miniMessage().deserialize(get(uuid, key, args));
+        return MessageStyle.component(get(uuid, key, args));
     }
 
     public Component getComponent(CommandSource source, String key, Object... args) {
-        return MiniMessage.miniMessage().deserialize(get(source, key, args));
+        return MessageStyle.component(get(source, key, args));
     }
 
     public void loadPlayerLanguage(UUID uuid) {

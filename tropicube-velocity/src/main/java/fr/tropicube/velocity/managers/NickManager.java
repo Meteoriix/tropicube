@@ -1,5 +1,6 @@
 package fr.tropicube.velocity.managers;
 
+import fr.tropicube.velocity.util.MessageStyle;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -67,7 +68,7 @@ public class NickManager {
             .map(u -> u.replace("-", ""))
             .filter(u -> {
                 boolean valid = COMPACT_UUID.matcher(u).matches();
-                if (!valid) logger.warn("[Nick] UUID de skin ignoré car invalide : {}", u);
+                if (!valid) logger.warn(MessageStyle.log("NICK", "<yellow>UUID de skin ignoré car invalide : {}"), u);
                 return valid;
             })
             .forEach(pool::add);
@@ -116,7 +117,7 @@ public class NickManager {
         return http.sendAsync(req, HttpResponse.BodyHandlers.ofString())
             .thenApply(resp -> {
                 if (resp.statusCode() != 200) {
-                    logger.warn("[Nick] Mojang returned {} for {}", resp.statusCode(), uuid);
+                    logger.warn(MessageStyle.log("NICK", "<yellow>Mojang a répondu {} pour {}"), resp.statusCode(), uuid);
                     return Optional.<SkinData>empty();
                 }
                 try {
@@ -131,12 +132,12 @@ public class NickManager {
                         }
                     }
                 } catch (Exception e) {
-                    logger.warn("[Nick] Failed to parse Mojang response: {}", e.getMessage());
+                    logger.warn(MessageStyle.log("NICK", "<yellow>Réponse Mojang invalide : {}"), e.getMessage());
                 }
                 return Optional.<SkinData>empty();
             })
             .exceptionally(e -> {
-                logger.warn("[Nick] HTTP error fetching skin: {}", e.getMessage());
+                logger.warn(MessageStyle.log("NICK", "<yellow>Erreur HTTP pendant la récupération du skin : {}"), e.getMessage());
                 return Optional.empty();
             });
     }
@@ -153,7 +154,7 @@ public class NickManager {
         String raw = redis.get(NickIdentity.key(uuid));
         Optional<NickIdentity> identity = NickIdentity.fromJson(raw);
         if (raw != null && identity.isEmpty()) {
-            logger.warn("[Nick] Corrupted nick data for {}", uuid);
+            logger.warn(MessageStyle.log("NICK", "<yellow>Données de nick corrompues pour {}"), uuid);
             redis.delete(NickIdentity.key(uuid));
         }
         return identity.map(value -> new NickData(
@@ -206,7 +207,7 @@ public class NickManager {
             String     sig  = obj.has("s") ? obj.get("s").getAsString() : null;
             return Optional.of(new OriginalProfile(name, new SkinData(val, sig)));
         } catch (Exception e) {
-            logger.warn("[Nick] Corrupted original profile for {}: {}", uuid, e.getMessage());
+            logger.warn(MessageStyle.log("NICK", "<yellow>Profil original corrompu pour {} : {}"), uuid, e.getMessage());
             redis.delete(KEY_ORIGINAL + uuid);
             return Optional.empty();
         }
@@ -259,14 +260,14 @@ public class NickManager {
                     try {
                         f.setAccessible(true);
                         f.set(player, newProfile);
-                        logger.debug("[Nick] Session profile updated for {}", player.getUsername());
+                        logger.debug(MessageStyle.log("NICK", "<dark_gray>Profil de session actualisé pour {}"), player.getUsername());
                         return;
                     } catch (Exception ignored) {}
                 }
             }
             cls = cls.getSuperclass();
         }
-        logger.debug("[Nick] Could not update session profile for {} via reflection", player.getUsername());
+        logger.debug(MessageStyle.log("NICK", "<dark_gray>Impossible d'actualiser le profil de session de {} par réflexion"), player.getUsername());
     }
 
     // Serialized data

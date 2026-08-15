@@ -1,5 +1,6 @@
 package fr.tropicube.sheepwars.menu;
 
+import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.sheepwars.TropicubeSheepwars;
 import fr.tropicube.sheepwars.player.PlayerClass;
 import fr.tropicube.sheepwars.player.PlayerKit;
@@ -90,8 +91,8 @@ public class GameSettingsMenu implements Listener {
             plugin.getConfig().set("force-settings.sheep-disabled",
                     disabledSheep.stream().map(Enum::name).toList());
             plugin.saveConfig();
-            plugin.getLogger().warning(
-                    "Tous les moutons étaient désactivés ; TNT a été réactivé pour garantir une distribution valide.");
+            plugin.getLogger().warning(MessageStyle.log("sw", "GAME_SETTINGS_MENU", "<yellow>" +
+                    "Tous les moutons étaient désactivés ; TNT a été réactivé pour garantir une distribution valide."));
         }
     }
 

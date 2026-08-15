@@ -37,7 +37,7 @@ language:
 grades:
   JOUEUR:
     display-name: "Joueur"
-    prefix: "<gray>[Joueur] "
+    prefix: "<gray><bold>JOUEUR</bold></gray> "
     suffix: ""
     color: "<white>"
     priority: 0
@@ -46,7 +46,7 @@ grades:
     permissions: []
   VIP:
     display-name: "VIP"
-    prefix: "<green>[VIP] "
+    prefix: "<green><bold>VIP</bold></green> "
     suffix: ""
     color: "<green>"
     priority: 10
@@ -58,7 +58,7 @@ grades:
       - tropicube.lobby.jump
   VIP_PLUS:
     display-name: "VIP+"
-    prefix: "<gold>[VIP+] "
+    prefix: "<gold><bold>VIP+</bold></gold> "
     suffix: ""
     color: "<gold>"
     priority: 20
@@ -71,7 +71,7 @@ grades:
       - tropicube.lobby.jump.double
   PREMIUM:
     display-name: "Premium"
-    prefix: "<light_purple>[Premium] "
+    prefix: "<light_purple><bold>PREMIUM</bold></light_purple> "
     suffix: ""
     color: "<light_purple>"
     priority: 30
@@ -85,7 +85,7 @@ grades:
       - tropicube.announce.join
   HELPER:
     display-name: "Helper"
-    prefix: "<aqua>[Helper] "
+    prefix: "<aqua><bold>HELPER</bold></aqua> "
     suffix: ""
     color: "<aqua>"
     priority: 50
@@ -100,7 +100,7 @@ grades:
       - tropicube.announce.join
   MODERATEUR:
     display-name: "Modérateur"
-    prefix: "<dark_aqua>[Modo] "
+    prefix: "<dark_aqua><bold>MODO</bold></dark_aqua> "
     suffix: ""
     color: "<dark_aqua>"
     priority: 60
@@ -117,7 +117,7 @@ grades:
       - tropicube.announce.join
   ADMIN:
     display-name: "Administrateur"
-    prefix: "<red>[Admin] "
+    prefix: "<red><bold>ADMIN</bold></red> "
     suffix: ""
     color: "<red>"
     priority: 80
@@ -129,7 +129,7 @@ grades:
       - tropicube.*
   OWNER:
     display-name: "Propriétaire"
-    prefix: "<dark_red>[Owner] "
+    prefix: "<dark_red><bold>OWNER</bold></dark_red> "
     suffix: ""
     color: "<dark_red>"
     priority: 100

@@ -10,6 +10,7 @@ import fr.tropicube.sheepwars.util.PlayerDisplayName;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.damage.DamageSource;
@@ -359,10 +360,10 @@ public class PlayerListener implements Listener {
         GamePlayer gp = plugin.getGameManager().getPlayer(player);
         if (gp == null || gp.getTeam() == null) return;
 
-        Component prefix = Component.text("[", NamedTextColor.GRAY)
-                .append(Component.text(gp.getTeam().getDisplayName(), gp.getTeam().getColor()))
-                .append(Component.text("] ", NamedTextColor.GRAY))
-                .append(Component.text(PlayerDisplayName.resolve(player) + " : ", NamedTextColor.WHITE));
+        Component prefix = Component.text(gp.getTeam().getDisplayName(), gp.getTeam().getColor(),
+                        TextDecoration.BOLD)
+                .append(Component.text(" " + PlayerDisplayName.resolve(player) + " > ", NamedTextColor.DARK_GRAY)
+                        .decoration(TextDecoration.BOLD, false));
 
         event.renderer((_, _, message, _) ->
                 prefix.append(message.colorIfAbsent(NamedTextColor.GRAY)));

@@ -1,5 +1,6 @@
 package fr.tropicube.lobby.managers;
 
+import fr.tropicube.core.util.MessageStyle;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import fr.tropicube.docker.client.RedisManager;
@@ -57,7 +58,7 @@ public class LobbyServerManager {
             // Atomic replacement: Concurrent reads always see a consistent snapshot.
             cacheRef.set(Collections.unmodifiableMap(fresh));
         } catch (Exception e) {
-            plugin.getLogger().warning("Erreur rafraîchissement serveurs : " + e.getMessage());
+            plugin.getLogger().warning(MessageStyle.log("tc", "LOBBY_SERVER", "<yellow>Erreur rafraîchissement serveurs : " + e.getMessage()));
         }
         refreshTemplateList();
     }
@@ -83,7 +84,7 @@ public class LobbyServerManager {
                     .toList();
             templateCacheRef.set(templates);
         } catch (JsonParseException | IllegalStateException e) {
-            plugin.getLogger().warning("Erreur lecture templates : " + e.getMessage());
+            plugin.getLogger().warning(MessageStyle.log("tc", "LOBBY_SERVER", "<yellow>Erreur lecture templates : " + e.getMessage()));
         }
     }
 

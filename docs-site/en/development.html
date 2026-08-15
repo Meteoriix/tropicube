@@ -23,6 +23,7 @@
 <a class="nav-link" href="fallen-kingdoms.html"><span class="nav-icon">♜</span><span>Fallen Kingdoms</span></a>
 <a class="nav-link" href="fallen-kingdoms-technical-spec.html"><span class="nav-icon">⌘</span><span>FK technical</span></a>
 <a class="nav-link active" href="development.html"><span class="nav-icon">{ }</span><span>Development</span></a>
+<a class="nav-link" href="messaging-style.html"><span class="nav-icon">✦</span><span>Messages</span></a>
 <a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
 <a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changes</span></a></nav>
     <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
@@ -36,7 +37,7 @@
 <h2 id="module-boundaries">Module boundaries<a class="heading-anchor" href="#module-boundaries" aria-label="Link to this section">#</a></h2>
 <p>Shared network contracts belong in Docker API or Core only when they are genuinely used across modules. Game rules, teams, kits, abilities, match state, and game data remain inside their game module. A new game must never depend on SheepWars business classes.</p>
 <h2 id="code-design">Code design<a class="heading-anchor" href="#code-design" aria-label="Link to this section">#</a></h2>
-<ul><li>inject dependencies explicitly through constructors;</li><li>keep mutable global state out of static fields;</li><li>model game lifecycles with explicit, idempotent state transitions;</li><li>keep Paper and Velocity adapters thin and move pure rules into testable Java classes;</li><li>validate configuration at startup with actionable error messages;</li><li>expose immutable collections where callers must not mutate internal state;</li><li>use Adventure Components and MiniMessage for player text;</li><li>keep code comments and JavaDoc in English.</li></ul>
+<ul><li>inject dependencies explicitly through constructors;</li><li>keep mutable global state out of static fields;</li><li>model game lifecycles with explicit, idempotent state transitions;</li><li>keep Paper and Velocity adapters thin and move pure rules into testable Java classes;</li><li>validate configuration at startup with actionable error messages;</li><li>expose immutable collections where callers must not mutate internal state;</li><li>use Adventure Components and MiniMessage for player text and technical logs, following the <a href="messaging-style.html">Tropicube message style guide</a>;</li><li>keep code comments and JavaDoc in English.</li></ul>
 <h2 id="threading">Threading<a class="heading-anchor" href="#threading" aria-label="Link to this section">#</a></h2>
 <p>Never block the Paper or Velocity event thread with SQL, Redis, Docker, network, or disk work. Perform I/O asynchronously, then return to the server scheduler before changing worlds, entities, inventories, player profiles, or other non-thread-safe Bukkit state.</p>
 <p>Track every scheduled task and cancel it when a match ends or a plugin stops. Close executors, connection pools, subscriptions, and clients during shutdown.</p>

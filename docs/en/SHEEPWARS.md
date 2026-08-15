@@ -100,6 +100,8 @@ All actions use hotbar items and inventory menus; the SheepWars Paper plugin dec
 
 Player-facing messages come from TropicubeCore and exist in French, English, German, and Spanish.
 
+Standalone announcements use the bracket-free `SHEEPWARS >` identity. Menus, titles, scoreboards, and tab lists remain unprefixed for readability.
+
 ## Configuration
 
 The source file is `tropicube-sheepwars/src/main/resources/config.yml`. Main sections are:

@@ -13,6 +13,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Changed
 
+- Messages and locales now share one identity: bracket-free `TROPICUBE >` and `SHEEPWARS >` branding, modernized grades, prefixes limited to commands and notifications, and MiniMessage technical logs rendered to ANSI with a plain-text fallback.
 - SheepWars uses a twenty-second default delivery interval and direct independent weighted draws, preserving the configured probability on short and long matches.
 - SheepWars scoreboard teams now use the profile name actually visible to the client, including active nicknames.
 - Team entries are installed before glow metadata, and tablist names are colored explicitly for participants and spectators.

@@ -10,6 +10,7 @@ import fr.tropicube.sheepwars.sheep.SheepType;
 import fr.tropicube.sheepwars.util.ItemBuilder;
 import fr.tropicube.sheepwars.util.MapsUtil;
 import fr.tropicube.sheepwars.util.LangHelper;
+import fr.tropicube.core.util.MessageStyle;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -625,7 +626,7 @@ public class GameManager {
         player.setGameMode(GameMode.SPECTATOR);
         player.removePotionEffect(PotionEffectType.GLOWING);
 
-        Component swPrefix = Component.text("[SW] ", AQUA);
+        Component swPrefix = MessageStyle.component("<sw>");
         if (killer != null && !killer.equals(player)) {
             GamePlayer killerGp = getPlayer(killer);
             if (killerGp != null && killerGp.getTeam() != gp.getTeam()) {
@@ -670,7 +671,7 @@ public class GameManager {
         if (currentTask != null) currentTask.cancel();
         sheepDeliverySchedule = null;
 
-        Component endPrefix = Component.text("[SW] ", AQUA);
+        Component endPrefix = MessageStyle.component("<sw>");
         for (GamePlayer gp : players.values()) {
             Player p = gp.getBukkitPlayer();
             if (p == null) continue;
@@ -716,11 +717,10 @@ public class GameManager {
         }
 
         // Notify players they are being sent back
-        Component prefix = Component.text("[SW] ", AQUA);
         for (GamePlayer gp : players.values()) {
             Player p = gp.getBukkitPlayer();
             if (p == null) continue;
-            p.sendMessage(prefix.append(LangHelper.component(p.getUniqueId(), "sw.replay-message")));
+            p.sendMessage(LangHelper.component(p.getUniqueId(), "sw.replay-message"));
         }
 
         if (instanceId != null && !instanceId.isBlank()) {
@@ -791,15 +791,14 @@ public class GameManager {
     // ============================================================
 
     public void broadcastLang(String key, Object... args) {
-        Component prefix = Component.text("[SW] ", AQUA);
         for (GamePlayer gp : players.values()) {
             Player p = gp.getBukkitPlayer();
-            if (p != null) p.sendMessage(prefix.append(LangHelper.component(p.getUniqueId(), key, args)));
+            if (p != null) p.sendMessage(LangHelper.component(p.getUniqueId(), key, args));
         }
     }
 
     private void broadcastDeath(Player player, GamePlayer gp) {
-        Component prefix = Component.text("[SW] ", AQUA);
+        Component prefix = MessageStyle.component("<sw>");
         for (GamePlayer gp2 : players.values()) {
             Player p2 = gp2.getBukkitPlayer();
             if (p2 == null) continue;
@@ -843,7 +842,7 @@ public class GameManager {
                         glowingEntities.setGlowing(teammateEntity, bukkitTeamPlayer);
                     } catch (ReflectiveOperationException e) {
                         plugin.getLogger().log(java.util.logging.Level.WARNING,
-                                "Impossible d'activer le surlignage d'équipe", e);
+                                MessageStyle.log("sw", "GAME", "<yellow>Impossible d'activer le surlignage d'équipe"), e);
                     }
                 }
 
@@ -862,7 +861,7 @@ public class GameManager {
                 glowingEntities.unsetGlowing(entity, viewer);
             } catch (ReflectiveOperationException e) {
                 plugin.getLogger().log(java.util.logging.Level.FINE,
-                        "Impossible de retirer le surlignage d'équipe", e);
+                        MessageStyle.log("sw", "GAME", "<yellow>Impossible de retirer le surlignage d'équipe"), e);
             }
         }
     }
@@ -881,7 +880,7 @@ public class GameManager {
 
         World world = Bukkit.getWorld(worldName);
         if (world == null) {
-            plugin.getLogger().severe("Monde SheepWars introuvable : " + worldName);
+            plugin.getLogger().severe(MessageStyle.log("sw", "GAME", "<red>Monde SheepWars introuvable : " + worldName));
             return;
         }
 
@@ -905,7 +904,7 @@ public class GameManager {
         try {
             return UUID.fromString(value);
         } catch (IllegalArgumentException e) {
-            plugin.getLogger().warning("HOST_UUID invalide : '" + value + "'. Mode sans hôte activé.");
+            plugin.getLogger().warning(MessageStyle.log("sw", "GAME", "<yellow>HOST_UUID invalide : '" + value + "'. Mode sans hôte activé."));
             return NO_HOST;
         }
     }

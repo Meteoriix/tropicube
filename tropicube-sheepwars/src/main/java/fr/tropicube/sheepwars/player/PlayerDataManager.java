@@ -1,5 +1,6 @@
 package fr.tropicube.sheepwars.player;
 
+import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.core.managers.DatabaseManager;
 import fr.tropicube.sheepwars.TropicubeSheepwars;
 import org.bukkit.entity.Player;
@@ -44,17 +45,17 @@ public class PlayerDataManager {
                     try {
                         kit = PlayerKit.valueOf(rs.getString("playerKit"));
                     } catch (IllegalArgumentException | NullPointerException e) {
-                        plugin.getLogger().warning("[SW] Kit inconnu en base pour " + username + ", utilisation de NONE");
+                        plugin.getLogger().warning(MessageStyle.log("sw", "DATA", "<yellow>Kit inconnu en base pour " + username + ", utilisation de NONE"));
                     }
                 } else {
-                    plugin.getLogger().info("[SW] Nouveau joueur : " + username);
+                    plugin.getLogger().info(MessageStyle.log("sw", "DATA", "<gray>Nouveau joueur : " + username));
                 }
 
                 SheepwarsPlayerProfile profile = new SheepwarsPlayerProfile(uuid, username, kit);
                 cacheIfCurrent(uuid, token, profile);
                 return profile;
             } catch (SQLException e) {
-                plugin.getLogger().log(Level.SEVERE, "[SW] Erreur chargement joueur " + username, e);
+                plugin.getLogger().log(Level.SEVERE, MessageStyle.log("sw", "DATA", "<red>Erreur chargement joueur " + username), e);
                 SheepwarsPlayerProfile fallback = new SheepwarsPlayerProfile(uuid, username, PlayerKit.NONE);
                 cacheIfCurrent(uuid, token, fallback);
                 return fallback;
@@ -85,8 +86,7 @@ public class PlayerDataManager {
     public void saveKit(SheepwarsPlayerProfile profile) {
         CompletableFuture.runAsync(() -> persistKit(profile), executor)
                 .exceptionally(error -> {
-                    plugin.getLogger().log(Level.SEVERE,
-                            "[SW] Erreur sauvegarde joueur " + profile.username(), error);
+                    plugin.getLogger().log(Level.SEVERE, MessageStyle.log("sw", "DATA", "<red>Erreur sauvegarde joueur " + profile.username()), error);
                     return null;
                 });
     }
@@ -112,7 +112,7 @@ public class PlayerDataManager {
         executor.shutdown();
         try {
             if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
-                plugin.getLogger().warning("[SW] Certaines sauvegardes joueur n'ont pas terminé avant l'arrêt.");
+                plugin.getLogger().warning(MessageStyle.log("sw", "DATA", "<yellow>Certaines sauvegardes joueur n'ont pas terminé avant l'arrêt."));
                 executor.shutdownNow();
             }
         } catch (InterruptedException e) {

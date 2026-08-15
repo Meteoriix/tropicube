@@ -1,8 +1,8 @@
 package fr.tropicube.sheepwars.util;
 
 import fr.tropicube.core.TropicubeCore;
+import fr.tropicube.core.util.MessageStyle;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -28,7 +28,7 @@ public final class LangHelper {
 
     public static String get(UUID uuid, String key, Object... args) {
         TropicubeCore core = getCore();
-        if (core == null) return "<red>[lang:" + key + "]";
+        if (core == null) return "<sw><red>Clé de traduction indisponible : <white>" + key;
         return uuid == null
                 ? core.getLanguageManager().getForLang("fr", key, args)
                 : core.getLanguageManager().get(uuid, key, args);
@@ -40,7 +40,7 @@ public final class LangHelper {
 
     public static Component component(UUID uuid, String key, Object... args) {
         TropicubeCore core = getCore();
-        if (core == null) return MiniMessage.miniMessage().deserialize("<red>[lang:" + key + "]");
+        if (core == null) return MessageStyle.component("<sw><red>Clé de traduction indisponible : <white>" + key);
         return uuid == null
                 ? core.getLanguageManager().getComponentForLang("fr", key, args)
                 : core.getLanguageManager().getComponent(uuid, key, args);

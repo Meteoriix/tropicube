@@ -48,6 +48,8 @@ Les tests existants couvrent notamment les modèles Docker/Redis, la conversion 
 
 Les interactions nécessitant un serveur réel — inventaires Bukkit, événements réseau, démarrage d'instances et routage Velocity — restent à valider sur une pile Docker de développement. Si leur volume augmente, l'étape suivante recommandée est de créer des tests d'intégration avec des adaptateurs Paper/Velocity plutôt que de simuler toute l'API serveur.
 
+Tout nouveau texte joueur ou log technique doit respecter la [charte des messages Tropicube](MESSAGING_STYLE.md). Les textes sont écrits en MiniMessage ; les logs sont convertis en ANSI uniquement lorsque la console le permet.
+
 ## Contrôles d'infrastructure
 
 Créer au préalable un `.env` local à partir du modèle. Les contrôles sans déploiement complet sont :

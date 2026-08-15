@@ -1,5 +1,6 @@
 package fr.tropicube.core.util;
 
+import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.core.managers.DatabaseManager;
 import org.bukkit.command.CommandSender;
@@ -16,7 +17,7 @@ public final class CommandAsync {
         plugin.getDatabaseManager().supplyAsync(work).whenComplete((result, error) ->
                 plugin.getServer().getScheduler().runTask(plugin, () -> {
                     if (error != null) {
-                        plugin.getLogger().log(Level.SEVERE, "Échec d'une commande asynchrone", error);
+                        plugin.getLogger().log(Level.SEVERE, MessageStyle.log("tc", "COMMAND_ASYNC", "<red>Échec d'une commande asynchrone"), error);
                         sender.sendMessage(plugin.getLanguageManager()
                                 .getComponentForLang(language, "general.operation-failed"));
                         return;

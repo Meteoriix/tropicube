@@ -1,8 +1,6 @@
 package fr.tropicube.core.listeners;
 
 import fr.tropicube.core.TropicubeCore;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.GameRules;
 import org.bukkit.event.*;
 import org.bukkit.event.player.*;
@@ -46,13 +44,13 @@ public class PlayerJoinQuitListener implements Listener {
                         }
                         long expiry = profile.banExpiry();
                         if (profile.banned() && (expiry <= 0 || expiry > System.currentTimeMillis() / 1000)) {
-                            String expStr = expiry <= 0 ? "Permanent" :
+                            String expStr = expiry <= 0 ? plugin.getLanguageManager().get(uuid, "time.permanent") :
                                     new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date(expiry * 1000));
-                            String reason = profile.banReason() == null ? "Non précisée" : profile.banReason();
-                            player.kick(MiniMessage.miniMessage().deserialize(
-                                    "<red>Vous êtes banni.\n<gray>Raison : <white><reason>\n<gray>Expiration : <white><expiry>",
-                                    Placeholder.unparsed("reason", reason),
-                                    Placeholder.unparsed("expiry", expStr)));
+                            String reason = profile.banReason() == null
+                                    ? plugin.getLanguageManager().get(uuid, "general.no-reason")
+                                    : profile.banReason();
+                            player.kick(plugin.getLanguageManager().getComponent(
+                                    uuid, "moderation.ban-message", reason, expStr));
                             return;
                         }
                         if (!isTransfer) {

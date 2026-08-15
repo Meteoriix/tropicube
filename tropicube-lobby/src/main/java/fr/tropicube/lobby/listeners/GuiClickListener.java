@@ -1,5 +1,6 @@
 package fr.tropicube.lobby.listeners;
 
+import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.lobby.TropicubeLobby;
 import fr.tropicube.lobby.gui.*;
@@ -296,7 +297,7 @@ public class GuiClickListener implements Listener {
             core.getLanguageManager().setPlayerLanguage(player.getUniqueId(), lang, true);
             return true;
         } catch (RuntimeException ex) {
-            plugin.getLogger().warning("Erreur changement de langue : " + ex.getMessage());
+            plugin.getLogger().warning(MessageStyle.log("tc", "GUI_CLICK", "<yellow>Erreur changement de langue : " + ex.getMessage()));
             return false;
         }
     }
@@ -316,14 +317,14 @@ public class GuiClickListener implements Listener {
             core.getPermissionManager().setGrade(playerId, gradeKey, 0L);
             return PurchaseResult.PURCHASED;
         } catch (RuntimeException ex) {
-            plugin.getLogger().warning("Erreur achat grade : " + ex.getMessage());
+            plugin.getLogger().warning(MessageStyle.log("tc", "GUI_CLICK", "<yellow>Erreur achat grade : " + ex.getMessage()));
             if (withdrawn) {
                 try {
                     economyManager.deposit(playerId, price,
                             "Remboursement achat grade " + gradeKey);
                 } catch (RuntimeException rollbackError) {
                     plugin.getLogger().log(java.util.logging.Level.SEVERE,
-                            "Échec du remboursement après l'achat du grade " + gradeKey, rollbackError);
+                            MessageStyle.log("tc", "GUI_CLICK", "<red>Échec du remboursement après l'achat du grade " + gradeKey), rollbackError);
                 }
             }
             return PurchaseResult.FAILED;

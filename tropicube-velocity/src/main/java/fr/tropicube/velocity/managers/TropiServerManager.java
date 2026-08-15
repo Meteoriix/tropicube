@@ -1,5 +1,6 @@
 package fr.tropicube.velocity.managers;
 
+import fr.tropicube.velocity.util.MessageStyle;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
@@ -66,7 +67,7 @@ public class TropiServerManager {
         startHealthChecker();
         subscribeToProxyCommands();
         publishTemplates();
-        logger.info("[Tropicube] TropiServerManager initialisé avec {} templates.", templates.size());
+        logger.info(MessageStyle.log("PROXY", "<gray>TropiServerManager initialisé avec {} templates."), templates.size());
     }
 
     private void subscribeToProxyCommands() {
@@ -89,13 +90,13 @@ public class TropiServerManager {
                                 player.createConnectionRequest(srv).connect().whenComplete((result, error) -> {
                                     if (error != null || result == null || !result.isSuccessful()) {
                                         redisManager.delete("transfer:" + uuidStr);
-                                        logger.warn("[Tropicube] Échec du transfert de {} vers {}",
+                                        logger.warn(MessageStyle.log("PROXY", "<yellow>Échec du transfert de {} vers {}"),
                                                 player.getUsername(), srv.getServerInfo().getName(), error);
                                     }
                                 });
                             }));
                 } catch (Exception e) {
-                    logger.warn("[Tropicube] Erreur traitement commande CONNECT: {}", e.getMessage());
+                    logger.warn(MessageStyle.log("PROXY", "<yellow>Erreur traitement commande CONNECT: {}"), e.getMessage());
                 }
                 return;
             }
@@ -113,7 +114,7 @@ public class TropiServerManager {
                 try {
                     ServerTemplate tpl = templates.get(templateId);
                     if (tpl == null || !tpl.isEnabled() || "LOBBY".equalsIgnoreCase(tpl.getServerType())) {
-                        logger.warn("[Tropicube] CREATE_HOST refusé pour template invalide/lobby : {}", templateId);
+                        logger.warn(MessageStyle.log("PROXY", "<yellow>CREATE_HOST refusé pour template invalide/lobby : {}"), templateId);
                         redisManager.publishCommand("LOBBY", "CREATE_HOST_FAILED:" + uuidStr);
                         return;
                     }
@@ -141,13 +142,13 @@ public class TropiServerManager {
                             })
                             .exceptionally(ex -> {
                                 redisManager.delete(creationKey);
-                                logger.warn("[Tropicube] Échec création partie personnalisée pour {} : {}", uuidStr, ex.getMessage());
+                                logger.warn(MessageStyle.log("PROXY", "<yellow>Échec création partie personnalisée pour {} : {}"), uuidStr, ex.getMessage());
                                 redisManager.publishCommand("LOBBY", "CREATE_HOST_FAILED:" + uuidStr);
                                 return null;
                             });
                 } catch (Exception e) {
                     if (creationReserved) redisManager.delete(creationKey);
-                    logger.warn("[Tropicube] Erreur commande CREATE_HOST: {}", e.getMessage());
+                    logger.warn(MessageStyle.log("PROXY", "<yellow>Erreur commande CREATE_HOST: {}"), e.getMessage());
                     redisManager.publishCommand("LOBBY", "CREATE_HOST_FAILED:" + uuidStr);
                 }
             }
@@ -161,16 +162,16 @@ public class TropiServerManager {
                 String sourceInstanceId = rest.substring(sep + 1);
                 ServerTemplate tpl = templates.get(templateId);
                 if (tpl == null || !tpl.isEnabled()) {
-                    logger.warn("[Tropicube] CREATE_GAME refusé pour template invalide : {}", templateId);
+                    logger.warn(MessageStyle.log("PROXY", "<yellow>CREATE_GAME refusé pour template invalide : {}"), templateId);
                     return;
                 }
                 ensureMatchmakingCreation(templateId)
                         .thenAccept(instance -> {
                             redisManager.set("sw:next-game:" + sourceInstanceId, instance.getServerName(), 7200);
-                            logger.info("[Tropicube] Prochain jeu préparé : {} pour instance {}", instance.getServerName(), sourceInstanceId);
+                            logger.info(MessageStyle.log("PROXY", "<gray>Prochain jeu préparé : {} pour instance {}"), instance.getServerName(), sourceInstanceId);
                         })
                         .exceptionally(ex -> {
-                            logger.warn("[Tropicube] Échec CREATE_GAME pour {} : {}", sourceInstanceId, ex.getMessage());
+                            logger.warn(MessageStyle.log("PROXY", "<yellow>Échec CREATE_GAME pour {} : {}"), sourceInstanceId, ex.getMessage());
                             return null;
                         });
                 return;
@@ -191,7 +192,7 @@ public class TropiServerManager {
                 try {
                     queueForMatchmaking(templateId, UUID.fromString(uuidStr));
                 } catch (IllegalArgumentException e) {
-                    logger.warn("[Tropicube] UUID invalide dans START_GAME : {}", uuidStr);
+                    logger.warn(MessageStyle.log("PROXY", "<yellow>UUID invalide dans START_GAME : {}"), uuidStr);
                     redisManager.publishCommand("LOBBY", "GAME_START_FAILED:" + uuidStr);
                 }
                 return;
@@ -201,7 +202,7 @@ public class TropiServerManager {
             if (message.startsWith("PROXY:FINISH_GAME:")) {
                 String instanceId = message.substring("PROXY:FINISH_GAME:".length());
                 finishGameServer(instanceId).exceptionally(error -> {
-                    logger.error("[Tropicube] Échec de destruction après fin de partie : {}", instanceId, error);
+                    logger.error(MessageStyle.log("PROXY", "<red>Échec de destruction après fin de partie : {}"), instanceId, error);
                     return false;
                 });
                 return;
@@ -224,7 +225,7 @@ public class TropiServerManager {
                             }
                         })
                         .exceptionally(ex -> {
-                            logger.warn("[Tropicube] Échec arrêt partie hôte pour {} : {}", uuidStr, ex.getMessage());
+                            logger.warn(MessageStyle.log("PROXY", "<yellow>Échec arrêt partie hôte pour {} : {}"), uuidStr, ex.getMessage());
                             redisManager.publishCommand("LOBBY", "STOP_HOST_FAILED:" + uuidStr);
                             return null;
                         });
@@ -243,7 +244,7 @@ public class TropiServerManager {
                     proxy.getPlayer(hostId).ifPresent(player -> player.sendMessage(
                             languageManager.getComponent(hostId, update.messageKey(), update.targetName())));
                 } catch (IllegalArgumentException e) {
-                    logger.warn("[Tropicube] Commande HOST_WHITELIST invalide : {}", e.getMessage());
+                    logger.warn(MessageStyle.log("PROXY", "<yellow>Commande HOST_WHITELIST invalide : {}"), e.getMessage());
                 }
             }
         });
@@ -267,7 +268,7 @@ public class TropiServerManager {
                 template.setMaxRam(node.node("ram-max").getInt(1024));
                 template.setEnabled(node.node("enabled").getBoolean(true));
                 if ("LOBBY".equalsIgnoreCase(template.getServerType()) && !template.isEnabled()) {
-                    logger.warn("[Tropicube] Template lobby '{}' ne peut pas être désactivé — forcé à enabled.", template.getId());
+                    logger.warn(MessageStyle.log("PROXY", "<yellow>Template lobby '{}' ne peut pas être désactivé — forcé à enabled."), template.getId());
                     template.setEnabled(true);
                 }
                 template.setAutoStart(node.node("auto-start").getBoolean(false));
@@ -296,9 +297,9 @@ public class TropiServerManager {
                 }
 
                 templates.put(template.getId(), template);
-                logger.info("[Tropicube] Template chargé : {}", template.getId());
+                logger.info(MessageStyle.log("PROXY", "<gray>Template chargé : {}"), template.getId());
             } catch (Exception e) {
-                logger.error("[Tropicube] Erreur chargement template {}", key, e);
+                logger.error(MessageStyle.log("PROXY", "<red>Erreur chargement template {}"), key, e);
             }
         });
     }
@@ -309,7 +310,7 @@ public class TropiServerManager {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         dockerManager.cleanupOrphanContainers(knownIds);
-        logger.info("[Tropicube] Nettoyage orphelins terminé ({} instances connues).", knownIds.size());
+        logger.info(MessageStyle.log("PROXY", "<gray>Nettoyage orphelins terminé ({} instances connues)."), knownIds.size());
     }
 
     private void restoreActiveInstances() {
@@ -322,7 +323,7 @@ public class TropiServerManager {
                     if (instance.getContainerId() == null
                             || !dockerManager.isContainerRunning(instance.getContainerId())) {
                         purgeRedisInstance(instance);
-                        logger.warn("[Tropicube] Instance Redis sans conteneur actif supprimée : {}",
+                        logger.warn(MessageStyle.log("PROXY", "<yellow>Instance Redis sans conteneur actif supprimée : {}"),
                                 instance.getServerName());
                         continue;
                     }
@@ -332,10 +333,10 @@ public class TropiServerManager {
                         emptySince.put(instance.getInstanceId(), System.currentTimeMillis() / 1000);
                     }
                     registerServerToVelocity(instance);
-                    logger.info("[Tropicube] Instance restaurée : {}", instance.getServerName());
+                    logger.info(MessageStyle.log("PROXY", "<gray>Instance restaurée : {}"), instance.getServerName());
                 } catch (RuntimeException e) {
                     purgeRedisInstance(instance);
-                    logger.error("[Tropicube] Instance restaurée invalide, elle sera nettoyée : {}",
+                    logger.error(MessageStyle.log("PROXY", "<red>Instance restaurée invalide, elle sera nettoyée : {}"),
                             instance.getServerName(), e);
                 }
             }
@@ -353,7 +354,7 @@ public class TropiServerManager {
             for (long i = current; i < template.getMinInstances(); i++) {
                 createServer(template.getId(), null, false)
                         .exceptionally(ex -> {
-                            logger.error("[Tropicube] Échec création instance {} au démarrage", template.getId(), ex);
+                            logger.error(MessageStyle.log("PROXY", "<red>Échec création instance {} au démarrage"), template.getId(), ex);
                             return null;
                         });
             }
@@ -417,7 +418,7 @@ public class TropiServerManager {
                         e.addSuppressed(cleanupError);
                     }
                 }
-                logger.error("[Tropicube] Erreur création serveur {}", serverName, e);
+                logger.error(MessageStyle.log("PROXY", "<red>Erreur création serveur {}"), serverName, e);
                 throw new RuntimeException(e);
             } finally {
                 if (pending.decrementAndGet() == 0) pendingCreations.remove(templateId, pending);
@@ -426,7 +427,7 @@ public class TropiServerManager {
             registerServerToVelocity(instance);
             redisManager.publishServerEvent("SERVER_STARTED",
                     instance.getInstanceId() + ":" + instance.getServerName() + ":" + instance.getServerType());
-            logger.info("[Tropicube] Serveur démarré : {} (port {})", instance.getServerName(), instance.getPort());
+            logger.info(MessageStyle.log("PROXY", "<gray>Serveur démarré : {} (port {})"), instance.getServerName(), instance.getPort());
             return instance;
         }));
     }
@@ -467,7 +468,7 @@ public class TropiServerManager {
                     List<UUID> failedPlayers = matchmakingWaitlist.removeAll(templateId);
                     failedPlayers.forEach(playerId -> redisManager.publishCommand(
                             "LOBBY", "GAME_START_FAILED:" + playerId));
-                    logger.warn("[Tropicube] Échec de la création matchmaking {} pour {} joueur(s)",
+                    logger.warn(MessageStyle.log("PROXY", "<yellow>Échec de la création matchmaking {} pour {} joueur(s)"),
                             templateId, failedPlayers.size(), error);
                     return;
                 }
@@ -515,7 +516,7 @@ public class TropiServerManager {
         }
         sb.append("]");
         redisManager.saveTemplatesJson(sb.toString());
-        logger.info("[Tropicube] Templates publiés dans Redis ({} templates).", templates.size());
+        logger.info(MessageStyle.log("PROXY", "<gray>Templates publiés dans Redis ({} templates)."), templates.size());
     }
 
     private static String escape(String s) {
@@ -540,7 +541,7 @@ public class TropiServerManager {
                 lastHealthyAt.remove(instanceId);
                 purgeRedisInstance(instance);
                 redisManager.publishServerEvent("SERVER_STOPPED", instanceId + ":" + instance.getServerName());
-                logger.info("[Tropicube] Serveur arrêté : {}", instance.getServerName());
+                logger.info(MessageStyle.log("PROXY", "<gray>Serveur arrêté : {}"), instance.getServerName());
             } else {
                 restoreAfterFailedStop(preparation);
             }
@@ -568,7 +569,7 @@ public class TropiServerManager {
             lastHealthyAt.remove(instanceId);
             purgeRedisInstance(instance);
             redisManager.publishServerEvent("SERVER_STOPPED", instanceId + ":" + instance.getServerName());
-            logger.info("[Tropicube] Serveur tué (kill) : {}", instance.getServerName());
+            logger.info(MessageStyle.log("PROXY", "<gray>Serveur tué (kill) : {}"), instance.getServerName());
             return killed;
         }, scheduler);
     }
@@ -586,7 +587,7 @@ public class TropiServerManager {
         if (activeInstances.get(instance.getInstanceId()) != instance) return;
         preparation.restore();
         redisManager.saveInstance(instance);
-        logger.warn("[Tropicube] Arrêt échoué pour {} : statut restauré à {}.",
+        logger.warn(MessageStyle.log("PROXY", "<yellow>Arrêt échoué pour {} : statut restauré à {}."),
                 instance.getServerName(), preparation.previousStatus());
     }
 
@@ -625,7 +626,7 @@ public class TropiServerManager {
                     else completion.complete(killed);
                 });
             } else {
-                logger.warn("[Tropicube] Fin de partie en attente : tous les joueurs de {} ne sont pas encore au lobby",
+                logger.warn(MessageStyle.log("PROXY", "<yellow>Fin de partie en attente : tous les joueurs de {} ne sont pas encore au lobby"),
                         instance.getServerName());
                 try {
                     scheduler.schedule(
@@ -659,7 +660,7 @@ public class TropiServerManager {
                 .orTimeout(timeoutSeconds, TimeUnit.SECONDS)
                 .thenApply(_ -> transfers.stream().allMatch(CompletableFuture::join))
                 .exceptionally(error -> {
-                    logger.warn("[Tropicube] Délai dépassé pendant le transfert des joueurs de {}",
+                    logger.warn(MessageStyle.log("PROXY", "<yellow>Délai dépassé pendant le transfert des joueurs de {}"),
                             instance.getServerName(), error);
                     return false;
                 });
@@ -677,7 +678,7 @@ public class TropiServerManager {
             stopAllServers();
             return;
         }
-        logger.info("[Tropicube] Arrêt du proxy : conservation de {} serveur(s) dynamique(s).",
+        logger.info(MessageStyle.log("PROXY", "<gray>Arrêt du proxy : conservation de {} serveur(s) dynamique(s)."),
                 activeInstances.size());
         scheduler.shutdownNow();
     }
@@ -689,7 +690,7 @@ public class TropiServerManager {
      * still in CREATING and therefore absent from activeInstances.
      */
     public void stopAllServers() {
-        logger.info("[Tropicube] Arrêt de tous les serveurs ({})...", activeInstances.size());
+        logger.info(MessageStyle.log("PROXY", "<gray>Arrêt de tous les serveurs ({})..."), activeInstances.size());
         scheduler.shutdownNow();
 
         try (var exec = Executors.newVirtualThreadPerTaskExecutor()) {
@@ -700,7 +701,7 @@ public class TropiServerManager {
                             dockerManager.removeServer(instance);
                             purgeRedisInstance(instance);
                         } catch (Exception e) {
-                            logger.warn("[Tropicube] Erreur arrêt {}", instance.getServerName(), e);
+                            logger.warn(MessageStyle.log("PROXY", "<yellow>Erreur arrêt {}"), instance.getServerName(), e);
                         }
                     }))
                     .collect(Collectors.toList());
@@ -735,7 +736,7 @@ public class TropiServerManager {
         proxy.getServer(instance.getServerName())
                 .ifPresent(server -> proxy.unregisterServer(server.getServerInfo()));
         proxy.registerServer(info);
-        logger.info("[Tropicube] Serveur Velocity enregistré : {} -> {}:{}", instance.getServerName(), address.getHostString(), MINECRAFT_INTERNAL_PORT);
+        logger.info(MessageStyle.log("PROXY", "<gray>Serveur Velocity enregistré : {} -> {}:{}"), instance.getServerName(), address.getHostString(), MINECRAFT_INTERNAL_PORT);
     }
 
     private CompletableFuture<Boolean> transferToLobby(com.velocitypowered.api.proxy.Player player) {
@@ -746,7 +747,7 @@ public class TropiServerManager {
         }
         return player.createConnectionRequest(lobby.orElseThrow()).connect().handle((result, error) -> {
             if (error != null || result == null || !result.isSuccessful()) {
-                logger.warn("[Tropicube] Impossible de transférer {} vers le lobby",
+                logger.warn(MessageStyle.log("PROXY", "<yellow>Impossible de transférer {} vers le lobby"),
                         player.getUsername(), error);
                 player.sendMessage(languageManager.getComponent(player.getUniqueId(), "proxy.transfer-failed"));
                 return false;
@@ -764,7 +765,7 @@ public class TropiServerManager {
                 .handleAsync((_, ex) -> {
                     if (ex != null) {
                         instance.setStatus(ServerInstance.Status.ERROR);
-                        logger.error("[Tropicube] Le serveur {} n'est pas devenu disponible.",
+                        logger.error(MessageStyle.log("PROXY", "<red>Le serveur {} n'est pas devenu disponible."),
                                 instance.getServerName(), ex);
                         try {
                             dockerManager.removeServer(instance);
@@ -794,10 +795,10 @@ public class TropiServerManager {
 
             // Scale UP if insufficient (respects auto-start: without auto-start, the min is never forced)
             if (template.isAutoStart() && current < template.getMinInstances()) {
-                logger.info("[Tropicube] Auto-scale UP : {}", template.getId());
+                logger.info(MessageStyle.log("PROXY", "<gray>Auto-scale UP : {}"), template.getId());
                 createServer(template.getId(), null, false)
                         .exceptionally(ex -> {
-                            logger.error("[Tropicube] Échec auto-scale UP pour {}", template.getId(), ex);
+                            logger.error(MessageStyle.log("PROXY", "<red>Échec auto-scale UP pour {}"), template.getId(), ex);
                             return null;
                         });
             }
@@ -815,7 +816,7 @@ public class TropiServerManager {
                         .filter(_ -> current > template.getMinInstances())
                         .findFirst()
                         .ifPresent(i -> {
-                            logger.info("[Tropicube] Auto-stop serveur vide : {}", i.getServerName());
+                            logger.info(MessageStyle.log("PROXY", "<gray>Auto-stop serveur vide : {}"), i.getServerName());
                             stopServer(i.getInstanceId());
                         });
             }
@@ -840,13 +841,13 @@ public class TropiServerManager {
             } catch (Exception e) {
                 long lastHealthy = lastHealthyAt.computeIfAbsent(instance.getInstanceId(), _ -> now);
                 long silentSeconds = Math.max(0, now - lastHealthy);
-                logger.warn("[Tropicube] Health check échoué depuis {} s : {}",
+                logger.warn(MessageStyle.log("PROXY", "<yellow>Health check échoué depuis {} s : {}"),
                         silentSeconds, instance.getServerName());
                 if (HealthCheckPolicy.isStale(lastHealthy, now, staleTimeoutSeconds)) {
                     instance.setStatus(ServerInstance.Status.ERROR);
                     redisManager.saveInstance(instance);
                     killServer(instance.getInstanceId()).exceptionally(error -> {
-                        logger.error("[Tropicube] Purge impossible après {} s sans healthcheck : {}",
+                        logger.error(MessageStyle.log("PROXY", "<red>Purge impossible après {} s sans healthcheck : {}"),
                                 staleTimeoutSeconds, instance.getServerName(), error);
                         return false;
                     });
@@ -865,7 +866,7 @@ public class TropiServerManager {
         int removedReferences = redisManager.purgeInstance(
                 instance.getInstanceId(), instance.getServerType(), instance.getServerName());
         if (removedReferences > 0) {
-            logger.info("[Tropicube] {} référence(s) Redis secondaire(s) purgée(s) pour {}",
+            logger.info(MessageStyle.log("PROXY", "<gray>{} référence(s) Redis secondaire(s) purgée(s) pour {}"),
                     removedReferences, instance.getServerName());
         }
     }

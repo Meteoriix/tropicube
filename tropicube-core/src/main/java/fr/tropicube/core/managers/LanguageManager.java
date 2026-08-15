@@ -1,8 +1,8 @@
 package fr.tropicube.core.managers;
 
 import fr.tropicube.core.TropicubeCore;
+import fr.tropicube.core.util.MessageStyle;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
@@ -35,9 +35,9 @@ public class LanguageManager {
             File file = new File(plugin.getDataFolder(), "languages/" + lang + ".yml");
             if (file.exists()) {
                 languages.put(lang, YamlConfiguration.loadConfiguration(file));
-                plugin.getLogger().info("[Tropicube-Lang] Langue chargée : " + lang);
+                plugin.getLogger().info(MessageStyle.log("tc", "LANG", "<gray>Langue chargée : " + lang));
             } else {
-                plugin.getLogger().warning("[Tropicube-Lang] Fichier langue manquant : " + lang + ".yml");
+                plugin.getLogger().warning(MessageStyle.log("tc", "LANG", "<yellow>Fichier langue manquant : " + lang + ".yml"));
             }
         }
     }
@@ -47,7 +47,7 @@ public class LanguageManager {
         String lang = playerLanguages.getOrDefault(uuid, defaultLanguage);
         YamlConfiguration config = languages.getOrDefault(lang, languages.get(defaultLanguage));
 
-        if (config == null) return "<red>[Missing lang: " + key + "]";
+        if (config == null) return "<tc><red>Langue indisponible : <white>" + key;
 
         String msg = config.getString(key);
         if (msg == null) {
@@ -55,7 +55,7 @@ public class LanguageManager {
             if (fallback != null) msg = fallback.getString(key);
         }
 
-        if (msg == null) return "<red>[Missing key: " + key + "]";
+        if (msg == null) return "<tc><red>Clé de traduction manquante : <white>" + key;
 
         for (int i = 0; i < args.length; i++) {
             msg = msg.replace("{" + i + "}", String.valueOf(args[i]));
@@ -89,12 +89,12 @@ public class LanguageManager {
 
     /** Returns a localized Adventure component for the player. */
     public Component getComponent(UUID uuid, String key, Object... args) {
-        return MiniMessage.miniMessage().deserialize(get(uuid, key, args));
+        return MessageStyle.component(get(uuid, key, args));
     }
 
     /** Returns an Adventure component in an explicit language. */
     public Component getComponentForLang(String lang, String key, Object... args) {
-        return MiniMessage.miniMessage().deserialize(getForLang(lang, key, args));
+        return MessageStyle.component(getForLang(lang, key, args));
     }
 
     public void setPlayerLanguage(UUID uuid, String lang, boolean save) {

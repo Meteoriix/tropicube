@@ -23,6 +23,7 @@
 <a class="nav-link" href="fallen-kingdoms.html"><span class="nav-icon">♜</span><span>Fallen Kingdoms</span></a>
 <a class="nav-link" href="fallen-kingdoms-technical-spec.html"><span class="nav-icon">⌘</span><span>FK technique</span></a>
 <a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Développement</span></a>
+<a class="nav-link" href="messaging-style.html"><span class="nav-icon">✦</span><span>Messages</span></a>
 <a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
 <a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changements</span></a></nav>
     <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
@@ -67,6 +68,7 @@
 <h2 id="interface-langues-et-commandes">Interface, langues et commandes<a class="heading-anchor" href="#interface-langues-et-commandes" aria-label="Lien vers cette section">#</a></h2>
 <p>Le backend SheepWars n'enregistre aucune commande Minecraft propre dans son <code>plugin.yml</code>. Toutes les actions pendant la partie passent par les objets de la hotbar et les inventaires : équipe, carte, classe/kit, réglages de l'hôte et retour au lobby.</p>
 <p>Le scoreboard affiche l'état de la partie, le temps restant, les survivants par équipe, la classe, le kit et les éliminations. La tablist identifie les équipes et les spectateurs. Les textes proviennent de TropicubeCore et sont disponibles en français, anglais, espagnol et allemand.</p>
+<p>Les annonces autonomes utilisent l'identité <code>SHEEPWARS &gt;</code> sans crochets. Les menus, titles, scoreboards et tablists restent sans préfixe afin de préserver leur lisibilité.</p>
 <p>La commande <code>/sw join</code>, fournie par TropicubeLobby, permet de rejoindre de nouveau une partie quittée mais encore active ; le joueur revient alors comme spectateur. Le lit de sortie transmet l'ID de l'instance pendant cinq minutes avant de transférer le joueur au lobby. Dans le sélecteur de serveurs, une partie en cours porte le statut bleu <code>PLAYING</code> et reste joignable comme spectateur tant que l'instance n'est pas pleine.</p>
 <h2 id="configuration-technique">Configuration technique<a class="heading-anchor" href="#configuration-technique" aria-label="Lien vers cette section">#</a></h2>
 <p>La configuration source se trouve dans <code>tropicube-sheepwars/src/main/resources/config.yml</code>. Les sections principales sont :</p>

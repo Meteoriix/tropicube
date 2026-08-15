@@ -78,7 +78,7 @@ public class PlayerChatListener implements Listener {
 
         String chatName = PlainTextComponentSerializer.plainText().serialize(player.displayName());
         Component formattedMessage = MiniMessage.miniMessage()
-                .deserialize(prefix + playerColor + MiniMessage.miniMessage().escapeTags(chatName) + " <dark_gray>» <white>")
+                .deserialize(prefix + playerColor + MiniMessage.miniMessage().escapeTags(chatName) + " <dark_gray>> <white>")
                 .append(playerMessage);
         event.renderer((source, sourceDisplayName, message, viewer) -> formattedMessage);
     }

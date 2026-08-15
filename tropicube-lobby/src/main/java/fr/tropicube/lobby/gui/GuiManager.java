@@ -1,5 +1,6 @@
 package fr.tropicube.lobby.gui;
 
+import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.lobby.TropicubeLobby;
 import fr.tropicube.lobby.utils.LangHelper;
@@ -75,7 +76,7 @@ public class GuiManager {
                 });
             } catch (RuntimeException exception) {
                 plugin.getLogger().log(java.util.logging.Level.WARNING,
-                        "Impossible de charger la boutique VIP pour " + playerId, exception);
+                        MessageStyle.log("tc", "GUI", "<yellow>Impossible de charger la boutique VIP pour " + playerId), exception);
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     Player onlinePlayer = Bukkit.getPlayer(playerId);
                     if (onlinePlayer != null) {

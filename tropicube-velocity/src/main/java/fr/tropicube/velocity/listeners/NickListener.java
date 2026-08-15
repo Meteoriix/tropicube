@@ -1,5 +1,6 @@
 package fr.tropicube.velocity.listeners;
 
+import fr.tropicube.velocity.util.MessageStyle;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.player.GameProfileRequestEvent;
@@ -49,7 +50,7 @@ public class NickListener {
             event.setGameProfile(new GameProfile(uuid, nickData.nickName(), props));
             // Restores full life after quick reconnection.
             nickManager.refreshNickTtl(uuid);
-            logger.debug("[Nick] Applied nick '{}' at login for '{}'", nickData.nickName(), original.getName());
+            logger.debug(MessageStyle.log("NICK", "<dark_gray>" + "Applied nick '{}' at login for '{}'"), nickData.nickName(), original.getName());
         });
     }
 

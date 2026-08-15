@@ -1,5 +1,6 @@
 package fr.tropicube.core.managers;
 
+import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.docker.model.PlayerGradeCache;
 import org.bukkit.entity.Player;
@@ -66,7 +67,7 @@ public class PermissionManager {
                 );
                 gradeRegistry.put(grade.name(), grade);
             }
-            plugin.getLogger().info("[Tropicube-Perms] " + gradeRegistry.size() + " grades chargés.");
+            plugin.getLogger().info(MessageStyle.log("tc", "PERMS", "<gray>" + gradeRegistry.size() + " grades chargés."));
         }
     }
 
@@ -127,7 +128,7 @@ public class PermissionManager {
                         playerGrades.getOrDefault(uuid, "JOUEUR"), PlayerGradeCache.TTL_SECONDS);
                 plugin.getRedisManager().publishPlayerEvent("GRADE_LOADED", uuid.toString());
             } catch (SQLException e) {
-                plugin.getLogger().log(Level.SEVERE, "[Tropicube-Perms] Erreur chargement joueur " + uuid, e);
+                plugin.getLogger().log(Level.SEVERE, MessageStyle.log("tc", "PERMS", "<red>Erreur chargement joueur " + uuid), e);
             }
 
             // Apply permissions synchronously on the Bukkit thread
