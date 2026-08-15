@@ -104,12 +104,10 @@ public class NickCommand implements SimpleCommand {
         UUID uuid = player.getUniqueId();
         requests.cancel(uuid);
 
-        if (nickManager.getNick(uuid).isEmpty()) {
+        if (!nickManager.hasRecoverableNickState(uuid)) {
             player.sendMessage(lm.getComponent(uuid, "proxy.nick-not-nicked"));
             return;
         }
-
-        nickManager.clearNick(uuid);
 
         // Restores the captured Velocity session profile at login.
         nickManager.getOriginalProfile(uuid).ifPresent(orig -> {
@@ -119,8 +117,9 @@ public class NickCommand implements SimpleCommand {
                 new GameProfile(uuid, orig.name(), props));
         });
 
-        // Requests backends to restore the skin and purges the associated Redis state.
-        nickManager.publishNickClear(uuid);
+        // The owning backend acknowledges restoration by purging the Redis state.
+        // Keeping it until then makes this request safe to retry if Pub/Sub delivery is lost.
+        nickManager.requestNickClear(uuid);
 
         player.sendMessage(lm.getComponent(uuid, "proxy.nick-removed"));
     }

@@ -15,7 +15,7 @@
 | `/send <player|*> <server>` | — | `tropicube.admin.send` | Transfers one or all players |
 | `/tropi ...` | `/tropicube`, `/cm` | `tropicube.admin` | Administers dynamic instances |
 
-`nick.allowed-grades` controls who may enable a nick. Disabling is always allowed and cancels an outstanding skin request. The Redis identity keeps the fake `PREMIUM` display grade for 24 hours after disconnecting and restores it in the tablist after reconnecting, without changing real permissions. Concurrent generations for the same player are rejected.
+`nick.allowed-grades` controls who may enable a nick. Disabling is always allowed, cancels an outstanding skin request, and can be retried while a backend has not restored the profile. The nick and original-profile Redis entries remain available until restoration succeeds, so a lost event cannot lock the player into the visual identity. The Redis identity keeps the fake `PREMIUM` display grade for 24 hours after disconnecting and restores it in the tablist after reconnecting, without changing real permissions. Concurrent generations for the same player are rejected.
 
 Velocity validates `/whitelist`: the sender must own an active private custom game. Names resolve among players currently or previously seen by the proxy, and UUIDs are accepted directly. The SheepWars host hotbar item uses the same proxy-owned mutation path.
 

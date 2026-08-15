@@ -18,6 +18,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Fixed
 
+- `/nick off` no longer deletes its recovery state before the backend has restored the profile and can repair a desynchronized visual identity instead of incorrectly reporting that no nick is active.
 - Changing teams in the SheepWars waiting room now immediately refreshes the name color in the tablist, including for nicked players.
 - SheepWars chat now refreshes the player name after `/nick off`, and the tablist removes the heart before names while retaining team or spectator colors.
 - The SheepWars tablist now consistently hides grades and reapplies the visible name alone in the team color, or gray for spectators, after every identity change.

@@ -216,6 +216,15 @@ public class NickManager {
         redis.delete(KEY_ORIGINAL + uuid);
     }
 
+    /**
+     * Returns whether a nick removal can still be completed or retried.
+     * The original profile alone is sufficient to recover an identity whose
+     * nick key was removed before its backend applied the reset.
+     */
+    public boolean hasRecoverableNickState(UUID uuid) {
+        return getNick(uuid).isPresent() || getOriginalProfile(uuid).isPresent();
+    }
+
     // Notifications sent to backends
 
     public void publishNickApply(UUID uuid) {
@@ -226,8 +235,11 @@ public class NickManager {
         redis.publishPlayerEvent("NICK_RESET", uuid.toString());
     }
 
-    /** Full cleanup: restores skin on backend then deletes both nick Redis keys. */
-    public void publishNickClear(UUID uuid) {
+    /**
+     * Requests full cleanup without deleting its recovery data. The backend
+     * that currently owns the player deletes both keys only after restoration.
+     */
+    public void requestNickClear(UUID uuid) {
         redis.publishPlayerEvent("NICK_CLEAR", uuid.toString());
     }
 

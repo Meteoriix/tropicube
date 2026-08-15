@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NickManagerPersistenceTest {
 
@@ -22,7 +23,8 @@ class NickManagerPersistenceTest {
             NickManager manager = new NickManager(redis, LoggerFactory.getLogger(getClass()), List.of(), List.of());
             NickIdentity identity = new NickIdentity("MaskedWolf", "skin", "signature", "PREMIUM");
             redis.set(NickIdentity.key(uuid), identity.toJson(), 10);
-            redis.set("nick:original:" + uuid, "original-profile", 10);
+            redis.set("nick:original:" + uuid,
+                    "{\"n\":\"RealWolf\",\"v\":\"skin\",\"s\":\"signature\"}", 10);
 
             manager.parkNick(uuid);
 
@@ -35,9 +37,45 @@ class NickManagerPersistenceTest {
         }
     }
 
+    @Test
+    void keepsRecoveryStateUntilTheBackendAcknowledgesNickRemoval() {
+        UUID uuid = UUID.randomUUID();
+        InMemoryRedisManager redis = new InMemoryRedisManager();
+        try {
+            NickManager manager = new NickManager(redis, LoggerFactory.getLogger(getClass()), List.of(), List.of());
+            manager.storeNick(uuid, "MaskedWolf", new NickManager.SkinData("skin", "signature"));
+            redis.set("nick:original:" + uuid,
+                    "{\"n\":\"RealWolf\",\"v\":\"skin\",\"s\":\"signature\"}", 10);
+
+            manager.requestNickClear(uuid);
+
+            assertTrue(manager.getNick(uuid).isPresent());
+            assertTrue(manager.getOriginalProfile(uuid).isPresent());
+            assertEquals("NICK_CLEAR:" + uuid, redis.lastPlayerEvent);
+        } finally {
+            redis.close();
+        }
+    }
+
+    @Test
+    void allowsRemovalRetryWhenOnlyTheOriginalProfileRemains() {
+        UUID uuid = UUID.randomUUID();
+        InMemoryRedisManager redis = new InMemoryRedisManager();
+        try {
+            NickManager manager = new NickManager(redis, LoggerFactory.getLogger(getClass()), List.of(), List.of());
+            redis.set("nick:original:" + uuid,
+                    "{\"n\":\"RealWolf\",\"v\":\"skin\",\"s\":\"signature\"}", 10);
+
+            assertTrue(manager.hasRecoverableNickState(uuid));
+        } finally {
+            redis.close();
+        }
+    }
+
     private static final class InMemoryRedisManager extends RedisManager {
         private final Map<String, String> values = new HashMap<>();
         private final Map<String, Integer> ttls = new HashMap<>();
+        private String lastPlayerEvent;
 
         private InMemoryRedisManager() {
             super("localhost", 6379, null);
@@ -58,6 +96,11 @@ class NickManagerPersistenceTest {
         public void delete(String key) {
             values.remove(key);
             ttls.remove(key);
+        }
+
+        @Override
+        public void publishPlayerEvent(String eventType, String payload) {
+            lastPlayerEvent = eventType + ":" + payload;
         }
 
         private int ttl(String key) {

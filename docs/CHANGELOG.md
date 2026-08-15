@@ -29,6 +29,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Corrigé
 
+- `/nick off` ne supprime plus son état de récupération avant la restauration effective par le backend et peut réparer une identité visuelle désynchronisée au lieu de répondre à tort qu'aucun nick n'est actif.
 - Un changement d'équipe dans la salle d'attente SheepWars actualise désormais immédiatement la couleur du pseudonyme dans la tablist, y compris avec `/nick`.
 - Le chat SheepWars actualise désormais le pseudonyme après `/nick off`, et la tablist retire le cœur devant les noms tout en conservant leur couleur d'équipe ou de spectateur.
 - La tablist SheepWars masque désormais systématiquement les grades et réapplique, après chaque changement d'identité, le pseudonyme seul dans la couleur de l'équipe ou en gris pour un spectateur.

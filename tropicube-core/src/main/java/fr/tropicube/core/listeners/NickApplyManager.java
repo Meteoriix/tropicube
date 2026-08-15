@@ -75,20 +75,24 @@ public class NickApplyManager {
                 // owns the player can restore his profile and purge Redis.
                 if (plugin.getServer().getPlayer(uuid) == null) return;
                 String originalProfile = plugin.getRedisManager().get("nick:original:" + uuid);
-                resetNick(uuid, originalProfile);
-                plugin.getRedisManager().delete("nick:" + uuid);
-                plugin.getRedisManager().delete("nick:original:" + uuid);
+                if (resetNick(uuid, originalProfile)) {
+                    plugin.getRedisManager().delete("nick:" + uuid);
+                    plugin.getRedisManager().delete("nick:original:" + uuid);
+                }
             });
         } catch (IllegalArgumentException ignored) {}
     }
 
     // ── Restore original skin ────────────────────────────────────
 
-    private void resetNick(UUID uuid, String raw) {
+    private boolean resetNick(UUID uuid, String raw) {
         Player target = plugin.getServer().getPlayer(uuid);
-        if (target == null) return;
+        if (target == null) return false;
         plugin.getPermissionManager().clearDisplayIdentityOverride(uuid);
-        if (raw == null) return;
+        if (raw == null) {
+            plugin.getLogger().warning("[Nick] Missing original profile while resetting " + uuid);
+            return false;
+        }
 
         try {
             JsonObject obj      = JsonParser.parseString(raw).getAsJsonObject();
@@ -97,8 +101,10 @@ public class NickApplyManager {
             String     skinSig  = obj.has("s") ? obj.get("s").getAsString() : "";
 
             swapSkin(target, origName, skinVal, skinSig);
+            return true;
         } catch (Exception e) {
             plugin.getLogger().warning("[Nick] Failed to reset nick for " + uuid + ": " + e.getMessage());
+            return false;
         }
     }
 
