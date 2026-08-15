@@ -55,12 +55,8 @@ public class FragmentationSheep extends AbstractSheep {
                 s.setAware(false);
                 s.setInvulnerable(true);
                 s.setVelocity(dir);
-                // Tag so they don't trigger game sheep handlers unexpectedly
-                s.getPersistentDataContainer().set(
-                    plugin.getSheepManager().sheepTypeKey,
-                    org.bukkit.persistence.PersistentDataType.STRING,
-                    SheepType.FRAGMENTATION.name()
-                );
+                plugin.getSheepManager().tagGameSheep(
+                        s, SheepType.FRAGMENTATION, thrower.getUniqueId());
             });
 
             // Each fragment explodes after 0.8 to 1.3 seconds.

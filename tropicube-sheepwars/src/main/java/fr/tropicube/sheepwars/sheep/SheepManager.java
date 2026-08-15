@@ -70,11 +70,13 @@ public class SheepManager {
     /** Per-player weighted picker rebuilt whenever the effective configuration changes. */
     private SheepSequencePicker sheepSequencePicker;
 
-    public final NamespacedKey sheepTypeKey;
+    private final NamespacedKey sheepTypeKey;
+    private final NamespacedKey sheepOwnerKey;
 
     public SheepManager(TropicubeSheepwars plugin) {
         this.plugin = plugin;
         this.sheepTypeKey = new NamespacedKey(plugin, "sheep_type");
+        this.sheepOwnerKey = new NamespacedKey(plugin, "sheep_owner");
 
         register(new BoardingSheep());
         register(new TntSheep());
@@ -247,7 +249,7 @@ public class SheepManager {
             s.setAware(false);
             s.setInvulnerable(true);
             s.setVelocity(velocity);
-            s.getPersistentDataContainer().set(sheepTypeKey, PersistentDataType.STRING, type.name());
+            tagGameSheep(s, type, thrower.getUniqueId());
         });
 
         AbstractSheep handler = getHandler(type);
@@ -389,10 +391,35 @@ public class SheepManager {
         return !sheep.getPersistentDataContainer().has(sheepTypeKey, PersistentDataType.STRING);
     }
 
+    /** Tags a spawned ability sheep with its logical type and original thrower. */
+    public void tagGameSheep(Sheep sheep, SheepType type, UUID ownerId) {
+        sheep.getPersistentDataContainer().set(sheepTypeKey, PersistentDataType.STRING, type.name());
+        sheep.getPersistentDataContainer().set(sheepOwnerKey, PersistentDataType.STRING, ownerId.toString());
+    }
+
+    /** Returns the original thrower, or {@code null} for an invalid or legacy tag. */
+    public UUID getSheepOwner(Sheep sheep) {
+        String value = sheep.getPersistentDataContainer().get(sheepOwnerKey, PersistentDataType.STRING);
+        if (value == null) return null;
+        try {
+            return UUID.fromString(value);
+        } catch (IllegalArgumentException _) {
+            return null;
+        }
+    }
+
+    /** Returns the logical type carried by a game sheep. */
+    public SheepType getSheepType(Sheep sheep) {
+        return parseSheepType(sheep.getPersistentDataContainer().get(sheepTypeKey, PersistentDataType.STRING));
+    }
+
     public SheepType getSheepType(ItemStack item) {
         if (item == null || !item.hasItemMeta()) return null;
-        String value = item.getItemMeta().getPersistentDataContainer()
-                .get(sheepTypeKey, PersistentDataType.STRING);
+        return parseSheepType(item.getItemMeta().getPersistentDataContainer()
+                .get(sheepTypeKey, PersistentDataType.STRING));
+    }
+
+    private static SheepType parseSheepType(String value) {
         if (value == null) return null;
         try {
             return SheepType.valueOf(value);

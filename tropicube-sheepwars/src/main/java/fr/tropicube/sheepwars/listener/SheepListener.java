@@ -49,18 +49,13 @@ public class SheepListener implements Listener {
         event.setDroppedExp(0);
         event.getDrops().clear();
 
-        // Makes wool logical type, regardless of flashing color.
-        String typeName = sheep.getPersistentDataContainer()
-                .get(plugin.getSheepManager().sheepTypeKey, PersistentDataType.STRING);
-        if (typeName != null) {
-            try {
-                SheepType type = SheepType.valueOf(typeName);
-                if (event.getDamageSource().getCausingEntity() instanceof Player player
-                        && plugin.getSheepManager().countStoredSheep(player)
-                        < plugin.getGameplayBalance().integer("global.max-stored-sheep")) {
-                    player.getInventory().addItem(plugin.getSheepManager().createSheepItem(type));
-                }
-            } catch (IllegalArgumentException ignored) {}
+        SheepManager sheepManager = plugin.getSheepManager();
+        SheepType type = sheepManager.getSheepType(sheep);
+        if (type != null && event.getDamageSource().getCausingEntity() instanceof Player player
+                && SheepRecoveryPolicy.canRecover(sheepManager.getSheepOwner(sheep), player.getUniqueId())
+                && sheepManager.countStoredSheep(player)
+                < plugin.getGameplayBalance().integer("global.max-stored-sheep")) {
+            player.getInventory().addItem(sheepManager.createSheepItem(type));
         }
     }
 

@@ -3,6 +3,7 @@ package fr.tropicube.sheepwars.listener;
 import com.destroystokyo.paper.event.block.BlockDestroyEvent;
 import fr.tropicube.sheepwars.TropicubeSheepwars;
 import fr.tropicube.sheepwars.game.GameState;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,6 +12,7 @@ import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 
@@ -67,6 +69,21 @@ public class ProtectionListener implements Listener {
     @EventHandler
     public void onItemDrop(PlayerDropItemEvent event) {
         event.setCancelled(true);
+    }
+
+    /** Suppresses rail items detached by block physics while still allowing the rail block to disappear. */
+    @EventHandler
+    public void onRailItemSpawn(ItemSpawnEvent event) {
+        if (!isNotPlaying() && isRailMaterial(event.getEntity().getItemStack().getType())) {
+            event.setCancelled(true);
+        }
+    }
+
+    static boolean isRailMaterial(Material material) {
+        return switch (material) {
+            case RAIL, POWERED_RAIL, DETECTOR_RAIL, ACTIVATOR_RAIL -> true;
+            default -> false;
+        };
     }
 
     /** Prevents friendly fire between teammates. */

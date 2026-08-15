@@ -56,11 +56,15 @@ A host may disable classes or kits. Random-kit mode ignores personal selection a
 | Strength | Temporarily increases nearby allied damage |
 | Fragmentation | Releases five secondary explosive sheep |
 
-`default-settings.sheep-probabilities` controls relative weights. Every delivery performs a fresh independent weighted draw over the complete active distribution, so the effective percentage shown by the host menu is the real probability of every draw. Consecutive duplicates remain possible; avoiding them would bias short matches against high-weight sheep. Forced settings and host menus can disable individual types.
+`default-settings.sheep-probabilities` controls relative weights. Every delivery performs a weighted draw over the active distribution. After two identical sheep in a row for one player, that type is excluded from the next draw and the remaining weights are renormalized for that delivery only. Forced settings and host menus can disable individual types.
+
+Every launched sheep records its thrower's UUID. A player who destroys another player's destructible sheep recovers one sheep of the same type while below the stock limit. The original thrower never recovers their own sheep, including when an explosion attributed to that thrower kills the entity.
 
 ## Maps and teams
 
 A map defines a world, waiting lobby, void limit, and up to eight red plus eight blue spawns. Spawn lists are shuffled per match. A map cannot start when required locations are missing.
+
+Blocks destroyed during a match do not create collectible drops. This also covers all four rail variants detached by block physics when their supporting block disappears.
 
 Players may request a team during the waiting phase. The manager enforces balance and assigns a team automatically when needed. A successful selection immediately refreshes every player's tablist, including nicked names, so the displayed color follows the new team. Team selection closes once play begins.
 

@@ -31,6 +31,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Corrigé
 
+- SheepWars : l'explosion ou les dégâts d'un lanceur ne lui rendent plus son propre mouton ; seuls les moutons détruits par un autre joueur peuvent être récupérés. Les rails détachés par la destruction de leur bloc de support ne génèrent plus d'item.
 - Redéploiement et nettoyage Docker : Velocity renouvelle désormais son volume anonyme `/server` pour charger le JAR reconstruit ; les instances de jeu utilisent des volumes `/data` éphémères étiquetés, supprimés explicitement avec leur conteneur et purgés s'ils deviennent orphelins.
 - Distribution SheepWars : un joueur ne peut plus recevoir trois fois de suite le même type de mouton lorsqu'au moins deux types ont un poids positif.
 - Distribution SheepWars durcie : aucun type désactivé ne peut servir de secours, le dernier poids actif ne peut plus être mis à zéro depuis le menu, une configuration désactivant tous les moutons est réparée, et le sélecteur pondéré est testé sur ses intervalles, ses fréquences et ses cas extrêmes.

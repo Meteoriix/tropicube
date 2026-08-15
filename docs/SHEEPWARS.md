@@ -80,9 +80,13 @@ Les types désactivés ont toujours une probabilité effective de 0 % et les aut
 
 Les explosions de moutons utilisent un calcul linéaire propre à SheepWars pour les dégâts joueurs. L'explosion Minecraft reste responsable des effets visuels et, selon le type, de la destruction des blocs ; ses dégâts natifs sur les joueurs sont annulés afin d'éviter leur cumul avec les dégâts configurés et de préserver l'absence de tir allié.
 
+Chaque mouton lancé mémorise l'UUID de son lanceur. Lorsqu'un autre joueur détruit un mouton destructible, il récupère un exemplaire du même type si son stock n'a pas atteint la limite. Le lanceur ne récupère jamais son propre mouton, notamment quand l'explosion qui lui est attribuée provoque elle-même la mort de l'entité.
+
 ## Cartes et équipes
 
 Une carte jouable contient un monde, une limite de vide et jusqu'à huit spawns rouges et huit spawns bleus. Le nombre maximal effectif de joueurs est donc limité à 16. Les spawns sont mélangés au début de chaque manche afin d'éviter une attribution prévisible.
+
+Les blocs peuvent être détruits pendant la manche sans produire d'objets récupérables. Cette règle couvre aussi les quatre variantes de rails qui se détachent par mise à jour physique lorsque leur bloc de support disparaît.
 
 Lorsque `map-vote-enabled` vaut `true`, chaque joueur vote et une carte est tirée au hasard parmi celles arrivées en tête. Sinon, l'hôte choisit directement la carte. Une partie ne démarre pas si la carte sélectionnée est incomplète ou désactivée.
 
