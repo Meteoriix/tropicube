@@ -776,13 +776,15 @@ public class GameManager {
         return lobby != null ? lobby.getWorld() : null;
     }
 
-    private int getMaxPlayers() {
+    /** Returns the validated player capacity used by admission and the HUD. */
+    public int getMaxPlayers() {
         // MapsUtil loads a maximum of eight spawns per team.
         return Math.min(16, Math.max(1,
                 plugin.getConfig().getInt("default-settings.max-players", 16)));
     }
 
-    private int getMinPlayers() {
+    /** Returns the validated minimum player count required to start. */
+    public int getMinPlayers() {
         return Math.min(getMaxPlayers(), Math.max(1,
                 plugin.getConfig().getInt("default-settings.min-players", 2)));
     }

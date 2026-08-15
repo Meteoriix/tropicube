@@ -143,6 +143,13 @@ class YamlResourcesTest {
             Map<String, Object> values = leafValues(Path.of("src/main/resources/languages", language + ".yml"));
             assertEquals("<gold><bold>🌴 TROPICUBE</bold></gold>", values.get("lobby.sb-title"));
             assertEquals("<aqua><bold>🐑 SHEEPWARS</bold></aqua>", values.get("sw.sb-title"));
+            assertEquals("<dark_aqua>• • • • • • •</dark_aqua>", values.get("lobby.sb-separator"));
+            assertEquals("<dark_aqua>• • • • • • •</dark_aqua>", values.get("sw.sb-separator"));
+            assertNotNull(values.get("lobby.sb-balance"));
+            assertNotNull(values.get("lobby.sb-network-online"));
+            assertNotNull(values.get("lobby.sb-games"));
+            assertNotNull(values.get("sw.sb-map"));
+            assertNotNull(values.get("sw.sb-class"));
             assertTrue(String.valueOf(values.get("lobby.tab-header")).contains("🌴 TROPICUBE"));
             assertTrue(String.valueOf(values.get("sw.tab-header")).contains("🐑 SHEEPWARS"));
         }

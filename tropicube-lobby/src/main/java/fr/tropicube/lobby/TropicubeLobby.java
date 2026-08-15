@@ -79,7 +79,10 @@ public class TropicubeLobby extends JavaPlugin {
         // Refreshing server data every 5 s + updating open GUIs.
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
             lobbyServerManager.refreshServerList();
-            Bukkit.getScheduler().runTask(this, () -> guiManager.refreshOpenServerGuis());
+            Bukkit.getScheduler().runTask(this, () -> {
+                guiManager.refreshOpenServerGuis();
+                scoreboardManager.refreshAll();
+            });
         }, 0L, 100L);
 
         // Listening to proxy responses (failed to create/stop custom game).

@@ -39,6 +39,7 @@
 <p>The prefix appears on command results and errors, system notifications, and confirmations or errors triggered by a menu. A multi-line response prefixes its heading only and keeps detail lines compact.</p>
 <p>Narrative events directly caused by a player remain unprefixed: connecting, leaving, joining a game, or leaving a game. They use a restrained contextual symbol and keep the player name as the focal point.</p>
 <p>Player chat, inventory titles and contents, scoreboards, tab lists, boss bars, titles, subtitles, and action bars do not repeat the brand. They still follow the same palette.</p>
+<p>Scoreboards group contextual information with whitespace and short dotted <code>•</code> separators. The lobby prioritizes visible identity, balance, network activity, accessible games, and destination. A mini-game prioritizes its state, objectives, and immediately useful personal information without exceeding the readable sidebar height.</p>
 <p>Grades use a bold colored label without brackets. Chat follows <code>VIP Player &gt; message</code>, while the tab list ends after the player name.</p>
 <h2 id="technical-logs">Technical logs<a class="heading-anchor" href="#technical-logs" aria-label="Link to this section">#</a></h2>
 <p>Logs are authored in MiniMessage and rendered as <code>TROPICUBE &gt; CONTEXT &gt; message</code> or <code>SHEEPWARS &gt; CONTEXT &gt; message</code>. Adventure emits ANSI colors when supported and readable plain text otherwise. Logger levels, structured parameters, and stack traces must be preserved.</p>

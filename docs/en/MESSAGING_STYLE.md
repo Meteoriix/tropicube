@@ -20,6 +20,8 @@ Narrative events directly caused by a player remain unprefixed: connecting, leav
 
 Player chat, inventory titles and contents, scoreboards, tab lists, boss bars, titles, subtitles, and action bars do not repeat the brand. They still follow the same palette.
 
+Scoreboards group contextual information with whitespace and short dotted `•` separators. The lobby prioritizes visible identity, balance, network activity, accessible games, and destination. A mini-game prioritizes its state, objectives, and immediately useful personal information without exceeding the readable sidebar height.
+
 Grades use a bold colored label without brackets. Chat follows `VIP Player > message`, while the tab list ends after the player name.
 
 ## Technical logs

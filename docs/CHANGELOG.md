@@ -20,6 +20,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Modifié
 
+- Scoreboards Lobby et SheepWars enrichis et aérés par des séparateurs tropicaux : profil, solde, fréquentation réseau et parties visibles au lobby ; carte, capacité, minimum requis, équipe, classe et statistiques personnelles en jeu. Les données d'économie restent chargées hors du thread principal.
 - Tablists et scoreboards Lobby/SheepWars harmonisés avec une identité tropicale plus lisible, des titres localisés et des états de partie structurés ; les connexions et arrivées/départs de partie deviennent des annonces narratives sans préfixe.
 - Messages et locales entièrement harmonisés : identité `TROPICUBE >` ou `SHEEPWARS >` sans crochets décoratifs, grades modernisés, préfixes limités aux commandes et notifications, et logs MiniMessage rendus en ANSI avec fallback texte.
 - Probabilités SheepWars affinées : les moutons polyvalents et lisibles deviennent plus fréquents, tandis que Distorsion, Mécha et Météore restent rares ; le menu affiche désormais le pourcentage effectif après désactivation et renormalisation.

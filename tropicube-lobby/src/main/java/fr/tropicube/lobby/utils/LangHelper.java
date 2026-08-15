@@ -12,6 +12,7 @@ import org.bukkit.plugin.Plugin;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Typed access point to TropicubeCore language and permissions services.
@@ -114,6 +115,14 @@ public final class LangHelper {
         TropicubeCore core = getCore();
         if (core == null) return "fr";
         return core.getLanguageManager().getPlayerLanguage(uuid);
+    }
+
+    /** Loads and formats a balance away from the Paper thread. */
+    public static CompletableFuture<String> getFormattedBalanceAsync(UUID uuid) {
+        TropicubeCore core = getCore();
+        if (core == null) return CompletableFuture.completedFuture("—");
+        return core.getEconomyManager().getBalanceAsync(uuid)
+                .thenApply(core.getEconomyManager()::format);
     }
 
     private static TropicubeCore getCore() {

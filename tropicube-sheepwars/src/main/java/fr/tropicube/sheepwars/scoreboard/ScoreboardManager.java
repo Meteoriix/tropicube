@@ -4,6 +4,7 @@ import fr.tropicube.sheepwars.TropicubeSheepwars;
 import fr.tropicube.sheepwars.game.GameState;
 import fr.tropicube.sheepwars.game.GameTeam;
 import fr.tropicube.sheepwars.player.GamePlayer;
+import fr.tropicube.sheepwars.player.PlayerClass;
 import fr.tropicube.sheepwars.util.LangHelper;
 import fr.tropicube.sheepwars.util.PlayerDisplayName;
 import net.kyori.adventure.text.Component;
@@ -14,6 +15,7 @@ import org.bukkit.scoreboard.*;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -52,48 +54,50 @@ public class ScoreboardManager {
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         GameState state = plugin.getGameManager().getState();
+        String mapName = plugin.getGameManager().getSelectedMap() == null
+                ? LangHelper.get(player, "sw.sb-map-unknown")
+                : plugin.getGameManager().getSelectedMap().getName();
         int line = 15;
 
+        setLine(objective, line--, LangHelper.component(player, "sw.sb-separator"));
         switch (state) {
             case WAITING -> {
                 setLine(objective, line--, LangHelper.component(player, "sw.sb-waiting"));
                 setLine(objective, line--, LangHelper.component(player, "sw.sb-players",
-                        plugin.getGameManager().getPlayers().size()));
+                        plugin.getGameManager().getPlayers().size(), plugin.getGameManager().getMaxPlayers()));
+                setLine(objective, line--, LangHelper.component(player, "sw.sb-min-players",
+                        plugin.getGameManager().getMinPlayers()));
+                setLine(objective, line--, LangHelper.component(player, "sw.sb-map", mapName));
+                line = addPersonalSection(objective, line, player, gp, false);
             }
             case STARTING -> {
                 setLine(objective, line--, LangHelper.component(player, "sw.sb-starting",
                         plugin.getGameManager().getCountdown()));
                 setLine(objective, line--, LangHelper.component(player, "sw.sb-players",
-                        plugin.getGameManager().getPlayers().size()));
+                        plugin.getGameManager().getPlayers().size(), plugin.getGameManager().getMaxPlayers()));
+                setLine(objective, line--, LangHelper.component(player, "sw.sb-map", mapName));
+                line = addPersonalSection(objective, line, player, gp, false);
             }
             case PLAYING -> {
                 int red  = plugin.getGameManager().getAliveTeamPlayers(GameTeam.RED).size();
                 int blue = plugin.getGameManager().getAliveTeamPlayers(GameTeam.BLUE).size();
-                setLine(objective, line--, LangHelper.component(player, "sw.sb-red", red));
-                setLine(objective, line--, LangHelper.component(player, "sw.sb-blue", blue));
-                setLine(objective, line--, Component.empty());
-                if (gp.getTeam() == null || !gp.isAlive()) {
-                    setLine(objective, line--, LangHelper.component(player, "sw.sb-spectator"));
-                } else {
-                    String teamName = localizedTeamName(player, gp.getTeam());
-                    setLine(objective, line--, LangHelper.component(player, "sw.sb-your-team", teamName));
-                    setLine(objective, line--, LangHelper.component(player, "sw.sb-kills", gp.getKills()));
-                }
                 setLine(objective, line--, LangHelper.component(player, "sw.sb-time",
                         formatTime(plugin.getGameManager().getGameTime())));
+                setLine(objective, line--, LangHelper.component(player, "sw.sb-map", mapName));
+                setLine(objective, line--, Component.empty());
+                setLine(objective, line--, LangHelper.component(player, "sw.sb-red", red));
+                setLine(objective, line--, LangHelper.component(player, "sw.sb-blue", blue));
+                line = addPersonalSection(objective, line, player, gp, true);
             }
             case ENDING, ENDED -> {
                 setLine(objective, line--, LangHelper.component(player, "sw.sb-ending"));
+                setLine(objective, line--, LangHelper.component(player, "sw.sb-map", mapName));
                 setLine(objective, line--, Component.empty());
-                if (gp.getTeam() != null) {
-                    String teamName = localizedTeamName(player, gp.getTeam());
-                    setLine(objective, line--, LangHelper.component(player, "sw.sb-your-team", teamName));
-                }
-                setLine(objective, line--, LangHelper.component(player, "sw.sb-kills", gp.getKills()));
-                setLine(objective, line--, LangHelper.component(player, "sw.sb-sheep-thrown", gp.getSheepThrown()));
+                line = addPersonalSection(objective, line, player, gp, true);
             }
             default -> setLine(objective, line--, LangHelper.component(player, "sw.sb-waiting"));
         }
+        setLine(objective, line, LangHelper.component(player, "sw.sb-separator"));
 
         // ── Team glow / color setup ───────────────────────────────────────────
         setupTeamBoards(board, state);
@@ -174,6 +178,34 @@ public class ScoreboardManager {
 
     private String localizedTeamName(Player player, GameTeam team) {
         return LangHelper.get(player, team == GameTeam.RED ? "sw.sb-team-red" : "sw.sb-team-blue");
+    }
+
+    private int addPersonalSection(
+            Objective objective,
+            int line,
+            Player player,
+            GamePlayer gamePlayer,
+            boolean includeStatistics
+    ) {
+        setLine(objective, line--, LangHelper.component(player, "sw.sb-separator"));
+        if (gamePlayer.getTeam() == null || !gamePlayer.isAlive()) {
+            setLine(objective, line--, LangHelper.component(player, "sw.sb-spectator"));
+        } else {
+            setLine(objective, line--, LangHelper.component(player, "sw.sb-your-team",
+                    localizedTeamName(player, gamePlayer.getTeam())));
+        }
+        setLine(objective, line--, LangHelper.component(player, "sw.sb-class",
+                localizedClassName(player, gamePlayer.getPlayerClass())));
+        if (includeStatistics) {
+            setLine(objective, line--, LangHelper.component(player, "sw.sb-kills", gamePlayer.getKills()));
+            setLine(objective, line--, LangHelper.component(player, "sw.sb-sheep-thrown",
+                    gamePlayer.getSheepThrown()));
+        }
+        return line;
+    }
+
+    private String localizedClassName(Player player, PlayerClass playerClass) {
+        return LangHelper.get(player, "sw.sb-class-" + playerClass.name().toLowerCase(Locale.ROOT));
     }
 
     /**

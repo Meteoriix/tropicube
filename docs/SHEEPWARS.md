@@ -114,7 +114,7 @@ Le lobby permet d'arrêter le serveur tant que la manche n'a pas commencé. Apr�
 
 Le backend SheepWars n'enregistre aucune commande Minecraft propre dans son `plugin.yml`. Toutes les actions pendant la partie passent par les objets de la hotbar et les inventaires : équipe, carte, classe/kit, réglages de l'hôte et retour au lobby.
 
-Le scoreboard affiche sous le titre tropical `🐑 SHEEPWARS` l'état de la partie, le temps restant, les survivants par équipe, l'équipe personnelle, les éliminations et les moutons lancés. La tablist reprend les identités `🐑 SHEEPWARS` et `🌴 TROPICUBE` sur deux lignes, puis adapte son pied à l'attente, au lancement, au jeu ou à la fin de partie. Les textes proviennent de TropicubeCore et sont disponibles en français, anglais, espagnol et allemand.
+Le scoreboard affiche sous le titre tropical `🐑 SHEEPWARS` des sections aérées par de courts séparateurs. Pendant l'attente, il indique l'effectif actuel et maximal, le minimum requis, la carte, l'équipe et la classe du joueur. En partie, il présente le temps restant, la carte, les survivants par équipe, l'équipe ou le statut spectateur, la classe, les éliminations et les moutons lancés. La tablist reprend les identités `🐑 SHEEPWARS` et `🌴 TROPICUBE` sur deux lignes, puis adapte son pied à l'attente, au lancement, au jeu ou à la fin de partie. Les textes proviennent de TropicubeCore et sont disponibles en français, anglais, espagnol et allemand.
 
 Les annonces système autonomes utilisent l'identité `SHEEPWARS >` sans crochets. Les arrivées et départs de joueurs restent narratifs, sans préfixe, et indiquent qu'un joueur « a rejoint la partie ». Les menus, titles, scoreboards et tablists restent sans préfixe afin de préserver leur lisibilité.
 

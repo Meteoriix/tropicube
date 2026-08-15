@@ -20,6 +20,8 @@ Les événements narratifs directement provoqués par un joueur restent sans pr�
 
 Le chat des joueurs, les titres et contenus d'inventaires, les scoreboards, tablists, bossbars, titles, sous-titres et actionbars ne répètent pas la marque. Ils suivent néanmoins la même palette.
 
+Les scoreboards regroupent les informations par contexte avec des espaces et de courts séparateurs en points `•`. Le lobby privilégie l'identité visible, le solde, la fréquentation du réseau, les parties accessibles et la destination. Un mini-jeu privilégie son état, ses objectifs et les informations personnelles immédiatement utiles, sans dépasser la hauteur lisible de la sidebar.
+
 Les grades utilisent un libellé coloré en gras sans crochets. Le chat suit le rendu `VIP Joueur > message`, tandis que la tablist s'arrête au nom.
 
 ## Logs techniques

@@ -13,6 +13,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Changed
 
+- Lobby and SheepWars sidebars now use airy tropical separators and show more useful context: profile, balance, network activity, and visible games in the lobby; map, capacity, required minimum, team, class, and personal statistics in game. Economy data remains loaded away from the main thread.
 - Lobby and SheepWars tab lists and sidebars now use a clearer tropical identity, localized titles, and structured game states; connection and game join/leave events are narrative and unprefixed.
 - Messages and locales now share one identity: bracket-free `TROPICUBE >` and `SHEEPWARS >` branding, modernized grades, prefixes limited to commands and notifications, and MiniMessage technical logs rendered to ANSI with a plain-text fallback.
 - SheepWars uses a twenty-second default delivery interval and direct independent weighted draws, preserving the configured probability on short and long matches.
