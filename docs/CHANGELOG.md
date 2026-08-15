@@ -29,8 +29,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Corrigé
 
-- `/lobby` affiche désormais un message neutre quand le joueur est déjà au lobby ; la tablist du lobby montre le grade réel et le message de connexion conserve ce grade avec un nick actif.
-- Persistance du grade d'affichage factice de `/nick` après reconnexion et compatibilité des anciens payloads Redis ; les noms nickés utilisent désormais la bonne couleur d'équipe dans la tablist SheepWars et le glowing ne retombe plus en blanc lorsque le nom de profil change.
+- `/lobby` affiche désormais un message neutre quand le joueur est déjà au lobby ; hors identité `/nick`, la tablist et le message de connexion conservent le grade réel.
+- Persistance du grade d'affichage factice de `/nick` après reconnexion : la déconnexion ne réduit plus son TTL à 30 secondes et le lobby utilise désormais ce grade dans la tablist sans modifier les permissions réelles. Les anciens payloads Redis restent compatibles ; les noms nickés conservent aussi la bonne couleur d'équipe dans SheepWars.
 - Les instances SheepWars en cours sont affichées avec le statut bleu `PLAYING` et acceptent les nouvelles connexions en mode spectateur, sans équipe ni impact sur les conditions de victoire.
 - Accès à `/nick` refusé aux grades autorisés à cause d'une clé Redis incohérente ; le contrat de grade est désormais partagé avec Core, stable pendant les transferts et actualisé lors des changements de grade. `/nick off`, les arguments invalides, les requêtes concurrentes et la purge multi-backend sont également sécurisés.
 - Distribution SheepWars trop rapide et sujette aux séries : la cadence standard passe de 10 à 20 secondes et chaque joueur dispose désormais d'une pioche pondérée sans répétition consécutive.

@@ -35,6 +35,8 @@ public class PermissionManager {
     private final Map<UUID, Map<String, Long>> playerPermissionExpiries = new ConcurrentHashMap<>();
     // Attachments Bukkit : UUID -> PermissionAttachment
     private final Map<UUID, PermissionAttachment> attachments = new ConcurrentHashMap<>();
+    // Visual-only grade carried by an active /nick identity.
+    private final DisplayGradeOverrideCache displayGradeOverrides = new DisplayGradeOverrideCache();
 
     public PermissionManager(TropicubeCore plugin, DatabaseManager db) {
         this.plugin = plugin;
@@ -146,6 +148,7 @@ public class PermissionManager {
         playerGradeExpiries.remove(uuid);
         playerPermissions.remove(uuid);
         playerPermissionExpiries.remove(uuid);
+        displayGradeOverrides.remove(uuid);
     }
 
     // ===== Applying permissions =====
@@ -300,8 +303,32 @@ public class PermissionManager {
     public Optional<String> getCachedFormattedName(UUID uuid, String username) {
         String gradeName = playerGrades.get(uuid);
         if (gradeName == null) return Optional.empty();
-        Grade grade = gradeRegistry.get(gradeName);
-        return Optional.of(grade == null ? "<white>" + username : grade.prefix() + grade.color() + username);
+        return Optional.of(formatName(gradeRegistry, gradeName, username));
+    }
+
+    /**
+     * Formats a visible name with the active nick grade when present, falling
+     * back to the cached real grade. This method never changes permissions.
+     */
+    public Optional<String> getCachedDisplayFormattedName(UUID uuid, String username) {
+        String gradeName = displayGradeOverrides.get(uuid).orElseGet(() -> playerGrades.get(uuid));
+        if (gradeName == null) return Optional.empty();
+        return Optional.of(formatName(gradeRegistry, gradeName, username));
+    }
+
+    /** Installs the visual grade carried by an active nick identity. */
+    public void setDisplayGradeOverride(UUID uuid, String gradeName) {
+        displayGradeOverrides.put(uuid, gradeName);
+    }
+
+    /** Removes the nick visual grade while leaving the real grade untouched. */
+    public void clearDisplayGradeOverride(UUID uuid) {
+        displayGradeOverrides.remove(uuid);
+    }
+
+    static String formatName(Map<String, Grade> grades, String gradeName, String username) {
+        Grade grade = grades.get(gradeName);
+        return grade == null ? "<white>" + username : grade.prefix() + grade.color() + username;
     }
 
     public String getPrefix(UUID uuid) {

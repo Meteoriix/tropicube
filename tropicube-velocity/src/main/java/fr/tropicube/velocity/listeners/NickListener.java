@@ -57,8 +57,8 @@ public class NickListener {
     public void onDisconnect(DisconnectEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
         if (nickManager.getNick(uuid).isPresent()) {
-            // Retains identity for 30 seconds to absorb rapid reconnection.
-            // The backends clean the display on logout and reapply it on return.
+            // Retains the complete identity for its normal lifetime.
+            // The backends clean their local display cache and reapply it on return.
             nickManager.parkNick(uuid);
             nickManager.publishNickReset(uuid);
         } else {

@@ -63,7 +63,7 @@
 <p><code>tropicube.admin.send</code> et <code>tropicube.bypass.whitelist</code> aux UUID approuvés ;</p>
 <ul><li><code>nick.allowed-grades</code> contrôle les grades pouvant activer <code>/nick</code> ; la désactivation reste accessible à tous ;</li><li><code>nick.skin-uuids</code> complète le pool de profils Mojang utilisés comme skins.</li></ul>
 <p>Core publie le grade courant sous <code>player:grade:&lt;uuid&gt;</code> avec une durée de vie de 24 heures. La valeur est actualisée au chargement et à chaque changement de grade, et n'est pas supprimée pendant un transfert entre backends.</p>
-<p>Une identité active est enregistrée sous <code>nick:&lt;uuid&gt;</code> avec le pseudonyme, le skin signé et le grade d'affichage factice. Les anciens payloads sans grade restent compatibles et utilisent <code>PREMIUM</code>. La durée de vie de 24 heures est renouvelée lors d'une reconnexion rapide.</p>
+<p>Une identité active est enregistrée sous <code>nick:&lt;uuid&gt;</code> avec le pseudonyme, le skin signé et le grade d'affichage factice. Les anciens payloads sans grade restent compatibles et utilisent <code>PREMIUM</code>. La durée de vie de 24 heures est renouvelée à la déconnexion puis à la reconnexion ; le nick complet reste donc disponible pendant cette fenêtre, sans limite spéciale de 30 secondes.</p>
 <h2 id="velocity-natif">Velocity natif<a class="heading-anchor" href="#velocity-natif" aria-label="Lien vers cette section">#</a></h2>
 <p>Fichiers : <code>dockerfiles/configs/Velocity/velocity.toml</code> et <code>forwarding.secret</code>.</p>
 <p>Paramètres indispensables :</p>

@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.docker.model.NickIdentity;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
@@ -39,29 +40,28 @@ public class NickApplyManager {
     private void handleEvent(String uuidStr, boolean apply) {
         try {
             UUID uuid = UUID.fromString(uuidStr);
-            plugin.getServer().getScheduler().runTask(plugin,
-                () -> {
-                if (apply) {
-                    applyNick(uuid);
-                    return;
-                }
-                resetNick(uuid);
-                });
+            if (apply) {
+                String raw = plugin.getRedisManager().get(NickIdentity.key(uuid));
+                NickIdentity.fromJson(raw).ifPresentOrElse(
+                        identity -> plugin.getServer().getScheduler().runTask(plugin,
+                                () -> applyNick(uuid, identity)),
+                        () -> {
+                            if (raw != null) plugin.getLogger().warning("[Nick] Invalid identity payload for " + uuid);
+                        });
+                return;
+            }
+            String originalProfile = plugin.getRedisManager().get("nick:original:" + uuid);
+            plugin.getServer().getScheduler().runTask(plugin, () -> resetNick(uuid, originalProfile));
         } catch (IllegalArgumentException ignored) {}
     }
 
     // ── Apply nick skin ──────────────────────────────────────────
 
-    private void applyNick(UUID uuid) {
+    private void applyNick(UUID uuid, NickIdentity identity) {
         Player target = plugin.getServer().getPlayer(uuid);
         if (target == null) return;
-
-        String raw = plugin.getRedisManager().get(NickIdentity.key(uuid));
-        NickIdentity.fromJson(raw).ifPresentOrElse(
-                identity -> swapSkin(target, identity.name(), identity.skinValue(), identity.skinSignature()),
-                () -> {
-                    if (raw != null) plugin.getLogger().warning("[Nick] Invalid identity payload for " + uuid);
-                });
+        plugin.getPermissionManager().setDisplayGradeOverride(uuid, identity.displayGrade());
+        swapSkin(target, identity.name(), identity.skinValue(), identity.skinSignature());
     }
 
     // /nick off: restores the skin then purges the Redis state of the identity.
@@ -73,7 +73,8 @@ public class NickApplyManager {
                 // All backends receive the event. Only the one who
                 // owns the player can restore his profile and purge Redis.
                 if (plugin.getServer().getPlayer(uuid) == null) return;
-                resetNick(uuid);
+                String originalProfile = plugin.getRedisManager().get("nick:original:" + uuid);
+                resetNick(uuid, originalProfile);
                 plugin.getRedisManager().delete("nick:" + uuid);
                 plugin.getRedisManager().delete("nick:original:" + uuid);
             });
@@ -82,11 +83,10 @@ public class NickApplyManager {
 
     // ── Restore original skin ────────────────────────────────────
 
-    private void resetNick(UUID uuid) {
+    private void resetNick(UUID uuid, String raw) {
         Player target = plugin.getServer().getPlayer(uuid);
         if (target == null) return;
-
-        String raw = plugin.getRedisManager().get("nick:original:" + uuid);
+        plugin.getPermissionManager().clearDisplayGradeOverride(uuid);
         if (raw == null) return;
 
         try {
@@ -111,7 +111,10 @@ public class NickApplyManager {
         // Updates the Adventure name of the chat and player list.
         Component nameComponent = Component.text(displayName);
         target.displayName(nameComponent);
-        target.playerListName(nameComponent);
+        target.playerListName(plugin.getPermissionManager()
+                .getCachedDisplayFormattedName(target.getUniqueId(), displayName)
+                .map(MiniMessage.miniMessage()::deserialize)
+                .orElse(nameComponent));
 
         // Forces observers to reload the entity in order to display the new skin.
         for (Player observer : plugin.getServer().getOnlinePlayers()) {

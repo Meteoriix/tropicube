@@ -145,6 +145,8 @@ Ce module est pour l'instant un squelette Maven sans classe, ressource, dépenda
 
 Les messages de transfert ne doivent jamais appeler Bukkit depuis le thread d'abonnement Redis. Chaque plugin planifie les opérations d'entité ou d'inventaire sur le thread Paper.
 
+Core recopie le grade factice d'une identité `/nick` dans un cache visuel local lors de `NICK_APPLY`. Ce cache alimente la tablist, tandis que le chat lit la même identité Redis ; aucun des deux ne remplace le grade réel utilisé pour les permissions. Le cache est vidé à la désactivation du nick ou au déchargement du joueur, puis restauré depuis `nick:<uuid>` à la reconnexion.
+
 Les instances de mini-jeu publient `GAME_WAITING`, `GAME_STARTING`, `GAME_PLAYING` puis `GAME_ENDING`. Le lobby présente `GAME_PLAYING` sous le libellé bleu `PLAYING` et autorise la connexion lorsque le jeu prend en charge l'arrivée tardive en spectateur.
 
 La purge d'une instance supprime atomiquement son document et ses index principaux, puis balaie les références secondaires connues (`host`, serveur courant, reconnexion, abandon, revanche et post-partie). Chaque référence est relue avant suppression afin de ne pas effacer une valeur réaffectée concurremment à une autre instance.

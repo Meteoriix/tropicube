@@ -157,7 +157,7 @@ public class NickManager {
             redis.delete(NickIdentity.key(uuid));
         }
         return identity.map(value -> new NickData(
-                value.name(), new SkinData(value.skinValue(), value.skinSignature())));
+                value.name(), new SkinData(value.skinValue(), value.skinSignature()), value.displayGrade()));
     }
 
     public void clearNick(UUID uuid) {
@@ -165,14 +165,14 @@ public class NickManager {
     }
 
     /**
-     * Retains identity for 30 seconds after disconnection so that
-     * {@code GameProfileRequestEvent} restores it during a fast return.
+     * Retains the complete identity after disconnection so that
+     * {@code GameProfileRequestEvent} restores the nick and its display grade.
      */
     public void parkNick(UUID uuid) {
         String raw = redis.get(NickIdentity.key(uuid));
-        if (raw != null) redis.set(NickIdentity.key(uuid), raw, 30);
+        if (raw != null) redis.set(NickIdentity.key(uuid), raw, NickIdentity.TTL_SECONDS);
         String origRaw = redis.get(KEY_ORIGINAL + uuid);
-        if (origRaw != null) redis.set(KEY_ORIGINAL + uuid, origRaw, 35);
+        if (origRaw != null) redis.set(KEY_ORIGINAL + uuid, origRaw, NickIdentity.TTL_SECONDS);
     }
 
     /**
@@ -260,6 +260,6 @@ public class NickManager {
     // Serialized data
 
     public record SkinData(String value, String signature) {}
-    public record NickData(String nickName, SkinData skin) {}
+    public record NickData(String nickName, SkinData skin, String displayGrade) {}
     public record OriginalProfile(String name, SkinData skin) {}
 }

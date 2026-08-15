@@ -65,12 +65,12 @@ public final class LangHelper {
         return profileName == null || profileName.isBlank() ? player.getName() : profileName;
     }
 
-    /** Returns the current visible name decorated with the grade attached to the real UUID. */
+    /** Returns the current visible name decorated with the active display grade. */
     public static Component getFormattedNameComponent(Player player) {
         String visibleName = getVisibleName(player);
         TropicubeCore core = getCore();
         if (core == null) return Component.text(visibleName);
-        return core.getPermissionManager().getCachedFormattedName(player.getUniqueId(), visibleName)
+        return core.getPermissionManager().getCachedDisplayFormattedName(player.getUniqueId(), visibleName)
                 .map(MiniMessage.miniMessage()::deserialize)
                 .orElseGet(() -> Component.text(visibleName));
     }

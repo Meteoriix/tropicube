@@ -23,7 +23,7 @@ Source: `tropicube-velocity/src/main/resources/config.yml`; deployment copy: `do
 - `nick.skin-uuids` extends the Mojang skin pool;
 - `templates` define Docker image, server type, capacity, scaling, auto-stop, volumes, and environment variables.
 
-Core publishes `player:grade:<uuid>` with a 24-hour TTL and refreshes it on load and grade changes. An active nick is stored under `nick:<uuid>` with nickname, signed skin, and fake display grade. Legacy payloads without a grade default to `PREMIUM`.
+Core publishes `player:grade:<uuid>` with a 24-hour TTL and refreshes it on load and grade changes. An active nick is stored under `nick:<uuid>` with nickname, signed skin, and fake display grade. Legacy payloads without a grade default to `PREMIUM`. The full identity gets a fresh 24-hour TTL on disconnect and reconnect; there is no separate 30-second reconnect limit.
 
 ## Core
 
