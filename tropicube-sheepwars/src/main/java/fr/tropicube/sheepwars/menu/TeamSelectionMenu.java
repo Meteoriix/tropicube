@@ -140,6 +140,7 @@ public class TeamSelectionMenu implements Listener {
             player.sendMessage(LangHelper.component(player, "sw.team-joined", chosen.getDisplayName()));
             // Refreshes the team selection object in the quickbar.
             player.getInventory().setItem(0, createSelectorItem(player));
+            plugin.getScoreboardManager().updateAll();
         } else {
             player.sendMessage(LangHelper.component(player, "sw.team-unbalanced", chosen.getDisplayName()));
         }

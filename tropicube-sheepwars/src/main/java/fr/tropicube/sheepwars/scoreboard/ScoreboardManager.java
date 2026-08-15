@@ -199,9 +199,13 @@ public class ScoreboardManager {
     }
 
     private void applyPlayerListName(Player player, GamePlayer gamePlayer) {
-        NamedTextColor color = gamePlayer.getTeam() == null || !gamePlayer.isAlive()
+        player.playerListName(teamColoredName(
+                PlayerDisplayName.resolve(player), playerListColor(gamePlayer)));
+    }
+
+    static NamedTextColor playerListColor(GamePlayer gamePlayer) {
+        return gamePlayer.getTeam() == null || !gamePlayer.isAlive()
                 ? NamedTextColor.GRAY : gamePlayer.getTeam().getColor();
-        player.playerListName(teamColoredName(PlayerDisplayName.resolve(player), color));
     }
 
     static Component teamColoredName(String visibleName, NamedTextColor color) {
