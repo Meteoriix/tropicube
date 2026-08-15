@@ -2,9 +2,22 @@ package fr.tropicube.docker.client;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DockerManagerTest {
+
+    @Test
+    void buildsStablePerInstanceDataVolumeName() {
+        assertEquals("tropicube-data-123e4567-e89b-12d3-a456-426614174000",
+                DockerManager.buildDataVolumeName("Tropicube", "123e4567-e89b-12d3-a456-426614174000"));
+    }
+
+    @Test
+    void rejectsBlankInstanceIdForDataVolume() {
+        assertThrows(IllegalArgumentException.class,
+                () -> DockerManager.buildDataVolumeName("tropicube", " "));
+    }
 
     @Test
     void rejectsInvalidMinecraftPortRangeBeforeConnecting() {

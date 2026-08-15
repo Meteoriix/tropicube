@@ -314,7 +314,7 @@ $build_failed && exit 1
 
 if ! $skip_restart; then
   step 'Recreating the Velocity stack...'
-  docker compose up -d --force-recreate velocity || fail 'Docker Compose deployment failed.'
+  docker compose up -d --force-recreate --renew-anon-volumes velocity || fail 'Docker Compose deployment failed.'
   ok 'Velocity recreated; new game containers will use the freshly tagged images.'
 fi
 

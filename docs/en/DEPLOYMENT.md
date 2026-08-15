@@ -89,7 +89,7 @@ Velocity and every Paper backend must receive the same modern-forwarding secret 
 
 ## Dynamic instance lifecycle
 
-Velocity creates a container from the selected template, waits for health checks, registers it with the proxy, and stores its `ServerInstance` in Redis. Empty servers are stopped after their configured delay. A finished minigame asks Velocity to transfer players and immediately remove its container, anonymous volumes, and shared state.
+Velocity creates a container from the selected template with a labelled ephemeral `/data` volume, waits for health checks, registers it with the proxy, and stores its `ServerInstance` in Redis. Empty servers are stopped after their configured delay. A finished minigame asks Velocity to transfer players and immediately remove its container, data volume, and shared state. Labelled orphan volumes are purged on startup.
 
 For private custom games, Velocity injects `HOST_UUID` and `CUSTOM_GAME_PRIVATE=true`; do not hard-code them in a template. If the host item or access list is missing, inspect `host:<uuid>` and the `whitelistedPlayers` field of `instance:<id>` in Redis. A target must have joined the network previously, unless the host supplies its UUID directly.
 
@@ -101,7 +101,7 @@ The proxy's normal shutdown may preserve or remove dynamic instances according t
 - confirm Paper receives forwarded identities and cannot be reached publicly;
 - confirm lobby selectors reflect `GAME_WAITING`, `GAME_STARTING`, `GAME_PLAYING`, and `GAME_ENDING` correctly;
 - confirm a playing SheepWars instance admits late arrivals as spectators;
-- confirm shutdown removes scheduled tasks, subscriptions, containers, and anonymous volumes as configured;
+- confirm shutdown removes scheduled tasks, subscriptions, containers, and ephemeral game volumes as configured;
 - inspect logs without exposing credentials.
 
 ## Rollback

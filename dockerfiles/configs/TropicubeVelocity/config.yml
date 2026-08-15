@@ -10,7 +10,7 @@ redis:
 language:
   default: "fr"
 
-# Deletes dynamic servers and their anonymous volumes when the proxy is stopped.
+# Deletes dynamic servers and their managed ephemeral data volumes when the proxy is stopped.
 # Set to false only to preserve games during a Velocity redeploy.
 shutdown:
   stop-dynamic-servers: true

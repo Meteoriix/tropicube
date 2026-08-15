@@ -100,7 +100,7 @@ Les grades autorisés à activer `/nick` sont configurés dans `nick.allowed-gra
 | `/tropi list` | Liste les instances actives |
 | `/tropi templates` | Liste les templates chargés et leur état de maintenance |
 | `/tropi start <template> [nom]` | Démarre une instance et attend sa disponibilité |
-| `/tropi stop <id|nom>` | Arrête proprement une instance, confirme son état Docker puis supprime son conteneur et ses volumes anonymes |
+| `/tropi stop <id|nom>` | Arrête proprement une instance, confirme son état Docker puis supprime son conteneur et son volume de données éphémère |
 | `/tropi kill <id|nom>` | Force l'arrêt et le nettoyage |
 | `/tropi info <id|nom>` | Affiche état, ports, capacité, image et conteneur |
 | `/tropi maintenance <template> <on|off>` | Interdit ou réautorise les créations sur un template |

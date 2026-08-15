@@ -353,7 +353,7 @@ if ($anyFailed) { exit 1 }
 
 if (-not $SkipRestart) {
     Step "Recreating the Velocity stack..."
-    & docker compose up -d --force-recreate velocity
+    & docker compose up -d --force-recreate --renew-anon-volumes velocity
     if ($LASTEXITCODE -ne 0) { Fail "Docker Compose deployment failed." }
     Ok "Velocity recreated; new game containers will use the freshly tagged images."
 }

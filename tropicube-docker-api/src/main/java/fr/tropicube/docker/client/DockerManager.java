@@ -35,6 +35,11 @@ public class DockerManager implements Closeable {
 
     private static final System.Logger LOGGER = System.getLogger(DockerManager.class.getName());
     private static final Pattern ENVIRONMENT_NAME = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
+    private static final String DYNAMIC_LABEL = "fr.tropicube.dynamic";
+    private static final String INSTANCE_ID_LABEL = "fr.tropicube.instance-id";
+    private static final String TEMPLATE_ID_LABEL = "fr.tropicube.template-id";
+    private static final String DATA_VOLUME_PATH = "/data";
+    private static final int MAX_VOLUME_NAME_LENGTH = 255;
 
     /** Internal port used by RCON inside the container. */
     private static final int RCON_INTERNAL_PORT = 25575;
@@ -381,6 +386,7 @@ public class DockerManager implements Closeable {
         if (rconEnabled) instance.setRconPort(rconPort);
 
         String createdContainerId = null;
+        String dataVolumeName = null;
         try {
             // --- Construction of environment variables ---
             Map<String, String> environment = new LinkedHashMap<>();
@@ -420,8 +426,15 @@ public class DockerManager implements Closeable {
             List<Bind> binds = new ArrayList<>();
             for (String volume : template.getVolumes()) {
                 if (volume == null || volume.isBlank()) throw new IllegalArgumentException("Volume Docker vide");
-                binds.add(Bind.parse(resolveVolume(volume)));
+                Bind bind = Bind.parse(resolveVolume(volume));
+                if (DATA_VOLUME_PATH.equals(bind.getVolume().getPath())) {
+                    throw new IllegalArgumentException("Le chemin Docker " + DATA_VOLUME_PATH
+                            + " est réservé au volume éphémère de l'instance");
+                }
+                binds.add(bind);
             }
+            dataVolumeName = createDynamicDataVolume(instanceId, template.getId());
+            binds.add(new Bind(dataVolumeName, new Volume(DATA_VOLUME_PATH)));
 
             // --- Host configuration (resources, network, reboot) ---
             HostConfig hostConfig = HostConfig.newHostConfig()
@@ -440,9 +453,9 @@ public class DockerManager implements Closeable {
                     .withExposedPorts(exposedPorts.toArray(new ExposedPort[0]))
                     .withHostConfig(hostConfig)
                     .withLabels(Map.of(
-                            "fr.tropicube.dynamic", "true",
-                            "fr.tropicube.instance-id", instanceId,
-                            "fr.tropicube.template-id", template.getId()))
+                            DYNAMIC_LABEL, "true",
+                            INSTANCE_ID_LABEL, instanceId,
+                            TEMPLATE_ID_LABEL, template.getId()))
                     .exec();
 
             createdContainerId = container.getId();
@@ -471,6 +484,13 @@ public class DockerManager implements Closeable {
             if (createdContainerId != null) {
                 try {
                     dockerClient.removeContainerCmd(createdContainerId).withForce(true).withRemoveVolumes(true).exec();
+                } catch (Exception cleanupFailure) {
+                    e.addSuppressed(cleanupFailure);
+                }
+            }
+            if (dataVolumeName != null) {
+                try {
+                    removeVolume(dataVolumeName);
                 } catch (Exception cleanupFailure) {
                     e.addSuppressed(cleanupFailure);
                 }
@@ -519,6 +539,42 @@ public class DockerManager implements Closeable {
                 .replaceAll("^[_.-]+|[_.-]+$", "");
         if (sanitized.isBlank()) throw new IllegalArgumentException("Nom Docker invalide : " + value);
         return sanitized;
+    }
+
+    static String buildDataVolumeName(String containerPrefix, String instanceId) {
+        String prefix = sanitizeName(requireNonBlank(containerPrefix, "containerPrefix"));
+        String instance = sanitizeName(requireNonBlank(instanceId, "instanceId"));
+        String suffix = "-data-" + instance;
+        int maxPrefixLength = MAX_VOLUME_NAME_LENGTH - suffix.length();
+        if (maxPrefixLength < 1) {
+            throw new IllegalArgumentException("Identifiant d'instance trop long pour un volume Docker");
+        }
+        if (prefix.length() > maxPrefixLength) prefix = prefix.substring(0, maxPrefixLength);
+        return prefix + suffix;
+    }
+
+    private String createDynamicDataVolume(String instanceId, String templateId) {
+        String volumeName = buildDataVolumeName(containerPrefix, instanceId);
+        dockerClient.createVolumeCmd()
+                .withName(volumeName)
+                .withLabels(Map.of(
+                        DYNAMIC_LABEL, "true",
+                        INSTANCE_ID_LABEL, instanceId,
+                        TEMPLATE_ID_LABEL, templateId))
+                .exec();
+        return volumeName;
+    }
+
+    private void removeDynamicDataVolume(String instanceId) {
+        removeVolume(buildDataVolumeName(containerPrefix, instanceId));
+    }
+
+    private void removeVolume(String volumeName) {
+        try {
+            dockerClient.removeVolumeCmd(volumeName).exec();
+        } catch (NotFoundException _) {
+            // Volume already absent: cleanup is idempotent.
+        }
     }
 
     /**
@@ -671,7 +727,9 @@ public class DockerManager implements Closeable {
      * Permanently delete a Docker container.
      *
      * <p>The container is forcefully deleted (even if it is still running)
-     * and its anonymous volumes are also deleted.
+     * and its legacy anonymous volumes are also deleted. The managed ephemeral
+     * {@code /data} volume is deleted explicitly, including when the container
+     * has already disappeared.
      * If the container is not found (already deleted or crashed), the operation is silently ignored.
      *
      * @param instance The server instance to delete.
@@ -692,7 +750,15 @@ public class DockerManager implements Closeable {
         } catch (Exception e) {
             LOGGER.log(System.Logger.Level.WARNING, "Impossible de supprimer le conteneur " + instance.getContainerId(), e);
         } finally {
-            if (removed) releasePorts(instance);
+            if (removed) {
+                try {
+                    removeDynamicDataVolume(instance.getInstanceId());
+                } catch (Exception e) {
+                    LOGGER.log(System.Logger.Level.WARNING,
+                            "Impossible de supprimer le volume de l'instance " + instance.getInstanceId(), e);
+                }
+                releasePorts(instance);
+            }
         }
     }
 
@@ -718,7 +784,7 @@ public class DockerManager implements Closeable {
         try {
             // Lists all dynamic containers, whether running or stopped
             List<Container> containers = dockerClient.listContainersCmd()
-                    .withLabelFilter(List.of("fr.tropicube.dynamic=true"))
+                    .withLabelFilter(List.of(DYNAMIC_LABEL + "=true"))
                     .withShowAll(true)
                     .exec();
             for (Container container : containers) {
@@ -727,6 +793,7 @@ public class DockerManager implements Closeable {
                             .withForce(true)
                             .withRemoveVolumes(true)
                             .exec();
+                    removeDynamicDataVolume(container.getLabels().get(INSTANCE_ID_LABEL));
                 } catch (Exception e) {
                     LOGGER.log(System.Logger.Level.WARNING,
                             "Impossible de supprimer le conteneur dynamique " + container.getId(), e);
@@ -735,6 +802,7 @@ public class DockerManager implements Closeable {
         } catch (Exception e) {
             LOGGER.log(System.Logger.Level.WARNING, "Impossible de lister les conteneurs dynamiques", e);
         }
+        cleanupDynamicDataVolumes(Set.of());
     }
 
     /**
@@ -752,24 +820,53 @@ public class DockerManager implements Closeable {
         try {
             // List all dynamic containers, including stopped ones
             List<Container> candidates = dockerClient.listContainersCmd()
-                    .withLabelFilter(List.of("fr.tropicube.dynamic=true"))
+                    .withLabelFilter(List.of(DYNAMIC_LABEL + "=true"))
                     .withShowAll(true)
                     .exec();
+            Set<String> retainedInstanceIds = new HashSet<>();
             for (Container container : candidates) {
-                if (!knownIds.contains(container.getId())) {
+                String instanceId = container.getLabels().get(INSTANCE_ID_LABEL);
+                if (knownIds.contains(container.getId())) {
+                    if (instanceId != null && !instanceId.isBlank()) retainedInstanceIds.add(instanceId);
+                } else {
                     try {
                         dockerClient.removeContainerCmd(container.getId())
                                 .withForce(true)
                                 .withRemoveVolumes(true)
                                 .exec();
+                        if (instanceId != null && !instanceId.isBlank()) removeDynamicDataVolume(instanceId);
                     } catch (Exception e) {
                         LOGGER.log(System.Logger.Level.WARNING,
                                 "Impossible de supprimer le conteneur orphelin " + container.getId(), e);
                     }
                 }
             }
+            cleanupDynamicDataVolumes(retainedInstanceIds);
         } catch (Exception e) {
             LOGGER.log(System.Logger.Level.WARNING, "Impossible de nettoyer les conteneurs orphelins", e);
+        }
+    }
+
+    private void cleanupDynamicDataVolumes(Set<String> retainedInstanceIds) {
+        try {
+            var response = dockerClient.listVolumesCmd()
+                    .withFilter("label", List.of(DYNAMIC_LABEL + "=true"))
+                    .exec();
+            if (response.getVolumes() == null) return;
+            for (var volume : response.getVolumes()) {
+                Map<String, String> labels = volume.getLabels();
+                String instanceId = labels != null ? labels.get(INSTANCE_ID_LABEL) : null;
+                if (instanceId != null && !retainedInstanceIds.contains(instanceId)) {
+                    try {
+                        removeVolume(volume.getName());
+                    } catch (Exception e) {
+                        LOGGER.log(System.Logger.Level.WARNING,
+                                "Impossible de supprimer le volume dynamique orphelin " + volume.getName(), e);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(System.Logger.Level.WARNING, "Impossible de nettoyer les volumes dynamiques orphelins", e);
         }
     }
 

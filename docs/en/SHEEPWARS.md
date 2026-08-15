@@ -112,6 +112,6 @@ At deployment, `INSTANCE_ID`, `SERVER_NAME`, `IS_HOST`, `HOST_UUID`, and the int
 
 The explicit game states are `WAITING`, `STARTING`, `PLAYING`, `ENDING`, and `ENDED`. Transitions publish corresponding `ServerInstance` states to Redis. The retained game-tick task advances both match time and per-player sheep deadlines and is cancelled on transition or shutdown. Late events cannot restart an ended match.
 
-After the result delay, SheepWars writes replay markers and sends `PROXY:FINISH_GAME:<instanceId>`. Velocity transfers players, retries lobby selection when required, unregisters the backend, removes the container and anonymous volumes, and clears Redis state.
+After the result delay, SheepWars writes replay markers and sends `PROXY:FINISH_GAME:<instanceId>`. Velocity transfers players, retries lobby selection when required, unregisters the backend, removes the container and its labelled ephemeral data volume, and clears Redis state.
 
 See [Deployment](DEPLOYMENT.md) and [Configuration](CONFIGURATION.md) for maps, images, templates, and operational setup.

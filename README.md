@@ -82,5 +82,5 @@ Le module Fallen Kingdoms est actuellement vide : il compile dans le réacteur m
 - Ne versionnez jamais `.env` ni un secret réel. Le fichier est ignoré par Git.
 - Ne publiez pas directement les ports des serveurs Paper dynamiques : seul Velocity doit être accessible aux joueurs.
 - Le secret de forwarding doit être identique côté Velocity et Paper.
-- L'accès au daemon Docker est limité au conteneur `docker-proxy`; il reste néanmoins sensible et doit être réservé à une machine de confiance.
+- L'accès au daemon Docker est limité au conteneur `docker-proxy`; seules les API nécessaires aux conteneurs, images, réseaux et volumes éphémères sont exposées. Cet accès reste néanmoins sensible et doit être réservé à une machine de confiance.
 - Sauvegardez les volumes `mysql-data` et `redis-data` avant toute opération d'infrastructure importante.

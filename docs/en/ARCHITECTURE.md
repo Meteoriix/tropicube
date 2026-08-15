@@ -78,4 +78,4 @@ MySQL stores durable profiles, grades, permissions, balances, moderation history
 
 ## Shutdown
 
-Every plugin cancels scheduled work and closes pools or subscriptions during shutdown. A completed game sends `PROXY:FINISH_GAME:<instanceId>`; Velocity transfers remaining players, unregisters the backend, removes the container and anonymous volumes, and clears Redis state.
+Every plugin cancels scheduled work and closes pools or subscriptions during shutdown. A completed game sends `PROXY:FINISH_GAME:<instanceId>`; Velocity transfers remaining players, unregisters the backend, removes the container and its labelled ephemeral `/data` volume, and clears Redis state. On startup, Velocity also removes labelled game volumes whose containers no longer exist.
