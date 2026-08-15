@@ -159,6 +159,25 @@ public class DatabaseManager {
                 username VARCHAR(16) NOT NULL,
                 playerKit VARCHAR(16) NOT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """,
+
+            // Symmetric friendship relation and pending requests.
+            """
+            CREATE TABLE IF NOT EXISTS tropicube_friendships (
+                player_a VARCHAR(36) NOT NULL,
+                player_b VARCHAR(36) NOT NULL,
+                requester_uuid VARCHAR(36) NOT NULL,
+                status VARCHAR(16) NOT NULL,
+                created_at BIGINT NOT NULL,
+                updated_at BIGINT NOT NULL,
+                PRIMARY KEY (player_a, player_b),
+                INDEX idx_friend_requester (requester_uuid, status),
+                INDEX idx_friend_status_a (player_a, status),
+                INDEX idx_friend_status_b (player_b, status),
+                FOREIGN KEY (player_a) REFERENCES tropicube_players(uuid) ON DELETE CASCADE,
+                FOREIGN KEY (player_b) REFERENCES tropicube_players(uuid) ON DELETE CASCADE,
+                FOREIGN KEY (requester_uuid) REFERENCES tropicube_players(uuid) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
             """
         };
 

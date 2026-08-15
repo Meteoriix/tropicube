@@ -25,8 +25,8 @@ Tropicube est une infrastructure Minecraft multi-serveurs pour **Minecraft 26.2*
 |---|---|---|
 | `tropicube-docker-api` | Java partagé | Modèles d'instances/templates, client Docker et accès Redis |
 | `tropicube-velocity` | Velocity | Routage, files d'attente, création/arrêt des instances et commandes proxy |
-| `tropicube-core` | Paper | Joueurs, économie, grades, permissions, langues et modération |
-| `tropicube-lobby` | Paper | Accueil, menus, sélection de serveur, double-saut et boutique VIP |
+| `tropicube-core` | Paper | Joueurs, économie, grades, permissions, langues, modération, amis et parties |
+| `tropicube-lobby` | Paper | Accueil, menus, sélection de serveur, menu Social, double-saut et boutique VIP |
 | `tropicube-sheepwars` | Paper | Mini-jeu SheepWars, cartes, équipes, kits, classes et moutons spéciaux |
 | `tropicube-fallenkingdoms` | Non déployé | Squelette Maven réservé au futur mini-jeu Fallen Kingdoms |
 

@@ -6,6 +6,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Added
 
+- Complete network social system: durable friends, Redis parties, party chat, individual leader following, `/party warp`, spectator-capable `/friend join`, and the lobby Social hotbar menu.
 - Complete private custom-game access control: proxy `/whitelist`, SheepWars host item and anvil input, removal menu, Redis persistence, and per-player lobby filtering.
 - Bilingual French/English Markdown documentation and static site, with a page-preserving language switch.
 - Blue `PLAYING` server presentation for active SheepWars matches.

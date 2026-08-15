@@ -260,6 +260,7 @@ public class TropiServerManager {
                 template.setMinPort(node.node("port-min").getInt(25600));
                 template.setMaxPort(node.node("port-max").getInt(25700));
                 template.setMaxPlayers(node.node("max-players").getInt(50));
+                template.setSpectatorSlots(node.node("spectator-slots").getInt(0));
                 template.setMinRam(node.node("ram-min").getInt(512));
                 template.setMaxRam(node.node("ram-max").getInt(1024));
                 template.setEnabled(node.node("enabled").getBoolean(true));

@@ -12,6 +12,8 @@ import fr.tropicube.core.managers.PermissionManager;
 import fr.tropicube.core.listeners.NickApplyManager;
 import fr.tropicube.core.util.ConfigUpdater;
 import fr.tropicube.docker.client.RedisManager;
+import fr.tropicube.core.social.FriendshipRepository;
+import fr.tropicube.core.social.SocialService;
 import org.bukkit.GameRules;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -48,6 +50,7 @@ public class TropicubeCore extends JavaPlugin {
 
     // Custom Head Manager (HeadDatabase)
     private HeadDatabaseManager headDatabaseManager;
+    private SocialService socialService;
 
     /**
      * Called by Paper when activating the plugin.
@@ -156,6 +159,14 @@ public class TropicubeCore extends JavaPlugin {
             playerDataManager = new PlayerDataManager(this, databaseManager, permissionManager, economyManager, languageManager);
             playerDataManager.initialize();
 
+            int maximumFriends = positiveConfig("social.friends.max-count", 100, 1);
+            int requestExpiryDays = positiveConfig("social.friends.request-expiry-days", 30, 1);
+            int maximumPartySize = positiveConfig("social.party.max-size", 8, 2);
+            int invitationSeconds = positiveConfig("social.party.invite-expiry-seconds", 60, 1);
+            socialService = new SocialService(this, new FriendshipRepository(databaseManager),
+                    maximumFriends, maximumPartySize, invitationSeconds);
+            socialService.expireRequests(requestExpiryDays);
+
             headDatabaseManager = new HeadDatabaseManager();
 
             // Start Redis subscription for nickname synchronization (Nick)
@@ -204,6 +215,14 @@ public class TropicubeCore extends JavaPlugin {
             Objects.requireNonNull(getCommand("kick")).setExecutor(new KickCommand(this));
             Objects.requireNonNull(getCommand("warn")).setExecutor(new WarnCommand(this));
             Objects.requireNonNull(getCommand("history")).setExecutor(new HistoryCommand(this));
+
+            var friendCommand = new FriendCommand(this);
+            Objects.requireNonNull(getCommand("friend")).setExecutor(friendCommand);
+            Objects.requireNonNull(getCommand("friend")).setTabCompleter(friendCommand);
+            var partyCommand = new PartyCommand(this);
+            Objects.requireNonNull(getCommand("party")).setExecutor(partyCommand);
+            Objects.requireNonNull(getCommand("party")).setTabCompleter(partyCommand);
+            Objects.requireNonNull(getCommand("pc")).setExecutor(partyCommand);
 
             return true;
         } catch (Exception e) {
@@ -282,6 +301,7 @@ public class TropicubeCore extends JavaPlugin {
     public PermissionManager getPermissionManager() { return permissionManager; }
     public LanguageManager getLanguageManager()     { return languageManager; }
     public PlayerDataManager getPlayerDataManager() { return playerDataManager; }
+    public SocialService getSocialService()         { return socialService; }
     @SuppressWarnings("unused")
     public HeadDatabaseManager getHeadDatabaseManager() { return headDatabaseManager; }
 
@@ -300,5 +320,11 @@ public class TropicubeCore extends JavaPlugin {
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(environmentName + " doit être un entier", e);
         }
+    }
+
+    private int positiveConfig(String path, int defaultValue, int minimum) {
+        int value = getConfig().getInt(path, defaultValue);
+        if (value < minimum) throw new IllegalArgumentException(path + " doit être supérieur ou égal à " + minimum);
+        return value;
     }
 }

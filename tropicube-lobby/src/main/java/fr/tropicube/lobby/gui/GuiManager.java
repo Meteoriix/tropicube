@@ -9,6 +9,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
 import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,7 +34,8 @@ public class GuiManager {
         VIP_SHOP,
         SERVER_TYPE_SELECTOR,
         CUSTOM_GAME,
-        CUSTOM_GAME_TYPE_SELECTOR
+        CUSTOM_GAME_TYPE_SELECTOR,
+        SOCIAL
     }
 
     // ── Opening menus ───────────────────────── ─────────────────────────
@@ -87,6 +90,40 @@ public class GuiManager {
         });
     }
 
+    /** Loads SQL and Redis social data asynchronously, then opens one coherent snapshot. */
+    public void openSocial(Player player) {
+        var corePlugin = Bukkit.getPluginManager().getPlugin("TropicubeCore");
+        if (!(corePlugin instanceof TropicubeCore core)) {
+            player.sendMessage(LangHelper.component(player, "general.operation-failed"));
+            return;
+        }
+        UUID playerId = player.getUniqueId();
+        var social = core.getSocialService();
+        social.friends(playerId).thenCombine(social.requests(playerId), (friends, requests) -> {
+            List<SocialGUI.FriendEntry> entries = friends.stream()
+                    .map(friend -> new SocialGUI.FriendEntry(friend.username(), social.isOnline(friend.playerId())))
+                    .toList();
+            var party = social.party(playerId);
+            var invites = social.partyInvites(playerId);
+            Map<UUID, String> names = new HashMap<>();
+            if (party != null) party.members().forEach(member -> names.put(member.playerId(), social.displayName(member.playerId())));
+            invites.keySet().forEach(id -> names.put(id, social.displayName(id)));
+            return new SocialSnapshot(entries, requests, party, invites, names);
+        }).whenComplete((snapshot, error) -> Bukkit.getScheduler().runTask(plugin, () -> {
+            Player online = Bukkit.getPlayer(playerId);
+            if (online == null) return;
+            if (error != null) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING, "Impossible de charger le menu Social", error);
+                online.sendMessage(LangHelper.component(online, "general.operation-failed"));
+                return;
+            }
+            Inventory inventory = SocialGUI.build(online, snapshot.friends(), snapshot.requests(), snapshot.party(),
+                    snapshot.invites(), snapshot.names());
+            openGuis.put(playerId, GuiType.SOCIAL);
+            online.openInventory(inventory);
+        }));
+    }
+
     public void openCustomGameMenu(Player player, boolean whitelisted) {
         Inventory inv = CustomGameGUI.build(plugin, player, whitelisted);
         openGuis.put(player.getUniqueId(), GuiType.CUSTOM_GAME);
@@ -129,6 +166,11 @@ public class GuiManager {
     public void onPlayerQuit(UUID playerId) {
         openGuis.remove(playerId);
     }
+
+    private record SocialSnapshot(List<SocialGUI.FriendEntry> friends,
+                                  List<fr.tropicube.core.social.FriendshipRepository.PendingRequest> requests,
+                                  fr.tropicube.docker.model.PartySnapshot party,
+                                  Map<UUID, String> invites, Map<UUID, String> names) { }
 
     /**
      * Refreshes all open server menus in place, without reopening them.

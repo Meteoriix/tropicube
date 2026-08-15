@@ -381,6 +381,7 @@ public class DockerManager implements Closeable {
         ServerInstance instance = new ServerInstance(instanceId, template.getId(), serverName, port, whitelisted);
         instance.setContainerName(containerName);
         instance.setMaxPlayers(template.getMaxPlayers());
+        instance.setSpectatorSlots(template.getSpectatorSlots());
         instance.setServerType(template.getServerType());
         instance.setStatus(ServerInstance.Status.CREATING);
         if (rconEnabled) instance.setRconPort(rconPort);
@@ -393,7 +394,7 @@ public class DockerManager implements Closeable {
             environment.put("EULA", "TRUE");
             environment.put("SERVER_NAME", serverName);
             environment.put("INSTANCE_ID", instanceId);
-            environment.put("MAX_PLAYERS", Integer.toString(template.getMaxPlayers()));
+            environment.put("MAX_PLAYERS", Integer.toString(template.getConnectionCapacity()));
             environment.put("MEMORY", template.getMinRam() + "M");
             environment.put("MAX_MEMORY", template.getMaxRam() + "M");
             if (rconEnabled) {

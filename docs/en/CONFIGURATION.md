@@ -21,7 +21,7 @@ Source: `tropicube-velocity/src/main/resources/config.yml`; deployment copy: `do
 - health-check values define probe frequency, timeout, and failed-start cleanup;
 - `nick.allowed-grades` defines grades that may enable `/nick`;
 - `nick.skin-uuids` extends the Mojang skin pool;
-- `templates` define Docker image, server type, capacity, scaling, auto-stop, volumes, and environment variables.
+- `templates` define Docker image, server type, capacity, scaling, auto-stop, volumes, and environment variables. `max-players` is the participant limit; `spectator-slots` adds backend capacity only for an ongoing game (`8` for SheepWars).
 
 Core publishes `player:grade:<uuid>` with a 24-hour TTL and refreshes it on load and grade changes. An active nick is stored under `nick:<uuid>` with nickname, signed skin, and fake display grade. Legacy payloads without a grade default to `PREMIUM`. The full identity gets a fresh 24-hour TTL on disconnect and reconnect; there is no separate 30-second reconnect limit.
 
@@ -29,7 +29,7 @@ Core publishes `player:grade:<uuid>` with a 24-hour TTL and refreshes it on load
 
 Source: `tropicube-core/src/main/resources/config.yml`; deployment copy: `dockerfiles/configs/TropicubeCore/config.yml`.
 
-Core configuration covers Redis, MySQL, the default language, economy cache rules, and the complete grade catalog. Grade definitions are synchronized to MySQL at startup. Existing values are preserved by the configuration updater when new keys are introduced.
+Core configuration covers Redis, MySQL, the default language, economy cache rules, and the complete grade catalog. Social limits are `social.friends.max-count` (`100`), `social.friends.request-expiry-days` (`30`), `social.party.max-size` (`8`), and `social.party.invite-expiry-seconds` (`60`). Grade definitions are synchronized to MySQL at startup. Existing values are preserved by the configuration updater when new keys are introduced.
 
 Supported language resources are `fr`, `en`, `de`, and `es`. Embedded and deployment copies must expose identical key trees and placeholders. The internal `<tc>` and `<sw>` tags insert the network and SheepWars identities. Their use is defined in the [message style guide](MESSAGING_STYLE.md) and is limited to standalone notifications.
 

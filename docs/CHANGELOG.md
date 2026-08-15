@@ -6,6 +6,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Ajouté
 
+- Système social réseau complet : amis persistants, parties Redis, chat de groupe, suivi individuel du chef, rassemblement `/party warp`, `/friend join` avec arrivée en spectateur et menu Social dans la hotbar du lobby.
 - Commandes réseau `/pull <joueur>` et aide localisée `/help`, avec autocomplétion proxy étendue pour `/send`.
 - Profil PvP SheepWars inspiré de Minecraft 1.8 : attaques sans recharge ni balayage, dégâts d'épée et recul configurables.
 - Gestion complète des parties personnalisées privées : commande proxy `/whitelist`, item hôte SheepWars, saisie enclume, retrait par menu, persistance Redis et filtrage du lobby par joueur.

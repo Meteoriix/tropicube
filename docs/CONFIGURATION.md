@@ -68,13 +68,15 @@ Ces trois valeurs doivent être strictement positives et le seuil d'expiration d
 Chaque entrée de `templates` décrit :
 
 - `enabled`, `name`, `image`, `type` ;
-- plage de ports et `max-players` ;
+- plage de ports, `max-players` et `spectator-slots` ;
 - mémoire minimale/maximale en Mio ;
 - `auto-start`, `min-instances` et `max-instances` ;
 - `auto-stop`, `auto-stop-delay` ;
 - variables d'environnement passées à l'image Paper.
 
 Le lobby est une dépendance de routage essentielle et reste activé. Pour ajouter un mode de jeu, fournir une image, un plugin capable de publier son état, une plage de ports et une entrée correspondante dans `server-types` du lobby.
+
+`max-players` borne les participants avant le démarrage. `spectator-slots`, nul par défaut et fixé à `8` pour SheepWars, ajoute une réserve physique uniquement quand l'instance est `GAME_PLAYING`. La variable Docker `MAX_PLAYERS` reçoit la somme afin que `/friend join` puisse connecter un spectateur sans réduire la capacité de jeu nominale.
 
 `min-instances` est le plancher maintenu toutes les 30 secondes par l'autoscaler. Pour SheepWars, le matchmaking crée également une nouvelle instance à la demande lorsqu'aucun serveur classique en attente ou en démarrage n'est encore joignable. `max-instances` borne toutes les créations simultanées, qu'elles viennent du matchmaking, d'une partie personnalisée ou de `/tropi start`. Les templates fournis autorisent explicitement cinq instances concurrentes chacun.
 
@@ -122,6 +124,10 @@ Les valeurs suivantes peuvent être surchargées sans modifier YAML :
 Sections métier :
 
 - `economy` : nom, symbole, solde initial et bornes de transfert ;
+- `social.friends.max-count` : nombre maximal d'amis par joueur (`100`) ;
+- `social.friends.request-expiry-days` : expiration des demandes en attente (`30`) ;
+- `social.party.max-size` : taille maximale d'une party (`8`) ;
+- `social.party.invite-expiry-seconds` : validité d'une invitation de party (`60`) ;
 - `language.default` : langue utilisée avant chargement du profil ;
 - `grades` : présentation MiniMessage, priorité, statut VIP/staff et permissions.
 

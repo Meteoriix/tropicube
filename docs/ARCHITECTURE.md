@@ -140,6 +140,10 @@ Ce module est pour l'instant un squelette Maven sans classe, ressource, dépenda
 | canal `servers` | Velocity | Intégrations | `SERVER_STARTED` / `SERVER_STOPPED` |
 | canal `commands` | Lobby/SheepWars/Velocity | Velocity/SheepWars | Commandes ciblées, notamment `PROXY:CONNECT:<uuid>:<serveur>`, la demande acquittée `PROXY:HOST_WHITELIST:<hôte>:<opération>:<requête>:<joueur>`, sa réponse `SHEEPWARS:HOST_WHITELIST_RESULT:<hôte>:<requête>` et `PROXY:FINISH_GAME:<instanceId>` |
 | canal `players` | Velocity | Intégrations | Changements de serveur d'un joueur |
+| `party:member:<uuid>` | Core | Core/Velocity/Lobby | Index vers la party du joueur, TTL 24 h |
+| `party:<id>:leader` / `party:<id>:members` | Core | Core/Velocity/Lobby | Chef et hash `uuid -> follow`, mis à jour atomiquement par scripts Lua, TTL 24 h |
+| `party:invites:<uuid>` | Core | Core/Lobby | Invitations indexées par UUID du chef, TTL configurable |
+| canal `commands` (`PROXY:FRIEND_JOIN`, `PROXY:PARTY_WARP`) | Core | Velocity | Demandes de transfert social revalidées par le proxy |
 | `transfer:<uuid>` | Velocity | Core/Lobby | Marqueur court évitant de traiter un transfert comme une première arrivée |
 | `host:<uuid>` | Velocity | Lobby/SheepWars | Partie personnalisée administrée par le joueur |
 | `host-creation:<uuid>` | Velocity | Lobby/Velocity | Verrou atomique et temporaire empêchant deux créations personnalisées simultanées |
@@ -157,6 +161,8 @@ SheepWars consomme les événements `NICK_APPLY`, `NICK_RESET`, `NICK_CLEAR`, `G
 
 Les instances de mini-jeu publient `GAME_WAITING`, `GAME_STARTING`, `GAME_PLAYING` puis `GAME_ENDING`. Le lobby présente `GAME_PLAYING` sous le libellé bleu `PLAYING` et autorise la connexion lorsque le jeu prend en charge l'arrivée tardive en spectateur.
 
+Les amitiés sont lues depuis MySQL par Core. Les commandes et le menu Social du lobby n'effectuent jamais ces accès sur le thread Paper. Pour rejoindre un ami, Core vérifie d'abord la relation puis publie l'instance observée ; Velocity revalide la connexion de l'ami, son instance courante, l'état, la whitelist et la capacité. En `GAME_PLAYING`, SheepWars classe déjà toute arrivée tardive comme spectateur. Lorsqu'un chef change d'instance ou exécute `/party warp`, Velocity ne transfère que les membres connectés dont le champ `follow` vaut `1` et vérifie la capacité du lot avant de lancer les connexions.
+
 La purge d'une instance supprime atomiquement son document et ses index principaux, puis balaie les références secondaires connues (`host`, serveur courant, reconnexion, abandon, revanche et post-partie). Chaque référence est relue avant suppression afin de ne pas effacer une valeur réaffectée concurremment à une autre instance.
 
 Un changement de langue publie `LANG_CHANGED:<uuid>:<langue>` sur le canal joueurs. Le lobby reconstruit alors, sur le thread Paper, la hotbar, le scoreboard personnel et la tablist. Le scoreboard du lobby est donc entièrement localisé et reste cohérent que la langue soit changée depuis le menu ou avec `/lang`.
@@ -172,6 +178,7 @@ Un changement de langue publie `LANG_CHANGED:<uuid>:<langue>` sur le canal joueu
 - `tropicube_grades` : définition des grades ;
 - `tropicube_permissions` : permissions individuelles temporaires ou permanentes ;
 - `tropicube_sheepwars` : statistiques du mini-jeu.
+- `tropicube_friendships` : paire canonique de joueurs, demandeur, état `PENDING`/`ACCEPTED` et dates ; index par membre, état et ancienneté.
 
 Les grades déclarés dans la configuration Core sont resynchronisés au démarrage. Une modification manuelle en base ou via la sous-commande de définition de grade peut donc être écrasée par la configuration au prochain redémarrage.
 

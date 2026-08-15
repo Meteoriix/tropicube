@@ -51,6 +51,9 @@ public class ServerTemplate {
      */
     private int maxPlayers;
 
+    /** Extra connection slots reserved for spectators joining an ongoing game. */
+    private int spectatorSlots;
+
     /**
      * Minimum RAM memory allocated to the container (in MB, corresponds to -Xms of the JVM).
      */
@@ -195,6 +198,19 @@ public class ServerTemplate {
         this.maxPlayers = maxPlayers;
     }
 
+    public int getSpectatorSlots() {
+        return spectatorSlots;
+    }
+
+    public void setSpectatorSlots(int spectatorSlots) {
+        this.spectatorSlots = spectatorSlots;
+    }
+
+    /** Maximum number of backend connections, active players and spectators combined. */
+    public int getConnectionCapacity() {
+        return Math.addExact(maxPlayers, spectatorSlots);
+    }
+
     public int getMinRam() {
         return minRam;
     }
@@ -301,6 +317,7 @@ public class ServerTemplate {
             }
         }
         if (maxPlayers <= 0) throw new IllegalStateException("maxPlayers doit être strictement positif");
+        if (spectatorSlots < 0) throw new IllegalStateException("spectatorSlots ne peut pas être négatif");
         if (minRam <= 0) throw new IllegalStateException("minRam doit être strictement positif");
         if (maxRam < minRam) throw new IllegalStateException("maxRam doit être supérieur ou égal à minRam");
         if (autoStopDelay < 0) throw new IllegalStateException("autoStopDelay ne peut pas être négatif");

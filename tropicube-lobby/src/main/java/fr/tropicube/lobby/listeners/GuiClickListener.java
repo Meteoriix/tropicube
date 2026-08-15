@@ -56,6 +56,7 @@ public class GuiClickListener implements Listener {
             case VipShopGUI.Holder _ -> handleVipShop(player, slot);
             case CustomGameGUI.Holder customHolder -> handleCustomGame(player, slot, customHolder);
             case CustomGameTypeGUI.Holder customTypeHolder -> handleCustomGameType(player, slot, customTypeHolder);
+            case SocialGUI.Holder socialHolder -> handleSocial(player, slot, socialHolder);
             default -> {
             }
         }
@@ -91,7 +92,8 @@ public class GuiClickListener implements Listener {
             || holder instanceof LanguageSelectorGUI.Holder
             || holder instanceof VipShopGUI.Holder
             || holder instanceof CustomGameGUI.Holder
-            || holder instanceof CustomGameTypeGUI.Holder;
+            || holder instanceof CustomGameTypeGUI.Holder
+            || holder instanceof SocialGUI.Holder;
     }
 
     // ── Handlers ────────────────────────────────────────────────────────────
@@ -285,6 +287,27 @@ public class GuiClickListener implements Listener {
             plugin.getGuiManager().openCustomGameMenu(player, true);
         }
 
+    }
+
+    private void handleSocial(Player player, int slot, SocialGUI.Holder holder) {
+        if (slot == SocialGUI.CLOSE_SLOT) {
+            player.closeInventory();
+            return;
+        }
+        SocialGUI.Action action = holder.action(slot);
+        if (action == null) return;
+        switch (action.type()) {
+            case FRIEND_JOIN -> player.performCommand("friend join " + action.argument());
+            case FRIEND_ACCEPT -> player.performCommand("friend accept " + action.argument());
+            case PARTY_ACCEPT -> player.performCommand("party accept " + action.argument());
+            case FOLLOW_TOGGLE -> player.performCommand("party follow " + action.argument());
+            case PARTY_WARP -> player.performCommand("party warp");
+        }
+        if (action.type() == SocialGUI.ActionType.FRIEND_JOIN || action.type() == SocialGUI.ActionType.PARTY_WARP) {
+            player.closeInventory();
+        } else {
+            Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.getGuiManager().openSocial(player), 5L);
+        }
     }
 
     // Atomic purchase: verification, debit, allocation, then compensation if necessary.

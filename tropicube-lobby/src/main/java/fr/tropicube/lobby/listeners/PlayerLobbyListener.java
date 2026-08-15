@@ -45,6 +45,7 @@ public class PlayerLobbyListener implements Listener {
     private static final int SLOT_SERVERS     = 0;
     private static final int SLOT_CUSTOM_GAME = 2;
     private static final int SLOT_LANG        = 4;
+    private static final int SLOT_SOCIAL      = 6;
     private static final int SLOT_VIP         = 8;
 
     /** Minimum priority of rank allowed to host a custom game. */
@@ -182,6 +183,7 @@ public class PlayerLobbyListener implements Listener {
             case 1002 -> { e.setCancelled(true); plugin.getGuiManager().openLanguageSelector(player); }
             case 1003 -> { e.setCancelled(true); plugin.getGuiManager().openVipShop(player); }
             case 1004 -> { e.setCancelled(true); plugin.getGuiManager().openCustomGameTypeMenu(player); }
+            case 1005 -> { e.setCancelled(true); plugin.getGuiManager().openSocial(player); }
         }
     }
 
@@ -316,6 +318,13 @@ public class PlayerLobbyListener implements Listener {
                                 "",
                                 LangHelper.get(player, "lobby.hotbar-vip-lore2"))
                         .customModelData(1003)
+                        .glow().build());
+
+        player.getInventory().setItem(SLOT_SOCIAL,
+                new ItemBuilder(Material.PLAYER_HEAD)
+                        .name(LangHelper.get(player, "social.hotbar-name"))
+                        .lore(LangHelper.get(player, "social.hotbar-lore"))
+                        .customModelData(1005)
                         .glow().build());
     }
 

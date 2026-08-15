@@ -121,6 +121,7 @@ templates:
     port-min: 25625
     port-max: 25649
     max-players: 16
+    spectator-slots: 8
     ram-min: 1024
     ram-max: 2048
     auto-start: true

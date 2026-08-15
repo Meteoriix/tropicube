@@ -114,3 +114,11 @@ proxy:
   nick-skin-error: "<tc><red>No se pudo obtener un skin en este momento. Inténtalo de nuevo."
   nick-already-fetching: "<tc><yellow>Ya se está generando un nick."
   nick-usage: "<tc><yellow>Uso: <white>/nick <gray>o <white>/nick off"
+
+social:
+  friend-join-unavailable: "<tc><red>La partida de este amigo ya no está disponible."
+  friend-join-connecting: "<tc><green>Conectando a la partida de <white>{0}</white>…"
+  friend-join-spectator: "<tc><yellow>La partida ya ha comenzado: te unes como espectador con <white>{0}</white>."
+  transfer-unavailable: "<tc><red>El servidor de destino ya no está disponible."
+  party-warp-full: "<tc><red>No hay plazas suficientes para reunir al grupo."
+  party-following: "<tc><gray>Estás siguiendo al líder <white>{0}</white>."

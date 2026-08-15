@@ -31,6 +31,29 @@ class ServerInstanceTest {
     }
 
     @Test
+    void ongoingGameUsesReservedSpectatorSlots() {
+        ServerInstance instance = readyInstance(false);
+        instance.setSpectatorSlots(3);
+        instance.setStatus(ServerInstance.Status.GAME_PLAYING);
+        instance.setOnlinePlayers(10);
+
+        assertEquals(13, instance.getConnectionCapacity());
+        assertTrue(instance.isJoinable(UUID.randomUUID()));
+
+        instance.setOnlinePlayers(13);
+        assertFalse(instance.isJoinable(UUID.randomUUID()));
+    }
+
+    @Test
+    void waitingGameDoesNotConsumeSpectatorReserve() {
+        ServerInstance instance = readyInstance(false);
+        instance.setSpectatorSlots(3);
+        instance.setOnlinePlayers(10);
+
+        assertFalse(instance.isJoinable(UUID.randomUUID()));
+    }
+
+    @Test
     void jsonRoundTripPreservesValidatedState() {
         UUID allowed = UUID.randomUUID();
         ServerInstance source = readyInstance(true);

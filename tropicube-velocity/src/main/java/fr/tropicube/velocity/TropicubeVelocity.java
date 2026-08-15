@@ -15,6 +15,7 @@ import fr.tropicube.velocity.listeners.NickListener;
 import fr.tropicube.velocity.listeners.PlayerConnectionListener;
 import fr.tropicube.velocity.listeners.ServerSwitchListener;
 import fr.tropicube.velocity.managers.NickManager;
+import fr.tropicube.velocity.managers.PartyCoordinator;
 import fr.tropicube.velocity.managers.TropiServerManager;
 import fr.tropicube.velocity.managers.QueueManager;
 import fr.tropicube.velocity.managers.VelocityLanguageManager;
@@ -52,6 +53,7 @@ public class TropicubeVelocity {
     private VelocityLanguageManager languageManager;
     private TropiServerManager tropiServerManager;
     private QueueManager queueManager;
+    private PartyCoordinator partyCoordinator;
     private NickManager nickManager;
     private final AtomicBoolean shuttingDown = new AtomicBoolean();
 
@@ -177,6 +179,7 @@ public class TropicubeVelocity {
         tropiServerManager = new TropiServerManager(server, dockerManager, redisManager, config, logger, languageManager);
         queueManager = new QueueManager(server, tropiServerManager, languageManager);
         tropiServerManager.initialize();
+        partyCoordinator = new PartyCoordinator(this, tropiServerManager, redisManager, languageManager, logger);
     }
 
     private void initNickManager() {
@@ -235,7 +238,7 @@ public class TropicubeVelocity {
 
     private void registerListeners() {
         server.getEventManager().register(this, new PlayerConnectionListener(this, tropiServerManager, redisManager, logger, languageManager));
-        server.getEventManager().register(this, new ServerSwitchListener(this, redisManager, nickManager, logger));
+        server.getEventManager().register(this, new ServerSwitchListener(this, redisManager, nickManager, partyCoordinator, logger));
         server.getEventManager().register(this, new NickListener(nickManager, logger));
         logger.info(MessageStyle.log("PROXY", "<gray>Listeners enregistrés."));
     }
@@ -250,6 +253,7 @@ public class TropicubeVelocity {
     public VelocityLanguageManager getLanguageManager() { return languageManager; }
     public TropiServerManager getTropiServerManager() { return tropiServerManager; }
     public QueueManager getQueueManager() { return queueManager; }
+    public PartyCoordinator getPartyCoordinator() { return partyCoordinator; }
     public NickManager getNickManager() { return nickManager; }
     public Path getDataDirectory() { return dataDirectory; }
 }

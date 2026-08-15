@@ -1,6 +1,8 @@
 package fr.tropicube.docker.client;
 
 import fr.tropicube.docker.model.ServerInstance;
+import fr.tropicube.docker.model.PartyMember;
+import fr.tropicube.docker.model.PartySnapshot;
 import redis.clients.jedis.ConnectionPoolConfig;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.JedisClientConfig;
@@ -74,6 +76,68 @@ public class RedisManager {
             end
             redis.call('SET', KEYS[1], ARGV[1], 'EX', ARGV[2])
             return 1
+            """;
+    private static final int PARTY_TTL_SECONDS = 86_400;
+    private static final String CREATE_PARTY_SCRIPT = """
+            local existing = redis.call('GET', KEYS[1])
+            if existing then return existing end
+            redis.call('SET', KEYS[1], ARGV[1], 'EX', ARGV[3])
+            redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[3])
+            redis.call('HSET', KEYS[3], ARGV[2], '1')
+            redis.call('EXPIRE', KEYS[3], ARGV[3])
+            return ARGV[1]
+            """;
+    private static final String INVITE_PARTY_SCRIPT = """
+            if redis.call('GET', KEYS[1]) ~= ARGV[1] then return 'NOT_LEADER' end
+            if redis.call('EXISTS', KEYS[2]) == 1 then return 'ALREADY_MEMBER' end
+            if redis.call('HLEN', KEYS[3]) >= tonumber(ARGV[3]) then return 'FULL' end
+            redis.call('HSET', KEYS[4], ARGV[1], ARGV[5])
+            redis.call('EXPIRE', KEYS[4], ARGV[4])
+            return 'OK'
+            """;
+    private static final String ACCEPT_PARTY_SCRIPT = """
+            local partyId = redis.call('HGET', KEYS[1], ARGV[1])
+            if not partyId then return 'NO_INVITE' end
+            if partyId ~= ARGV[5] then return 'EXPIRED' end
+            if redis.call('EXISTS', KEYS[2]) == 1 then return 'ALREADY_MEMBER' end
+            if redis.call('GET', KEYS[3]) ~= ARGV[1] then return 'EXPIRED' end
+            if redis.call('HLEN', KEYS[4]) >= tonumber(ARGV[3]) then return 'FULL' end
+            redis.call('HDEL', KEYS[1], ARGV[1])
+            redis.call('SET', KEYS[2], partyId, 'EX', ARGV[4])
+            redis.call('HSET', KEYS[4], ARGV[2], '1')
+            redis.call('EXPIRE', KEYS[3], ARGV[4])
+            redis.call('EXPIRE', KEYS[4], ARGV[4])
+            return partyId
+            """;
+    private static final String LEAVE_PARTY_SCRIPT = """
+            local partyId = redis.call('GET', KEYS[1])
+            if not partyId then return 'NOT_MEMBER' end
+            redis.call('DEL', KEYS[1])
+            redis.call('HDEL', KEYS[3], ARGV[1])
+            if redis.call('HLEN', KEYS[3]) == 0 then
+                redis.call('DEL', KEYS[2], KEYS[3])
+                return 'DISBANDED'
+            end
+            if redis.call('GET', KEYS[2]) == ARGV[1] then
+                local nextLeader = redis.call('HKEYS', KEYS[3])[1]
+                redis.call('SET', KEYS[2], nextLeader, 'EX', ARGV[2])
+                return 'PROMOTED:' .. nextLeader
+            end
+            return 'LEFT'
+            """;
+    private static final String KICK_PARTY_SCRIPT = """
+            if redis.call('GET', KEYS[1]) ~= ARGV[1] then return 'NOT_LEADER' end
+            if ARGV[1] == ARGV[2] then return 'SELF' end
+            if redis.call('HDEL', KEYS[2], ARGV[2]) == 0 then return 'NOT_MEMBER' end
+            redis.call('DEL', KEYS[3])
+            return 'OK'
+            """;
+    private static final String DISBAND_PARTY_SCRIPT = """
+            if redis.call('GET', KEYS[1]) ~= ARGV[1] then return 'NOT_LEADER' end
+            local members = redis.call('HKEYS', KEYS[2])
+            for _, member in ipairs(members) do redis.call('DEL', ARGV[2] .. member) end
+            redis.call('DEL', KEYS[1], KEYS[2])
+            return 'OK'
             """;
 
     // ── Connection settings ──────────────────────── ────────────────────────
@@ -339,6 +403,133 @@ public class RedisManager {
         requireText(playerUuid, "playerUuid");
         redis().del(KEY_PREFIX + "player:lang:" + playerUuid);
     }
+
+    // ===== PARTIES =====
+
+    /** Creates a party for the player if necessary and returns its identifier. */
+    public String createOrGetParty(UUID leaderId) {
+        Objects.requireNonNull(leaderId, "leaderId");
+        String generatedId = UUID.randomUUID().toString();
+        Object result = redis().eval(CREATE_PARTY_SCRIPT,
+                List.of(partyMemberKey(leaderId), partyLeaderKey(generatedId), partyMembersKey(generatedId)),
+                List.of(generatedId, leaderId.toString(), Integer.toString(PARTY_TTL_SECONDS)));
+        return String.valueOf(result);
+    }
+
+    /** Creates or refreshes an invitation after validating leader and party capacity. */
+    public String inviteToParty(UUID leaderId, UUID targetId, int maxSize, int ttlSeconds) {
+        Objects.requireNonNull(leaderId, "leaderId");
+        Objects.requireNonNull(targetId, "targetId");
+        if (maxSize < 2) throw new IllegalArgumentException("maxSize doit être au moins égal à 2");
+        if (ttlSeconds <= 0) throw new IllegalArgumentException("ttlSeconds doit être positif");
+        String partyId = createOrGetParty(leaderId);
+        Object result = redis().eval(INVITE_PARTY_SCRIPT,
+                List.of(partyLeaderKey(partyId), partyMemberKey(targetId), partyMembersKey(partyId), partyInvitesKey(targetId)),
+                List.of(leaderId.toString(), targetId.toString(), Integer.toString(maxSize),
+                        Integer.toString(ttlSeconds), partyId));
+        return String.valueOf(result);
+    }
+
+    /** Accepts the invitation sent by the named leader. The returned value is a result code or party id. */
+    public String acceptPartyInvite(UUID targetId, UUID leaderId, int maxSize) {
+        Objects.requireNonNull(targetId, "targetId");
+        Objects.requireNonNull(leaderId, "leaderId");
+        String partyId = getPartyId(leaderId);
+        if (partyId == null) return "EXPIRED";
+        Object result = redis().eval(ACCEPT_PARTY_SCRIPT,
+                List.of(partyInvitesKey(targetId), partyMemberKey(targetId), partyLeaderKey(partyId), partyMembersKey(partyId)),
+                List.of(leaderId.toString(), targetId.toString(), Integer.toString(maxSize),
+                        Integer.toString(PARTY_TTL_SECONDS), partyId));
+        return String.valueOf(result);
+    }
+
+    public void denyPartyInvite(UUID targetId, UUID leaderId) {
+        Objects.requireNonNull(targetId, "targetId");
+        Objects.requireNonNull(leaderId, "leaderId");
+        redis().hdel(partyInvitesKey(targetId), leaderId.toString());
+    }
+
+    public Map<UUID, String> getPartyInvites(UUID targetId) {
+        Objects.requireNonNull(targetId, "targetId");
+        Map<UUID, String> result = new LinkedHashMap<>();
+        redis().hgetAll(partyInvitesKey(targetId)).forEach((leader, party) -> {
+            try { result.put(UUID.fromString(leader), party); } catch (IllegalArgumentException ignored) { }
+        });
+        return Map.copyOf(result);
+    }
+
+    public String getPartyId(UUID playerId) {
+        Objects.requireNonNull(playerId, "playerId");
+        return redis().get(partyMemberKey(playerId));
+    }
+
+    public PartySnapshot getParty(UUID playerId) {
+        String partyId = getPartyId(playerId);
+        if (partyId == null) return null;
+        String leader = redis().get(partyLeaderKey(partyId));
+        Map<String, String> rawMembers = redis().hgetAll(partyMembersKey(partyId));
+        if (leader == null || rawMembers.isEmpty()) {
+            redis().del(partyMemberKey(playerId));
+            return null;
+        }
+        try {
+            List<PartyMember> members = rawMembers.entrySet().stream()
+                    .map(entry -> new PartyMember(UUID.fromString(entry.getKey()), "1".equals(entry.getValue())))
+                    .toList();
+            return new PartySnapshot(partyId, UUID.fromString(leader), members);
+        } catch (IllegalArgumentException exception) {
+            LOGGER.log(System.Logger.Level.WARNING, "Party Redis invalide : " + partyId, exception);
+            return null;
+        }
+    }
+
+    public boolean setPartyFollow(UUID playerId, boolean enabled) {
+        PartySnapshot party = getParty(playerId);
+        if (party == null) return false;
+        redis().hset(partyMembersKey(party.partyId()), playerId.toString(), enabled ? "1" : "0");
+        redis().expire(partyMembersKey(party.partyId()), PARTY_TTL_SECONDS);
+        return true;
+    }
+
+    public String leaveParty(UUID playerId) {
+        PartySnapshot party = getParty(playerId);
+        if (party == null) return "NOT_MEMBER";
+        Object result = redis().eval(LEAVE_PARTY_SCRIPT,
+                List.of(partyMemberKey(playerId), partyLeaderKey(party.partyId()), partyMembersKey(party.partyId())),
+                List.of(playerId.toString(), Integer.toString(PARTY_TTL_SECONDS)));
+        return String.valueOf(result);
+    }
+
+    public String kickPartyMember(UUID leaderId, UUID targetId) {
+        PartySnapshot party = getParty(leaderId);
+        if (party == null) return "NOT_MEMBER";
+        Object result = redis().eval(KICK_PARTY_SCRIPT,
+                List.of(partyLeaderKey(party.partyId()), partyMembersKey(party.partyId()), partyMemberKey(targetId)),
+                List.of(leaderId.toString(), targetId.toString()));
+        return String.valueOf(result);
+    }
+
+    public boolean promotePartyMember(UUID leaderId, UUID targetId) {
+        PartySnapshot party = getParty(leaderId);
+        if (party == null || !party.isLeader(leaderId)
+                || party.members().stream().noneMatch(member -> member.playerId().equals(targetId))) return false;
+        redis().set(partyLeaderKey(party.partyId()), targetId.toString(), SetParams.setParams().ex(PARTY_TTL_SECONDS));
+        return true;
+    }
+
+    public boolean disbandParty(UUID leaderId) {
+        PartySnapshot party = getParty(leaderId);
+        if (party == null) return false;
+        Object result = redis().eval(DISBAND_PARTY_SCRIPT,
+                List.of(partyLeaderKey(party.partyId()), partyMembersKey(party.partyId())),
+                List.of(leaderId.toString(), KEY_PREFIX + "party:member:"));
+        return "OK".equals(String.valueOf(result));
+    }
+
+    private static String partyMemberKey(UUID playerId) { return KEY_PREFIX + "party:member:" + playerId; }
+    private static String partyLeaderKey(String partyId) { return KEY_PREFIX + "party:" + partyId + ":leader"; }
+    private static String partyMembersKey(String partyId) { return KEY_PREFIX + "party:" + partyId + ":members"; }
+    private static String partyInvitesKey(UUID playerId) { return KEY_PREFIX + "party:invites:" + playerId; }
 
     // ===== PUB/SUB =====
 

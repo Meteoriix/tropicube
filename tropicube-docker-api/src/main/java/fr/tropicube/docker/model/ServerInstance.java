@@ -114,6 +114,9 @@ public class ServerInstance {
      */
     private int maxPlayers;
 
+    /** Additional backend slots usable once the game has started. */
+    private int spectatorSlots;
+
     /**
      * Current state of the server lifecycle.
      */
@@ -189,7 +192,8 @@ public class ServerInstance {
     }
 
     private boolean hasCapacity() {
-        return onlinePlayers >= 0 && maxPlayers > 0 && onlinePlayers < maxPlayers;
+        int capacity = status == Status.GAME_PLAYING ? getConnectionCapacity() : maxPlayers;
+        return onlinePlayers >= 0 && maxPlayers > 0 && onlinePlayers < capacity;
     }
 
     /**
@@ -309,6 +313,20 @@ public class ServerInstance {
         this.maxPlayers = maxPlayers;
     }
 
+    public int getSpectatorSlots() {
+        return spectatorSlots;
+    }
+
+    public void setSpectatorSlots(int spectatorSlots) {
+        if (spectatorSlots < 0) throw new IllegalArgumentException("spectatorSlots ne peut pas être négatif");
+        this.spectatorSlots = spectatorSlots;
+    }
+
+    /** Returns the physical backend capacity including spectator-only slots. */
+    public int getConnectionCapacity() {
+        return Math.addExact(maxPlayers, spectatorSlots);
+    }
+
     public Status getStatus() {
         return status;
     }
@@ -373,6 +391,7 @@ public class ServerInstance {
         requireNonBlank(serverType, "serverType");
         if (onlinePlayers < 0) throw new IllegalArgumentException("onlinePlayers ne peut pas être négatif");
         if (maxPlayers <= 0) throw new IllegalArgumentException("maxPlayers doit être strictement positif");
+        if (spectatorSlots < 0) throw new IllegalArgumentException("spectatorSlots ne peut pas être négatif");
         if (rconPort != 0) requirePort(rconPort, "rconPort");
         whitelistedPlayers = copyWhitelist(whitelistedPlayers);
     }

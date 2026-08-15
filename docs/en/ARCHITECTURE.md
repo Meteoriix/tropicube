@@ -52,6 +52,9 @@ Sheep distribution uses an immutable effective-weight table followed by an indep
 |---|---|---|---|
 | `instance:<id>` | Velocity / game backend | Velocity, Lobby, games | Serialized instance snapshot, including privacy and admitted UUIDs; refreshed 24-hour TTL |
 | `player:server:<uuid>` | Velocity | Core, Lobby, commands | Current instance assignment |
+| `party:member:<uuid>` | Core | Core, Velocity, Lobby | Player-to-party index with a 24-hour TTL |
+| `party:<id>:leader` / `party:<id>:members` | Core | Core, Velocity, Lobby | Leader and atomic `uuid -> follow` membership hash, with a 24-hour TTL |
+| `party:invites:<uuid>` | Core | Core, Lobby | Invitations indexed by leader UUID with configured TTL |
 | `player:grade:<uuid>` | Core | Velocity | Current network grade, 24-hour TTL |
 | `player:language:<uuid>` | Core | Velocity | Current interface language |
 | `nick:<uuid>` | Velocity | Core and games | Nickname, signed skin, persistent fake display grade; 24-hour TTL |
@@ -70,11 +73,13 @@ SheepWars consumes `NICK_APPLY`, `NICK_RESET`, `NICK_CLEAR`, `GRADE_LOADED`, and
 
 Redis subscriber callbacks must not mutate Bukkit state. Paper plugins always schedule entity, inventory, world, and profile changes back onto the server scheduler.
 
+Friendships are durable MySQL pairs. Core checks that relation before publishing `PROXY:FRIEND_JOIN`; Velocity then revalidates both players, the target instance, whitelist, state, and capacity. A `GAME_PLAYING` SheepWars arrival becomes a spectator. Party transfer requests use the same proxy boundary and include only online members whose individual `follow` flag is enabled. Lobby exposes these actions through a Social hotbar menu loaded outside the Paper thread.
+
 Velocity is the only whitelist writer. Both `/whitelist` and the SheepWars GUI reach the same ownership-checked mutation. Lobby snapshots are filtered before counts, pagination, best-server selection, and final clicks, while `ServerPreConnectEvent` independently enforces the boundary so hidden instances cannot be reached by a stale menu or direct command.
 
 ## Persistence
 
-MySQL stores durable profiles, grades, permissions, balances, moderation history, and SheepWars preferences. Redis accelerates reads and coordinates ephemeral network state. Any SQL schema change requires a compatible migration and suitable indexes; any Redis contract change must document its key, TTL, atomicity, and consumers.
+MySQL stores durable profiles, friendships, grades, permissions, balances, moderation history, and SheepWars preferences. Redis accelerates reads and coordinates ephemeral network state. Any SQL schema change requires a compatible migration and suitable indexes; any Redis contract change must document its key, TTL, atomicity, and consumers.
 
 ## Shutdown
 

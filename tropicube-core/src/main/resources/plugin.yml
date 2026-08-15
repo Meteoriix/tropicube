@@ -59,6 +59,17 @@ commands:
   help:
     description: "Affiche les commandes Tropicube disponibles"
     usage: /help [general|games|profile|staff]
+  friend:
+    description: "Gérer ses amis Tropicube"
+    usage: /friend <add|accept|deny|remove|list|requests|join> ...
+    aliases: [ friends, ami, amis ]
+  party:
+    description: "Gérer son groupe Tropicube"
+    usage: /party <invite|accept|deny|list|leave|kick|promote|follow|warp|chat> ...
+    aliases: [ groupe ]
+  pc:
+    description: "Écrire dans le chat de groupe"
+    usage: /pc <message>
 
 permissions:
   tropicube.admin:

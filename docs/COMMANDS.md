@@ -16,6 +16,14 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 | `/rank set <joueur> <grade>` | `/grade` | `tropicube.grade.admin` | Attribue un grade existant |
 | `/lang [fr|en|es|de]` | `/language`, `/langue` | aucune | Affiche ou change la langue |
 | `/help [general|games|profile|staff]` | — | aucune ; catégorie staff réservée au personnel | Résume les commandes disponibles par catégorie |
+| `/friend add|accept|deny|remove <joueur>` | — | aucune | Gère les relations d'amitié persistantes |
+| `/friend list|requests` | — | aucune | Liste les amis ou les demandes reçues |
+| `/friend join <joueur>` | — | aucune | Rejoint l'instance d'un ami ; devient spectateur si la partie a commencé |
+| `/party invite|accept|deny <joueur>` | — | aucune | Crée ou rejoint une party réseau |
+| `/party list|leave|kick|promote|disband` | — | aucune | Consulte ou administre la party ; certaines actions sont réservées au chef |
+| `/party follow on|off` | — | aucune | Active ou désactive le suivi personnel du chef |
+| `/party warp` | `/party tp` | aucune | Le chef transfère vers son serveur tous les membres dont le suivi est actif |
+| `/party chat <message>` | `/pc <message>` | aucune | Envoie un message à la party |
 | `/mute <joueur> <durée> [raison]` | — | `tropicube.mute` | Met un joueur en sourdine |
 | `/unmute <joueur>` | — | `tropicube.mute` | Lève la sourdine |
 | `/kick <joueur> [raison]` | — | `tropicube.kick` | Expulse et journalise l'action |
@@ -25,6 +33,8 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 | `/coreadmin info` | `/tropiadmin`, `/ca` | `tropicube.admin` | Affiche l'état des services Core |
 
 Durées acceptées : une valeur comprise par `DurationParser`, par exemple `30s`, `10m`, `2h`, `7d`. Une permission sans durée est permanente.
+
+Les amis sont persistants en MySQL. Une party est temporaire dans Redis, limitée par la configuration Core et créée lors de la première invitation. Le suivi est activé par défaut à l'entrée, puis reste un choix individuel. Les transferts sociaux respectent la whitelist et la capacité de l'instance cible.
 
 ### Gestion détaillée des permissions
 

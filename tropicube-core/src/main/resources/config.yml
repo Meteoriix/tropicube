@@ -24,6 +24,16 @@ economy:
   min-transfer: 1.0
   max-transfer: 1000000.0
 
+# Network-wide social features. Friendships are persistent in MySQL while
+# parties and their short-lived invitations are stored in Redis.
+social:
+  friends:
+    max-count: 100
+    request-expiry-days: 30
+  party:
+    max-size: 8
+    invite-expiry-seconds: 60
+
 language:
   default: "fr"
 

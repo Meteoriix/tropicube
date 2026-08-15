@@ -30,6 +30,13 @@ Velocity validates `/whitelist`: the sender must own an active private custom ga
 | `/tropiperm ...` | permission administration | Manages individual and grade permissions |
 | `/lang [fr|en|de|es]` | none | Reads or changes the persistent language |
 | `/help [general|games|profile|staff]` | none; staff section is restricted | Summarizes available commands by category |
+| `/friend add|accept|deny|remove <player>` | none | Manages persistent friendships |
+| `/friend list|requests|join <player>` | none | Lists social state or joins a friend's current game, as spectator after start |
+| `/party invite|accept|deny <player>` | none | Creates or joins a network party |
+| `/party list|leave|kick|promote|disband` | none | Reads or administers party membership |
+| `/party follow on|off` | none | Controls whether this member follows the leader |
+| `/party warp` (`/party tp`) | party leader | Moves every online, follow-enabled member to the leader's server |
+| `/party chat <message>` (`/pc`) | none | Sends a party-only message |
 | `/mute`, `/unmute`, `/kick`, `/warn`, `/history` | moderation permissions | Performs and audits moderation actions |
 | `/coreadmin reload` | Core administration | Reloads supported Core configuration (`/tropiadmin` remains an alias) |
 

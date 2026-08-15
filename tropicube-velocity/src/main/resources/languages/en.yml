@@ -114,3 +114,11 @@ proxy:
   nick-skin-error: "<tc><red>Could not fetch a skin right now. Please try again."
   nick-already-fetching: "<tc><yellow>A nick is already being generated."
   nick-usage: "<tc><yellow>Usage: <white>/nick <gray>or <white>/nick off"
+
+social:
+  friend-join-unavailable: "<tc><red>This friend's game is no longer available."
+  friend-join-connecting: "<tc><green>Connecting to <white>{0}</white>'s game…"
+  friend-join-spectator: "<tc><yellow>The game has already started: you are joining <white>{0}</white> as a spectator."
+  transfer-unavailable: "<tc><red>The destination server is no longer available."
+  party-warp-full: "<tc><red>There are not enough slots to gather the party."
+  party-following: "<tc><gray>You are following leader <white>{0}</white>."

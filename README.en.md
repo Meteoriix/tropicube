@@ -10,8 +10,8 @@ Tropicube is a modular Minecraft 26.2 network built around Velocity, dynamically
 |---|---|
 | `tropicube-docker-api` | Shared server models plus Docker and Redis access |
 | `tropicube-velocity` | Proxy routing, queues, dynamic instance lifecycle, and `/nick` |
-| `tropicube-core` | Player data, economy, grades, permissions, languages, and moderation |
-| `tropicube-lobby` | Lobby menus, server selection, language selection, and custom games |
+| `tropicube-core` | Player data, economy, grades, permissions, languages, moderation, friends, and parties |
+| `tropicube-lobby` | Lobby menus, server selection, Social menu, language selection, and custom games |
 | `tropicube-sheepwars` | Complete SheepWars minigame |
 | `tropicube-fallenkingdoms` | Reserved module for the future Fallen Kingdoms implementation |
 
