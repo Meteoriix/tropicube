@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.random.RandomGenerator;
 
 /**
- * Weighted pickaxe specific to a player. The configured tokens are consumed without
- * discount in order to smooth the distribution. As long as the weighting allows it, the
- * next choice preserves the possibility of completing the bag without repetition.
+ * Weighted draw deck specific to a player. Configured tokens are consumed without
+ * replacement to preserve exact proportions over a complete cycle. When no type exceeds
+ * half of the total weight, consecutive repetitions are avoided, including across refills.
  */
 final class SheepDrawDeck {
 

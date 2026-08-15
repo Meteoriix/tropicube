@@ -245,7 +245,7 @@ sw:
   settings-drop-rates-name: "Taux d'apparition"
   settings-drop-rates-lore: "Modifier les poids d'apparition de chaque mouton"
   settings-drop-rates-title: "Taux d'apparition des moutons"
-  settings-weight-label: "Poids : {0}"
+  settings-weight-label: "Poids : {0} ({1} %)"
   # Scoreboard
   sb-waiting: "<yellow>En attente..."
   sb-starting: "<yellow>Début dans <green>{0}s"

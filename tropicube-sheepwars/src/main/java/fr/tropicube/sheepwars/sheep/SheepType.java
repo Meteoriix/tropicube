@@ -22,7 +22,7 @@ public enum SheepType {
     SEARCHING("Tête Chercheuse", DyeColor.LIME, NamedTextColor.GREEN, "searching",
             "Poursuit le joueur le plus proche du point d'impact"),
     HEALING("Soin", DyeColor.PINK, NamedTextColor.LIGHT_PURPLE, "healing",
-            "Soigne le lanceur et ses alliés dans un rayon de 5 blocs"),
+            "Soigne les alliés dans un rayon de 5 blocs"),
     LIGHTNING("Foudre", DyeColor.LIGHT_BLUE, NamedTextColor.AQUA, "lightning",
             "Frappe la cible et enchaîne sur 3 joueurs proches"),
     GRAVITY("Gravité", DyeColor.MAGENTA, NamedTextColor.LIGHT_PURPLE, "gravity",
@@ -34,7 +34,7 @@ public enum SheepType {
     POISON("Poison", DyeColor.GREEN, NamedTextColor.DARK_GREEN, "poison",
             "Pose une zone de poison comme un cocktail molotov"),
     FRAGMENTATION("Fragmentation", DyeColor.BLACK, NamedTextColor.DARK_GRAY, "fragmentation",
-            "Explose en 5 bébés moutons qui font de petites explosions");
+            "Explose en 4 bébés moutons qui font de petites explosions");
 
     private final String displayName;
     private final DyeColor wool;

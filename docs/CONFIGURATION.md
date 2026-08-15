@@ -145,7 +145,7 @@ Fichier : `dockerfiles/configs/TropicubeSheepwars/config.yml`.
 - `default-settings.auto-start` vaut `true` par défaut pour les parties classiques et lance le compte à rebours dès que `min-players` est atteint ;
 - `custom-game-default-settings.auto-start` vaut `false` par défaut et remplace cette valeur à l'initialisation d'une instance possédant un `HOST_UUID` ; l'hôte peut ensuite la modifier pour la partie courante ;
 - `CUSTOM_GAME_PRIVATE`, injecté automatiquement par Velocity avec `HOST_UUID`, indique au backend si l'item de whitelist doit être remis à l'hôte ; cette variable interne ne doit pas être configurée manuellement dans le template ;
-- `sheep-probabilities` contient des poids relatifs, pas nécessairement un total de 100 ; ils alimentent une pioche indépendante par joueur qui évite deux types identiques consécutifs lorsque la pondération le permet ;
+- `sheep-probabilities` contient des poids relatifs, pas nécessairement un total de 100 ; les valeurs par défaut totalisent 100 et privilégient TNT/Soin à 10 %, Force à 9 %, Abordage/Feu/Foudre à 8 %, Recherche/Échange à 7 %, Ténèbres/Poison/Fragmentation à 6 %, Gravité à 5 %, Météore à 4 % et Distorsion/Mécha à 3 % ;
 - `gameplay-balance.global` configure le stock maximal, la compensation de sous-effectif, le délai d'armement et les PV des moutons destructibles ;
 - `gameplay-balance.kits` configure les multiplicateurs, points de vie, résistances et temporisations des kits ;
 - `gameplay-balance.sheep` regroupe par type les dégâts, rayons, durées, puissances de destruction, nombres de cibles et plafonds. Les durées nommées `*-seconds` sont exprimées en secondes, les périodes `*-ticks` en ticks et les dégâts/soins en PV ;
@@ -153,7 +153,7 @@ Fichier : `dockerfiles/configs/TropicubeSheepwars/config.yml`.
 - `locations` décrit le lobby, la limite du vide et les cartes activées ;
 - chaque carte doit fournir des points d'apparition utilisables pour les équipes rouge et bleue.
 
-Si tous les poids activés valent zéro, le gestionnaire sélectionne un type de repli afin de conserver une distribution valide.
+Les types désactivés sont exclus avant normalisation. Le menu affiche le pourcentage effectif, reconstruit immédiatement les pioches après une modification et interdit de ramener à zéro le dernier poids actif. Si tous les poids activés proviennent néanmoins d'une configuration externe à zéro, le premier type actif devient le secours visible à 100 %. Une configuration qui désactive tous les types est réparée au chargement en réactivant TNT avec un avertissement.
 
 La section `gameplay-balance` est validée au démarrage. Une valeur manquante, non numérique, négative, ou nulle lorsqu'un rayon, une durée ou une cadence doit être strictement positif empêche le plugin de démarrer avec un message indiquant la clé fautive. `ConfigUpdater` complète les anciennes configurations avant cette validation.
 

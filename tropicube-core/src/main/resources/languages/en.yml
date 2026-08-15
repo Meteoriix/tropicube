@@ -256,7 +256,7 @@ sw:
   settings-drop-rates-name: "Drop Rates"
   settings-drop-rates-lore: "Adjust the spawn weight of each sheep type"
   settings-drop-rates-title: "Sheep Drop Rates"
-  settings-weight-label: "Weight: {0}"
+  settings-weight-label: "Weight: {0} ({1}%)"
   # Scoreboard
   sb-waiting: "<yellow>Waiting..."
   sb-starting: "<yellow>Starting in <green>{0}s"

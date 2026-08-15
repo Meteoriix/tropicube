@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -51,6 +52,14 @@ class GameCatalogTest {
         int totalWeight = catalogKeys.stream().mapToInt(weights::getInt).sum();
         assertEquals(100, totalWeight, "Les probabilités par défaut doivent totaliser 100");
         assertTrue(catalogKeys.stream().allMatch(key -> weights.getInt(key) > 0));
+
+        Map<String, Integer> expectedWeights = Map.ofEntries(
+                Map.entry("boarding", 8), Map.entry("tnt", 10), Map.entry("distort", 3),
+                Map.entry("darkness", 6), Map.entry("searching", 7), Map.entry("fire", 8),
+                Map.entry("poison", 6), Map.entry("swap", 7), Map.entry("meteor", 4),
+                Map.entry("healing", 10), Map.entry("lightning", 8), Map.entry("gravity", 5),
+                Map.entry("mecha", 3), Map.entry("strength", 9), Map.entry("fragmentation", 6));
+        expectedWeights.forEach((key, expected) -> assertEquals(expected, weights.getInt(key), key));
     }
 
     @Test

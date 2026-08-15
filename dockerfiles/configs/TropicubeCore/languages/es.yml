@@ -229,7 +229,7 @@ sw:
   settings-drop-rates-name: "Tasas de aparición"
   settings-drop-rates-lore: "Ajusta el peso de aparición de cada oveja"
   settings-drop-rates-title: "Tasas de aparición de ovejas"
-  settings-weight-label: "Peso: {0}"
+  settings-weight-label: "Peso: {0} ({1} %)"
   sb-waiting: "<yellow>En espera..."
   sb-starting: "<yellow>Comienza en <green>{0}s"
   sb-players: "<gray>Jugadores: <white>{0}"

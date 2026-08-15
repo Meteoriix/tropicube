@@ -85,6 +85,14 @@ public class GameSettingsMenu implements Listener {
             try { disabledKits.add(PlayerKit.valueOf(s.trim().toUpperCase(Locale.ROOT))); } catch (IllegalArgumentException ignored) {}
         for (String s : plugin.getConfig().getStringList("force-settings.classes-disabled"))
             try { disabledClasses.add(PlayerClass.valueOf(s.trim().toUpperCase(Locale.ROOT))); } catch (IllegalArgumentException ignored) {}
+        if (disabledSheep.size() == SheepType.values().length) {
+            disabledSheep.remove(SheepType.TNT);
+            plugin.getConfig().set("force-settings.sheep-disabled",
+                    disabledSheep.stream().map(Enum::name).toList());
+            plugin.saveConfig();
+            plugin.getLogger().warning(
+                    "Tous les moutons étaient désactivés ; TNT a été réactivé pour garantir une distribution valide.");
+        }
     }
 
     private void save() {
@@ -327,7 +335,8 @@ public class GameSettingsMenu implements Listener {
     private ItemStack dropRatesItem(Player player, SheepType type) {
         boolean enabled = isSheepEnabled(type);
         Material mat = enabled ? Material.valueOf(type.getWool().name() + "_WOOL") : Material.GRAY_WOOL;
-        int weight = plugin.getConfig().getInt("default-settings.sheep-probabilities." + type.getConfigKey(), 10);
+        int weight = plugin.getSheepManager().getEffectiveWeight(type);
+        double percentage = plugin.getSheepManager().getEffectivePercentage(type);
         Component name = enabled
                 ? Component.text(type.getDisplayName(), type.getTextColor()).decoration(TextDecoration.ITALIC, false)
                 : Component.text(type.getDisplayName(), NamedTextColor.DARK_GRAY)
@@ -339,7 +348,8 @@ public class GameSettingsMenu implements Listener {
                     Component.text(type.getDescription(), NamedTextColor.GRAY)
                             .decoration(TextDecoration.ITALIC, false),
                     Component.empty(),
-                    Component.text(LangHelper.get(player, "sw.settings-weight-label", weight), NamedTextColor.YELLOW)
+                    Component.text(LangHelper.get(player, "sw.settings-weight-label", weight,
+                                    String.format(Locale.ROOT, "%.1f", percentage)), NamedTextColor.YELLOW)
                             .decoration(TextDecoration.ITALIC, false)
                 )
                 .noTooltip().build();
@@ -542,7 +552,7 @@ public class GameSettingsMenu implements Listener {
                     disabledSheep.remove(types[i]);
                 } else {
                     long enabledCount = Arrays.stream(types).filter(this::isSheepEnabled).count();
-                    if (enabledCount <= 1) return;
+                    if (enabledCount <= 1 || enabledConfiguredWeightExcluding(types[i]) == 0) return;
                     disabledSheep.add(types[i]);
                 }
                 save();
@@ -569,15 +579,30 @@ public class GameSettingsMenu implements Listener {
 
         SheepType type = types[sheepIndex];
         String cfgKey = "default-settings.sheep-probabilities." + type.getConfigKey();
-        int current = plugin.getConfig().getInt(cfgKey, 10);
+        int current = Math.clamp(plugin.getConfig().getInt(cfgKey, 0), 0, 99);
         int delta = click.isRightClick() ? 5 : 1;
 
-        if (colInGroup == 0) plugin.getConfig().set(cfgKey, Math.max(0, current - delta));
-        else                 plugin.getConfig().set(cfgKey, Math.min(99, current + delta));
+        if (colInGroup == 0) {
+            int next = Math.max(0, current - delta);
+            if (isSheepEnabled(type) && next == 0 && enabledConfiguredWeightExcluding(type) == 0) next = 1;
+            plugin.getConfig().set(cfgKey, next);
+        } else {
+            plugin.getConfig().set(cfgKey, Math.min(99, current + delta));
+        }
 
         plugin.saveConfig();
         plugin.getSheepManager().buildWeightCache();
         openDropRatesPage(player);
+    }
+
+    private int enabledConfiguredWeightExcluding(SheepType excluded) {
+        int total = 0;
+        for (SheepType type : SheepType.values()) {
+            if (type == excluded || !isSheepEnabled(type)) continue;
+            total += Math.clamp(plugin.getConfig().getInt(
+                    "default-settings.sheep-probabilities." + type.getConfigKey(), 0), 0, 99);
+        }
+        return total;
     }
 
     private void handleKitsClick(Player player, int slot) {

@@ -64,7 +64,19 @@ L'hôte peut désactiver des classes ou des kits. Le mode « kits aléatoires »
 | Force | Augmente de 20 % les dégâts des alliés présents dans l'aura pendant 7 secondes |
 | Fragmentation | Libère quatre charges et plafonne les dégâts cumulés à 8 PV par cible |
 
-Chaque type possède une probabilité configurable dans `default-settings.sheep-probabilities`. Chaque joueur utilise sa propre pioche pondérée : les poids restent respectés sur la durée et deux distributions consécutives ne donnent pas le même type lorsque la pondération le permet. Les types peuvent également être désactivés via `force-settings.sheep-disabled` ou depuis le menu de l'hôte.
+Chaque type possède une probabilité configurable dans `default-settings.sheep-probabilities`. La distribution standard utilise les pourcentages suivants :
+
+| Mouton | Pourcentage | Mouton | Pourcentage | Mouton | Pourcentage |
+|---|---:|---|---:|---|---:|
+| TNT | 10 % | Soin | 10 % | Force | 9 % |
+| Abordage | 8 % | Feu | 8 % | Foudre | 8 % |
+| Tête chercheuse | 7 % | Échange | 7 % | Ténébreux | 6 % |
+| Poison | 6 % | Fragmentation | 6 % | Gravité | 5 % |
+| Météore | 4 % | Distortion | 3 % | Mécha | 3 % |
+
+Chaque joueur utilise sa propre pioche pondérée : chaque cycle consomme exactement les jetons correspondant aux poids, et deux distributions consécutives ne donnent jamais le même type tant qu'aucun type actif ne dépasse 50 % du poids total. Au-delà de 50 %, quelques répétitions sont mathématiquement inévitables, mais la pioche les évite chaque fois qu'un autre jeton reste disponible.
+
+Les types désactivés ont toujours une probabilité effective de 0 % et les autres poids sont automatiquement renormalisés. Le menu affiche à la fois le poids brut et le pourcentage effectif. Il empêche de mettre à zéro le dernier poids actif et de désactiver le dernier type. Si une configuration externe fournit malgré tout uniquement des poids nuls, le premier type actif devient explicitement le secours à 100 %. Si elle désactive tous les types, TNT est réactivé au chargement avec un avertissement.
 
 Les explosions de moutons utilisent un calcul linéaire propre à SheepWars pour les dégâts joueurs. L'explosion Minecraft reste responsable des effets visuels et, selon le type, de la destruction des blocs ; ses dégâts natifs sur les joueurs sont annulés afin d'éviter leur cumul avec les dégâts configurés et de préserver l'absence de tir allié.
 

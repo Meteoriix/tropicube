@@ -65,8 +65,7 @@ public class SheepManager {
     private int customSheepDamageDepth;
 
     /** Weights cached and recalculated by {@link #buildWeightCache()}. */
-    private EnumMap<SheepType, Integer> sheepWeights;
-    private int sheepWeightTotal;
+    private SheepWeightTable sheepWeightTable;
 
     /** Independent draw per player to avoid individual series. */
     private final Map<UUID, SheepDrawDeck> playerDrawDecks = new HashMap<>();
@@ -103,27 +102,29 @@ public class SheepManager {
 
     /** Rebuilds the cached weight table from config (call after /reload or on game start). */
     public void buildWeightCache() {
-        sheepWeights = new EnumMap<>(SheepType.class);
-        sheepWeightTotal = 0;
+        EnumMap<SheepType, Integer> configuredWeights = new EnumMap<>(SheepType.class);
+        EnumSet<SheepType> enabledTypes = EnumSet.noneOf(SheepType.class);
         for (SheepType type : SheepType.values()) {
-            int weight = Math.max(0,
-                    plugin.getConfig().getInt("default-settings.sheep-probabilities." + type.getConfigKey(), 10));
-            if (plugin.getGameSettingsMenu() != null && !plugin.getGameSettingsMenu().isSheepEnabled(type))
-                weight = 0;
-            sheepWeights.put(type, weight);
-            sheepWeightTotal += weight;
+            configuredWeights.put(type, plugin.getConfig().getInt(
+                    "default-settings.sheep-probabilities." + type.getConfigKey(), 0));
+            if (plugin.getGameSettingsMenu() == null || plugin.getGameSettingsMenu().isSheepEnabled(type)) {
+                enabledTypes.add(type);
+            }
         }
-        // Guarantees valid distribution even if all configuration is disabled.
-        if (sheepWeightTotal == 0) {
-            SheepType fallback = Arrays.stream(SheepType.values())
-                    .filter(type -> plugin.getGameSettingsMenu() == null
-                            || plugin.getGameSettingsMenu().isSheepEnabled(type))
-                    .findFirst()
-                    .orElse(SheepType.TNT);
-            sheepWeights.put(fallback, 1);
-            sheepWeightTotal = 1;
+        sheepWeightTable = SheepWeightTable.create(configuredWeights, enabledTypes);
+        if (sheepWeightTable.fallback() != null) {
+            plugin.getLogger().warning("Tous les poids de moutons actifs valent zéro : "
+                    + sheepWeightTable.fallback().name() + " devient le type de secours à 100 %.");
         }
         playerDrawDecks.clear();
+    }
+
+    public int getEffectiveWeight(SheepType type) {
+        return sheepWeightTable.weight(type);
+    }
+
+    public double getEffectivePercentage(SheepType type) {
+        return sheepWeightTable.percentage(type);
     }
 
     public AbstractSheep getHandler(SheepType type) {
@@ -217,7 +218,7 @@ public class SheepManager {
 
     public SheepType randomSheepType(UUID playerId) {
         return playerDrawDecks.computeIfAbsent(playerId,
-                _ -> new SheepDrawDeck(sheepWeights, ThreadLocalRandom.current())).next();
+                _ -> new SheepDrawDeck(sheepWeightTable.weights(), ThreadLocalRandom.current())).next();
     }
 
     // ── Sheep lifecycle ────────────────────────────────────────────────────

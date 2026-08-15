@@ -229,7 +229,7 @@ sw:
   settings-drop-rates-name: "Erscheinungsraten"
   settings-drop-rates-lore: "Gewichtung jedes Schafstyps anpassen"
   settings-drop-rates-title: "Erscheinungsraten der Schafe"
-  settings-weight-label: "Gewicht: {0}"
+  settings-weight-label: "Gewicht: {0} ({1} %)"
   sb-waiting: "<yellow>Warten..."
   sb-starting: "<yellow>Startet in <green>{0}s"
   sb-players: "<gray>Spieler: <white>{0}"

@@ -113,7 +113,7 @@ Une instance SheepWars suit les phases attente, sélection, compte à rebours, j
 - les règles forcées ou personnalisées ;
 - l'item et les inventaires de whitelist de l'hôte privé, dont les lectures Redis sont exécutées hors du thread Paper ;
 - les scores et statistiques persistantes ;
-- les moutons spéciaux issus d'une pioche pondérée indépendante par joueur, sans répétition consécutive lorsque les poids actifs le permettent ;
+- les moutons spéciaux issus d'une table de poids immuable filtrant les types désactivés, puis d'une pioche pondérée indépendante par joueur qui consomme exactement ses jetons et évite les répétitions consécutives lorsque les poids actifs le permettent ;
 - le retour au lobby et la proposition de revanche.
 
 Les types inclus sont Boarding, TNT, Distort, Darkness, Searching, Fire, Poison, Swap, Meteor, Healing, Lightning, Gravity, Mecha, Strength et Fragmentation.

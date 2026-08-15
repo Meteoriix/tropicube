@@ -22,20 +22,20 @@ default-settings:
   map-vote-enabled: true
   # Relative spawn weights of special sheep
   sheep-probabilities:
-    boarding: 7
-    tnt: 9
-    distort: 4
+    boarding: 8
+    tnt: 10
+    distort: 3
     darkness: 6
     searching: 7
     fire: 8
     poison: 6
-    swap: 6
-    meteor: 5
-    healing: 9
+    swap: 7
+    meteor: 4
+    healing: 10
     lightning: 8
     gravity: 5
-    mecha: 4
-    strength: 10
+    mecha: 3
+    strength: 9
     fragmentation: 6
 
 custom-game-default-settings:
