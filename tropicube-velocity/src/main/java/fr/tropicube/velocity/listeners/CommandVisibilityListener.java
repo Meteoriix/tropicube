@@ -6,12 +6,27 @@ import com.velocitypowered.api.event.command.PlayerAvailableCommandsEvent;
 import com.velocitypowered.api.proxy.Player;
 
 import java.util.Locale;
+import java.util.Set;
 
-/** Hides the proxy command tree and rejects namespaced Bukkit/vanilla escape hatches. */
+/** Publishes only Tropicube commands and rejects namespaced Bukkit/vanilla escape hatches. */
 public final class CommandVisibilityListener {
+    private static final Set<String> TROPICUBE_COMMANDS = Set.of(
+            "money", "balance", "eco", "rank", "grade", "lang", "language", "langue",
+            "mute", "unmute", "kick", "warn", "history", "permissions", "tropiperm",
+            "coreadmin", "tropiadmin", "ca", "help", "friend", "friends", "ami", "amis",
+            "party", "groupe", "pc", "spawn", "play", "servers", "sv", "languages",
+            "vip", "boutique", "shop", "fly", "flymode", "fm", "replay", "playnext",
+            "playagain", "rejouer", "replayconfirm", "rejoin", "tropicube", "tropi", "cm",
+            "server", "lobby", "hub", "send", "pull", "find", "nick", "queue", "file",
+            "whitelist");
+
     @Subscribe
     public void onAvailableCommands(PlayerAvailableCommandsEvent event) {
-        event.getRootNode().getChildren().clear();
+        event.getRootNode().getChildren().removeIf(child -> !isVisible(child.getName()));
+    }
+
+    static boolean isVisible(String command) {
+        return command != null && TROPICUBE_COMMANDS.contains(command.toLowerCase(Locale.ROOT));
     }
 
     @Subscribe

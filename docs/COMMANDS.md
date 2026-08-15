@@ -78,7 +78,7 @@ Permissions fonctionnelles du lobby :
 
 Les grades Core accordent déjà les permissions adaptées : VIP obtient un saut, VIP+ deux, Premium et le personnel des sauts illimités.
 
-La liste complète des commandes n'est pas envoyée au client. `/?`, les espaces de noms `bukkit:` et `minecraft:` ainsi que les commandes vanilla sont refusés sur l'ensemble du réseau.
+Après la saisie de `/`, le client reçoit uniquement les commandes et alias fournis par l'infrastructure Tropicube. Les commandes externes et leurs espaces de noms restent masqués ; `/?`, les espaces de noms `bukkit:` et `minecraft:` ainsi que les commandes vanilla sont refusés sur l'ensemble du réseau.
 
 ## TropicubeSheepwars — Paper
 

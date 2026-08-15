@@ -15,7 +15,8 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Changed
 
-- Command discovery and Bukkit/vanilla commands are blocked network-wide; protected container interfaces are disabled and `/money` is personal-only.
+- The Settings menu Language button now reuses HeadDatabase head 71786, the hotbar Settings button uses head 89489, and slash completion publishes only Tropicube commands.
+- Non-Tropicube command discovery and Bukkit/vanilla commands are blocked network-wide; protected container interfaces are disabled and `/money` is personal-only.
 - Party-to-party acceptance is atomic, SheepWars favors party grouping without breaking team balance, and host capacity changes now reach Velocity immediately.
 - In a custom SheepWars game without map voting, the host-selected map now appears immediately in every player's waiting sidebar.
 - Lobby and SheepWars sidebars now use airy tropical separators and show more useful context: profile, balance, network activity, and visible games in the lobby; map, capacity, required minimum, team, class, and personal statistics in game. Economy data remains loaded away from the main thread.

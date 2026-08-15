@@ -301,7 +301,7 @@ public class PlayerLobbyListener implements Listener {
             if (Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core) {
                 HeadDatabaseAPI hdbapi = core.getHeadDatabaseManager().getHeadDatabaseAPI();
                 if (hdbapi != null) {
-                    ItemStack loadedSettingsIcon = hdbapi.getItemHead("71786");
+                    ItemStack loadedSettingsIcon = hdbapi.getItemHead("89489");
                     ItemStack loadedCustomGameIcon = hdbapi.getItemHead("35309");
                     ItemStack loadedSocialIcon = hdbapi.getItemHead("78804");
                     ItemStack loadedVipIcon = hdbapi.getItemHead("66671");

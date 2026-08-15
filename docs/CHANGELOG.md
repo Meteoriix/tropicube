@@ -24,7 +24,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Modifié
 
-- Le proxy masque désormais l'arbre de commandes, refuse les commandes Bukkit/vanilla et les backends bloquent les interfaces de panneaux, fours, tables de craft et coffres. `/money` n'affiche plus que le solde personnel.
+- Le bouton Langue du menu Paramètres reprend la tête HeadDatabase 71786, le bouton Paramètres de la hotbar utilise la tête 89489 et l'autocomplétion après `/` publie uniquement les commandes Tropicube.
+- Le proxy masque les commandes étrangères à Tropicube, refuse les commandes Bukkit/vanilla et les backends bloquent les interfaces de panneaux, fours, tables de craft et coffres. `/money` n'affiche plus que le solde personnel.
 - Une invitation de party peut désormais être acceptée depuis une autre party : le départ, la promotion éventuelle d'un nouveau chef et l'entrée dans la nouvelle party sont atomiques. SheepWars rapproche les membres d'une party dans la même équipe tant que l'écart d'effectif reste au plus égal à un.
 - La hotbar du lobby utilise les têtes HeadDatabase 35309 et 78804 pour les parties personnalisées et Social, puis se rafraîchit après un changement de grade.
 - Les limites de joueurs choisies par l'hôte SheepWars sont bornées à deux, ne peuvent plus passer sous l'effectif présent et sont publiées immédiatement à Velocity.

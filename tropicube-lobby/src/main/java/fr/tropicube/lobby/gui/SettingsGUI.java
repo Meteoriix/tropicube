@@ -1,16 +1,21 @@
 package fr.tropicube.lobby.gui;
 
+import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.lobby.utils.ItemBuilder;
 import fr.tropicube.lobby.utils.LangHelper;
+import me.arcaniax.hdb.api.HeadDatabaseAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 /** Lobby player settings, built from an asynchronously loaded settings snapshot. */
 public final class SettingsGUI {
+    private static final String LANGUAGE_HEAD_ID = "71786";
+
     public static final int LANGUAGE_SLOT = 11;
     public static final int AUTO_REPLAY_SLOT = 15;
     public static final int CLOSE_SLOT = 26;
@@ -22,7 +27,7 @@ public final class SettingsGUI {
         Inventory inventory = Bukkit.createInventory(holder, 27,
                 LangHelper.component(player, "lobby.settings-title"));
         holder.inventory = inventory;
-        inventory.setItem(LANGUAGE_SLOT, new ItemBuilder(Material.PLAYER_HEAD)
+        inventory.setItem(LANGUAGE_SLOT, new ItemBuilder(languageIcon())
                 .name(LangHelper.get(player, "lobby.settings-language-name"))
                 .lore(LangHelper.get(player, "lobby.settings-language-lore")).build());
         boolean enabled = autoReplayRemaining >= 0;
@@ -34,6 +39,20 @@ public final class SettingsGUI {
                 .lore(LangHelper.get(player, stateKey, autoReplayRemaining)).build());
         inventory.setItem(CLOSE_SLOT, ItemBuilder.closeButton(player));
         return inventory;
+    }
+
+    private static ItemStack languageIcon() {
+        ItemStack fallback = new ItemStack(Material.PLAYER_HEAD);
+        try {
+            if (Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core) {
+                HeadDatabaseAPI api = core.getHeadDatabaseManager().getHeadDatabaseAPI();
+                ItemStack icon = api == null ? null : api.getItemHead(LANGUAGE_HEAD_ID);
+                if (icon != null) return icon;
+            }
+        } catch (RuntimeException _) {
+            // HeadDatabase is optional at runtime; the menu remains usable with its vanilla fallback.
+        }
+        return fallback;
     }
 
     public static final class Holder implements InventoryHolder {

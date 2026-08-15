@@ -34,10 +34,15 @@ public final class NetworkProtectionListener implements Listener {
         if (command != null && !(command instanceof PluginCommand)) event.setCancelled(true);
     }
 
-    /** Keeps commands executable while preventing the client from listing the full command tree after '/'. */
+    /** Publishes only clean, non-namespaced commands owned by a Tropicube plugin. */
     @EventHandler
     public void onCommandsSent(PlayerCommandSendEvent event) {
-        event.getCommands().clear();
+        event.getCommands().removeIf(label -> {
+            if (label.indexOf(':') >= 0) return true;
+            var command = event.getPlayer().getServer().getCommandMap().getCommand(label);
+            return !(command instanceof PluginCommand pluginCommand)
+                    || !pluginCommand.getPlugin().getName().startsWith("Tropicube");
+        });
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
