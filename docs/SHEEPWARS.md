@@ -74,7 +74,7 @@ Chaque type possède une probabilité configurable dans `default-settings.sheep-
 | Poison | 6 % | Fragmentation | 6 % | Gravité | 5 % |
 | Météore | 4 % | Distortion | 3 % | Mécha | 3 % |
 
-Chaque remise effectue un nouveau tirage pondéré sur la distribution complète. Le pourcentage affiché est donc la probabilité réelle de chaque tirage, quelle que soit la durée de la partie ou le nombre de moutons déjà reçus. Deux types identiques peuvent se suivre : cette indépendance évite de favoriser artificiellement les moutons rares ou de pénaliser les poids élevés sur les parties courtes.
+Chaque remise effectue un tirage pondéré selon les probabilités configurées. L'historique est suivi séparément pour chaque joueur : après deux moutons identiques consécutifs, ce type est exclu du tirage suivant et les autres poids sont renormalisés pour cette seule remise. Dès qu'un autre type est reçu, la distribution complète s'applique de nouveau. Si la configuration ne laisse qu'un seul type doté d'un poids positif, il reste nécessairement le seul résultat possible.
 
 Les types désactivés ont toujours une probabilité effective de 0 % et les autres poids sont automatiquement renormalisés. Le menu affiche à la fois le poids brut et le pourcentage effectif. Il empêche de mettre à zéro le dernier poids actif et de désactiver le dernier type. Si une configuration externe fournit malgré tout uniquement des poids nuls, le premier type actif devient explicitement le secours à 100 %. Si elle désactive tous les types, TNT est réactivé au chargement avec un avertissement.
 

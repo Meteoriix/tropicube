@@ -213,6 +213,7 @@ public class GameManager {
         GamePlayer gp = players.remove(player.getUniqueId());
         if (gp == null) return;
         if (sheepDeliverySchedule != null) sheepDeliverySchedule.remove(player.getUniqueId());
+        plugin.getSheepManager().forgetSheepHistory(player.getUniqueId());
         disableGlowingFor(gp);
         plugin.getMapVoteMenu().removeVote(player.getUniqueId());
         plugin.getScoreboardManager().clear(player);
@@ -464,7 +465,7 @@ public class GameManager {
                 if (bukkitPlayer == null) continue;
                 for (int bonus = 0; bonus < bonuses.get(playerIndex); bonus++) {
                     bukkitPlayer.getInventory().addItem(plugin.getSheepManager()
-                            .createSheepItem(plugin.getSheepManager().randomSheepType()));
+                            .createSheepItem(plugin.getSheepManager().randomSheepType(bukkitPlayer.getUniqueId())));
                 }
             }
         }
@@ -542,7 +543,7 @@ public class GameManager {
 
         // Starting sheep
         p.getInventory().addItem(plugin.getSheepManager().createSheepItem(
-                plugin.getSheepManager().randomSheepType()));
+                plugin.getSheepManager().randomSheepType(p.getUniqueId())));
     }
 
     private PlayerKit randomEnabledKit() {
@@ -604,7 +605,7 @@ public class GameManager {
             if (sheepDeliverySchedule == null || !sheepDeliverySchedule.isDue(p.getUniqueId())) continue;
             if (plugin.getSheepManager().countStoredSheep(p)
                     >= plugin.getGameplayBalance().integer("global.max-stored-sheep")) continue;
-            SheepType type = plugin.getSheepManager().randomSheepType();
+            SheepType type = plugin.getSheepManager().randomSheepType(p.getUniqueId());
             if (!p.getInventory().addItem(plugin.getSheepManager().createSheepItem(type)).isEmpty()) continue;
             sheepDeliverySchedule.markDelivered(p.getUniqueId());
             p.playSound(p.getLocation(), Sound.ENTITY_SHEEP_AMBIENT, 1.0F, 1.0F);

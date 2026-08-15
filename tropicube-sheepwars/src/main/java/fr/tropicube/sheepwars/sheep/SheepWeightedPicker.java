@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.random.RandomGenerator;
 
-/** Performs independent weighted draws so every delivery uses the configured probabilities. */
+/** Performs weighted draws, optionally excluding one type from the current draw. */
 final class SheepWeightedPicker {
 
     private final EnumMap<SheepType, Integer> weights = new EnumMap<>(SheepType.class);
@@ -25,9 +25,21 @@ final class SheepWeightedPicker {
     }
 
     SheepType next(RandomGenerator random) {
+        return next(random, null);
+    }
+
+    SheepType next(RandomGenerator random, SheepType excludedType) {
         Objects.requireNonNull(random, "random");
-        int selectedWeight = random.nextInt(totalWeight);
+        int excludedWeight = excludedType == null ? 0 : weights.getOrDefault(excludedType, 0);
+        int eligibleWeight = totalWeight - excludedWeight;
+        if (eligibleWeight == 0) {
+            excludedType = null;
+            eligibleWeight = totalWeight;
+        }
+
+        int selectedWeight = random.nextInt(eligibleWeight);
         for (SheepType type : SheepType.values()) {
+            if (type == excludedType) continue;
             selectedWeight -= weights.get(type);
             if (selectedWeight < 0) return type;
         }

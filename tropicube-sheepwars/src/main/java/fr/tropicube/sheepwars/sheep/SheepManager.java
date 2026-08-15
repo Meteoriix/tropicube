@@ -35,6 +35,7 @@ public class SheepManager {
     /** Cleans up temporary entities and bonuses at the start and end of a game. */
     public void reset() {
         strengthBuffCounts.clear();
+        sheepSequencePicker.clear();
         for (Map.Entry<UUID, MechaData> entry : mechaGolems.entrySet()) {
             org.bukkit.entity.Entity golem = org.bukkit.Bukkit.getEntity(entry.getKey());
             if (golem != null) golem.remove();
@@ -66,8 +67,8 @@ public class SheepManager {
     /** Weights cached and recalculated by {@link #buildWeightCache()}. */
     private SheepWeightTable sheepWeightTable;
 
-    /** Stateless weighted picker rebuilt whenever the effective configuration changes. */
-    private SheepWeightedPicker sheepPicker;
+    /** Per-player weighted picker rebuilt whenever the effective configuration changes. */
+    private SheepSequencePicker sheepSequencePicker;
 
     public final NamespacedKey sheepTypeKey;
 
@@ -111,7 +112,7 @@ public class SheepManager {
             }
         }
         sheepWeightTable = SheepWeightTable.create(configuredWeights, enabledTypes);
-        sheepPicker = new SheepWeightedPicker(sheepWeightTable.weights());
+        sheepSequencePicker = new SheepSequencePicker(sheepWeightTable.weights());
         if (sheepWeightTable.fallback() != null) {
             plugin.getLogger().warning("Tous les poids de moutons actifs valent zéro : "
                     + sheepWeightTable.fallback().name() + " devient le type de secours à 100 %.");
@@ -215,8 +216,13 @@ public class SheepManager {
 
     // ── Random sheep selection ─────────────────────────────────────────────
 
-    public SheepType randomSheepType() {
-        return sheepPicker.next(ThreadLocalRandom.current());
+    public SheepType randomSheepType(UUID playerId) {
+        return sheepSequencePicker.next(playerId, ThreadLocalRandom.current());
+    }
+
+    /** Drops the draw history of a player that left the match. */
+    public void forgetSheepHistory(UUID playerId) {
+        sheepSequencePicker.remove(playerId);
     }
 
     // ── Sheep lifecycle ────────────────────────────────────────────────────

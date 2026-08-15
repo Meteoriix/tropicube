@@ -31,6 +31,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Corrigé
 
+- Distribution SheepWars : un joueur ne peut plus recevoir trois fois de suite le même type de mouton lorsqu'au moins deux types ont un poids positif.
 - Distribution SheepWars durcie : aucun type désactivé ne peut servir de secours, le dernier poids actif ne peut plus être mis à zéro depuis le menu, une configuration désactivant tous les moutons est réparée, et le sélecteur pondéré est testé sur ses intervalles, ses fréquences et ses cas extrêmes.
 - Délais et probabilités SheepWars corrigés : chaque remise utilise désormais directement les pourcentages configurés, les échéances sont individuelles et ne sont plus perdues lorsque le stock est plein, et une partie standard fournit 29 remises périodiques utiles en plus du mouton initial.
 - `/nick off` ne supprime plus son état de récupération avant la restauration effective par le backend et peut réparer une identité visuelle désynchronisée au lieu de répondre à tort qu'aucun nick n'est actif.
