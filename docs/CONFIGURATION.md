@@ -74,6 +74,8 @@ Chaque entrée de `templates` décrit :
 - `auto-stop`, `auto-stop-delay` ;
 - variables d'environnement passées à l'image Paper.
 
+Les templates Paper fournis fixent `VERSION: "26.2"` et `PAPER_BUILD: "97"`. Ce build explicite garantit que le runtime sélectionné au démarrage correspond aux artefacts préchauffés dans `Dockerfile.lobby` et `Dockerfile.sheepwars`. Toute mise à jour doit modifier ensemble ces valeurs, les arguments par défaut des deux Dockerfiles et la dépendance Paper du POM parent, puis reconstruire les images.
+
 Le lobby est une dépendance de routage essentielle et reste activé. Pour ajouter un mode de jeu, fournir une image, un plugin capable de publier son état, une plage de ports et une entrée correspondante dans `server-types` du lobby.
 
 `max-players` borne les participants avant le démarrage. `spectator-slots`, nul par défaut et fixé à `8` pour SheepWars, ajoute une réserve physique uniquement quand l'instance est `GAME_PLAYING`. La variable Docker `MAX_PLAYERS` reçoit la somme afin que `/friend join` puisse connecter un spectateur sans réduire la capacité de jeu nominale.

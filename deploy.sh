@@ -312,6 +312,14 @@ for name in "${build_names[@]}"; do
 done
 $build_failed && exit 1
 
+step 'Verifying prewarmed Paper runtimes...'
+paper_cache_check='set -eu; test -s "/data/paper-${TROPICUBE_PAPER_VERSION}-${TROPICUBE_PAPER_BUILD}.jar"; test -s "/data/cache/mojang_${TROPICUBE_PAPER_VERSION}.jar"; test -s "/data/versions/${TROPICUBE_PAPER_VERSION}/paper-${TROPICUBE_PAPER_VERSION}.jar"'
+for image in tropicube-lobby:latest tropicube-sheepwars:latest; do
+  docker run --rm --entrypoint /bin/sh "$image" -c "$paper_cache_check" \
+    || fail "Prewarmed Paper runtime is incomplete in $image."
+  ok "$image contains Paper, Mojang and patched runtime artifacts."
+done
+
 if ! $skip_restart; then
   step 'Recreating the Velocity stack...'
   legacy_velocity_volumes=$(docker inspect tropicube-velocity \

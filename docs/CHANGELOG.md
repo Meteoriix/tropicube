@@ -23,6 +23,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Modifié
 
+- Les images Lobby et SheepWars préchauffent désormais Paper 26.2, le JAR Mojang et le runtime patché pendant le déploiement ; les instances dynamiques ne retéléchargent plus le serveur à chaque création.
 - Le menu enclume de whitelist privée ne demande plus d'expérience, valide strictement pseudo/UUID et attend désormais la confirmation de sauvegarde de Velocity avant de rafraîchir ses membres.
 - `/rejoin` devient l'unique forme de reconnexion à une partie SheepWars : l'ancienne commande `/sw join` est supprimée et tout argument est désormais refusé.
 - Cadence SheepWars ramenée à 15 secondes par défaut et adaptée à l'effectif des parties classiques (10/12/15 secondes) ; les parties personnalisées conservent le réglage de l'hôte.

@@ -65,6 +65,8 @@ Pour Docker rootless, régler `DOCKER_SOCKET_PATH`, par exemple `/run/user/1000/
 6. Valider sans construire d'image.
 
 Les images Paper Lobby et SheepWars copient aussi `dockerfiles/configs/spigot.yml`. Ce fichier désactive l'enregistrement et le chargement de tous les advancements (`*`) ; il doit rester présent dans les deux images pour éviter les notifications et la progression vanilla sur l'ensemble des backends.
+
+Le build de ces deux images télécharge Paper, le JAR serveur Mojang et produit le runtime patché avec `paperclip.patchonly`. Ces artefacts sont stockés dans une couche Docker commune et amorcent ensuite chaque nouveau volume `/data`. Le premier build ou un changement de version nécessite donc un accès à PaperMC et Mojang, tandis que la création d'une instance Lobby ou SheepWars n'en dépend plus.
 7. Exécuter le déploiement complet.
 
 Windows :
@@ -107,6 +109,7 @@ Le premier `docker compose up` télécharge MySQL, Redis, le proxy de socket et 
 | Fusionne uniquement les clés de langue absentes | natif PowerShell/.NET | Python 3 | oui |
 | Refuse sections/clés dupliquées et feuilles trop imbriquées | oui | oui | oui |
 | Construit trois images en parallèle avec `--pull` | jobs PowerShell | processus Bash | oui |
+| Vérifie Paper, le JAR Mojang et le runtime patché dans les images | oui | oui | oui |
 | Crée les tags `latest` et UTC horodaté | oui | oui | oui |
 | Attend tous les builds et restitue leurs logs | oui | oui | oui |
 | Recrée Velocity, sauf option contraire | oui | oui | oui |
@@ -144,8 +147,9 @@ Exemples :
 3. copie des JAR ombrés vers les contextes Docker avec contrôle d'intégrité ;
 4. fusion des nouvelles traductions dans les configurations persistantes ;
 5. construction parallèle de `tropicube-lobby`, `tropicube-sheepwars` et `tropicube-velocity` ;
-6. double tag `latest` et `YYYYMMDD-HHMMSS` UTC ;
-7. `docker compose up -d --force-recreate velocity` puis suppression contrôlée de l'éventuel ancien volume anonyme `/server`.
+6. vérification des caches Paper/Mojang dans les deux images de backend ;
+7. double tag `latest` et `YYYYMMDD-HHMMSS` UTC ;
+8. `docker compose up -d --force-recreate velocity` puis suppression contrôlée de l'éventuel ancien volume anonyme `/server`.
 
 Compose démarre ou vérifie automatiquement Redis, MySQL et `docker-proxy` grâce aux dépendances de santé. Par défaut, l'arrêt de l'ancien Velocity supprime les backends dynamiques et leurs volumes de données éphémères avant le redémarrage. Le `/server` de Velocity est un `tmpfs` initialisé depuis l'image : son contenu disparaît à l'arrêt et le JAR fraîchement construit ne peut pas être masqué par un ancien volume. Lors de la première migration, les scripts suppriment précisément l'ancien volume anonyme détecté sur ce chemin. Les futures instances utilisent les nouvelles images `latest`.
 
@@ -270,6 +274,10 @@ Les parties privées ne publient aucun port supplémentaire et restent accessibl
 ### Artefact périmé avec `OnlyImages`
 
 Relancer sans cette option. Le contrôle est intentionnel : il empêche de déployer un JAR antérieur au code ou à un POM dont il dépend.
+
+### Cache Paper préchauffé incomplet
+
+Les scripts refusent le déploiement si `paper-<version>-<build>.jar`, `cache/mojang_<version>.jar` ou le runtime patché sous `versions/<version>` manque dans une image Lobby ou SheepWars. Vérifier l'accès réseau de Docker à PaperMC et Mojang, puis reconstruire sans réutiliser une couche de build défectueuse. La version et le build des Dockerfiles doivent rester alignés avec `VERSION` et `PAPER_BUILD` dans les templates Velocity.
 
 ### Docker rootless
 

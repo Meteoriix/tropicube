@@ -3,10 +3,8 @@
 !dockerfiles/
 !dockerfiles/Dockerfile.*
 !dockerfiles/configs/
-!dockerfiles/configs/Velocity/
-!dockerfiles/configs/Velocity/**
-!dockerfiles/configs/TropicubeVelocity/
-!dockerfiles/configs/TropicubeVelocity/**
+!dockerfiles/configs/**
 !dockerfiles/plugins/
-!dockerfiles/plugins/velocity/
-!dockerfiles/plugins/velocity/**
+!dockerfiles/plugins/**
+!dockerfiles/worlds/
+!dockerfiles/worlds/**
