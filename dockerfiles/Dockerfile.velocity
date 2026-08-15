@@ -1,4 +1,22 @@
-FROM itzg/mc-proxy:java25@sha256:6a5285415fb3847c83c1244f28e6fb83c1da88f9ffbcbe7f7941d43108e49966
+FROM itzg/mc-proxy:java25@sha256:6a5285415fb3847c83c1244f28e6fb83c1da88f9ffbcbe7f7941d43108e49966 AS upstream
+
+# Rebuild the final metadata from scratch so the upstream VOLUME /server
+# declaration cannot allocate a hidden anonymous volume below the tmpfs.
+FROM scratch
+
+COPY --from=upstream / /
+
+ENV PATH=/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+    JAVA_HOME=/opt/java/openjdk \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8 \
+    RCON_PORT=25575 \
+    MEMORY=512m
+
+WORKDIR /server
+
+EXPOSE 25565 25577
 
 COPY --chown=1000:1000 dockerfiles/configs/Velocity                           /opt/tropicube/server/
 
@@ -9,3 +27,5 @@ COPY --chown=1000:1000 dockerfiles/plugins/velocity                           /o
 COPY --chmod=755 dockerfiles/velocity-entrypoint.sh                            /usr/local/bin/tropicube-velocity-entrypoint
 
 ENTRYPOINT ["/usr/local/bin/tropicube-velocity-entrypoint"]
+
+CMD ["/usr/bin/run-bungeecord.sh"]
