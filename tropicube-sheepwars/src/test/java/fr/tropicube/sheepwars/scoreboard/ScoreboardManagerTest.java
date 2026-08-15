@@ -10,8 +10,7 @@ class ScoreboardManagerTest {
 
     @Test
     void tablistUsesOnlyTheVisibleNameAndTeamColor() {
-        Component expected = Component.text("❤ ", NamedTextColor.RED)
-                .append(Component.text("MaskedWolf", NamedTextColor.RED));
+        Component expected = Component.text("MaskedWolf", NamedTextColor.RED);
 
         assertEquals(expected, ScoreboardManager.teamColoredName("MaskedWolf", NamedTextColor.RED));
     }

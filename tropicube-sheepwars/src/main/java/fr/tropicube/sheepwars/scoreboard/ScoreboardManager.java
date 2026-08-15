@@ -5,10 +5,10 @@ import fr.tropicube.sheepwars.game.GameState;
 import fr.tropicube.sheepwars.game.GameTeam;
 import fr.tropicube.sheepwars.player.GamePlayer;
 import fr.tropicube.sheepwars.util.LangHelper;
+import fr.tropicube.sheepwars.util.PlayerDisplayName;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
@@ -201,17 +201,17 @@ public class ScoreboardManager {
     private void applyPlayerListName(Player player, GamePlayer gamePlayer) {
         NamedTextColor color = gamePlayer.getTeam() == null || !gamePlayer.isAlive()
                 ? NamedTextColor.GRAY : gamePlayer.getTeam().getColor();
-        player.playerListName(teamColoredName(visibleDisplayName(player), color));
+        player.playerListName(teamColoredName(PlayerDisplayName.resolve(player), color));
     }
 
     static Component teamColoredName(String visibleName, NamedTextColor color) {
-        return Component.text("❤ ", color).append(Component.text(visibleName, color));
+        return Component.text(visibleName, color);
     }
 
     public void clear(Player player) {
         boards.remove(player.getUniqueId());
         player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-        player.playerListName(Component.text(visibleDisplayName(player)));
+        player.playerListName(Component.text(PlayerDisplayName.resolve(player)));
         player.sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
     }
 
@@ -238,10 +238,5 @@ public class ScoreboardManager {
     private String visibleProfileName(Player player) {
         String profileName = player.getPlayerProfile().getName();
         return profileName == null || profileName.isBlank() ? player.getName() : profileName;
-    }
-
-    private String visibleDisplayName(Player player) {
-        String displayName = PlainTextComponentSerializer.plainText().serialize(player.displayName());
-        return displayName.isBlank() ? visibleProfileName(player) : displayName;
     }
 }

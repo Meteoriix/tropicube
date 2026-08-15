@@ -64,7 +64,7 @@ SheepWars publishes each game transition back to Redis. The lobby renders `GAME_
 
 On `NICK_APPLY`, Core copies the `/nick` name and fake grade into a backend-local visual cache used by the tablist and lobby join announcements, while chat reads the same Redis identity. None of these display paths replaces the real grade used for permissions. The cache is cleared when the nick is disabled or the player is unloaded, then restored from `nick:<uuid>` after reconnecting. Lobby resolves the visible name from `Player#displayName`, which Core updates immediately on both activation and removal, because the Paper profile name may remain temporarily stale after `setPlayerProfile`.
 
-SheepWars consumes `NICK_APPLY`, `NICK_RESET`, `NICK_CLEAR`, `GRADE_LOADED`, and `GRADE_CHANGED` to reassert its local rendering after Core. Its tablist never includes a grade prefix: the synchronized `displayName` is colored by team, or gray for spectators. Scoreboard teams separately continue to use the client-visible profile name for entity outlines.
+SheepWars consumes `NICK_APPLY`, `NICK_RESET`, `NICK_CLEAR`, `GRADE_LOADED`, and `GRADE_CHANGED` to reassert its local rendering after Core. Its tablist never includes a grade prefix or icon: the synchronized `displayName` is colored by team, or gray for spectators. Chat uses the same identity so it follows `/nick off` immediately. Scoreboard teams separately continue to use the client-visible profile name for entity outlines.
 
 Redis subscriber callbacks must not mutate Bukkit state. Paper plugins always schedule entity, inventory, world, and profile changes back onto the server scheduler.
 

@@ -2,10 +2,11 @@ package fr.tropicube.sheepwars.listener;
 
 import fr.tropicube.sheepwars.TropicubeSheepwars;
 import fr.tropicube.sheepwars.game.GameState;
-import fr.tropicube.sheepwars.util.LangHelper;
 import fr.tropicube.sheepwars.player.GamePlayer;
 import fr.tropicube.sheepwars.player.PlayerKit;
 import fr.tropicube.sheepwars.sheep.SheepType;
+import fr.tropicube.sheepwars.util.LangHelper;
+import fr.tropicube.sheepwars.util.PlayerDisplayName;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -333,7 +334,7 @@ public class PlayerListener implements Listener {
         Component prefix = Component.text("[", NamedTextColor.GRAY)
                 .append(Component.text(gp.getTeam().getDisplayName(), gp.getTeam().getColor()))
                 .append(Component.text("] ", NamedTextColor.GRAY))
-                .append(Component.text(player.getName() + " : ", NamedTextColor.WHITE));
+                .append(Component.text(PlayerDisplayName.resolve(player) + " : ", NamedTextColor.WHITE));
 
         event.renderer((_, _, message, _) ->
                 prefix.append(message.colorIfAbsent(NamedTextColor.GRAY)));
