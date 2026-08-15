@@ -60,7 +60,7 @@ public class GameManager {
     private Location lobby;
     private int lobbyVoidLimit;
     private BukkitTask currentTask;
-    private BukkitTask sheepTask;
+    private SheepDeliverySchedule sheepDeliverySchedule;
     private int countdown;
     private int gameTime;
     private final GlowingEntities glowingEntities;
@@ -212,6 +212,7 @@ public class GameManager {
     public void removePlayer(Player player) {
         GamePlayer gp = players.remove(player.getUniqueId());
         if (gp == null) return;
+        if (sheepDeliverySchedule != null) sheepDeliverySchedule.remove(player.getUniqueId());
         disableGlowingFor(gp);
         plugin.getMapVoteMenu().removeVote(player.getUniqueId());
         plugin.getScoreboardManager().clear(player);
@@ -378,10 +379,6 @@ public class GameManager {
             currentTask.cancel();
             currentTask = null;
         }
-        if (sheepTask != null) {
-            sheepTask.cancel();
-            sheepTask = null;
-        }
         state = GameState.PLAYING;
         updateInstanceStatus(ServerInstance.Status.GAME_PLAYING);
         if (instanceId != null) {
@@ -396,7 +393,7 @@ public class GameManager {
         plugin.getSheepManager().reset();
 
         int sheepDelaySeconds = Math.max(1,
-                plugin.getConfig().getInt("default-settings.sheep-give-delay", 25));
+                plugin.getConfig().getInt("default-settings.sheep-give-delay", 20));
         if (sheepDelaySeconds < 5) {
             Player host = Bukkit.getPlayer(hostUuid);
             if (host != null)
@@ -467,7 +464,7 @@ public class GameManager {
                 if (bukkitPlayer == null) continue;
                 for (int bonus = 0; bonus < bonuses.get(playerIndex); bonus++) {
                     bukkitPlayer.getInventory().addItem(plugin.getSheepManager()
-                            .createSheepItem(plugin.getSheepManager().randomSheepType(bukkitPlayer.getUniqueId())));
+                            .createSheepItem(plugin.getSheepManager().randomSheepType()));
                 }
             }
         }
@@ -478,12 +475,10 @@ public class GameManager {
 
         broadcastLang("sw.game-started");
 
+        sheepDeliverySchedule = new SheepDeliverySchedule(sheepDelaySeconds, players.keySet());
+
         // Periodic task during the game
         currentTask = Bukkit.getScheduler().runTaskTimer(plugin, this::gameTick, 20L, 20L);
-
-        // Special sheep distribution task (stored for cancellation)
-        int delay = sheepDelaySeconds * 20;
-        sheepTask = Bukkit.getScheduler().runTaskTimer(plugin, this::distributeSpecialSheep, delay, delay);
 
     }
 
@@ -547,7 +542,7 @@ public class GameManager {
 
         // Starting sheep
         p.getInventory().addItem(plugin.getSheepManager().createSheepItem(
-                plugin.getSheepManager().randomSheepType(p.getUniqueId())));
+                plugin.getSheepManager().randomSheepType()));
     }
 
     private PlayerKit randomEnabledKit() {
@@ -593,6 +588,11 @@ public class GameManager {
             return;
         }
 
+        if (sheepDeliverySchedule != null) {
+            sheepDeliverySchedule.advanceSecond();
+            distributeSpecialSheep();
+        }
+
         plugin.getScoreboardManager().updateAll();
     }
 
@@ -601,10 +601,12 @@ public class GameManager {
         for (GamePlayer gp : getAlivePlayers()) {
             Player p = gp.getBukkitPlayer();
             if (p == null) continue;
+            if (sheepDeliverySchedule == null || !sheepDeliverySchedule.isDue(p.getUniqueId())) continue;
             if (plugin.getSheepManager().countStoredSheep(p)
                     >= plugin.getGameplayBalance().integer("global.max-stored-sheep")) continue;
-            SheepType type = plugin.getSheepManager().randomSheepType(p.getUniqueId());
-            p.getInventory().addItem(plugin.getSheepManager().createSheepItem(type));
+            SheepType type = plugin.getSheepManager().randomSheepType();
+            if (!p.getInventory().addItem(plugin.getSheepManager().createSheepItem(type)).isEmpty()) continue;
+            sheepDeliverySchedule.markDelivered(p.getUniqueId());
             p.playSound(p.getLocation(), Sound.ENTITY_SHEEP_AMBIENT, 1.0F, 1.0F);
         }
     }
@@ -665,7 +667,7 @@ public class GameManager {
         updateInstanceStatus(ServerInstance.Status.GAME_ENDING);
 
         if (currentTask != null) currentTask.cancel();
-        if (sheepTask != null) sheepTask.cancel();
+        sheepDeliverySchedule = null;
 
         Component endPrefix = Component.text("[SW] ", AQUA);
         for (GamePlayer gp : players.values()) {
@@ -890,9 +892,8 @@ public class GameManager {
 
     public void shutdown() {
         if (currentTask != null) currentTask.cancel();
-        if (sheepTask != null) sheepTask.cancel();
         currentTask = null;
-        sheepTask = null;
+        sheepDeliverySchedule = null;
         players.clear();
         glowingEntities.disable();
         if (plugin.getSheepManager() != null) plugin.getSheepManager().reset();

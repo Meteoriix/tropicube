@@ -17,7 +17,7 @@ default-settings:
   # Random Kits (ignores player selection)
   random-kits: false
   # Delay between sheep spawns (in seconds)
-  sheep-give-delay: 25
+  sheep-give-delay: 20
   # Map vote: true = all vote, false = host chooses
   map-vote-enabled: true
   # Relative spawn weights of special sheep

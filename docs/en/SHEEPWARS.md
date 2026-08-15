@@ -11,12 +11,12 @@ The implementation contains fifteen sheep types, three classes, nine kits, map v
 1. The instance waits while profiles, languages, kits, classes, teams, and map votes are loaded.
 2. In a standard game, reaching the configured minimum starts the countdown automatically. A custom-game host may start manually or enable automatic start.
 3. At match start, participants are assigned to shuffled team spawns and receive colored leather armor, a sword, an Infinity bow, one arrow, and one random special sheep.
-4. Every living player receives another sheep at the configured interval. Members of the smaller team receive three additional sheep at the start.
+4. Every living player receives another sheep at the configured interval. A deadline reached with a full sheep stock remains pending until space is available, then that player's full interval starts again. The smaller team receives a shared pool of three sheep per missing player, capped at two bonuses per recipient.
 5. Death is final for the round and changes the player to spectator mode.
 6. Players joining after the match starts also become spectators. They have no team, cannot deal or receive game damage, and do not affect survivor counts or victory.
 7. After the result screen, Velocity transfers everyone to a lobby and destroys the finished game container. A pre-created equivalent instance may be offered for replay.
 
-Default values are a ten-second countdown, a 600-second match, and a twenty-second sheep distribution interval. Gameplay values remain configurable.
+Default values are a ten-second countdown, a 600-second match, and a twenty-second sheep distribution interval. A survivor who keeps inventory space receives one starting sheep and twenty-nine useful periodic deliveries before timeout. Gameplay values remain configurable.
 
 ## Classes and kits
 
@@ -56,7 +56,7 @@ A host may disable classes or kits. Random-kit mode ignores personal selection a
 | Strength | Temporarily increases nearby allied damage |
 | Fragmentation | Releases five secondary explosive sheep |
 
-`default-settings.sheep-probabilities` controls relative weights. Each player owns an independent weighted draw deck. Tokens are consumed without replacement to smooth distribution, and consecutive duplicates are avoided whenever the configured weights permit it. Forced settings and host menus can disable individual types.
+`default-settings.sheep-probabilities` controls relative weights. Every delivery performs a fresh independent weighted draw over the complete active distribution, so the effective percentage shown by the host menu is the real probability of every draw. Consecutive duplicates remain possible; avoiding them would bias short matches against high-weight sheep. Forced settings and host menus can disable individual types.
 
 ## Maps and teams
 
@@ -110,7 +110,7 @@ At deployment, `INSTANCE_ID`, `SERVER_NAME`, `IS_HOST`, `HOST_UUID`, and the int
 
 ## State and cleanup
 
-The explicit game states are `WAITING`, `STARTING`, `PLAYING`, `ENDING`, and `ENDED`. Transitions publish corresponding `ServerInstance` states to Redis. Scheduled countdown, game tick, and sheep-distribution tasks are retained and cancelled on transition or shutdown. Late events cannot restart an ended match.
+The explicit game states are `WAITING`, `STARTING`, `PLAYING`, `ENDING`, and `ENDED`. Transitions publish corresponding `ServerInstance` states to Redis. The retained game-tick task advances both match time and per-player sheep deadlines and is cancelled on transition or shutdown. Late events cannot restart an ended match.
 
 After the result delay, SheepWars writes replay markers and sends `PROXY:FINISH_GAME:<instanceId>`. Velocity transfers players, retries lobby selection when required, unregisters the backend, removes the container and anonymous volumes, and clears Redis state.
 

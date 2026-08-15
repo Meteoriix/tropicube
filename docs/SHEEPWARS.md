@@ -20,11 +20,11 @@ Sources historiques : [présentation d'Epicube et origine du nom](https://www.mi
 2. Les joueurs choisissent une équipe, une classe, un kit et, si le vote est actif, une carte.
 3. En partie classique, le démarrage automatique déclenche le compte à rebours lorsque le minimum configuré est atteint. En partie personnalisée, l'hôte lance le compte à rebours depuis son menu de réglages ou active explicitement le démarrage automatique.
 4. Au début de la manche, chaque joueur rejoint un spawn libre de son équipe avec une armure en cuir colorée, une épée, un arc Infinité, une flèche et un mouton aléatoire.
-5. Un mouton spécial supplémentaire est distribué périodiquement à chaque survivant qui en stocke moins de cinq. L'équipe en sous-nombre reçoit un pool de trois moutons par joueur manquant, réparti avec un plafond de deux bonus par joueur.
+5. Un mouton spécial supplémentaire est distribué périodiquement à chaque survivant qui en stocke moins de cinq. Si le stock est plein à l'échéance, la remise reste en attente jusqu'à ce qu'une place se libère, puis le délai complet repart pour ce joueur. L'équipe en sous-nombre reçoit un pool de trois moutons par joueur manquant, réparti avec un plafond de deux bonus par joueur.
 6. Une mort est définitive pour la manche et place le joueur en spectateur. Tout joueur qui rejoint l'instance après le lancement arrive également en spectateur, sans équipe et sans influencer les conditions de victoire. La disparition de tous les survivants d'une équipe termine immédiatement la partie.
 7. Après l'écran de résultat, les joueurs sont renvoyés au lobby. Une prochaine instance est précréée lorsque possible et le lobby propose une revanche. Si elle démarre encore, les joueurs qui acceptent sont placés dans une file dédupliquée et la rejoignent automatiquement dès qu'elle est prête, sans multiplier les conteneurs.
 
-La durée par défaut est de 600 secondes, le compte à rebours de 10 secondes et la distribution des moutons de 25 secondes. Ces valeurs sont configurables.
+La durée par défaut est de 600 secondes, le compte à rebours de 10 secondes et la distribution des moutons de 20 secondes. Un survivant qui conserve de la place reçoit ainsi un mouton initial puis 29 remises périodiques utiles avant la fin de la manche. Ces valeurs sont configurables.
 
 ## Classes et kits
 
@@ -74,7 +74,7 @@ Chaque type possède une probabilité configurable dans `default-settings.sheep-
 | Poison | 6 % | Fragmentation | 6 % | Gravité | 5 % |
 | Météore | 4 % | Distortion | 3 % | Mécha | 3 % |
 
-Chaque joueur utilise sa propre pioche pondérée : chaque cycle consomme exactement les jetons correspondant aux poids, et deux distributions consécutives ne donnent jamais le même type tant qu'aucun type actif ne dépasse 50 % du poids total. Au-delà de 50 %, quelques répétitions sont mathématiquement inévitables, mais la pioche les évite chaque fois qu'un autre jeton reste disponible.
+Chaque remise effectue un nouveau tirage pondéré sur la distribution complète. Le pourcentage affiché est donc la probabilité réelle de chaque tirage, quelle que soit la durée de la partie ou le nombre de moutons déjà reçus. Deux types identiques peuvent se suivre : cette indépendance évite de favoriser artificiellement les moutons rares ou de pénaliser les poids élevés sur les parties courtes.
 
 Les types désactivés ont toujours une probabilité effective de 0 % et les autres poids sont automatiquement renormalisés. Le menu affiche à la fois le poids brut et le pourcentage effectif. Il empêche de mettre à zéro le dernier poids actif et de désactiver le dernier type. Si une configuration externe fournit malgré tout uniquement des poids nuls, le premier type actif devient explicitement le secours à 100 %. Si elle désactive tous les types, TNT est réactivé au chargement avec un avertissement.
 

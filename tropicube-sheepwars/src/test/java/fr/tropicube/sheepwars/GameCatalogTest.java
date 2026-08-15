@@ -91,13 +91,15 @@ class GameCatalogTest {
     }
 
     @Test
-    void defaultSheepDistributionIsLimitedToTwentyFourPeriodicDrawsPerFullGame() {
+    void defaultSheepDistributionProvidesThirtyTotalDrawsPerFullGame() {
         YamlConfiguration configuration = loadDefaultConfiguration();
 
         int duration = configuration.getInt("default-settings.game-duration");
         int delay = configuration.getInt("default-settings.sheep-give-delay");
-        assertEquals(25, delay);
-        assertEquals(24, duration / delay);
+        assertEquals(20, delay);
+        int usefulPeriodicDeliveries = (duration - 1) / delay;
+        assertEquals(29, usefulPeriodicDeliveries);
+        assertEquals(30, 1 + usefulPeriodicDeliveries);
     }
 
     private static YamlConfiguration loadDefaultConfiguration() {

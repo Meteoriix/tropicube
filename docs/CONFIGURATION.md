@@ -141,7 +141,7 @@ Le `grade-key` d'une entrée VIP doit exister dans Core. Le prix doit être posi
 
 Fichier : `dockerfiles/configs/TropicubeSheepwars/config.yml`.
 
-- `default-settings` fixe capacité, démarrage, durées, kits, vote et fréquence des moutons ; `sheep-give-delay` vaut 25 secondes par défaut, soit au plus 24 distributions périodiques par survivant pendant une partie complète de 10 minutes ;
+- `default-settings` fixe capacité, démarrage, durées, kits, vote et fréquence des moutons ; `sheep-give-delay` vaut 20 secondes par défaut, soit 29 remises périodiques utiles plus le mouton initial pendant une partie complète de 10 minutes ;
 - `default-settings.auto-start` vaut `true` par défaut pour les parties classiques et lance le compte à rebours dès que `min-players` est atteint ;
 - `custom-game-default-settings.auto-start` vaut `false` par défaut et remplace cette valeur à l'initialisation d'une instance possédant un `HOST_UUID` ; l'hôte peut ensuite la modifier pour la partie courante ;
 - `CUSTOM_GAME_PRIVATE`, injecté automatiquement par Velocity avec `HOST_UUID`, indique au backend si l'item de whitelist doit être remis à l'hôte ; cette variable interne ne doit pas être configurée manuellement dans le template ;
@@ -153,7 +153,7 @@ Fichier : `dockerfiles/configs/TropicubeSheepwars/config.yml`.
 - `locations` décrit le lobby, la limite du vide et les cartes activées ;
 - chaque carte doit fournir des points d'apparition utilisables pour les équipes rouge et bleue.
 
-Les types désactivés sont exclus avant normalisation. Le menu affiche le pourcentage effectif, reconstruit immédiatement les pioches après une modification et interdit de ramener à zéro le dernier poids actif. Si tous les poids activés proviennent néanmoins d'une configuration externe à zéro, le premier type actif devient le secours visible à 100 %. Une configuration qui désactive tous les types est réparée au chargement en réactivant TNT avec un avertissement.
+Les types désactivés sont exclus avant normalisation. Le menu affiche le pourcentage effectif, reconstruit immédiatement le sélecteur pondéré après une modification et interdit de ramener à zéro le dernier poids actif. Chaque remise est un tirage indépendant utilisant exactement ces probabilités. Une échéance rencontrant le plafond de stock reste due et est retentée chaque seconde ; le délai complet redémarre uniquement après insertion réussie. Si tous les poids activés proviennent néanmoins d'une configuration externe à zéro, le premier type actif devient le secours visible à 100 %. Une configuration qui désactive tous les types est réparée au chargement en réactivant TNT avec un avertissement.
 
 La section `gameplay-balance` est validée au démarrage. Une valeur manquante, non numérique, négative, ou nulle lorsqu'un rayon, une durée ou une cadence doit être strictement positif empêche le plugin de démarrer avec un message indiquant la clé fautive. `ConfigUpdater` complète les anciennes configurations avant cette validation.
 

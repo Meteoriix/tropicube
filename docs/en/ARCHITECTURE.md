@@ -44,6 +44,8 @@ Any stage may transition to ERROR.
 
 SheepWars publishes each game transition back to Redis. The lobby renders `GAME_PLAYING` as a blue `PLAYING` state. A playing SheepWars instance remains joinable while it has capacity because late arrivals become spectators.
 
+Sheep distribution uses an immutable effective-weight table followed by an independent weighted draw for every successful insertion. The once-per-second game tick also advances per-player delivery deadlines; a deadline remains due while the player's sheep stock is full and restarts only after insertion succeeds.
+
 ## Redis contracts
 
 | Key or channel | Producer | Consumers | Semantics |

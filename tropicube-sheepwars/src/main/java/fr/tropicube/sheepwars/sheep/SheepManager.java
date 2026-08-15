@@ -35,7 +35,6 @@ public class SheepManager {
     /** Cleans up temporary entities and bonuses at the start and end of a game. */
     public void reset() {
         strengthBuffCounts.clear();
-        playerDrawDecks.clear();
         for (Map.Entry<UUID, MechaData> entry : mechaGolems.entrySet()) {
             org.bukkit.entity.Entity golem = org.bukkit.Bukkit.getEntity(entry.getKey());
             if (golem != null) golem.remove();
@@ -67,8 +66,8 @@ public class SheepManager {
     /** Weights cached and recalculated by {@link #buildWeightCache()}. */
     private SheepWeightTable sheepWeightTable;
 
-    /** Independent draw per player to avoid individual series. */
-    private final Map<UUID, SheepDrawDeck> playerDrawDecks = new HashMap<>();
+    /** Stateless weighted picker rebuilt whenever the effective configuration changes. */
+    private SheepWeightedPicker sheepPicker;
 
     public final NamespacedKey sheepTypeKey;
 
@@ -112,11 +111,11 @@ public class SheepManager {
             }
         }
         sheepWeightTable = SheepWeightTable.create(configuredWeights, enabledTypes);
+        sheepPicker = new SheepWeightedPicker(sheepWeightTable.weights());
         if (sheepWeightTable.fallback() != null) {
             plugin.getLogger().warning("Tous les poids de moutons actifs valent zéro : "
                     + sheepWeightTable.fallback().name() + " devient le type de secours à 100 %.");
         }
-        playerDrawDecks.clear();
     }
 
     public int getEffectiveWeight(SheepType type) {
@@ -216,9 +215,8 @@ public class SheepManager {
 
     // ── Random sheep selection ─────────────────────────────────────────────
 
-    public SheepType randomSheepType(UUID playerId) {
-        return playerDrawDecks.computeIfAbsent(playerId,
-                _ -> new SheepDrawDeck(sheepWeightTable.weights(), ThreadLocalRandom.current())).next();
+    public SheepType randomSheepType() {
+        return sheepPicker.next(ThreadLocalRandom.current());
     }
 
     // ── Sheep lifecycle ────────────────────────────────────────────────────

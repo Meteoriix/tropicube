@@ -13,11 +13,13 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Changed
 
+- SheepWars uses a twenty-second default delivery interval and direct independent weighted draws, preserving the configured probability on short and long matches.
 - SheepWars scoreboard teams now use the profile name actually visible to the client, including active nicknames.
 - Team entries are installed before glow metadata, and tablist names are colored explicitly for participants and spectators.
 
 ### Fixed
 
+- Sheep delivery deadlines are now tracked per player and remain pending while the five-sheep stock is full; a standard ten-minute match exposes twenty-nine useful periodic deadlines plus the starting sheep.
 - `/nick off` no longer deletes its recovery state before the backend has restored the profile and can repair a desynchronized visual identity instead of incorrectly reporting that no nick is active.
 - Changing teams in the SheepWars waiting room now immediately refreshes the name color in the tablist, including for nicked players.
 - SheepWars chat now refreshes the player name after `/nick off`, and the tablist removes the heart before names while retaining team or spectator colors.
