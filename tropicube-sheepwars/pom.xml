@@ -27,27 +27,12 @@
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
-        <!-- tropicube-docker-api (shaded) -->
+        <!-- Shared Paper runtime supplied by TropicubeCore to avoid duplicate model classloaders. -->
         <dependency>
             <groupId>fr.tropicube</groupId>
             <artifactId>tropicube-docker-api</artifactId>
             <version>${project.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.github.docker-java</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <!-- Redis -->
-        <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-        </dependency>
-        <!-- Gson -->
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>fr.skytasul</groupId>
@@ -73,6 +58,11 @@
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>all</shadedClassifierName>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>fr.tropicube:tropicube-docker-api</exclude>
+                                </excludes>
+                            </artifactSet>
                             <relocations>
                                 <relocation>
                                     <pattern>redis.clients.jedis</pattern>

@@ -27,6 +27,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Fixed
 
+- The Social menu no longer raises a `LinkageError`: Core is now the sole Paper provider of `tropicube-docker-api` models, which are no longer duplicated in Lobby and SheepWars JARs.
 - The Social menu no longer renders `<tc>`, reports construction failures safely, and follows the common hotbar style.
 - The `<tc>` and `<sw>` MiniMessage prefixes no longer leak bold styling into message bodies; only branding and explicitly tagged segments remain bold.
 - Sheep delivery deadlines are now tracked per player and remain pending while the five-sheep stock is full; a standard ten-minute match exposes twenty-nine useful periodic deadlines plus the starting sheep.
