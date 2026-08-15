@@ -81,7 +81,7 @@ public class ClassKitSelectionMenu implements Listener {
 
     private void openKitMenu(Player player, PlayerClass playerClass) {
         Inventory inv = Bukkit.createInventory(null, 9,
-                LangHelper.component(player, "sw.kit-menu-title", playerClass.getDisplayName()));
+                LangHelper.component(player, "sw.kit-menu-title", className(player, playerClass)));
 
         GamePlayer gp = plugin.getGameManager().getPlayer(player);
         PlayerKit currentKit = gp != null
@@ -107,17 +107,17 @@ public class ClassKitSelectionMenu implements Listener {
 
         if (!enabled) {
             icon = Material.GRAY_WOOL;
-            name = Component.text(pc.getDisplayName(), NamedTextColor.DARK_GRAY)
+            name = Component.text(className(uuid, pc), NamedTextColor.DARK_GRAY)
                     .decoration(TextDecoration.ITALIC, false)
                     .decoration(TextDecoration.STRIKETHROUGH, true);
         } else {
             icon = pc.getIcon();
-            name = Component.text(pc.getDisplayName(), pc.getColor())
+            name = Component.text(className(uuid, pc), pc.getColor())
                     .decoration(TextDecoration.ITALIC, false);
         }
 
         List<Component> lore = new ArrayList<>();
-        lore.add(Component.text(pc.getDescription(), NamedTextColor.GRAY)
+        lore.add(Component.text(classDescription(uuid, pc), NamedTextColor.GRAY)
                 .decoration(TextDecoration.ITALIC, false));
         lore.add(Component.empty());
         if (!enabled) {
@@ -141,17 +141,17 @@ public class ClassKitSelectionMenu implements Listener {
 
         if (!enabled) {
             icon = Material.GRAY_WOOL;
-            name = Component.text(kit.getDisplayName(), NamedTextColor.DARK_GRAY)
+            name = Component.text(kitName(uuid, kit), NamedTextColor.DARK_GRAY)
                     .decoration(TextDecoration.ITALIC, false)
                     .decoration(TextDecoration.STRIKETHROUGH, true);
         } else {
             icon = kit.getIcon();
-            name = Component.text(kit.getDisplayName(), kit.getColor())
+            name = Component.text(kitName(uuid, kit), kit.getColor())
                     .decoration(TextDecoration.ITALIC, false);
         }
 
         List<Component> lore = new ArrayList<>();
-        lore.add(Component.text(kit.getDescription(), NamedTextColor.GRAY)
+        lore.add(Component.text(kitDescription(uuid, kit), NamedTextColor.GRAY)
                 .decoration(TextDecoration.ITALIC, false));
         lore.add(Component.empty());
         if (!enabled) {
@@ -196,7 +196,7 @@ public class ClassKitSelectionMenu implements Listener {
                     gp.setPlayerClass(PlayerClass.NONE);
                 }
                 plugin.getPlayerDataManager().updateKit(player.getUniqueId(), PlayerKit.NONE);
-                player.sendMessage(LangHelper.component(player, "sw.kit-selected", PlayerKit.NONE.getDisplayName()));
+                player.sendMessage(LangHelper.component(player, "sw.kit-selected", kitName(uuid, PlayerKit.NONE)));
                 player.closeInventory();
                 return;
             }
@@ -224,7 +224,7 @@ public class ClassKitSelectionMenu implements Listener {
                     gp.setPlayerClass(pc);
                 }
                 plugin.getPlayerDataManager().updateKit(player.getUniqueId(), selected);
-                player.sendMessage(LangHelper.component(player, "sw.kit-selected", selected.getDisplayName()));
+                player.sendMessage(LangHelper.component(player, "sw.kit-selected", kitName(uuid, selected)));
                 player.closeInventory();
             }
         }
@@ -252,5 +252,25 @@ public class ClassKitSelectionMenu implements Listener {
             if (KIT_SLOTS[i] == slot) return kits[i];
         }
         return null;
+    }
+
+    private String className(Player player, PlayerClass playerClass) {
+        return className(player.getUniqueId(), playerClass);
+    }
+
+    private String className(UUID uuid, PlayerClass playerClass) {
+        return LangHelper.get(uuid, "sw.catalog-class-" + playerClass.name().toLowerCase(Locale.ROOT) + "-name");
+    }
+
+    private String classDescription(UUID uuid, PlayerClass playerClass) {
+        return LangHelper.get(uuid, "sw.catalog-class-" + playerClass.name().toLowerCase(Locale.ROOT) + "-description");
+    }
+
+    private String kitName(UUID uuid, PlayerKit kit) {
+        return LangHelper.get(uuid, "sw.catalog-kit-" + kit.name().toLowerCase(Locale.ROOT) + "-name");
+    }
+
+    private String kitDescription(UUID uuid, PlayerKit kit) {
+        return LangHelper.get(uuid, "sw.catalog-kit-" + kit.name().toLowerCase(Locale.ROOT) + "-description");
     }
 }

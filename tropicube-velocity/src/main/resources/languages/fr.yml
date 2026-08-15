@@ -47,6 +47,15 @@ proxy:
   send-received: "<tc><gray>Vous avez été envoyé sur <yellow>{0}<green>."
   send-player-not-found: "<tc><red>Joueur introuvable : <white>{0}"
   send-server-not-found: "<tc><red>Serveur introuvable : <white>{0}"
+  # /pull
+  pull-usage: "<tc><red>Usage : /pull \\<joueur>"
+  pull-player-not-found: "<tc><red>Joueur introuvable : <white>{0}"
+  pull-self: "<tc><yellow>Vous êtes déjà sur votre propre serveur."
+  pull-no-server: "<tc><red>Vous n'êtes connecté à aucun serveur."
+  pull-already-here: "<tc><yellow>{0} est déjà sur votre serveur."
+  pull-unavailable: "<tc><red>{0} ne peut pas rejoindre ce serveur."
+  pull-success: "<tc><green>{0} a été envoyé vers <yellow>{1}<green>."
+  pull-received: "<tc><gray>{0} vous a invité sur <yellow>{1}<gray>."
   # /find
   find-usage: "<tc><red>Usage : /find \\<joueur>"
   find-result: "<tc><gray>{0} <dark_gray>— <gray>Serveur : <yellow>{1}"

@@ -19,7 +19,9 @@ public class SheepwarsRejoinCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) return true;
-        if (args.length != 1 || !"join".equalsIgnoreCase(args[0])) {
+        boolean canonical = label.equalsIgnoreCase("rejoin") && args.length == 0;
+        boolean legacy = args.length == 1 && "join".equalsIgnoreCase(args[0]);
+        if (!canonical && !legacy) {
             player.sendMessage(LangHelper.component(player, "lobby.sw-rejoin-unavailable"));
             return true;
         }

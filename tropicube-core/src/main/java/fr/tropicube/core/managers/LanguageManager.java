@@ -128,10 +128,10 @@ public class LanguageManager {
 
     public String getLanguageDisplayName(String code) {
         return switch (code) {
-            case "fr" -> "<gray>🇫🇷 <white>Français";
-            case "en" -> "<gray>🇬🇧 <white>English";
-            case "es" -> "<gray>🇪🇸 <white>Español";
-            case "de" -> "<gray>🇩🇪 <white>Deutsch";
+            case "fr" -> "<blue>■<white>■<red>■ <dark_gray>FR <white>Français";
+            case "en" -> "<dark_blue>■<white>■<red>■ <dark_gray>EN <white>English";
+            case "es" -> "<red>■<yellow>■<red>■ <dark_gray>ES <white>Español";
+            case "de" -> "<dark_gray>■<red>■<yellow>■ <dark_gray>DE <white>Deutsch";
             default -> code;
         };
     }

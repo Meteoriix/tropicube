@@ -54,7 +54,9 @@ docker compose version
 python3 --version</code></pre></div>
 <p>Pour Docker rootless, régler <code>DOCKER_SOCKET_PATH</code>, par exemple <code>/run/user/1000/docker.sock</code>. Éviter d'exécuter tout le déploiement en root uniquement pour contourner des permissions Docker : configurer proprement le groupe Docker ou le mode rootless.</p>
 <h2 id="premiere-installation">Première installation<a class="heading-anchor" href="#premiere-installation" aria-label="Lien vers cette section">#</a></h2>
-<ol><li>Placer le projet sur la machine de déploiement.</li><li>Vérifier que les mondes existent sous <code>dockerfiles/worlds/lobby</code> et <code>dockerfiles/worlds/sheepwars</code>.</li><li>Vérifier les plugins tiers dans <code>dockerfiles/plugins/lobby</code> et <code>dockerfiles/plugins/sheepwars</code>, notamment HeadDatabase.</li><li>Créer <code>.env</code> et remplacer tous les secrets.</li><li>Adapter les UUID administrateurs, OPS, cartes et coordonnées.</li><li>Valider sans construire d'image.</li><li>Exécuter le déploiement complet.</li></ol>
+<ol><li>Placer le projet sur la machine de déploiement.</li><li>Vérifier que les mondes existent sous <code>dockerfiles/worlds/lobby</code> et <code>dockerfiles/worlds/sheepwars</code>.</li><li>Vérifier les plugins tiers dans <code>dockerfiles/plugins/lobby</code> et <code>dockerfiles/plugins/sheepwars</code>, notamment HeadDatabase.</li><li>Créer <code>.env</code> et remplacer tous les secrets.</li><li>Adapter les UUID administrateurs, OPS, cartes et coordonnées.</li><li>Valider sans construire d'image.</li></ol>
+<p>Les images Paper Lobby et SheepWars copient aussi <code>dockerfiles/configs/spigot.yml</code>. Ce fichier désactive l'enregistrement et le chargement de tous les advancements (<code>*</code>) ; il doit rester présent dans les deux images pour éviter les notifications et la progression vanilla sur l'ensemble des backends.</p>
+<ol><li>Exécuter le déploiement complet.</li></ol>
 <p>Windows :</p>
 <div class="code-block"><span class="code-language">powershell</span><pre class=""><code>Copy-Item .env.example .env
 # Éditer .env

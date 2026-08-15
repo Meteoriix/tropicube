@@ -52,8 +52,8 @@ class SheepDeliveryScheduleTest {
     }
 
     @Test
-    void fullDefaultMatchContainsTwentyNineUsefulPeriodicDeadlines() {
-        SheepDeliverySchedule schedule = new SheepDeliverySchedule(20, List.of(FIRST_PLAYER));
+    void fullDefaultMatchContainsThirtyNineUsefulPeriodicDeadlines() {
+        SheepDeliverySchedule schedule = new SheepDeliverySchedule(15, List.of(FIRST_PLAYER));
         int deliveries = 0;
 
         for (int elapsedSecond = 1; elapsedSecond < 600; elapsedSecond++) {
@@ -63,7 +63,7 @@ class SheepDeliveryScheduleTest {
             schedule.markDelivered(FIRST_PLAYER);
         }
 
-        assertEquals(29, deliveries);
+        assertEquals(39, deliveries);
     }
 
     @Test

@@ -31,6 +31,7 @@ public class PlayerConnectionListener {
             "tropicube.admin",
             "tropicube.admin.find",
             "tropicube.admin.send",
+            "tropicube.admin.pull",
             "tropicube.bypass.whitelist"
     );
 

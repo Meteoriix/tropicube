@@ -87,19 +87,19 @@ class GameCatalogTest {
 
         assertEquals(1.2, balance.decimal("kits.dps-sheep-damage-multiplier"), 0.0001);
         assertEquals(30, balance.ticks("global.countdown-seconds"));
-        assertEquals(8, balance.integer("sheep.fragmentation.total-damage-cap"));
+        assertEquals(11, balance.integer("sheep.fragmentation.total-damage-cap"));
     }
 
     @Test
-    void defaultSheepDistributionProvidesThirtyTotalDrawsPerFullGame() {
+    void defaultSheepDistributionProvidesFortyTotalDrawsPerFullGame() {
         YamlConfiguration configuration = loadDefaultConfiguration();
 
         int duration = configuration.getInt("default-settings.game-duration");
         int delay = configuration.getInt("default-settings.sheep-give-delay");
-        assertEquals(20, delay);
+        assertEquals(15, delay);
         int usefulPeriodicDeliveries = (duration - 1) / delay;
-        assertEquals(29, usefulPeriodicDeliveries);
-        assertEquals(30, 1 + usefulPeriodicDeliveries);
+        assertEquals(39, usefulPeriodicDeliveries);
+        assertEquals(40, 1 + usefulPeriodicDeliveries);
     }
 
     private static YamlConfiguration loadDefaultConfiguration() {

@@ -17,7 +17,7 @@ default-settings:
   # Random Kits (ignores player selection)
   random-kits: false
   # Delay between sheep spawns (in seconds)
-  sheep-give-delay: 20
+  sheep-give-delay: 15
   # Map vote: true = all vote, false = host chooses
   map-vote-enabled: true
   # Relative spawn weights of special sheep
@@ -43,6 +43,14 @@ custom-game-default-settings:
   auto-start: false
 # Validated gameplay tuning. Durations are expressed in seconds and damage/health in HP.
 gameplay-balance:
+  pvp:
+    legacy-attack-speed: 1024
+    wooden-sword-damage: 5.0
+    stone-sword-damage: 6.0
+    bow-damage-multiplier: 0.85
+    knockback-horizontal: 0.4
+    sprint-knockback-horizontal: 0.8
+    knockback-vertical: 0.4
   global:
     max-stored-sheep: 5
     underdog-sheep-per-missing-player: 3
@@ -64,12 +72,12 @@ gameplay-balance:
     tnt:
       block-power: 3.5
       radius: 6.5
-      damage: 7
+      damage: 9
     fire:
-      radius: 4
+      radius: 5
       fire-seconds: 4
       block-power: 1.5
-      damage: 3
+      damage: 4
     poison:
       radius: 3.5
       duration-seconds: 4
@@ -94,17 +102,17 @@ gameplay-balance:
       pursuit-speed: 1.4
       block-power: 2.5
       radius: 5
-      damage: 6
+      damage: 8
     meteor:
       impact-block-power: 1.5
       impact-radius: 4
-      impact-damage: 3
+      impact-damage: 4
       projectile-count: 4
       projectile-spread: 5
       projectile-period-ticks: 8
       projectile-block-power: 2
       projectile-radius: 3.5
-      projectile-damage: 3
+      projectile-damage: 4
     healing:
       radius: 5
       duration-seconds: 6
@@ -134,11 +142,11 @@ gameplay-balance:
       fragments: 4
       central-block-power: 0.75
       central-radius: 2
-      central-damage: 2
+      central-damage: 3
       fragment-block-power: 1.5
       fragment-radius: 3.5
-      fragment-damage: 3
-      total-damage-cap: 8
+      fragment-damage: 4
+      total-damage-cap: 11
 
 
 force-settings:

@@ -2,6 +2,7 @@ package fr.tropicube.sheepwars.listener;
 
 import fr.tropicube.sheepwars.TropicubeSheepwars;
 import fr.tropicube.sheepwars.game.GameState;
+import fr.tropicube.sheepwars.game.LegacyCombatRules;
 import fr.tropicube.sheepwars.player.GamePlayer;
 import fr.tropicube.sheepwars.player.PlayerKit;
 import fr.tropicube.sheepwars.sheep.SheepType;
@@ -13,6 +14,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Bukkit;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.damage.DamageType;
 import org.bukkit.entity.AbstractArrow;
@@ -33,6 +35,7 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -205,6 +208,10 @@ public class PlayerListener implements Listener {
     public void onDamageByEntity(EntityDamageByEntityEvent event) {
         if (plugin.getGameManager().getState() != GameState.PLAYING) return;
         if (!(event.getEntity() instanceof Player target)) return;
+        if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK) {
+            event.setCancelled(true);
+            return;
+        }
 
         Player shooter;
         boolean isArrow;
@@ -246,6 +253,31 @@ public class PlayerListener implements Listener {
                 }
             }
             return;
+        }
+
+        if (isArrow) {
+            event.setDamage(LegacyCombatRules.bowDamage(event.getDamage(),
+                    plugin.getGameplayBalance().decimal("pvp.bow-damage-multiplier")));
+        } else if (event.getDamager() instanceof Player meleeAttacker
+                && shooterGp.getTeam() != targetGp.getTeam()) {
+            Material weapon = meleeAttacker.getInventory().getItemInMainHand().getType();
+            event.setDamage(LegacyCombatRules.meleeDamage(event.getDamage(),
+                    weapon == Material.WOODEN_SWORD, weapon == Material.STONE_SWORD,
+                    plugin.getGameplayBalance().decimal("pvp.wooden-sword-damage"),
+                    plugin.getGameplayBalance().decimal("pvp.stone-sword-damage")));
+            Vector previous = target.getVelocity().clone();
+            double directionX = target.getX() - meleeAttacker.getX();
+            double directionZ = target.getZ() - meleeAttacker.getZ();
+            boolean sprinting = meleeAttacker.isSprinting();
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if (!target.isOnline() || plugin.getGameManager().getState() != GameState.PLAYING) return;
+                var knockback = LegacyCombatRules.knockback(previous.getX(), previous.getY(), previous.getZ(),
+                        directionX, directionZ, sprinting,
+                        plugin.getGameplayBalance().decimal("pvp.knockback-horizontal"),
+                        plugin.getGameplayBalance().decimal("pvp.sprint-knockback-horizontal"),
+                        plugin.getGameplayBalance().decimal("pvp.knockback-vertical"));
+                target.setVelocity(new Vector(knockback.x(), knockback.y(), knockback.z()));
+            });
         }
 
         // STRENGTH SHEEP: +20% damage against enemies
@@ -342,6 +374,7 @@ public class PlayerListener implements Listener {
 
         if (event.getTo().getY() < plugin.getGameManager().getLobbyVoidLimit()) {
             event.getPlayer().teleport(lobby);
+            plugin.getGameManager().clearMomentum(event.getPlayer());
         }
     }
 

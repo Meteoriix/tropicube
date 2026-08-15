@@ -174,12 +174,14 @@ public class TropicubeLobby extends JavaPlugin {
 
     private void registerCommands() {
         Objects.requireNonNull(getCommand("spawn"), "Commande spawn absente de plugin.yml").setExecutor(new HubCommand(this));
-        Objects.requireNonNull(getCommand("servers"), "Commande servers absente de plugin.yml").setExecutor(new ServersCommand(this));
+        Objects.requireNonNull(getCommand("play"), "Commande play absente de plugin.yml").setExecutor(new ServersCommand(this));
         Objects.requireNonNull(getCommand("languages"), "Commande languages absente de plugin.yml").setExecutor(new LangCommand(this));
         Objects.requireNonNull(getCommand("vip"), "Commande vip absente de plugin.yml").setExecutor(new VipCommand(this));
-        Objects.requireNonNull(getCommand("flymode"), "Commande flymode absente de plugin.yml").setExecutor(new FlyModeCommand(this));
-        Objects.requireNonNull(getCommand("playnext"), "Commande playnext absente de plugin.yml").setExecutor(new PlayNextCommand(this));
-        Objects.requireNonNull(getCommand("sw"), "Commande sw absente de plugin.yml").setExecutor(new SheepwarsRejoinCommand(this));
+        Objects.requireNonNull(getCommand("fly"), "Commande fly absente de plugin.yml").setExecutor(new FlyModeCommand(this));
+        Objects.requireNonNull(getCommand("replay"), "Commande replay absente de plugin.yml").setExecutor(new PlayNextCommand(this));
+        var rejoinCommand = new SheepwarsRejoinCommand(this);
+        Objects.requireNonNull(getCommand("rejoin"), "Commande rejoin absente de plugin.yml").setExecutor(rejoinCommand);
+        Objects.requireNonNull(getCommand("sw"), "Commande sw absente de plugin.yml").setExecutor(rejoinCommand);
     }
 
     public static TropicubeLobby getInstance() { return instance; }

@@ -13,7 +13,8 @@
 | `/nick off` | — | none | Restores the original identity, even after losing the required grade |
 | `/find <player>` | — | `tropicube.admin.find` | Locates a connected player |
 | `/send <player|*> <server>` | — | `tropicube.admin.send` | Transfers one or all players |
-| `/tropi ...` | `/tropicube`, `/cm` | `tropicube.admin` | Administers dynamic instances |
+| `/pull <player>` | — | `tropicube.admin.pull` | Brings a player to the sender's joinable server |
+| `/tropicube ...` | `/tropi`, `/cm` | `tropicube.admin` | Administers dynamic instances |
 
 `nick.allowed-grades` controls who may enable a nick. Disabling is always allowed, cancels an outstanding skin request, and can be retried while a backend has not restored the profile. The nick and original-profile Redis entries remain available until restoration succeeds, so a lost event cannot lock the player into the visual identity. The Redis identity keeps the fake `PREMIUM` display grade for 24 hours after disconnecting and restores it in the tablist after reconnecting, without changing real permissions. Concurrent generations for the same player are rejected.
 
@@ -28,16 +29,17 @@ Velocity validates `/whitelist`: the sender must own an active private custom ga
 | `/rank <set|info|list> ...` | grade administration | Reads and assigns grades, including temporary grades |
 | `/tropiperm ...` | permission administration | Manages individual and grade permissions |
 | `/lang [fr|en|de|es]` | none | Reads or changes the persistent language |
+| `/help [general|games|profile|staff]` | none; staff section is restricted | Summarizes available commands by category |
 | `/mute`, `/unmute`, `/kick`, `/warn`, `/history` | moderation permissions | Performs and audits moderation actions |
-| `/tropiadmin reload` | Core administration | Reloads supported Core configuration |
+| `/coreadmin reload` | Core administration | Reloads supported Core configuration (`/tropiadmin` remains an alias) |
 
 ## Lobby commands
 
 | Command | Purpose |
 |---|---|
-| `/servers` | Opens the server selector |
-| `/sw join` | Rejoins the remembered active SheepWars instance as a spectator |
-| `/playnext` | Joins or waits for the suggested replay instance |
+| `/play` | Opens the server selector (`/servers` remains an alias) |
+| `/rejoin` | Rejoins the remembered active SheepWars instance as a spectator (`/sw join` remains compatible) |
+| `/replay` | Joins or waits for the suggested replay instance (`/playnext` remains an alias) |
 | `/lang` | Opens or updates language selection |
 | `/fly` | Toggles authorized lobby flight |
 | `/vip` | Opens the VIP presentation interface |

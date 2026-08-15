@@ -22,9 +22,11 @@ Sources historiques : [présentation d'Epicube et origine du nom](https://www.mi
 4. Au début de la manche, chaque joueur rejoint un spawn libre de son équipe avec une armure en cuir colorée, une épée, un arc Infinité, une flèche et un mouton aléatoire.
 5. Un mouton spécial supplémentaire est distribué périodiquement à chaque survivant qui en stocke moins de cinq. Si le stock est plein à l'échéance, la remise reste en attente jusqu'à ce qu'une place se libère, puis le délai complet repart pour ce joueur. L'équipe en sous-nombre reçoit un pool de trois moutons par joueur manquant, réparti avec un plafond de deux bonus par joueur.
 6. Une mort est définitive pour la manche et place le joueur en spectateur. Tout joueur qui rejoint l'instance après le lancement arrive également en spectateur, sans équipe et sans influencer les conditions de victoire. La disparition de tous les survivants d'une équipe termine immédiatement la partie.
-7. Après l'écran de résultat, les joueurs sont renvoyés au lobby. Une prochaine instance est précréée lorsque possible et le lobby propose une revanche. Si elle démarre encore, les joueurs qui acceptent sont placés dans une file dédupliquée et la rejoignent automatiquement dès qu'elle est prête, sans multiplier les conteneurs.
+7. Après l'écran de résultat, les joueurs sont renvoyés au lobby. Une prochaine instance est précréée uniquement après une partie classique ; une partie personnalisée n'engendre jamais automatiquement un nouveau serveur. Le lobby peut alors proposer une revanche classique et mettre les joueurs en attente pendant sa création.
 
-La durée par défaut est de 600 secondes, le compte à rebours de 10 secondes et la distribution des moutons de 20 secondes. Un survivant qui conserve de la place reçoit ainsi un mouton initial puis 29 remises périodiques utiles avant la fin de la manche. Ces valeurs sont configurables.
+La durée par défaut est de 600 secondes, le compte à rebours de 10 secondes et la distribution configurée des moutons de 15 secondes. En partie classique, le délai est adapté une fois au lancement : 10 secondes pour 2 à 4 joueurs, 12 secondes pour 5 à 8 joueurs et 15 secondes pour 9 à 16 joueurs. Une partie personnalisée conserve le délai fixé par l'hôte.
+
+Le combat adopte les fondamentaux compétitifs de Minecraft 1.8 : aucune recharge d'attaque, absence d'attaque circulaire, dégâts d'épées en bois et en pierre restaurés à 5 et 6 PV, et recul horizontal/vertical rétabli avec une impulsion renforcée en sprint. L'arc applique un multiplicateur de 0,85, y compris avec le kit Archer dont l'enchantement Puissance reste inchangé. Tous ces paramètres sont centralisés sous `gameplay-balance.pvp`.
 
 ## Classes et kits
 
@@ -49,10 +51,10 @@ L'hôte peut désactiver des classes ou des kits. Le mode « kits aléatoires »
 | Mouton | Fonction principale |
 |---|---|
 | Abordage | Transporte son lanceur pour franchir l'espace entre les îles |
-| TNT | Produit une explosion de 7 PV maximum dans un rayon de 6,5 blocs |
+| TNT | Produit une explosion de 9 PV maximum dans un rayon de 6,5 blocs |
 | Distortion | Déplace jusqu'à 72 blocs dans un rayon de 4 blocs |
 | Ténébreux | Inflige Lenteur II, Cécité I et Fatigue I pendant 4 secondes dans un rayon de 5 blocs |
-| Feu | Inflige jusqu'à 3 PV et enflamme pendant 4 secondes |
+| Feu | Inflige jusqu'à 4 PV dans un rayon de 5 blocs et enflamme pendant 4 secondes |
 | Poison | Crée pendant 4 secondes une zone de Poison II et de faibles dégâts directs |
 | Échange | Échange le lanceur avec la cible proche, ou effectue un dash sans cible |
 | Météore | Produit un impact modéré puis quatre projectiles contrôlés |
@@ -62,7 +64,7 @@ L'hôte peut désactiver des classes ou des kits. Le mode « kits aléatoires »
 | Gravité | Attire dans un rayon de 7 blocs puis projette modérément les ennemis proches |
 | Mécha | Déploie pendant 20 secondes un golem de 50 PV qui attaque l'équipe ennemie |
 | Force | Augmente de 20 % les dégâts des alliés présents dans l'aura pendant 7 secondes |
-| Fragmentation | Libère quatre charges et plafonne les dégâts cumulés à 8 PV par cible |
+| Fragmentation | Libère quatre charges et plafonne les dégâts cumulés à 11 PV par cible |
 
 Chaque type possède une probabilité configurable dans `default-settings.sheep-probabilities`. La distribution standard utilise les pourcentages suivants :
 

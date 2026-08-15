@@ -253,7 +253,7 @@ public class GameSettingsMenu implements Listener {
 
         // Third row: deadline, random kits, start, vote and feedback.
         if (isConfigurable("sheep-give-delay")) {
-            int delay = cfg.getInt("default-settings.sheep-give-delay", 25);
+            int delay = cfg.getInt("default-settings.sheep-give-delay", 15);
             List<Component> delayLore = new ArrayList<>();
             delayLore.add(Component.text(delay + "s", NamedTextColor.WHITE)
                     .decoration(TextDecoration.ITALIC, false));
@@ -308,15 +308,15 @@ public class GameSettingsMenu implements Listener {
         boolean enabled = isSheepEnabled(type);
         Material mat = enabled ? Material.valueOf(type.getWool().name() + "_WOOL") : Material.GRAY_WOOL;
         Component name = enabled
-                ? Component.text(type.getDisplayName(), type.getTextColor())
+                ? Component.text(sheepName(player, type), type.getTextColor())
                         .decoration(TextDecoration.ITALIC, false)
-                : Component.text(type.getDisplayName(), NamedTextColor.DARK_GRAY)
+                : Component.text(sheepName(player, type), NamedTextColor.DARK_GRAY)
                         .decoration(TextDecoration.ITALIC, false)
                         .decoration(TextDecoration.STRIKETHROUGH, true);
         return new ItemBuilder(mat)
                 .name(name)
                 .lore(
-                    Component.text(type.getDescription(), NamedTextColor.GRAY)
+                    Component.text(sheepDescription(player, type), NamedTextColor.GRAY)
                             .decoration(TextDecoration.ITALIC, false),
                     Component.empty(),
                     toggleLine(player, enabled)
@@ -339,14 +339,14 @@ public class GameSettingsMenu implements Listener {
         int weight = plugin.getSheepManager().getEffectiveWeight(type);
         double percentage = plugin.getSheepManager().getEffectivePercentage(type);
         Component name = enabled
-                ? Component.text(type.getDisplayName(), type.getTextColor()).decoration(TextDecoration.ITALIC, false)
-                : Component.text(type.getDisplayName(), NamedTextColor.DARK_GRAY)
+                ? Component.text(sheepName(player, type), type.getTextColor()).decoration(TextDecoration.ITALIC, false)
+                : Component.text(sheepName(player, type), NamedTextColor.DARK_GRAY)
                         .decoration(TextDecoration.ITALIC, false)
                         .decoration(TextDecoration.STRIKETHROUGH, true);
         return new ItemBuilder(mat)
                 .name(name)
                 .lore(
-                    Component.text(type.getDescription(), NamedTextColor.GRAY)
+                    Component.text(sheepDescription(player, type), NamedTextColor.GRAY)
                             .decoration(TextDecoration.ITALIC, false),
                     Component.empty(),
                     Component.text(LangHelper.get(player, "sw.settings-weight-label", weight,
@@ -360,15 +360,15 @@ public class GameSettingsMenu implements Listener {
         boolean enabled = isKitEnabled(kit);
         Material mat = enabled ? kit.getIcon() : Material.GRAY_WOOL;
         Component name = enabled
-                ? Component.text(kit.getDisplayName(), kit.getColor())
+                ? Component.text(kitName(player, kit), kit.getColor())
                         .decoration(TextDecoration.ITALIC, false)
-                : Component.text(kit.getDisplayName(), NamedTextColor.DARK_GRAY)
+                : Component.text(kitName(player, kit), NamedTextColor.DARK_GRAY)
                         .decoration(TextDecoration.ITALIC, false)
                         .decoration(TextDecoration.STRIKETHROUGH, true);
         return new ItemBuilder(mat)
                 .name(name)
                 .lore(
-                    Component.text(kit.getDescription(), NamedTextColor.GRAY)
+                    Component.text(kitDescription(player, kit), NamedTextColor.GRAY)
                             .decoration(TextDecoration.ITALIC, false),
                     Component.empty(),
                     toggleLine(player, enabled)
@@ -379,20 +379,44 @@ public class GameSettingsMenu implements Listener {
     private ItemStack classToggleItem(Player player, PlayerClass playerClass) {
         boolean enabled = isClassEnabled(playerClass);
         Material mat = enabled ? playerClass.getIcon() : Material.GRAY_WOOL;
-        Component name = enabled ? Component.text(playerClass.getDisplayName(), playerClass.getColor())
+        Component name = enabled ? Component.text(className(player, playerClass), playerClass.getColor())
                                    .decoration(TextDecoration.ITALIC, false)
-                : Component.text(playerClass.getDisplayName(), NamedTextColor.DARK_GRAY)
+                : Component.text(className(player, playerClass), NamedTextColor.DARK_GRAY)
                   .decoration(TextDecoration.ITALIC, false)
                   .decoration(TextDecoration.STRIKETHROUGH, true);
 
         return new ItemBuilder(mat)
                 .name(name)
-                .lore(Component.text(playerClass.getDescription(), NamedTextColor.GRAY)
+                .lore(Component.text(classDescription(player, playerClass), NamedTextColor.GRAY)
                         .decoration(TextDecoration.ITALIC, false),
                         Component.empty(),
                         toggleLine(player, enabled)
                 )
                 .noTooltip().build();
+    }
+
+    private String className(Player player, PlayerClass playerClass) {
+        return LangHelper.get(player, "sw.catalog-class-" + playerClass.name().toLowerCase(Locale.ROOT) + "-name");
+    }
+
+    private String classDescription(Player player, PlayerClass playerClass) {
+        return LangHelper.get(player, "sw.catalog-class-" + playerClass.name().toLowerCase(Locale.ROOT) + "-description");
+    }
+
+    private String kitName(Player player, PlayerKit kit) {
+        return LangHelper.get(player, "sw.catalog-kit-" + kit.name().toLowerCase(Locale.ROOT) + "-name");
+    }
+
+    private String kitDescription(Player player, PlayerKit kit) {
+        return LangHelper.get(player, "sw.catalog-kit-" + kit.name().toLowerCase(Locale.ROOT) + "-description");
+    }
+
+    private String sheepName(Player player, SheepType type) {
+        return LangHelper.get(player, "sw.catalog-sheep-" + type.name().toLowerCase(Locale.ROOT) + "-name");
+    }
+
+    private String sheepDescription(Player player, SheepType type) {
+        return LangHelper.get(player, "sw.catalog-sheep-" + type.name().toLowerCase(Locale.ROOT) + "-description");
     }
 
     private ItemStack displayItem(Material material, String label, String value) {

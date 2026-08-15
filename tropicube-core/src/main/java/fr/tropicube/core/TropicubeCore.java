@@ -186,14 +186,17 @@ public class TropicubeCore extends JavaPlugin {
 
             // --- Permissions ---
             var permCmd = new PermissionCommand(this);
-            Objects.requireNonNull(getCommand("tropiperm")).setExecutor(permCmd);
-            Objects.requireNonNull(getCommand("tropiperm")).setTabCompleter(permCmd);
+            Objects.requireNonNull(getCommand("permissions")).setExecutor(permCmd);
+            Objects.requireNonNull(getCommand("permissions")).setTabCompleter(permCmd);
 
         // --- Language ---
             Objects.requireNonNull(getCommand("lang")).setExecutor(new LanguageCommand(this));
 
             // --- General administration ---
-            Objects.requireNonNull(getCommand("tropiadmin")).setExecutor(new TropicubeAdminPaperCommand(this));
+            Objects.requireNonNull(getCommand("coreadmin")).setExecutor(new TropicubeAdminPaperCommand(this));
+            var helpCommand = new HelpCommand(this);
+            Objects.requireNonNull(getCommand("help")).setExecutor(helpCommand);
+            Objects.requireNonNull(getCommand("help")).setTabCompleter(helpCommand);
 
             // --- Moderation ---
             Objects.requireNonNull(getCommand("mute")).setExecutor(new MuteCommand(this));

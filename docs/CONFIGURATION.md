@@ -143,12 +143,13 @@ Le `grade-key` d'une entrée VIP doit exister dans Core. Le prix doit être posi
 
 Fichier : `dockerfiles/configs/TropicubeSheepwars/config.yml`.
 
-- `default-settings` fixe capacité, démarrage, durées, kits, vote et fréquence des moutons ; `sheep-give-delay` vaut 20 secondes par défaut, soit 29 remises périodiques utiles plus le mouton initial pendant une partie complète de 10 minutes ;
+- `default-settings` fixe capacité, démarrage, durées, kits, vote et fréquence des moutons ; `sheep-give-delay` vaut 15 secondes par défaut. En partie classique, la cadence est figée au lancement selon l'effectif : 10 secondes de 2 à 4 joueurs, 12 secondes de 5 à 8, puis 15 secondes de 9 à 16. Une partie personnalisée conserve la valeur choisie par l'hôte ;
 - `default-settings.auto-start` vaut `true` par défaut pour les parties classiques et lance le compte à rebours dès que `min-players` est atteint ;
 - `custom-game-default-settings.auto-start` vaut `false` par défaut et remplace cette valeur à l'initialisation d'une instance possédant un `HOST_UUID` ; l'hôte peut ensuite la modifier pour la partie courante ;
 - `CUSTOM_GAME_PRIVATE`, injecté automatiquement par Velocity avec `HOST_UUID`, indique au backend si l'item de whitelist doit être remis à l'hôte ; cette variable interne ne doit pas être configurée manuellement dans le template ;
 - `sheep-probabilities` contient des poids relatifs, pas nécessairement un total de 100 ; les valeurs par défaut totalisent 100 et privilégient TNT/Soin à 10 %, Force à 9 %, Abordage/Feu/Foudre à 8 %, Recherche/Échange à 7 %, Ténèbres/Poison/Fragmentation à 6 %, Gravité à 5 %, Météore à 4 % et Distorsion/Mécha à 3 % ;
 - `gameplay-balance.global` configure le stock maximal, la compensation de sous-effectif, le délai d'armement et les PV des moutons destructibles ;
+- `gameplay-balance.pvp` configure la vitesse d'attaque sans recharge, les dégâts 1.8 des épées, le multiplicateur de dégâts d'arc et les composantes horizontale, verticale et de sprint du recul ;
 - `gameplay-balance.kits` configure les multiplicateurs, points de vie, résistances et temporisations des kits ;
 - `gameplay-balance.sheep` regroupe par type les dégâts, rayons, durées, puissances de destruction, nombres de cibles et plafonds. Les durées nommées `*-seconds` sont exprimées en secondes, les périodes `*-ticks` en ticks et les dégâts/soins en PV ;
 - `force-settings` désactive des classes, kits ou moutons ;

@@ -15,13 +15,14 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 | `/rank info <joueur>` | `/grade` | `tropicube.grade.admin` | Affiche le grade d'un joueur |
 | `/rank set <joueur> <grade>` | `/grade` | `tropicube.grade.admin` | Attribue un grade existant |
 | `/lang [fr|en|es|de]` | `/language`, `/langue` | aucune | Affiche ou change la langue |
+| `/help [general|games|profile|staff]` | — | aucune ; catégorie staff réservée au personnel | Résume les commandes disponibles par catégorie |
 | `/mute <joueur> <durée> [raison]` | — | `tropicube.mute` | Met un joueur en sourdine |
 | `/unmute <joueur>` | — | `tropicube.mute` | Lève la sourdine |
 | `/kick <joueur> [raison]` | — | `tropicube.kick` | Expulse et journalise l'action |
 | `/warn <joueur> <raison>` | — | `tropicube.warn` | Ajoute un avertissement |
 | `/history <joueur>` | — | `tropicube.history` | Affiche l'historique de sanctions |
-| `/tropiadmin reload` | `/ca` | `tropicube.admin` | Recharge la configuration Core et les langues |
-| `/tropiadmin info` | `/ca` | `tropicube.admin` | Affiche l'état des services Core |
+| `/coreadmin reload` | `/tropiadmin`, `/ca` | `tropicube.admin` | Recharge la configuration Core et les langues |
+| `/coreadmin info` | `/tropiadmin`, `/ca` | `tropicube.admin` | Affiche l'état des services Core |
 
 Durées acceptées : une valeur comprise par `DurationParser`, par exemple `30s`, `10m`, `2h`, `7d`. Une permission sans durée est permanente.
 
@@ -31,12 +32,12 @@ Toutes les formes ci-dessous exigent `tropicube.admin.perm` :
 
 | Commande | Effet |
 |---|---|
-| `/tropiperm add <joueur> <permission> [durée]` | Ajoute une permission individuelle |
-| `/tropiperm remove <joueur> <permission>` | Retire une permission individuelle |
-| `/tropiperm list <joueur>` | Affiche le grade et les permissions effectives stockées |
-| `/tropiperm grade add <grade> <permission>` | Ajoute une permission à un grade |
-| `/tropiperm grade remove <grade> <permission>` | Retire une permission d'un grade |
-| `/tropiperm grade list <grade>` | Liste les permissions d'un grade |
+| `/permissions add <joueur> <permission> [durée]` | Ajoute une permission individuelle |
+| `/permissions remove <joueur> <permission>` | Retire une permission individuelle |
+| `/permissions list <joueur>` | Affiche le grade et les permissions effectives stockées |
+| `/permissions grade add <grade> <permission>` | Ajoute une permission à un grade |
+| `/permissions grade remove <grade> <permission>` | Retire une permission d'un grade |
+| `/permissions grade list <grade>` | Liste les permissions d'un grade |
 
 Attention : les permissions de grade présentes dans `TropicubeCore/config.yml` sont resynchronisées au démarrage. Il faut modifier la configuration de déploiement pour rendre un changement durable.
 
@@ -45,12 +46,12 @@ Attention : les permissions de grade présentes dans `TropicubeCore/config.yml` 
 | Commande | Alias | Permission | Description |
 |---|---|---|---|
 | `/spawn` | — | aucune | Téléporte au spawn configuré du lobby |
-| `/servers` | `/sv`, `/play` | aucune | Ouvre le sélecteur de modes et serveurs |
+| `/play` | `/servers`, `/sv` | aucune | Ouvre le sélecteur de modes et serveurs |
 | `/languages` | — | aucune | Ouvre le sélecteur de langue |
 | `/vip` | `/boutique`, `/shop` | aucune | Ouvre la boutique de grades VIP |
-| `/flymode` | `/fm` | `tropicube.lobby.fly` | Bascule entre vol permanent et sauts aériens |
-| `/playnext` | `/playagain`, `/rejouer` | aucune | Rejoint la partie suivante ou attend sa création avec connexion automatique |
-| `/sw join` | — | aucune | Rejoint une partie SheepWars quittée volontairement si elle est encore active |
+| `/fly` | `/flymode`, `/fm` | `tropicube.lobby.fly` | Bascule entre vol permanent et sauts aériens |
+| `/replay` | `/playnext`, `/playagain`, `/rejouer` | aucune | Rejoint la partie suivante ou attend sa création avec connexion automatique |
+| `/rejoin` | `/sw join` | aucune | Rejoint une partie SheepWars quittée volontairement si elle est encore active |
 
 Permissions fonctionnelles du lobby :
 
@@ -78,7 +79,7 @@ Le module est actuellement vide et n'ajoute donc aucune commande ni permission.
 
 | Commande | Alias | Permission | Description |
 |---|---|---|---|
-| `/hub` | `/lobby` | aucune | Transfère vers le lobby disponible le moins chargé |
+| `/lobby` | `/hub` | aucune | Transfère vers le lobby disponible le moins chargé |
 | `/whitelist add <joueur>` | — | hôte d'une partie privée | Ajoute un joueur connu à la partie personnalisée privée |
 | `/whitelist remove <joueur>` | — | hôte d'une partie privée | Retire un joueur de la partie, sauf l'hôte lui-même |
 | `/server [nom]` | — | aucune | Liste les instances ou se connecte à une instance joignable |
@@ -87,7 +88,8 @@ Le module est actuellement vide et n'ajoute donc aucune commande ni permission.
 | `/nick off` | — | aucune | Restaure l'identité originale, même après une perte de grade |
 | `/find <joueur>` | — | `tropicube.admin.find` | Localise un joueur connecté |
 | `/send <joueur|*> <serveur>` | — | `tropicube.admin.send` | Transfère un joueur ou tous les joueurs |
-| `/tropi ...` | `/tropicube`, `/cm` | `tropicube.admin` | Administration des instances |
+| `/pull <joueur>` | — | `tropicube.admin.pull` | Fait venir un joueur sur le serveur actuel, si celui-ci est joignable |
+| `/tropicube ...` | `/tropi`, `/cm` | `tropicube.admin` | Administration des instances |
 
 Les grades autorisés à activer `/nick` sont configurés dans `nick.allowed-grades`; les grades staff sont destinés à y figurer explicitement. `/nick off` reste toujours accessible, annule aussi une génération encore en attente et peut être rejoué si un backend n'a pas encore restauré le profil. Le changement est propagé aux backends par Redis sans déconnexion volontaire du joueur ; l'identité et le profil original restent disponibles jusqu'à la restauration effective afin qu'une perte d'événement ne bloque jamais le joueur. Deux générations simultanées pour le même joueur sont refusées. L'identité Redis conserve également le grade d'affichage factice `PREMIUM` pendant 24 heures après une déconnexion et le restaure dans la tablist à la reconnexion, sans modifier les permissions réelles.
 
@@ -115,6 +117,6 @@ Les permissions Paper sont résolues par TropicubeCore à partir du grade et des
 - `tropicube.chat.color` : MiniMessage/couleurs autorisés dans le chat ;
 - `tropicube.vip`, `tropicube.premium`, `tropicube.staff` : marqueurs fonctionnels de grade.
 
-Velocity possède son propre fournisseur de permissions. Les UUID inscrits dans `admin-uuids` reçoivent exactement `tropicube.admin`, `tropicube.admin.find`, `tropicube.admin.send` et `tropicube.bypass.whitelist`. Les permissions arbitraires de Core ne sont pas automatiquement importées dans le proxy. La priorité de `/queue` et l'accès à `/nick` lisent séparément le grade publié dans Redis.
+Velocity possède son propre fournisseur de permissions. Les UUID inscrits dans `admin-uuids` reçoivent exactement `tropicube.admin`, `tropicube.admin.find`, `tropicube.admin.send`, `tropicube.admin.pull` et `tropicube.bypass.whitelist`. Les permissions arbitraires de Core ne sont pas automatiquement importées dans le proxy. La priorité de `/queue` et l'accès à `/nick` lisent séparément le grade publié dans Redis.
 
 `OWNER` possède `*` et `ADMIN` possède `tropicube.*` sur Paper. Les valeurs `default: op` de `plugin.yml` restent utiles en environnement local, mais les grades constituent la source normale des autorisations sur les backends.

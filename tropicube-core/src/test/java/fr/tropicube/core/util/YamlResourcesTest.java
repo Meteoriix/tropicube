@@ -118,6 +118,31 @@ class YamlResourcesTest {
     }
 
     @Test
+    void languageSelectorsDoNotUseRegionalFlagSymbols() throws Exception {
+        for (Path root : List.of(Path.of("src/main/resources"),
+                Path.of("../tropicube-lobby/src/main/resources"), Path.of("src/main/java"))) {
+            try (var paths = Files.walk(root)) {
+                for (Path file : paths.filter(Files::isRegularFile)
+                        .filter(path -> path.toString().endsWith(".java") || path.toString().endsWith(".yml"))
+                        .toList()) {
+                    String content = Files.readString(file);
+                    for (String flag : List.of("🇫🇷", "🇬🇧", "🇪🇸", "🇩🇪")) {
+                        assertFalse(content.contains(flag), () -> "Drapeau régional restant dans " + file);
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    void paperBackendsDisableAllAdvancements() {
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(
+                Path.of("../dockerfiles/configs/spigot.yml").toFile());
+        assertTrue(config.getBoolean("advancements.disable-saving"));
+        assertEquals(List.of("*"), config.getStringList("advancements.disabled"));
+    }
+
+    @Test
     void playerDrivenNarrativeMessagesStayUnprefixed() {
         List<String> narrativeKeys = List.of(
                 "join.message",

@@ -6,6 +6,9 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import fr.tropicube.velocity.managers.TropiServerManager;
 import fr.tropicube.velocity.managers.VelocityLanguageManager;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /** Implements the administrative command {@code /send <player|*> <server>}. */
 public class SendCommand implements SimpleCommand {
     private final ProxyServer proxy;
@@ -66,5 +69,29 @@ public class SendCommand implements SimpleCommand {
     @Override
     public boolean hasPermission(Invocation invocation) {
         return invocation.source().hasPermission("tropicube.admin.send");
+    }
+
+    @Override
+    public List<String> suggest(Invocation invocation) {
+        if (!hasPermission(invocation)) return List.of();
+        String[] args = invocation.arguments();
+        if (args.length <= 1) {
+            String prefix = args.length == 0 ? "" : args[0];
+            List<String> players = new ArrayList<>();
+            players.add("*");
+            proxy.getAllPlayers().forEach(player -> players.add(player.getUsername()));
+            return matching(players, prefix);
+        }
+        if (args.length == 2) {
+            return matching(manager.getActiveInstances().values().stream()
+                    .filter(instance -> instance.isOnline() && proxy.getServer(instance.getServerName()).isPresent())
+                    .map(instance -> instance.getServerName()).toList(), args[1]);
+        }
+        return List.of();
+    }
+
+    private static List<String> matching(List<String> values, String prefix) {
+        return values.stream().filter(value -> value.regionMatches(true, 0, prefix, 0, prefix.length()))
+                .sorted(String.CASE_INSENSITIVE_ORDER).toList();
     }
 }

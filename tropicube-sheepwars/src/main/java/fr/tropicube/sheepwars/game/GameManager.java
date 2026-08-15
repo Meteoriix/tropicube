@@ -214,6 +214,7 @@ public class GameManager {
     public void removePlayer(Player player) {
         GamePlayer gp = players.remove(player.getUniqueId());
         if (gp == null) return;
+        restoreCombatAttributes(player);
         if (sheepDeliverySchedule != null) sheepDeliverySchedule.remove(player.getUniqueId());
         plugin.getSheepManager().forgetSheepHistory(player.getUniqueId());
         disableGlowingFor(gp);
@@ -296,6 +297,7 @@ public class GameManager {
         Objects.requireNonNull(player.getAttribute(Attribute.MAX_HEALTH)).setBaseValue(20.0);
         var knockbackAttr = player.getAttribute(Attribute.KNOCKBACK_RESISTANCE);
         if (knockbackAttr != null) knockbackAttr.setBaseValue(0.0);
+        restoreCombatAttributes(player);
 
         player.getInventory().clear();
         player.setHealth(20.0);
@@ -387,7 +389,8 @@ public class GameManager {
         if (instanceId != null) {
             plugin.getRedisManager().set("sw:game-started:" + instanceId, "1", 7200);
             var selfInstance = plugin.getRedisManager().getInstance(instanceId);
-            if (selfInstance != null && selfInstance.getTemplateId() != null) {
+            if (selfInstance != null && selfInstance.getTemplateId() != null
+                    && NextGameCreationPolicy.shouldPrepare(hostUuid)) {
                 plugin.getRedisManager().publishCommand("PROXY", "CREATE_GAME:" + selfInstance.getTemplateId() + ":" + instanceId);
             }
         }
@@ -395,8 +398,10 @@ public class GameManager {
 
         plugin.getSheepManager().reset();
 
-        int sheepDelaySeconds = Math.max(1,
-                plugin.getConfig().getInt("default-settings.sheep-give-delay", 20));
+        int configuredSheepDelaySeconds = Math.max(1,
+                plugin.getConfig().getInt("default-settings.sheep-give-delay", 15));
+        int sheepDelaySeconds = SheepDeliveryIntervalPolicy.resolve(!hostUuid.equals(NO_HOST),
+                configuredSheepDelaySeconds, players.size());
         if (sheepDelaySeconds < 5) {
             Player host = Bukkit.getPlayer(hostUuid);
             if (host != null)
@@ -438,6 +443,11 @@ public class GameManager {
 
             p.setGameMode(GameMode.SURVIVAL);
             resetPlayer(p);
+            clearMomentum(p);
+            var attackSpeed = p.getAttribute(Attribute.ATTACK_SPEED);
+            if (attackSpeed != null) {
+                attackSpeed.setBaseValue(plugin.getGameplayBalance().decimal("pvp.legacy-attack-speed"));
+            }
 
             // Starter kit (modified depending on the class chosen)
             giveBaseKit(p, gp);
@@ -676,6 +686,7 @@ public class GameManager {
         for (GamePlayer gp : players.values()) {
             Player p = gp.getBukkitPlayer();
             if (p == null) continue;
+            restoreCombatAttributes(p);
             Component locTitle = winner == null
                     ? Component.text(LangHelper.get(p.getUniqueId(), "sw.title-draw"), NamedTextColor.YELLOW)
                     : Component.text(LangHelper.get(p.getUniqueId(), "sw.title-winner", winner.getDisplayName()), winner.getColor());
@@ -897,6 +908,8 @@ public class GameManager {
         if (currentTask != null) currentTask.cancel();
         currentTask = null;
         sheepDeliverySchedule = null;
+        players.values().stream().map(GamePlayer::getBukkitPlayer).filter(Objects::nonNull)
+                .forEach(this::restoreCombatAttributes);
         players.clear();
         glowingEntities.disable();
         if (plugin.getSheepManager() != null) plugin.getSheepManager().reset();
@@ -910,5 +923,16 @@ public class GameManager {
             plugin.getLogger().warning(MessageStyle.log("sw", "GAME", "<yellow>HOST_UUID invalide : '" + value + "'. Mode sans hôte activé."));
             return NO_HOST;
         }
+    }
+
+    /** Removes velocity inherited from the waiting room and any pending fall damage. */
+    public void clearMomentum(Player player) {
+        player.setVelocity(new org.bukkit.util.Vector());
+        player.setFallDistance(0);
+    }
+
+    private void restoreCombatAttributes(Player player) {
+        var attackSpeed = player.getAttribute(Attribute.ATTACK_SPEED);
+        if (attackSpeed != null) attackSpeed.setBaseValue(4.0);
     }
 }

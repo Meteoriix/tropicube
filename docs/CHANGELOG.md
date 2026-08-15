@@ -6,6 +6,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Ajouté
 
+- Commandes réseau `/pull <joueur>` et aide localisée `/help`, avec autocomplétion proxy étendue pour `/send`.
+- Profil PvP SheepWars inspiré de Minecraft 1.8 : attaques sans recharge ni balayage, dégâts d'épée et recul configurables.
 - Gestion complète des parties personnalisées privées : commande proxy `/whitelist`, item hôte SheepWars, saisie enclume, retrait par menu, persistance Redis et filtrage du lobby par joueur.
 - Dépôt Git local initialisé avec une branche principale `main`.
 - Maven Wrapper 3.9.11 pour des builds reproductibles sous Windows et Linux.
@@ -20,6 +22,13 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Modifié
 
+- Cadence SheepWars ramenée à 15 secondes par défaut et adaptée à l'effectif des parties classiques (10/12/15 secondes) ; les parties personnalisées conservent le réglage de l'hôte.
+- Dégâts des moutons TNT, chercheur, fragmentation, feu et météore augmentés ; portée du mouton feu étendue et dégâts d'arc légèrement réduits.
+- Commandes harmonisées autour de `/play`, `/rejoin`, `/replay`, `/lobby`, `/permissions`, `/coreadmin` et `/tropicube`, avec maintien des anciens noms comme alias.
+- Sélecteur de langue modernisé avec des drapeaux en carrés colorés, sans symboles Unicode régionaux.
+- Noms et descriptions des classes, kits et moutons des menus SheepWars désormais localisés dans les quatre langues.
+- Les advancements sont désactivés sur tous les backends Paper, et une partie personnalisée terminée ne précrée plus de serveur suivant.
+- Le lancement SheepWars annule désormais la vélocité et la distance de chute résiduelles des joueurs téléportés depuis le vide de la salle d'attente.
 - En partie SheepWars personnalisée sans vote de carte, la carte choisie par l'hôte apparaît désormais immédiatement dans le scoreboard d'attente de tous les joueurs.
 - Scoreboards Lobby et SheepWars enrichis et aérés par des séparateurs tropicaux : profil, solde, fréquentation réseau et parties visibles au lobby ; carte, capacité, minimum requis, équipe, classe et statistiques personnelles en jeu. Les données d'économie restent chargées hors du thread principal.
 - Tablists et scoreboards Lobby/SheepWars harmonisés avec une identité tropicale plus lisible, des titres localisés et des états de partie structurés ; les connexions et arrivées/départs de partie deviennent des annonces narratives sans préfixe.

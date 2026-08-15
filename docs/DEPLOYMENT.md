@@ -63,6 +63,8 @@ Pour Docker rootless, régler `DOCKER_SOCKET_PATH`, par exemple `/run/user/1000/
 4. Créer `.env` et remplacer tous les secrets.
 5. Adapter les UUID administrateurs, OPS, cartes et coordonnées.
 6. Valider sans construire d'image.
+
+Les images Paper Lobby et SheepWars copient aussi `dockerfiles/configs/spigot.yml`. Ce fichier désactive l'enregistrement et le chargement de tous les advancements (`*`) ; il doit rester présent dans les deux images pour éviter les notifications et la progression vanilla sur l'ensemble des backends.
 7. Exécuter le déploiement complet.
 
 Windows :

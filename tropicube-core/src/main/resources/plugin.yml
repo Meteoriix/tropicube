@@ -46,15 +46,19 @@ commands:
     description: "Voir l'historique de sanctions d'un joueur"
     usage: /history <joueur>
     permission: tropicube.history
-  tropiperm:
+  permissions:
     description: "Gérer les permissions individuelles"
-    usage: /tropiperm <add|remove|list|grade> ...
+    usage: /permissions <add|remove|list|grade> ...
     permission: tropicube.admin.perm
-  tropiadmin:
+    aliases: [ tropiperm ]
+  coreadmin:
     description: "Administration générale Tropicube"
-    usage: /tropiadmin <reload|info>
+    usage: /coreadmin <reload|info>
     permission: tropicube.admin
-    aliases: [ ca ]
+    aliases: [ tropiadmin, ca ]
+  help:
+    description: "Affiche les commandes Tropicube disponibles"
+    usage: /help [general|games|profile|staff]
 
 permissions:
   tropicube.admin:

@@ -195,7 +195,7 @@ public class TropicubeVelocity {
 
     private void registerCommands() {
         server.getCommandManager().register(
-                server.getCommandManager().metaBuilder("tropi").aliases("tropicube", "cm").build(),
+                server.getCommandManager().metaBuilder("tropicube").aliases("tropi", "cm").build(),
                 new TropiAdminCommand(tropiServerManager, languageManager)
         );
         server.getCommandManager().register(
@@ -203,12 +203,16 @@ public class TropicubeVelocity {
                 new ServerSelectorCommand(this, tropiServerManager, languageManager)
         );
         server.getCommandManager().register(
-                server.getCommandManager().metaBuilder("hub").aliases("lobby").build(),
+                server.getCommandManager().metaBuilder("lobby").aliases("hub").build(),
                 new HubCommand(tropiServerManager, languageManager)
         );
         server.getCommandManager().register(
                 server.getCommandManager().metaBuilder("send").build(),
                 new SendCommand(server, tropiServerManager, languageManager)
+        );
+        server.getCommandManager().register(
+                server.getCommandManager().metaBuilder("pull").build(),
+                new PullCommand(server, tropiServerManager, languageManager)
         );
         server.getCommandManager().register(
                 server.getCommandManager().metaBuilder("find").build(),
