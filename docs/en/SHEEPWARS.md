@@ -116,6 +116,8 @@ The source file is `tropicube-sheepwars/src/main/resources/config.yml`. Main sec
 - `force-settings`;
 - `locations`.
 
+The host menu covers every `default-settings` option. Player limits stay between 2 and 16, cannot be lowered below current attendance, and maximum-capacity changes are published to Velocity immediately. When a party member joins the waiting room, SheepWars attempts to reuse a party mate's team only when the resulting red/blue size difference remains at most one.
+
 At deployment, `INSTANCE_ID`, `SERVER_NAME`, `IS_HOST`, `HOST_UUID`, and the internal `CUSTOM_GAME_PRIVATE` flag connect the Paper plugin to Velocity orchestration.
 
 ## State and cleanup

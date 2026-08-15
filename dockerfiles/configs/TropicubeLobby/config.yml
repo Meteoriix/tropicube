@@ -7,6 +7,10 @@ redis:
   port: 6379
   password: "${CFG_REDIS_PASSWORD}"
 
+auto-replay:
+  # Nombre de parties automatiques avant une nouvelle confirmation.
+  batch-size: 5
+
 lobby:
   spawn:
     world: "world"

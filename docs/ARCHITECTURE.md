@@ -151,6 +151,7 @@ Ce module est pour l'instant un squelette Maven sans classe, ressource, dépenda
 | `host-creation:<uuid>` | Velocity | Lobby/Velocity | Verrou atomique et temporaire empêchant deux créations personnalisées simultanées |
 | `player:uuid:<pseudo>` / `player:name:<uuid>` | Velocity | Velocity/SheepWars | Résolution des membres de whitelist déjà vus ; TTL 30 jours renouvelé à la connexion |
 | `post-game:<uuid>` | SheepWars | Lobby | Cible et type proposés par `/playnext`, TTL 120 s |
+| `settings:auto-replay:<uuid>` | Lobby | Lobby | `OFF`, compteur restant ou `0` en attente de confirmation ; persistant dans Redis |
 | `nick:<uuid>` | Velocity | Core/mini-jeux | Pseudonyme, skin et grade d'affichage factice actifs, TTL 24 h renouvelé après reconnexion |
 | `player:grade:<uuid>` | Core | Velocity | Grade réseau courant, TTL 24 h, utilisé par `/nick` et la priorité de file |
 | langue/grade/cache joueur | Core | Core/Velocity | Accélération et synchronisation du profil |
@@ -163,7 +164,9 @@ SheepWars consomme les événements `NICK_APPLY`, `NICK_RESET`, `NICK_CLEAR`, `G
 
 Les instances de mini-jeu publient `GAME_WAITING`, `GAME_STARTING`, `GAME_PLAYING` puis `GAME_ENDING`. Le lobby présente `GAME_PLAYING` sous le libellé bleu `PLAYING` et autorise la connexion lorsque le jeu prend en charge l'arrivée tardive en spectateur.
 
-Les amitiés sont lues depuis MySQL par Core. Les commandes et le menu Social du lobby n'effectuent jamais ces accès sur le thread Paper. Pour rejoindre un ami, Core vérifie d'abord la relation puis publie l'instance observée ; Velocity revalide la connexion de l'ami, son instance courante, l'état, la whitelist et la capacité. En `GAME_PLAYING`, SheepWars classe déjà toute arrivée tardive comme spectateur. Lorsqu'un chef change d'instance ou exécute `/party warp`, Velocity ne transfère que les membres connectés dont le champ `follow` vaut `1` et vérifie la capacité du lot avant de lancer les connexions.
+Les amitiés sont lues depuis MySQL par Core. Les commandes et le menu Social du lobby n'effectuent jamais ces accès sur le thread Paper. Pour rejoindre un ami, Core vérifie d'abord la relation puis publie l'instance observée ; Velocity revalide la connexion de l'ami, son instance courante, l'état, la whitelist et la capacité. En `GAME_PLAYING`, SheepWars classe déjà toute arrivée tardive comme spectateur. Lorsqu'un chef change d'instance ou exécute `/party warp`, Velocity ne transfère que les membres connectés dont le champ `follow` vaut `1` et vérifie la capacité du lot avant de lancer les connexions. L'acceptation d'une invitation vers une autre party est un script Lua unique : retrait de l'ancien groupe, promotion ou dissolution, puis insertion dans le nouveau groupe sans état intermédiaire visible.
+
+À la fin d'une partie, le lobby consomme atomiquement `settings:auto-replay:<uuid>`. Un compteur positif déclenche `/replay` après deux secondes ; à zéro, `/replayconfirm` est exigé avant de réarmer une série. L'absence de clé ou `OFF` conserve le lien manuel historique.
 
 La purge d'une instance supprime atomiquement son document et ses index principaux, puis balaie les références secondaires connues (`host`, serveur courant, reconnexion, abandon, revanche et post-partie). Chaque référence est relue avant suppression afin de ne pas effacer une valeur réaffectée concurremment à une autre instance.
 

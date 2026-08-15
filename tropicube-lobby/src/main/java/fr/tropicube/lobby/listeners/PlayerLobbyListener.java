@@ -44,7 +44,7 @@ public class PlayerLobbyListener implements Listener {
     // Lobby hotbar items
     private static final int SLOT_SERVERS     = 0;
     private static final int SLOT_CUSTOM_GAME = 2;
-    private static final int SLOT_LANG        = 4;
+    private static final int SLOT_SETTINGS    = 4;
     private static final int SLOT_SOCIAL      = 6;
     private static final int SLOT_VIP         = 8;
 
@@ -105,10 +105,7 @@ public class PlayerLobbyListener implements Listener {
                     player.sendMessage(LangHelper.component(player, "lobby.sw-rejoin-message"));
                 }
 
-                // Offers a revenge link after a game is completed.
-                if (postGameTargets.containsKey(uuid)) {
-                    player.sendMessage(LangHelper.component(player, "lobby.post-game-message"));
-                }
+                if (postGameTargets.containsKey(uuid)) handlePostGameReplay(player);
             }
         }.runTaskLater(plugin, 5L);
 
@@ -180,7 +177,7 @@ public class PlayerLobbyListener implements Listener {
         if (customModelDataComponent.getFloats().isEmpty()) return;
         switch (customModelDataComponent.getFloats().getFirst().intValue()) {
             case 1001 -> { e.setCancelled(true); plugin.getGuiManager().openServerTypeSelector(player); }
-            case 1002 -> { e.setCancelled(true); plugin.getGuiManager().openLanguageSelector(player); }
+            case 1002 -> { e.setCancelled(true); plugin.getGuiManager().openSettings(player); }
             case 1003 -> { e.setCancelled(true); plugin.getGuiManager().openVipShop(player); }
             case 1004 -> { e.setCancelled(true); plugin.getGuiManager().openCustomGameTypeMenu(player); }
             case 1005 -> { e.setCancelled(true); plugin.getGuiManager().openSocial(player); }
@@ -258,6 +255,27 @@ public class PlayerLobbyListener implements Listener {
         return postGameTargets.remove(uuid);
     }
 
+    private void handlePostGameReplay(Player player) {
+        UUID playerId = player.getUniqueId();
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            int remaining = plugin.getRedisManager().consumeAutoReplay(playerId);
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                Player online = Bukkit.getPlayer(playerId);
+                if (online == null || !postGameTargets.containsKey(playerId)) return;
+                if (remaining == -1) {
+                    online.sendMessage(LangHelper.component(online, "lobby.post-game-message"));
+                } else if (remaining == -2) {
+                    online.sendMessage(LangHelper.component(online, "lobby.auto-replay-confirm-message"));
+                } else {
+                    online.sendMessage(LangHelper.component(online, "lobby.auto-replay-message", remaining));
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                        if (online.isOnline() && postGameTargets.containsKey(playerId)) online.performCommand("replay");
+                    }, 40L);
+                }
+            });
+        });
+    }
+
     /** Consumes the SheepWars instance offered for voluntary reconnection. */
     public String removeRejoinTarget(UUID uuid) {
         return rejoinTargets.remove(uuid);
@@ -275,26 +293,21 @@ public class PlayerLobbyListener implements Listener {
                         .customModelData(1001)
                         .glow().build());
 
-        if (hasMinGradePriority(player)) {
-            player.getInventory().setItem(SLOT_CUSTOM_GAME,
-                    new ItemBuilder(Material.COMMAND_BLOCK)
-                            .name(LangHelper.get(player, "lobby.hotbar-custom-game-name"))
-                            .lore(LangHelper.get(player, "lobby.hotbar-custom-game-lore1"),
-                                    "",
-                                    LangHelper.get(player, "lobby.hotbar-custom-game-lore2"))
-                            .customModelData(1004)
-                            .glow().build());
-        }
-
-        ItemStack languageIcon = new ItemStack(Material.PLAYER_HEAD);
+        ItemStack settingsIcon = new ItemStack(Material.PLAYER_HEAD);
+        ItemStack customGameIcon = new ItemStack(Material.COMMAND_BLOCK);
+        ItemStack socialIcon = new ItemStack(Material.PLAYER_HEAD);
         ItemStack vipIcon = new ItemStack(Material.GOLD_INGOT);
         try {
             if (Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core) {
                 HeadDatabaseAPI hdbapi = core.getHeadDatabaseManager().getHeadDatabaseAPI();
                 if (hdbapi != null) {
-                    ItemStack loadedLanguageIcon = hdbapi.getItemHead("71786");
+                    ItemStack loadedSettingsIcon = hdbapi.getItemHead("71786");
+                    ItemStack loadedCustomGameIcon = hdbapi.getItemHead("35309");
+                    ItemStack loadedSocialIcon = hdbapi.getItemHead("78804");
                     ItemStack loadedVipIcon = hdbapi.getItemHead("66671");
-                    if (loadedLanguageIcon != null) languageIcon = loadedLanguageIcon;
+                    if (loadedSettingsIcon != null) settingsIcon = loadedSettingsIcon;
+                    if (loadedCustomGameIcon != null) customGameIcon = loadedCustomGameIcon;
+                    if (loadedSocialIcon != null) socialIcon = loadedSocialIcon;
                     if (loadedVipIcon != null) vipIcon = loadedVipIcon;
                 }
             }
@@ -302,12 +315,21 @@ public class PlayerLobbyListener implements Listener {
             plugin.getLogger().fine("HeadDatabase indisponible, utilisation des icônes de secours.");
         }
 
-        player.getInventory().setItem(SLOT_LANG,
-                new ItemBuilder(languageIcon)
-                        .name(LangHelper.get(player, "lobby.hotbar-lang-name"))
-                        .lore(LangHelper.get(player, "lobby.hotbar-lang-lore1"),
-                                "",
-                                LangHelper.get(player, "lobby.hotbar-lang-lore2"))
+        if (hasMinGradePriority(player)) {
+            player.getInventory().setItem(SLOT_CUSTOM_GAME,
+                    new ItemBuilder(customGameIcon)
+                            .name(LangHelper.get(player, "lobby.hotbar-custom-game-name"))
+                            .lore(LangHelper.get(player, "lobby.hotbar-custom-game-lore1"), "",
+                                    LangHelper.get(player, "lobby.hotbar-custom-game-lore2"))
+                            .customModelData(1004).glow().build());
+        }
+
+        player.getInventory().setItem(SLOT_SETTINGS,
+                new ItemBuilder(settingsIcon)
+                        .name(LangHelper.get(player, "lobby.hotbar-settings-name"))
+                        .lore(LangHelper.get(player, "lobby.hotbar-settings-lore1"),
+                                 "",
+                                LangHelper.get(player, "lobby.hotbar-settings-lore2"))
                         .customModelData(1002)
                         .build());
 
@@ -321,9 +343,10 @@ public class PlayerLobbyListener implements Listener {
                         .glow().build());
 
         player.getInventory().setItem(SLOT_SOCIAL,
-                new ItemBuilder(Material.PLAYER_HEAD)
+                new ItemBuilder(socialIcon)
                         .name(LangHelper.get(player, "social.hotbar-name"))
-                        .lore(LangHelper.get(player, "social.hotbar-lore"))
+                        .lore(LangHelper.get(player, "social.hotbar-lore1"), "",
+                                LangHelper.get(player, "social.hotbar-lore2"))
                         .customModelData(1005)
                         .glow().build());
     }

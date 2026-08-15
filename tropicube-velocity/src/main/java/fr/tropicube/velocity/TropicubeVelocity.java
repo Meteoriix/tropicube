@@ -12,6 +12,7 @@ import fr.tropicube.docker.client.DockerManager;
 import fr.tropicube.docker.client.RedisManager;
 import fr.tropicube.velocity.commands.*;
 import fr.tropicube.velocity.listeners.NickListener;
+import fr.tropicube.velocity.listeners.CommandVisibilityListener;
 import fr.tropicube.velocity.listeners.PlayerConnectionListener;
 import fr.tropicube.velocity.listeners.ServerSwitchListener;
 import fr.tropicube.velocity.managers.NickManager;
@@ -240,6 +241,7 @@ public class TropicubeVelocity {
         server.getEventManager().register(this, new PlayerConnectionListener(this, tropiServerManager, redisManager, logger, languageManager));
         server.getEventManager().register(this, new ServerSwitchListener(this, redisManager, nickManager, partyCoordinator, logger));
         server.getEventManager().register(this, new NickListener(nickManager, logger));
+        server.getEventManager().register(this, new CommandVisibilityListener());
         logger.info(MessageStyle.log("PROXY", "<gray>Listeners enregistrés."));
     }
 

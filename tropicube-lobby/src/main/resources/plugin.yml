@@ -34,6 +34,9 @@ commands:
     description: "Rejoins la prochaine partie disponible du dernier mini-jeu joué"
     usage: /replay
     aliases: [ playnext, playagain, rejouer ]
+  replayconfirm:
+    description: "Confirme cinq nouvelles parties avec rejeu automatique"
+    usage: /replayconfirm
   rejoin:
     description: "Rejoint une partie SheepWars quittée mais toujours active"
     usage: /rejoin

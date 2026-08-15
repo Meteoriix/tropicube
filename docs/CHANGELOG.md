@@ -6,6 +6,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Ajouté
 
+- Menu Paramètres du lobby avec choix de langue et rejeu automatique par séries confirmées de cinq parties.
 - Système social réseau complet : amis persistants, parties Redis, chat de groupe, suivi individuel du chef, rassemblement `/party warp`, `/friend join` avec arrivée en spectateur et menu Social dans la hotbar du lobby.
 - Commandes réseau `/pull <joueur>` et aide localisée `/help`, avec autocomplétion proxy étendue pour `/send`.
 - Profil PvP SheepWars inspiré de Minecraft 1.8 : attaques sans recharge ni balayage, dégâts d'épée et recul configurables.
@@ -23,6 +24,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Modifié
 
+- Le proxy masque désormais l'arbre de commandes, refuse les commandes Bukkit/vanilla et les backends bloquent les interfaces de panneaux, fours, tables de craft et coffres. `/money` n'affiche plus que le solde personnel.
+- Une invitation de party peut désormais être acceptée depuis une autre party : le départ, la promotion éventuelle d'un nouveau chef et l'entrée dans la nouvelle party sont atomiques. SheepWars rapproche les membres d'une party dans la même équipe tant que l'écart d'effectif reste au plus égal à un.
+- La hotbar du lobby utilise les têtes HeadDatabase 35309 et 78804 pour les parties personnalisées et Social, puis se rafraîchit après un changement de grade.
+- Les limites de joueurs choisies par l'hôte SheepWars sont bornées à deux, ne peuvent plus passer sous l'effectif présent et sont publiées immédiatement à Velocity.
 - Les images Lobby et SheepWars préchauffent désormais Paper 26.2, le JAR Mojang et le runtime patché pendant le déploiement ; les instances dynamiques ne retéléchargent plus le serveur à chaque création.
 - Le menu enclume de whitelist privée ne demande plus d'expérience, valide strictement pseudo/UUID et attend désormais la confirmation de sauvegarde de Velocity avant de rafraîchir ses membres.
 - `/rejoin` devient l'unique forme de reconnexion à une partie SheepWars : l'ancienne commande `/sw join` est supprimée et tout argument est désormais refusé.
@@ -48,6 +53,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Corrigé
 
+- Le menu Social gère désormais ses erreurs de construction, n'affiche plus la balise littérale `<tc>` et emploie le style de lore commun à la hotbar.
 - Les préfixes MiniMessage `<tc>` et `<sw>` ne propagent plus leur gras au corps des messages ; seuls la marque et les segments explicitement balisés restent en gras.
 - Cycle de vie Docker de Velocity : `/server` utilise désormais un `tmpfs` initialisé depuis l'image et libéré automatiquement à l'arrêt ; les scripts suppriment l'ancien volume anonyme lors de la migration.
 - SheepWars : l'explosion ou les dégâts d'un lanceur ne lui rendent plus son propre mouton ; seuls les moutons détruits par un autre joueur peuvent être récupérés. Les rails détachés par la destruction de leur bloc de support ne génèrent plus d'item.

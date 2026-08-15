@@ -141,6 +141,7 @@ Fichier : `dockerfiles/configs/TropicubeLobby/config.yml`.
 
 - `lobby.spawn` définit monde, coordonnées et orientation ;
 - `lobby.double-jump` active globalement les sauts aériens ;
+- `auto-replay.batch-size` fixe le nombre de parties automatiques avant une nouvelle confirmation (`5`, borné entre 1 et 100) ;
 - `server-types` définit les icônes Material ou HeadDatabase ;
 - `vip-shop.entries` associe grade, icône, nom et prix ;
 - `lang-selector.languages` configure codes, têtes et textes de présentation.
@@ -152,6 +153,7 @@ Le `grade-key` d'une entrée VIP doit exister dans Core. Le prix doit être posi
 Fichier : `dockerfiles/configs/TropicubeSheepwars/config.yml`.
 
 - `default-settings` fixe capacité, démarrage, durées, kits, vote et fréquence des moutons ; `sheep-give-delay` vaut 15 secondes par défaut. En partie classique, la cadence est figée au lancement selon l'effectif : 10 secondes de 2 à 4 joueurs, 12 secondes de 5 à 8, puis 15 secondes de 9 à 16. Une partie personnalisée conserve la valeur choisie par l'hôte ;
+- `default-settings.min-players` et `max-players` sont bornés entre 2 et 16. L'hôte ne peut pas réduire le maximum sous l'effectif déjà présent, et chaque modification du maximum est propagée à l'instance Redis afin que Velocity applique immédiatement la capacité ;
 - `default-settings.auto-start` vaut `true` par défaut pour les parties classiques et lance le compte à rebours dès que `min-players` est atteint ;
 - `custom-game-default-settings.auto-start` vaut `false` par défaut et remplace cette valeur à l'initialisation d'une instance possédant un `HOST_UUID` ; l'hôte peut ensuite la modifier pour la partie courante ;
 - `CUSTOM_GAME_PRIVATE`, injecté automatiquement par Velocity avec `HOST_UUID`, indique au backend si l'item de whitelist doit être remis à l'hôte ; cette variable interne ne doit pas être configurée manuellement dans le template ;

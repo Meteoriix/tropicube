@@ -179,6 +179,8 @@ public class GameManager {
         }
 
         players.put(player.getUniqueId(), gp);
+        // A new opponent can make a previously impossible party grouping balanced.
+        players.keySet().forEach(this::alignPartyTeamAsync);
 
         // Resets player and sends to lobby
         resetPlayer(player);
@@ -247,6 +249,36 @@ public class GameManager {
         }
         if (redCount == blueCount) return GameTeam.random();
         return redCount < blueCount ? GameTeam.RED : GameTeam.BLUE;
+    }
+
+    /** Tries to co-locate party members without ever creating a team-size difference above one. */
+    private void alignPartyTeamAsync(UUID joiningPlayer) {
+        java.util.concurrent.CompletableFuture
+                .supplyAsync(() -> plugin.getRedisManager().getParty(joiningPlayer))
+                .whenComplete((party, error) -> {
+                    if (!plugin.isEnabled()) return;
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                        if (error != null || party == null || state != GameState.WAITING) return;
+                        GamePlayer joining = players.get(joiningPlayer);
+                        if (joining == null) return;
+                        GameTeam partyTeam = party.members().stream()
+                                .map(member -> players.get(member.playerId()))
+                                .filter(Objects::nonNull)
+                                .filter(member -> member != joining)
+                                .map(GamePlayer::getTeam)
+                                .filter(Objects::nonNull)
+                                .findFirst().orElse(null);
+                        if (partyTeam == null || partyTeam == joining.getTeam()) return;
+                        long red = players.values().stream().filter(p -> p.getTeam() == GameTeam.RED).count();
+                        long blue = players.values().stream().filter(p -> p.getTeam() == GameTeam.BLUE).count();
+                        if (joining.getTeam() == GameTeam.RED) red--; else blue--;
+                        if (partyTeam == GameTeam.RED) red++; else blue++;
+                        if (Math.abs(red - blue) <= 1) {
+                            joining.setTeam(partyTeam);
+                            plugin.getScoreboardManager().updateAll();
+                        }
+                    });
+                });
     }
 
     // ============================================================
@@ -790,14 +822,25 @@ public class GameManager {
     /** Returns the validated player capacity used by admission and the HUD. */
     public int getMaxPlayers() {
         // MapsUtil loads a maximum of eight spawns per team.
-        return Math.min(16, Math.max(1,
-                plugin.getConfig().getInt("default-settings.max-players", 16)));
+        return PlayerLimitPolicy.maximum(plugin.getConfig().getInt("default-settings.max-players", 16));
     }
 
     /** Returns the validated minimum player count required to start. */
     public int getMinPlayers() {
-        return Math.min(getMaxPlayers(), Math.max(1,
-                plugin.getConfig().getInt("default-settings.min-players", 2)));
+        return PlayerLimitPolicy.minimum(plugin.getConfig().getInt("default-settings.min-players", 2),
+                getMaxPlayers());
+    }
+
+    /** Publishes a host capacity change so Velocity stops routing excess players immediately. */
+    public void publishConfiguredCapacityAsync() {
+        if (instanceId == null || instanceId.isBlank()) return;
+        int capacity = getMaxPlayers();
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            ServerInstance instance = plugin.getRedisManager().getInstance(instanceId);
+            if (instance == null) return;
+            instance.setMaxPlayers(capacity);
+            plugin.getRedisManager().saveInstance(instance);
+        });
     }
 
     // ============================================================

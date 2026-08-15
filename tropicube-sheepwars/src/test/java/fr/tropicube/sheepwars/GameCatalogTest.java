@@ -79,6 +79,8 @@ class GameCatalogTest {
 
         assertTrue(configuration.getBoolean("default-settings.auto-start"));
         assertFalse(configuration.getBoolean("custom-game-default-settings.auto-start"));
+        assertTrue(configuration.getInt("default-settings.min-players") >= 2);
+        assertTrue(configuration.getInt("default-settings.max-players") >= 2);
     }
 
     @Test

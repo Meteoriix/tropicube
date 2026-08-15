@@ -246,6 +246,8 @@ public class TropicubeCore extends JavaPlugin {
             // Removes some unwanted system notifications
             getServer().getPluginManager().registerEvents(new SuppressNotificationsListener(), this);
 
+            getServer().getPluginManager().registerEvents(new NetworkProtectionListener(), this);
+
             // Custom Head Manager Listener (HeadDatabase)
             getServer().getPluginManager().registerEvents(headDatabaseManager, this);
 

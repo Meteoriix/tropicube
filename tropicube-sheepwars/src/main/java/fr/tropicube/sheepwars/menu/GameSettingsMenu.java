@@ -2,6 +2,7 @@ package fr.tropicube.sheepwars.menu;
 
 import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.sheepwars.TropicubeSheepwars;
+import fr.tropicube.sheepwars.game.PlayerLimitPolicy;
 import fr.tropicube.sheepwars.player.PlayerClass;
 import fr.tropicube.sheepwars.player.PlayerKit;
 import fr.tropicube.sheepwars.sheep.SheepType;
@@ -553,7 +554,7 @@ public class GameSettingsMenu implements Listener {
                             return;
                         }
                     }
-                    int min = plugin.getConfig().getInt("default-settings.min-players", 2);
+                    int min = plugin.getGameManager().getMinPlayers();
                     int current = plugin.getGameManager().getPlayers().size();
                     if (current < min) {
                         player.sendMessage(LangHelper.component(player, "sw.not-enough-players", current, min));
@@ -666,10 +667,11 @@ public class GameSettingsMenu implements Listener {
         int duration  = cfg.getInt("default-settings.game-duration", 600);
         int delay     = cfg.getInt("default-settings.sheep-give-delay", 25);
         switch (slot) {
-            case 0  -> cfg.set("default-settings.min-players", Math.max(1, min - 1));
+            case 0  -> cfg.set("default-settings.min-players", Math.max(PlayerLimitPolicy.MINIMUM, min - 1));
             case 2  -> cfg.set("default-settings.min-players", Math.min(max, min + 1));
-            case 4  -> cfg.set("default-settings.max-players", Math.max(min, max - 1));
-            case 6  -> cfg.set("default-settings.max-players", Math.min(16, max + 1));
+            case 4  -> cfg.set("default-settings.max-players", PlayerLimitPolicy.decreaseMaximum(max, min,
+                    plugin.getGameManager().getPlayers().size()));
+            case 6  -> cfg.set("default-settings.max-players", Math.min(PlayerLimitPolicy.MAXIMUM, max + 1));
             case 9  -> cfg.set("default-settings.countdown", Math.max(5, countdown - 5));
             case 11 -> cfg.set("default-settings.countdown", Math.min(300, countdown + 5));
             case 13 -> cfg.set("default-settings.game-duration", Math.max(60, duration - 30));
@@ -689,6 +691,7 @@ public class GameSettingsMenu implements Listener {
             default -> { return; }
         }
         plugin.saveConfig();
+        if (slot == 4 || slot == 6) plugin.getGameManager().publishConfiguredCapacityAsync();
         openOptionsPage(player);
     }
 

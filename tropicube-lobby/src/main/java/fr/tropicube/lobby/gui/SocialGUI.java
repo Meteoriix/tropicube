@@ -69,7 +69,7 @@ public final class SocialGUI {
                         + names.getOrDefault(member.playerId(), member.playerId().toString().substring(0, 8))
                         + " <dark_gray>follow " + (member.followEnabled() ? "ON" : "OFF"));
             }
-        } else partyLore.add(LangHelper.get(player, "social.party-none"));
+        } else partyLore.add(LangHelper.get(player, "social.menu-party-none"));
         inventory.setItem(45, new ItemBuilder(Material.TOTEM_OF_UNDYING)
                 .name(LangHelper.get(player, "social.menu-party")).lore(partyLore).build());
 

@@ -7,6 +7,7 @@ import fr.tropicube.lobby.commands.FlyModeCommand;
 import fr.tropicube.lobby.commands.HubCommand;
 import fr.tropicube.lobby.commands.LangCommand;
 import fr.tropicube.lobby.commands.PlayNextCommand;
+import fr.tropicube.lobby.commands.ReplayConfirmCommand;
 import fr.tropicube.lobby.commands.ServersCommand;
 import fr.tropicube.lobby.commands.SheepwarsRejoinCommand;
 import fr.tropicube.lobby.commands.VipCommand;
@@ -123,7 +124,10 @@ public class TropicubeLobby extends JavaPlugin {
                     java.util.UUID playerId = java.util.UUID.fromString(payload);
                     Bukkit.getScheduler().runTaskLater(this, () -> {
                         org.bukkit.entity.Player player = Bukkit.getPlayer(playerId);
-                        if (player != null) scoreboardManager.updateTablist(player);
+                        if (player != null) {
+                            scoreboardManager.updateTablist(player);
+                            playerLobbyListener.setupHotbar(player);
+                        }
                     }, 2L);
                 } catch (IllegalArgumentException e) {
                     getLogger().warning(MessageStyle.log("tc", "LOBBY", "<yellow>Événement d'identité avec UUID invalide : " + payload));
@@ -179,6 +183,8 @@ public class TropicubeLobby extends JavaPlugin {
         Objects.requireNonNull(getCommand("vip"), "Commande vip absente de plugin.yml").setExecutor(new VipCommand(this));
         Objects.requireNonNull(getCommand("fly"), "Commande fly absente de plugin.yml").setExecutor(new FlyModeCommand(this));
         Objects.requireNonNull(getCommand("replay"), "Commande replay absente de plugin.yml").setExecutor(new PlayNextCommand(this));
+        Objects.requireNonNull(getCommand("replayconfirm"), "Commande replayconfirm absente de plugin.yml")
+                .setExecutor(new ReplayConfirmCommand(this));
         var rejoinCommand = new SheepwarsRejoinCommand(this);
         Objects.requireNonNull(getCommand("rejoin"), "Commande rejoin absente de plugin.yml").setExecutor(rejoinCommand);
     }
@@ -193,4 +199,7 @@ public class TropicubeLobby extends JavaPlugin {
     public GuiManager getGuiManager() { return guiManager; }
     public PlayerLobbyListener getPlayerLobbyListener() { return playerLobbyListener; }
     public LobbyScoreboardManager getScoreboardManager() { return scoreboardManager; }
+    public int getAutoReplayBatchSize() {
+        return Math.max(1, Math.min(100, getConfig().getInt("auto-replay.batch-size", 5)));
+    }
 }

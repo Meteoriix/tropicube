@@ -10,8 +10,8 @@ depend:
 
 commands:
   money:
-    description: "Voir votre solde ou celui d'un joueur"
-    usage: /money [joueur]
+    description: "Voir votre solde"
+    usage: /money
     aliases: [ balance ]
   eco:
     description: "Administration de l'économie"
@@ -78,9 +78,6 @@ permissions:
   tropicube.eco.admin:
     description: "Administration de l'économie"
     default: op
-  tropicube.eco.others:
-    description: "Voir le solde des autres joueurs"
-    default: true
   tropicube.grade.admin:
     description: "Gérer les grades"
     default: op

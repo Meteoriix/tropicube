@@ -6,7 +6,7 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 
 | Commande | Alias | Permission | Description |
 |---|---|---|---|
-| `/money [joueur]` | `/balance` | aucune pour soi, `tropicube.eco.others` pour autrui | Affiche un solde |
+| `/money` | `/balance` | aucune | Affiche uniquement son propre solde |
 | `/eco top` | — | `tropicube.eco.admin` | Affiche les dix meilleurs soldes |
 | `/eco set <joueur> <montant>` | — | `tropicube.eco.admin` | Fixe un solde |
 | `/eco add <joueur> <montant>` | — | `tropicube.eco.admin` | Crédite un compte |
@@ -34,7 +34,7 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 
 Durées acceptées : une valeur comprise par `DurationParser`, par exemple `30s`, `10m`, `2h`, `7d`. Une permission sans durée est permanente.
 
-Les amis sont persistants en MySQL. Une party est temporaire dans Redis, limitée par la configuration Core et créée lors de la première invitation. Le suivi est activé par défaut à l'entrée, puis reste un choix individuel. Les transferts sociaux respectent la whitelist et la capacité de l'instance cible.
+Les amis sont persistants en MySQL. Une party est temporaire dans Redis, limitée par la configuration Core et créée lors de la première invitation. Accepter une invitation depuis une autre party retire atomiquement le joueur de l'ancienne ; s'il en était chef, un autre membre est promu, ou la party vide est dissoute. Le suivi est activé par défaut à l'entrée, puis reste un choix individuel. Les transferts sociaux respectent la whitelist et la capacité de l'instance cible.
 
 ### Gestion détaillée des permissions
 
@@ -61,6 +61,7 @@ Attention : les permissions de grade présentes dans `TropicubeCore/config.yml` 
 | `/vip` | `/boutique`, `/shop` | aucune | Ouvre la boutique de grades VIP |
 | `/fly` | `/flymode`, `/fm` | `tropicube.lobby.fly` | Bascule entre vol permanent et sauts aériens |
 | `/replay` | `/playnext`, `/playagain`, `/rejouer` | aucune | Rejoint la partie suivante ou attend sa création avec connexion automatique |
+| `/replayconfirm` | — | aucune | Confirme une nouvelle série de cinq replays automatiques |
 | `/rejoin` | — | aucune | Rejoint une partie SheepWars quittée volontairement si elle est encore active ; aucun argument n'est accepté |
 
 Permissions fonctionnelles du lobby :
@@ -76,6 +77,8 @@ Permissions fonctionnelles du lobby :
 | `tropicube.lobby.infinitejump` | Sauts illimités | `op` |
 
 Les grades Core accordent déjà les permissions adaptées : VIP obtient un saut, VIP+ deux, Premium et le personnel des sauts illimités.
+
+La liste complète des commandes n'est pas envoyée au client. `/?`, les espaces de noms `bukkit:` et `minecraft:` ainsi que les commandes vanilla sont refusés sur l'ensemble du réseau.
 
 ## TropicubeSheepwars — Paper
 

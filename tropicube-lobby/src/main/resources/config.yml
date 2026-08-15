@@ -7,6 +7,10 @@ redis:
   port: 6379
   password: ""          # Laisser vide si pas de mot de passe
 
+auto-replay:
+  # Number of games played automatically before asking the player to confirm again.
+  batch-size: 5
+
 lobby:
   # Spawn position in lobby world
   spawn:

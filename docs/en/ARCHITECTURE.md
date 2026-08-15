@@ -63,6 +63,7 @@ Sheep distribution uses an immutable effective-weight table followed by an indep
 | `sw:left-game:<uuid>` | SheepWars | Lobby, Velocity | Five-minute reconnect target |
 | `sw:next-game:<id>` | Velocity | SheepWars | Pre-created replay instance |
 | `post-game:<uuid>` | SheepWars | Lobby | Replay suggestion, 120-second TTL |
+| `settings:auto-replay:<uuid>` | Lobby | Lobby | Persistent `OFF`, remaining count, or `0` awaiting confirmation |
 | `host-creation:<uuid>` | Velocity | Velocity / Lobby | Atomic custom-server creation lock |
 | `host:<uuid>` | Velocity | Velocity, Lobby, SheepWars | Host ownership of one custom instance |
 | `player:uuid:<name>` / `player:name:<uuid>` | Velocity | Velocity, SheepWars | Previously seen player-name resolution; refreshed 30-day TTL |
@@ -73,7 +74,7 @@ SheepWars consumes `NICK_APPLY`, `NICK_RESET`, `NICK_CLEAR`, `GRADE_LOADED`, and
 
 Redis subscriber callbacks must not mutate Bukkit state. Paper plugins always schedule entity, inventory, world, and profile changes back onto the server scheduler.
 
-Friendships are durable MySQL pairs. Core checks that relation before publishing `PROXY:FRIEND_JOIN`; Velocity then revalidates both players, the target instance, whitelist, state, and capacity. A `GAME_PLAYING` SheepWars arrival becomes a spectator. Party transfer requests use the same proxy boundary and include only online members whose individual `follow` flag is enabled. Lobby exposes these actions through a Social hotbar menu loaded outside the Paper thread.
+Friendships are durable MySQL pairs. Core checks that relation before publishing `PROXY:FRIEND_JOIN`; Velocity then revalidates both players, the target instance, whitelist, state, and capacity. A `GAME_PLAYING` SheepWars arrival becomes a spectator. Party transfer requests use the same proxy boundary and include only online members whose individual `follow` flag is enabled. Moving between parties is one atomic Lua transition, including leader succession. Lobby exposes these actions through a Social hotbar menu loaded outside the Paper thread. It also atomically consumes the automatic-replay counter and requires `/replayconfirm` after each five-game batch.
 
 Velocity is the only whitelist writer. Both `/whitelist` and the SheepWars GUI reach the same ownership-checked mutation. Lobby snapshots are filtered before counts, pagination, best-server selection, and final clicks, while `ServerPreConnectEvent` independently enforces the boundary so hidden instances cannot be reached by a stale menu or direct command.
 

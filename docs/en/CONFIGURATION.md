@@ -35,7 +35,7 @@ Supported language resources are `fr`, `en`, `de`, and `es`. Embedded and deploy
 
 ## Lobby
 
-Lobby configuration defines spawn coordinates, void recovery, scoreboard refresh, double-jump, selector layout, and feature toggles. The selector reads live instance snapshots from Redis. `GAME_PLAYING` appears as a blue `PLAYING` entry and, for SheepWars, connects available players as spectators.
+Lobby configuration defines spawn coordinates, void recovery, scoreboard refresh, double-jump, selector layout, and feature toggles. `auto-replay.batch-size` defaults to five and is clamped from 1 to 100. The selector reads live instance snapshots from Redis. `GAME_PLAYING` appears as a blue `PLAYING` entry and, for SheepWars, connects available players as spectators.
 
 ## SheepWars
 
@@ -53,6 +53,8 @@ Main sections:
 `default-settings.sheep-give-delay` defaults to twenty seconds. A full ten-minute match therefore contains twenty-nine useful periodic deadlines plus the starting sheep. Each successful delivery restarts an individual player's interval; a deadline blocked by the five-sheep stock limit remains due and is retried every second. Active weights are normalized and used directly by a fresh independent draw for every delivery.
 
 Gameplay values are validated and clamped at their boundary. A map supports at most eight spawns per team, so effective capacity is at most sixteen participants. Spectators use remaining server capacity and do not receive a team or affect victory checks.
+
+Host player limits are clamped from 2 to 16. Maximum capacity cannot be reduced below the connected participant count and is immediately republished to Velocity. The host menu exposes every `default-settings` leaf, including sheep weights; `gameplay-balance` remains startup-only because its services are immutable for an instance lifetime.
 
 ## Docker Compose
 

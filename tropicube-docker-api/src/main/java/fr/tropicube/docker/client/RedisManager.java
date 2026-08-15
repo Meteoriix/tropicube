@@ -89,7 +89,7 @@ public class RedisManager {
             """;
     private static final String INVITE_PARTY_SCRIPT = """
             if redis.call('GET', KEYS[1]) ~= ARGV[1] then return 'NOT_LEADER' end
-            if redis.call('EXISTS', KEYS[2]) == 1 then return 'ALREADY_MEMBER' end
+            if redis.call('GET', KEYS[2]) == ARGV[5] then return 'ALREADY_MEMBER' end
             if redis.call('HLEN', KEYS[3]) >= tonumber(ARGV[3]) then return 'FULL' end
             redis.call('HSET', KEYS[4], ARGV[1], ARGV[5])
             redis.call('EXPIRE', KEYS[4], ARGV[4])
@@ -99,9 +99,21 @@ public class RedisManager {
             local partyId = redis.call('HGET', KEYS[1], ARGV[1])
             if not partyId then return 'NO_INVITE' end
             if partyId ~= ARGV[5] then return 'EXPIRED' end
-            if redis.call('EXISTS', KEYS[2]) == 1 then return 'ALREADY_MEMBER' end
+            local oldPartyId = redis.call('GET', KEYS[2])
+            if oldPartyId == partyId then return 'ALREADY_MEMBER' end
             if redis.call('GET', KEYS[3]) ~= ARGV[1] then return 'EXPIRED' end
             if redis.call('HLEN', KEYS[4]) >= tonumber(ARGV[3]) then return 'FULL' end
+            if oldPartyId then
+                local oldLeaderKey = ARGV[6] .. 'party:' .. oldPartyId .. ':leader'
+                local oldMembersKey = ARGV[6] .. 'party:' .. oldPartyId .. ':members'
+                redis.call('HDEL', oldMembersKey, ARGV[2])
+                if redis.call('HLEN', oldMembersKey) == 0 then
+                    redis.call('DEL', oldLeaderKey, oldMembersKey)
+                elseif redis.call('GET', oldLeaderKey) == ARGV[2] then
+                    local nextLeader = redis.call('HKEYS', oldMembersKey)[1]
+                    redis.call('SET', oldLeaderKey, nextLeader, 'EX', ARGV[4])
+                end
+            end
             redis.call('HDEL', KEYS[1], ARGV[1])
             redis.call('SET', KEYS[2], partyId, 'EX', ARGV[4])
             redis.call('HSET', KEYS[4], ARGV[2], '1')
@@ -138,6 +150,15 @@ public class RedisManager {
             for _, member in ipairs(members) do redis.call('DEL', ARGV[2] .. member) end
             redis.call('DEL', KEYS[1], KEYS[2])
             return 'OK'
+            """;
+    private static final String CONSUME_AUTO_REPLAY_SCRIPT = """
+            local value = redis.call('GET', KEYS[1])
+            if not value or value == 'OFF' then return -1 end
+            local remaining = tonumber(value)
+            if not remaining or remaining <= 0 then return -2 end
+            remaining = remaining - 1
+            redis.call('SET', KEYS[1], tostring(remaining))
+            return remaining
             """;
 
     // ── Connection settings ──────────────────────── ────────────────────────
@@ -439,7 +460,7 @@ public class RedisManager {
         Object result = redis().eval(ACCEPT_PARTY_SCRIPT,
                 List.of(partyInvitesKey(targetId), partyMemberKey(targetId), partyLeaderKey(partyId), partyMembersKey(partyId)),
                 List.of(leaderId.toString(), targetId.toString(), Integer.toString(maxSize),
-                        Integer.toString(PARTY_TTL_SECONDS), partyId));
+                        Integer.toString(PARTY_TTL_SECONDS), partyId, KEY_PREFIX));
         return String.valueOf(result);
     }
 
@@ -530,6 +551,33 @@ public class RedisManager {
     private static String partyLeaderKey(String partyId) { return KEY_PREFIX + "party:" + partyId + ":leader"; }
     private static String partyMembersKey(String partyId) { return KEY_PREFIX + "party:" + partyId + ":members"; }
     private static String partyInvitesKey(UUID playerId) { return KEY_PREFIX + "party:invites:" + playerId; }
+
+    // ===== PLAYER SETTINGS =====
+
+    /** Returns {@code -1} when automatic replay is disabled, otherwise the remaining game count. */
+    public int getAutoReplayRemaining(UUID playerId) {
+        Objects.requireNonNull(playerId, "playerId");
+        String value = redis().get(autoReplayKey(playerId));
+        if (value == null || value.equals("OFF")) return -1;
+        try { return Math.max(0, Integer.parseInt(value)); }
+        catch (NumberFormatException ignored) { return -1; }
+    }
+
+    /** Enables a fresh replay batch or explicitly disables the setting. */
+    public void setAutoReplay(UUID playerId, boolean enabled, int batchSize) {
+        Objects.requireNonNull(playerId, "playerId");
+        if (batchSize < 1) throw new IllegalArgumentException("batchSize doit être positif");
+        redis().set(autoReplayKey(playerId), enabled ? Integer.toString(batchSize) : "OFF");
+    }
+
+    /** Atomically consumes one replay ({@code -1}: disabled, {@code -2}: confirmation required). */
+    public int consumeAutoReplay(UUID playerId) {
+        Objects.requireNonNull(playerId, "playerId");
+        return ((Number) redis().eval(CONSUME_AUTO_REPLAY_SCRIPT,
+                List.of(autoReplayKey(playerId)), List.of())).intValue();
+    }
+
+    private static String autoReplayKey(UUID playerId) { return KEY_PREFIX + "settings:auto-replay:" + playerId; }
 
     // ===== PUB/SUB =====
 

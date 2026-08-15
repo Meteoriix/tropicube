@@ -35,6 +35,7 @@ public class GuiManager {
         SERVER_TYPE_SELECTOR,
         CUSTOM_GAME,
         CUSTOM_GAME_TYPE_SELECTOR,
+        SETTINGS,
         SOCIAL
     }
 
@@ -56,6 +57,24 @@ public class GuiManager {
         Inventory inv = LanguageSelectorGUI.build(player);
         openGuis.put(player.getUniqueId(), GuiType.LANGUAGE_SELECTOR);
         player.openInventory(inv);
+    }
+
+    public void openSettings(Player player) {
+        UUID playerId = player.getUniqueId();
+        java.util.concurrent.CompletableFuture
+                .supplyAsync(() -> plugin.getRedisManager().getAutoReplayRemaining(playerId))
+                .whenComplete((remaining, error) -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    Player online = Bukkit.getPlayer(playerId);
+                    if (online == null) return;
+                    if (error != null) {
+                        plugin.getLogger().log(java.util.logging.Level.WARNING,
+                                "Impossible de charger les paramètres de " + playerId, error);
+                        online.sendMessage(LangHelper.component(online, "general.operation-failed"));
+                        return;
+                    }
+                    openGuis.put(playerId, GuiType.SETTINGS);
+                    online.openInventory(SettingsGUI.build(online, remaining));
+                }));
     }
 
     public void openVipShop(Player player) {
@@ -117,10 +136,16 @@ public class GuiManager {
                 online.sendMessage(LangHelper.component(online, "general.operation-failed"));
                 return;
             }
-            Inventory inventory = SocialGUI.build(online, snapshot.friends(), snapshot.requests(), snapshot.party(),
-                    snapshot.invites(), snapshot.names());
-            openGuis.put(playerId, GuiType.SOCIAL);
-            online.openInventory(inventory);
+            try {
+                Inventory inventory = SocialGUI.build(online, snapshot.friends(), snapshot.requests(), snapshot.party(),
+                        snapshot.invites(), snapshot.names());
+                openGuis.put(playerId, GuiType.SOCIAL);
+                online.openInventory(inventory);
+            } catch (RuntimeException exception) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING,
+                        "Impossible de construire le menu Social pour " + playerId, exception);
+                online.sendMessage(LangHelper.component(online, "general.operation-failed"));
+            }
         }));
     }
 

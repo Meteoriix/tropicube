@@ -24,7 +24,7 @@ Velocity validates `/whitelist`: the sender must own an active private custom ga
 
 | Command | Permission | Purpose |
 |---|---|---|
-| `/money [player]` | own balance: none; other player: administrative | Displays TropiCoin balance |
+| `/money` | none | Displays only the sender's TropiCoin balance |
 | `/eco <set|add|remove|top> ...` | economy administration | Changes balances or displays the ranking |
 | `/rank <set|info|list> ...` | grade administration | Reads and assigns grades, including temporary grades |
 | `/tropiperm ...` | permission administration | Manages individual and grade permissions |
@@ -47,6 +47,7 @@ Velocity validates `/whitelist`: the sender must own an active private custom ga
 | `/play` | Opens the server selector (`/servers` remains an alias) |
 | `/rejoin` | Rejoins the remembered active SheepWars instance as a spectator; no arguments are accepted |
 | `/replay` | Joins or waits for the suggested replay instance (`/playnext` remains an alias) |
+| `/replayconfirm` | Confirms a fresh batch of five automatic replays |
 | `/lang` | Opens or updates language selection |
 | `/fly` | Toggles authorized lobby flight |
 | `/vip` | Opens the VIP presentation interface |
@@ -58,3 +59,5 @@ SheepWars registers no standalone Paper command. Team, class, kit, map, host set
 ## Administration principles
 
 Command handlers validate arguments and permissions at the boundary. Player-facing text comes from the four language files. Operations involving SQL, Redis, Docker, or disk must not block the Paper or Velocity event thread.
+
+The proxy does not send the complete command tree to clients. `/?`, Bukkit/Minecraft namespaces, and vanilla commands are rejected network-wide. Accepting a party invitation while already grouped atomically leaves the old party, promotes a successor when needed, and joins the new one.

@@ -132,6 +132,10 @@ La configuration source se trouve dans `tropicube-sheepwars/src/main/resources/c
 - `force-settings` : fonctionnalités interdites par l'exploitation ;
 - `locations` : monde, lobby, limite du vide, cartes et spawns d'équipe.
 
+Le menu hôte couvre toutes les feuilles de `default-settings` : effectifs, compte à rebours, durée, cadence, kits aléatoires, démarrage automatique, vote de carte et poids de chaque mouton. Les paramètres `gameplay-balance` restent des réglages d'exploitation validés au démarrage, car leurs services sont construits une fois par instance. Le minimum et le maximum valent au moins deux ; le maximum ne peut pas descendre sous l'effectif connecté et sa modification met aussi à jour la capacité vue par Velocity.
+
+Lors de l'arrivée d'un joueur en salle d'attente, SheepWars tente de reprendre l'équipe d'un membre de sa party. Ce rapprochement n'est appliqué que si le changement conserve un écart d'effectif rouge/bleu inférieur ou égal à un ; l'équilibrage reste prioritaire.
+
 En déploiement Docker, `INSTANCE_ID`, `SERVER_NAME`, `IS_HOST`, `HOST_UUID` et l'indicateur interne `CUSTOM_GAME_PRIVATE` relient le plugin à Velocity. L'état de l'instance passe successivement par attente, démarrage, jeu, fin et arrêt. Redis porte les marqueurs de partie commencée, de reconnexion, de revanche, de propriété du serveur et les UUID admis aux parties privées.
 
 Après l'écran de fin, SheepWars publie `PROXY:FINISH_GAME:<instanceId>`. Velocity transfère tous les joueurs vers le meilleur lobby disponible, réessaie chaque seconde en cas d'échec, puis tue et supprime immédiatement le conteneur ainsi que son état Redis. La disparition du backend n'est donc plus différée par l'auto-stop générique.

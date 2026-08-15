@@ -14,6 +14,8 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.InventoryHolder;
 
+import java.util.UUID;
+
 /**
  * Handles all clicks in Tropicube Lobby GUIs.
  *
@@ -53,6 +55,7 @@ public class GuiClickListener implements Listener {
             case ServerTypeSelectorGUI.Holder typeHolder -> handleTypeSelector(player, slot, typeHolder, e.getClick().isLeftClick());
             case ServerSelectorGUI.Holder serverHolder -> handleServerSelector(player, slot, serverHolder);
             case LanguageSelectorGUI.Holder _ -> handleLanguageSelector(player, slot);
+            case SettingsGUI.Holder _ -> handleSettings(player, slot);
             case VipShopGUI.Holder _ -> handleVipShop(player, slot);
             case CustomGameGUI.Holder customHolder -> handleCustomGame(player, slot, customHolder);
             case CustomGameTypeGUI.Holder customTypeHolder -> handleCustomGameType(player, slot, customTypeHolder);
@@ -90,6 +93,7 @@ public class GuiClickListener implements Listener {
         return holder instanceof ServerTypeSelectorGUI.Holder
             || holder instanceof ServerSelectorGUI.Holder
             || holder instanceof LanguageSelectorGUI.Holder
+            || holder instanceof SettingsGUI.Holder
             || holder instanceof VipShopGUI.Holder
             || holder instanceof CustomGameGUI.Holder
             || holder instanceof CustomGameTypeGUI.Holder
@@ -209,6 +213,27 @@ public class GuiClickListener implements Listener {
             plugin.getPlayerLobbyListener().setupHotbar(player);
             plugin.getScoreboardManager().setup(player);
         }
+    }
+
+    private void handleSettings(Player player, int slot) {
+        if (slot == SettingsGUI.CLOSE_SLOT) {
+            player.closeInventory();
+            return;
+        }
+        if (slot == SettingsGUI.LANGUAGE_SLOT) {
+            plugin.getGuiManager().openLanguageSelector(player);
+            return;
+        }
+        if (slot != SettingsGUI.AUTO_REPLAY_SLOT) return;
+        UUID playerId = player.getUniqueId();
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            int current = plugin.getRedisManager().getAutoReplayRemaining(playerId);
+            plugin.getRedisManager().setAutoReplay(playerId, current < 0, plugin.getAutoReplayBatchSize());
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                Player online = Bukkit.getPlayer(playerId);
+                if (online != null) plugin.getGuiManager().openSettings(online);
+            });
+        });
     }
 
     private void handleVipShop(Player player, int slot) {
