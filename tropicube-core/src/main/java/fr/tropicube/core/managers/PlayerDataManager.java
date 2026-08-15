@@ -57,6 +57,7 @@ public class PlayerDataManager {
         UUID uuid = player.getUniqueId();
         String username = player.getName();
         String displayName = player.getName();
+        String initialLanguage = LanguageManager.resolveClientLanguage(player.locale().toLanguageTag());
         return CompletableFuture.supplyAsync(() -> {
             long now = System.currentTimeMillis();
 
@@ -89,13 +90,13 @@ public class PlayerDataManager {
                         // New player
                         profile = new PlayerProfile(
                                 uuid, username, displayName,
-                                now, now, 0L, "fr", "JOUEUR",
+                                now, now, 0L, initialLanguage, "JOUEUR",
                                 false, null, 0L
                         );
                         db.executeUpdate(
                                 "INSERT INTO tropicube_players (uuid, username, display_name, first_join, last_join, play_time, language, grade) " +
-                                "VALUES (?, ?, ?, ?, ?, 0, 'fr', 'JOUEUR')",
-                                uuid.toString(), username, displayName, now, now
+                                "VALUES (?, ?, ?, ?, ?, 0, ?, 'JOUEUR')",
+                                uuid.toString(), username, displayName, now, now, initialLanguage
                         );
                         economyManager.createAccount(uuid);
                         plugin.getLogger().info(MessageStyle.log("tc", "CORE", "<gray>Nouveau joueur : " + username));

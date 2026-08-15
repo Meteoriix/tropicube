@@ -23,6 +23,18 @@ public class LanguageManager {
 
     public static final List<String> SUPPORTED_LANGUAGES = List.of("fr", "en", "es", "de");
 
+    /**
+     * Resolves a Minecraft client locale to a supported language for a new profile.
+     * Unsupported or malformed locales deliberately fall back to English.
+     */
+    public static String resolveClientLanguage(String clientLocale) {
+        if (clientLocale == null || clientLocale.isBlank()) return "en";
+        String normalized = clientLocale.toLowerCase(Locale.ROOT).replace('-', '_');
+        int separator = normalized.indexOf('_');
+        String language = separator < 0 ? normalized : normalized.substring(0, separator);
+        return SUPPORTED_LANGUAGES.contains(language) ? language : "en";
+    }
+
     public LanguageManager(TropicubeCore plugin) {
         this.plugin = plugin;
         this.defaultLanguage = "fr";

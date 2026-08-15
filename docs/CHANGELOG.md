@@ -24,6 +24,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Modifié
 
+- Le bouton du sélecteur de parties utilise la tête HeadDatabase 52706, le réglage de langue s'intitule désormais « Langues / Language » et un nouveau profil reprend la langue du client Minecraft avec repli anglais.
 - Le bouton Langue du menu Paramètres reprend la tête HeadDatabase 71786, le bouton Paramètres de la hotbar utilise la tête 89489 et l'autocomplétion après `/` publie uniquement les commandes Tropicube.
 - Le proxy masque les commandes étrangères à Tropicube, refuse les commandes Bukkit/vanilla et les backends bloquent les interfaces de panneaux, fours, tables de craft et coffres. `/money` n'affiche plus que le solde personnel.
 - Une invitation de party peut désormais être acceptée depuis une autre party : le départ, la promotion éventuelle d'un nouveau chef et l'entrée dans la nouvelle party sont atomiques. SheepWars rapproche les membres d'une party dans la même équipe tant que l'écart d'effectif reste au plus égal à un.

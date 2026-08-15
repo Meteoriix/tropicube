@@ -135,6 +135,16 @@ class YamlResourcesTest {
     }
 
     @Test
+    void settingsLanguageButtonIsBilingualInEveryLocale() {
+        String expected = "<light_purple>🌐 Langues / Language";
+        for (String language : List.of("fr", "en", "es", "de")) {
+            Map<String, Object> values = leafValues(
+                    Path.of("src/main/resources/languages", language + ".yml"));
+            assertEquals(expected, values.get("lobby.settings-language-name"));
+        }
+    }
+
+    @Test
     void paperBackendsDisableAllAdvancements() {
         YamlConfiguration config = YamlConfiguration.loadConfiguration(
                 Path.of("../dockerfiles/configs/spigot.yml").toFile());

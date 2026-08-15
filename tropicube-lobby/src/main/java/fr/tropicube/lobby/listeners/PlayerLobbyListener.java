@@ -284,15 +284,7 @@ public class PlayerLobbyListener implements Listener {
     public void setupHotbar(Player player) {
         player.getInventory().clear();
 
-        player.getInventory().setItem(SLOT_SERVERS,
-                new ItemBuilder(Material.COMPASS)
-                        .name(LangHelper.get(player, "lobby.hotbar-servers-name"))
-                        .lore(LangHelper.get(player, "lobby.hotbar-servers-lore1"),
-                                "",
-                                LangHelper.get(player, "lobby.hotbar-servers-lore2"))
-                        .customModelData(1001)
-                        .glow().build());
-
+        ItemStack serversIcon = new ItemStack(Material.COMPASS);
         ItemStack settingsIcon = new ItemStack(Material.PLAYER_HEAD);
         ItemStack customGameIcon = new ItemStack(Material.COMMAND_BLOCK);
         ItemStack socialIcon = new ItemStack(Material.PLAYER_HEAD);
@@ -301,10 +293,12 @@ public class PlayerLobbyListener implements Listener {
             if (Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core) {
                 HeadDatabaseAPI hdbapi = core.getHeadDatabaseManager().getHeadDatabaseAPI();
                 if (hdbapi != null) {
+                    ItemStack loadedServersIcon = hdbapi.getItemHead("52706");
                     ItemStack loadedSettingsIcon = hdbapi.getItemHead("89489");
                     ItemStack loadedCustomGameIcon = hdbapi.getItemHead("35309");
                     ItemStack loadedSocialIcon = hdbapi.getItemHead("78804");
                     ItemStack loadedVipIcon = hdbapi.getItemHead("66671");
+                    if (loadedServersIcon != null) serversIcon = loadedServersIcon;
                     if (loadedSettingsIcon != null) settingsIcon = loadedSettingsIcon;
                     if (loadedCustomGameIcon != null) customGameIcon = loadedCustomGameIcon;
                     if (loadedSocialIcon != null) socialIcon = loadedSocialIcon;
@@ -314,6 +308,15 @@ public class PlayerLobbyListener implements Listener {
         } catch (Exception e) {
             plugin.getLogger().fine("HeadDatabase indisponible, utilisation des icônes de secours.");
         }
+
+        player.getInventory().setItem(SLOT_SERVERS,
+                new ItemBuilder(serversIcon)
+                        .name(LangHelper.get(player, "lobby.hotbar-servers-name"))
+                        .lore(LangHelper.get(player, "lobby.hotbar-servers-lore1"),
+                                "",
+                                LangHelper.get(player, "lobby.hotbar-servers-lore2"))
+                        .customModelData(1001)
+                        .glow().build());
 
         if (hasMinGradePriority(player)) {
             player.getInventory().setItem(SLOT_CUSTOM_GAME,

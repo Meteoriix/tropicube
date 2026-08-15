@@ -130,7 +130,7 @@ Sections métier :
 - `social.friends.request-expiry-days` : expiration des demandes en attente (`30`) ;
 - `social.party.max-size` : taille maximale d'une party (`8`) ;
 - `social.party.invite-expiry-seconds` : validité d'une invitation de party (`60`) ;
-- `language.default` : langue utilisée avant chargement du profil ;
+- `language.default` : langue utilisée avant chargement d'un profil existant. À la création d'un joueur, la langue du client Minecraft sélectionne `fr`, `en`, `es` ou `de` ; toute autre locale utilise l'anglais ;
 - `grades` : présentation MiniMessage, priorité, statut VIP/staff et permissions.
 
 Les noms de grades sont utilisés comme identifiants stables dans la boutique, le nick et les permissions. Une modification doit donc être répercutée dans tous les fichiers concernés.

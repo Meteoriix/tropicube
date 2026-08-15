@@ -443,7 +443,7 @@ lobby:
   hotbar-settings-lore1: "<gray>Language and gameplay preferences."
   hotbar-settings-lore2: "<yellow>▶ Right-click to open"
   settings-title: "<dark_gray>» <light_purple>Settings"
-  settings-language-name: "<light_purple>🌐 Language"
+  settings-language-name: "<light_purple>🌐 Langues / Language"
   settings-language-lore: "<gray>Click to choose your language."
   settings-auto-replay-name: "<aqua>↻ Automatic replay"
   settings-auto-replay-on: "<green>Enabled <gray>— {0} game(s) remaining"

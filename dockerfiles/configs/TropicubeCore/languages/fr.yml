@@ -452,7 +452,7 @@ lobby:
   hotbar-settings-lore1: "<gray>Langue et préférences de jeu."
   hotbar-settings-lore2: "<yellow>▶ Clic droit pour ouvrir"
   settings-title: "<dark_gray>» <light_purple>Paramètres"
-  settings-language-name: "<light_purple>🌐 Langue"
+  settings-language-name: "<light_purple>🌐 Langues / Language"
   settings-language-lore: "<gray>Clique pour choisir ta langue."
   settings-auto-replay-name: "<aqua>↻ Rejouer automatiquement"
   settings-auto-replay-on: "<green>Activé <gray>— {0} partie(s) restante(s)"
