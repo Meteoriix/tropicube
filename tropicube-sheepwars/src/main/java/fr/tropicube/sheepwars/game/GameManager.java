@@ -10,6 +10,7 @@ import fr.tropicube.sheepwars.sheep.SheepType;
 import fr.tropicube.sheepwars.util.ItemBuilder;
 import fr.tropicube.sheepwars.util.MapsUtil;
 import fr.tropicube.sheepwars.util.LangHelper;
+import fr.tropicube.sheepwars.util.PlayerDisplayName;
 import fr.tropicube.core.util.MessageStyle;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -186,7 +187,7 @@ public class GameManager {
         setupWaitingHotbar(player);
         plugin.getScoreboardManager().updateAll();
 
-        broadcastLang("sw.player-joined", player.getName(), players.size(), maxPlayers);
+        broadcastLang("sw.player-joined", PlayerDisplayName.resolve(player), players.size(), maxPlayers);
 
         evaluateAutoStart();
     }
@@ -220,7 +221,7 @@ public class GameManager {
         plugin.getScoreboardManager().clear(player);
 
         if (state == GameState.WAITING || state == GameState.STARTING) {
-            broadcastLang("sw.player-left", player.getName());
+            broadcastLang("sw.player-left", PlayerDisplayName.resolve(player));
         } else if (state == GameState.PLAYING) {
             if (gp.isAlive()) {
                 gp.setAlive(false);

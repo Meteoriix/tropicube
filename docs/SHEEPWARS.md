@@ -114,9 +114,9 @@ Le lobby permet d'arrêter le serveur tant que la manche n'a pas commencé. Apr�
 
 Le backend SheepWars n'enregistre aucune commande Minecraft propre dans son `plugin.yml`. Toutes les actions pendant la partie passent par les objets de la hotbar et les inventaires : équipe, carte, classe/kit, réglages de l'hôte et retour au lobby.
 
-Le scoreboard affiche l'état de la partie, le temps restant, les survivants par équipe, la classe, le kit et les éliminations. La tablist identifie les équipes et les spectateurs. Les textes proviennent de TropicubeCore et sont disponibles en français, anglais, espagnol et allemand.
+Le scoreboard affiche sous le titre tropical `🐑 SHEEPWARS` l'état de la partie, le temps restant, les survivants par équipe, l'équipe personnelle, les éliminations et les moutons lancés. La tablist reprend les identités `🐑 SHEEPWARS` et `🌴 TROPICUBE` sur deux lignes, puis adapte son pied à l'attente, au lancement, au jeu ou à la fin de partie. Les textes proviennent de TropicubeCore et sont disponibles en français, anglais, espagnol et allemand.
 
-Les annonces autonomes utilisent l'identité `SHEEPWARS >` sans crochets. Les menus, titles, scoreboards et tablists restent sans préfixe afin de préserver leur lisibilité.
+Les annonces système autonomes utilisent l'identité `SHEEPWARS >` sans crochets. Les arrivées et départs de joueurs restent narratifs, sans préfixe, et indiquent qu'un joueur « a rejoint la partie ». Les menus, titles, scoreboards et tablists restent sans préfixe afin de préserver leur lisibilité.
 
 La commande `/sw join`, fournie par TropicubeLobby, permet de rejoindre de nouveau une partie quittée mais encore active ; le joueur revient alors comme spectateur. Le lit de sortie transmet l'ID de l'instance pendant cinq minutes avant de transférer le joueur au lobby. Dans le sélecteur de serveurs, une partie en cours porte le statut bleu `PLAYING` et reste joignable comme spectateur tant que l'instance n'est pas pleine.
 

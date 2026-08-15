@@ -20,6 +20,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Modifié
 
+- Tablists et scoreboards Lobby/SheepWars harmonisés avec une identité tropicale plus lisible, des titres localisés et des états de partie structurés ; les connexions et arrivées/départs de partie deviennent des annonces narratives sans préfixe.
 - Messages et locales entièrement harmonisés : identité `TROPICUBE >` ou `SHEEPWARS >` sans crochets décoratifs, grades modernisés, préfixes limités aux commandes et notifications, et logs MiniMessage rendus en ANSI avec fallback texte.
 - Probabilités SheepWars affinées : les moutons polyvalents et lisibles deviennent plus fréquents, tandis que Distorsion, Mécha et Météore restent rares ; le menu affiche désormais le pourcentage effectif après désactivation et renormalisation.
 - Équilibrage SheepWars revu : dégâts d'explosion déterministes sans cumul natif, moutons offensifs et de contrôle ajustés, Fragmentation plafonnée, kits normalisés, cadence stabilisée à 20 secondes, stock limité à cinq moutons et compensation de sous-effectif proportionnelle. Toutes les valeurs sensibles sont désormais regroupées et validées sous `gameplay-balance`.

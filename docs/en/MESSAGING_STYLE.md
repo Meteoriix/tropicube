@@ -16,6 +16,8 @@ The `<tc>` and `<sw>` tags explicitly reset bold after the brand: message bodies
 
 The prefix appears on command results and errors, system notifications, and confirmations or errors triggered by a menu. A multi-line response prefixes its heading only and keeps detail lines compact.
 
+Narrative events directly caused by a player remain unprefixed: connecting, leaving, joining a game, or leaving a game. They use a restrained contextual symbol and keep the player name as the focal point.
+
 Player chat, inventory titles and contents, scoreboards, tab lists, boss bars, titles, subtitles, and action bars do not repeat the brand. They still follow the same palette.
 
 Grades use a bold colored label without brackets. Chat follows `VIP Player > message`, while the tab list ends after the player name.

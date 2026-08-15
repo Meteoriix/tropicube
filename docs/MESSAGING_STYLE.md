@@ -16,6 +16,8 @@ Les balises `<tc>` et `<sw>` réinitialisent explicitement le gras après la mar
 
 Le préfixe apparaît sur les résultats et erreurs de commandes, les notifications système et les confirmations ou erreurs déclenchées par un menu. Une réponse composée préfixe uniquement son en-tête ; ses lignes de détail restent sobres.
 
+Les événements narratifs directement provoqués par un joueur restent sans préfixe : connexion, départ, arrivée dans une partie ou sortie d'une partie. Ils utilisent un symbole contextuel discret et le nom du joueur comme point focal.
+
 Le chat des joueurs, les titres et contenus d'inventaires, les scoreboards, tablists, bossbars, titles, sous-titres et actionbars ne répètent pas la marque. Ils suivent néanmoins la même palette.
 
 Les grades utilisent un libellé coloré en gras sans crochets. Le chat suit le rendu `VIP Joueur > message`, tandis que la tablist s'arrête au nom.

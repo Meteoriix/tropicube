@@ -3,8 +3,6 @@ package fr.tropicube.lobby.managers;
 import fr.tropicube.lobby.TropicubeLobby;
 import fr.tropicube.lobby.utils.LangHelper;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
@@ -20,10 +18,6 @@ public class LobbyScoreboardManager {
     private final TropicubeLobby plugin;
     private final Map<UUID, Scoreboard> boards = new HashMap<>();
 
-    private static final Component SEPARATOR = Component.text("─────────────")
-            .color(NamedTextColor.DARK_GRAY)
-            .decorate(TextDecoration.STRIKETHROUGH);
-
     public LobbyScoreboardManager(TropicubeLobby plugin) {
         this.plugin = plugin;
     }
@@ -36,17 +30,15 @@ public class LobbyScoreboardManager {
         if (old != null) old.unregister();
 
         Objective obj = board.registerNewObjective("lobby", Criteria.DUMMY,
-                Component.text("Tropicube", NamedTextColor.GOLD));
+                LangHelper.component(player, "lobby.sb-title"));
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         int line = 15;
-        setLine(obj, line--, SEPARATOR);
         setLine(obj, line--, LangHelper.component(player, "lobby.sb-online",
                 Bukkit.getOnlinePlayers().size()));
         setLine(obj, line--, Component.empty());
         setLine(obj, line--, LangHelper.component(player, "lobby.sb-server-label"));
-        setLine(obj, line--, LangHelper.component(player, "lobby.sb-server-value"));
-        setLine(obj, line, SEPARATOR);
+        setLine(obj, line, LangHelper.component(player, "lobby.sb-server-value"));
 
         player.setScoreboard(board);
 

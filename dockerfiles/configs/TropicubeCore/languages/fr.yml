@@ -18,12 +18,12 @@ general:
 
 # Connection / Disconnect
 join:
-  message: "<tc><green><bold>+</bold></green> {0} <dark_gray>a rejoint l'aventure"
-  first-join: "<tc><gold><bold>★</bold></gold> <gold>{0} <yellow>rejoint l'aventure pour la première fois ! 🎉"
-  welcome-back: "<tc><gray>Content de te revoir, <white>{0}<gray> ! 🌊"
+  message: "<green>🌴</green> <yellow>{0}</yellow> <gray>a rejoint Tropicube</gray>"
+  first-join: "<gold>☀</gold> <yellow>{0}</yellow> <gray>débarque pour la première fois sur Tropicube !</gray>"
+  welcome-back: "<aqua>🌊</aqua> <gray>Content de te revoir, <white>{0}</white> !</gray>"
 
 quit:
-  message: "<tc><red><bold>−</bold></red> <gray>{0} <dark_gray>a quitté l'aventure"
+  message: "<red>↪</red> <white>{0}</white> <gray>a quitté Tropicube</gray>"
 
 # Economy
 economy:
@@ -134,8 +134,8 @@ sw:
   arena-not-ready: "<sw><red>L'arène n'est pas configurée."
   game-full: "<sw><red>La partie est pleine ! Tente ta chance plus tard 🌊"
   # Broadcasts
-  player-joined: "<sw><yellow>{0} <gray>rejoint l'aventure <dark_gray>({1}/{2}) 🌊"
-  player-left: "<sw><yellow>{0} <gray>a quitté la partie"
+  player-joined: "<green>🐑</green> <yellow>{0}</yellow> <gray>a rejoint la partie</gray> <dark_gray>({1}/{2})</dark_gray>"
+  player-left: "<red>↪</red> <yellow>{0}</yellow> <gray>a quitté la partie</gray>"
   countdown: "<sw><gold>La partie commence dans <yellow>{0} <gold>seconde(s) ⏳"
   countdown-cancelled: "<sw><red>Annulation du lancement de la partie."
   arena-not-ready-start: "<sw><red>L'arène n'est pas configurée, impossible de démarrer."
@@ -247,21 +247,22 @@ sw:
   settings-drop-rates-title: "Taux d'apparition des moutons"
   settings-weight-label: "Poids : {0} ({1} %)"
   # Scoreboard
-  sb-waiting: "<yellow>En attente..."
-  sb-starting: "<yellow>Début dans <green>{0}s"
-  sb-players: "<gray>Joueurs: <white>{0}"
-  sb-red: "<red>Rouges: <white>{0}"
-  sb-blue: "<blue>Bleus: <white>{0}"
-  sb-your-team: "<yellow>Votre équipe: {0}"
-  sb-spectator: "<gray>Mode : <white>Spectateur"
-  sb-kills: "<yellow>Kills: <white>{0}"
-  sb-time: "<gray>Temps: <white>{0}"
-  sb-ending: "<yellow>Partie terminée !"
+  sb-title: "<aqua><bold>🐑 SHEEPWARS</bold></aqua>"
+  sb-waiting: "<yellow>⏳ En attente</yellow>"
+  sb-starting: "<gold>⏳ Début dans <white>{0}s</white></gold>"
+  sb-players: "<aqua>☀</aqua> <gray>Joueurs</gray> <white>{0}</white>"
+  sb-red: "<red>❤ Rouges</red> <dark_gray>•</dark_gray> <white>{0}</white>"
+  sb-blue: "<blue>❤ Bleus</blue> <dark_gray>•</dark_gray> <white>{0}</white>"
+  sb-your-team: "<yellow>⚔ Équipe</yellow> <dark_gray>•</dark_gray> {0}"
+  sb-spectator: "<gray>◇ Spectateur</gray>"
+  sb-kills: "<gold>✦ Éliminations</gold> <dark_gray>•</dark_gray> <white>{0}</white>"
+  sb-time: "<yellow>⏱ Temps</yellow> <dark_gray>•</dark_gray> <white>{0}</white>"
+  sb-ending: "<gold>🏆 Partie terminée</gold>"
   sb-team-red: "<red>Rouge"
   sb-team-blue: "<blue>Bleue"
-  tab-header: "\n<aqua><b>SheepWars</b></aqua> <dark_gray>│</dark_gray> <gray>Tropicube\n"
-  tab-footer: "\n<gray>Équipe : <white>{0}</white>  <dark_gray>│</dark_gray>  <red>Rouges : <white>{1}</white></red>  <dark_gray>│</dark_gray>  <blue>Bleus : <white>{2}</white></blue>  <dark_gray>│</dark_gray>  <yellow>⏱ <white>{3}</white></yellow>\n"
-  tab-footer-spectator: "\n<gray>Spectateur  <dark_gray>│</dark_gray>  <red>Rouges : <white>{0}</white></red>  <dark_gray>│</dark_gray>  <blue>Bleus : <white>{1}</white></blue>  <dark_gray>│</dark_gray>  <yellow>⏱ <white>{2}</white></yellow>\n"
+  tab-header: "\n<aqua><bold>🐑 SHEEPWARS</bold></aqua>\n<gold><bold>🌴 TROPICUBE</bold></gold>\n"
+  tab-footer: "\n<yellow>⚔ Équipe</yellow> <white>{0}</white> <dark_gray>•</dark_gray> <yellow>⏱</yellow> <white>{3}</white>\n<red>❤ {1}</red> <dark_gray>•</dark_gray> <blue>❤ {2}</blue>\n"
+  tab-footer-spectator: "\n<gray>◇ Spectateur</gray> <dark_gray>•</dark_gray> <yellow>⏱</yellow> <white>{2}</white>\n<red>❤ {0}</red> <dark_gray>•</dark_gray> <blue>❤ {1}</blue>\n"
   # Team selection
   team-selector-name: "<gold>Équipe"
   team-selector-lore: "<gray>Clic droit pour choisir ton équipe"
@@ -293,11 +294,11 @@ sw:
   settings-cancel-launch-lore: "Clic pour stopper le compte à rebours"
   settings-no-launch-name: "✘ Lancement impossible"
   # End of game scoreboard
-  sb-sheep-thrown: "<yellow>Moutons lancés : <white>{0}"
+  sb-sheep-thrown: "<aqua>🐑 Moutons lancés</aqua> <dark_gray>•</dark_gray> <white>{0}</white>"
   # Tablist (additional states)
-  tab-footer-waiting: "\n<gray>Joueurs : <yellow>{0}</yellow>  <dark_gray>│</dark_gray>  <gray>En attente...\n"
-  tab-footer-starting: "\n<yellow>La partie commence dans <white>{0}s</white><yellow> !\n"
-  tab-footer-ending: "\n<gold>Partie terminée ! Merci d'avoir joué 🏆\n"
+  tab-footer-waiting: "\n<yellow>⏳ En attente</yellow> <dark_gray>•</dark_gray> <gray>Joueurs</gray> <white>{0}</white>\n"
+  tab-footer-starting: "\n<gold>⏳ Début dans <white>{0}s</white></gold>\n"
+  tab-footer-ending: "\n<gold>🏆 Partie terminée</gold> <dark_gray>•</dark_gray> <gray>Merci d'avoir joué !</gray>\n"
   not-enough-players: "<sw><red>Pas assez de joueurs ({0}/{1} minimum)."
   # MapVoteMenu
   map-vote-item-name: "<gold>🗺 Vote de Map"
@@ -410,11 +411,12 @@ lobby:
     - "<gray>• <light_purple>Nick <gray>personnalisé (/nick)"
     - "<gray>• <light_purple>Accès <gray>aux serveurs beta"
   # Scoreboard & Tablist lobby
-  sb-online: "<gray>En ligne : <white>{0}"
-  sb-server-label: "<gray>Serveur :"
-  sb-server-value: "<green>Lobby"
-  tab-header: "\n<gold><b>Tropicube</b></gold>  <dark_gray>│</dark_gray>  <gray>Lobby\n"
-  tab-footer: "\n<gray>Joueurs : <yellow>{0}</yellow><gray>/<white>{1}</white>  <dark_gray>│</dark_gray>  <aqua>tropicube.fr</aqua>\n"
+  sb-title: "<gold><bold>🌴 TROPICUBE</bold></gold>"
+  sb-online: "<aqua>☀</aqua> <gray>En ligne</gray> <white>{0}</white>"
+  sb-server-label: "<green>⛵</green> <gray>Destination</gray>"
+  sb-server-value: "  <green>Lobby tropical</green>"
+  tab-header: "\n<gold><bold>🌴 TROPICUBE</bold></gold>\n<green>Lobby tropical</green>\n"
+  tab-footer: "\n<aqua>☀</aqua> <gray>Joueurs</gray> <white>{0}</white><dark_gray>/</dark_gray><white>{1}</white> <dark_gray>•</dark_gray> <aqua>tropicube.fr</aqua>\n"
   sw-rejoin-message: "<tc><yellow>⚔ Ta partie SheepWars est toujours en cours ! <aqua><click:run_command:'/sw join'><bold><u>Revenir dans la partie</u></bold></click></aqua>"
   sw-rejoin-unavailable: "<tc><red>✖ Cette partie SheepWars n'est plus disponible."
   hotbar-custom-game-name: "<gold>✦ Partie personnalisée"

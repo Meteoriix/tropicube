@@ -118,6 +118,37 @@ class YamlResourcesTest {
     }
 
     @Test
+    void playerDrivenNarrativeMessagesStayUnprefixed() {
+        List<String> narrativeKeys = List.of(
+                "join.message",
+                "join.first-join",
+                "join.welcome-back",
+                "quit.message",
+                "sw.player-joined",
+                "sw.player-left"
+        );
+        for (String language : List.of("fr", "en", "es", "de")) {
+            Map<String, Object> values = leafValues(Path.of("src/main/resources/languages", language + ".yml"));
+            for (String key : narrativeKeys) {
+                String message = String.valueOf(values.get(key));
+                assertFalse(message.startsWith("<tc>"), () -> "Préfixe réseau inattendu pour " + key);
+                assertFalse(message.startsWith("<sw>"), () -> "Préfixe SheepWars inattendu pour " + key);
+            }
+        }
+    }
+
+    @Test
+    void hudUsesLocalizedBrandedTitles() {
+        for (String language : List.of("fr", "en", "es", "de")) {
+            Map<String, Object> values = leafValues(Path.of("src/main/resources/languages", language + ".yml"));
+            assertEquals("<gold><bold>🌴 TROPICUBE</bold></gold>", values.get("lobby.sb-title"));
+            assertEquals("<aqua><bold>🐑 SHEEPWARS</bold></aqua>", values.get("sw.sb-title"));
+            assertTrue(String.valueOf(values.get("lobby.tab-header")).contains("🌴 TROPICUBE"));
+            assertTrue(String.valueOf(values.get("sw.tab-header")).contains("🐑 SHEEPWARS"));
+        }
+    }
+
+    @Test
     void deployedLanguagesMatchBundledLanguageKeys() {
         assertLanguageKeysMatch(
                 Path.of("src/main/resources/languages"),

@@ -96,11 +96,11 @@ The lobby command `/sw join` uses `sw:left-game:<uuid>` for five minutes. Rejoin
 
 ## Interface and languages
 
-All actions use hotbar items and inventory menus; the SheepWars Paper plugin declares no dedicated command. The sidebar shows state, survivor counts, personal team or spectator mode, kills, time, and end-of-game statistics. The tablist displays team colors, survivor counts, timer, or spectator status.
+All actions use hotbar items and inventory menus; the SheepWars Paper plugin declares no dedicated command. Under the tropical `🐑 SHEEPWARS` title, the sidebar shows state, survivor counts, personal team or spectator mode, eliminations, time, and sheep thrown. The tab list uses two-line `🐑 SHEEPWARS` and `🌴 TROPICUBE` branding and adapts its footer to waiting, starting, playing, and ending states.
 
 Player-facing messages come from TropicubeCore and exist in French, English, German, and Spanish.
 
-Standalone announcements use the bracket-free `SHEEPWARS >` identity. Menus, titles, scoreboards, and tab lists remain unprefixed for readability.
+Standalone system announcements use the bracket-free `SHEEPWARS >` identity. Player joins and departures remain narrative and unprefixed, explicitly saying that the player joined or left the game. Menus, titles, scoreboards, and tab lists remain unprefixed for readability.
 
 ## Configuration
 

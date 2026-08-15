@@ -8,7 +8,6 @@ import fr.tropicube.sheepwars.util.LangHelper;
 import fr.tropicube.sheepwars.util.PlayerDisplayName;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
@@ -23,10 +22,6 @@ public class ScoreboardManager {
 
     private final TropicubeSheepwars plugin;
     private final Map<UUID, Scoreboard> boards = new HashMap<>();
-
-    private static final Component SEPARATOR = Component.text("─────────────")
-            .color(NamedTextColor.DARK_GRAY)
-            .decorate(TextDecoration.STRIKETHROUGH);
 
     public ScoreboardManager(TropicubeSheepwars plugin) {
         this.plugin = plugin;
@@ -52,14 +47,12 @@ public class ScoreboardManager {
         Objective objective = board.registerNewObjective(
                 "sheepwars",
                 Criteria.DUMMY,
-                Component.text("SheepWars", NamedTextColor.AQUA)
+                LangHelper.component(player, "sw.sb-title")
         );
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         GameState state = plugin.getGameManager().getState();
         int line = 15;
-
-        setLine(objective, line--, SEPARATOR);
 
         switch (state) {
             case WAITING -> {
@@ -82,8 +75,7 @@ public class ScoreboardManager {
                 if (gp.getTeam() == null || !gp.isAlive()) {
                     setLine(objective, line--, LangHelper.component(player, "sw.sb-spectator"));
                 } else {
-                    String teamName = LangHelper.get(player,
-                            gp.getTeam() == GameTeam.RED ? "sw.sb-team-red" : "sw.sb-team-blue");
+                    String teamName = localizedTeamName(player, gp.getTeam());
                     setLine(objective, line--, LangHelper.component(player, "sw.sb-your-team", teamName));
                     setLine(objective, line--, LangHelper.component(player, "sw.sb-kills", gp.getKills()));
                 }
@@ -94,8 +86,7 @@ public class ScoreboardManager {
                 setLine(objective, line--, LangHelper.component(player, "sw.sb-ending"));
                 setLine(objective, line--, Component.empty());
                 if (gp.getTeam() != null) {
-                    String teamName = LangHelper.get(player,
-                            gp.getTeam() == GameTeam.RED ? "sw.sb-team-red" : "sw.sb-team-blue");
+                    String teamName = localizedTeamName(player, gp.getTeam());
                     setLine(objective, line--, LangHelper.component(player, "sw.sb-your-team", teamName));
                 }
                 setLine(objective, line--, LangHelper.component(player, "sw.sb-kills", gp.getKills()));
@@ -103,8 +94,6 @@ public class ScoreboardManager {
             }
             default -> setLine(objective, line--, LangHelper.component(player, "sw.sb-waiting"));
         }
-
-        setLine(objective, line, SEPARATOR);
 
         // ── Team glow / color setup ───────────────────────────────────────────
         setupTeamBoards(board, state);
@@ -166,10 +155,11 @@ public class ScoreboardManager {
                             LangHelper.component(player, "sw.tab-footer-spectator", red, blue,
                                     formatTime(plugin.getGameManager().getGameTime())));
                 } else {
+                    String teamName = localizedTeamName(player, gp.getTeam());
                     player.sendPlayerListHeaderAndFooter(
                             LangHelper.component(player, "sw.tab-header"),
                             LangHelper.component(player, "sw.tab-footer",
-                                    gp.getTeam().getDisplayName(), red, blue,
+                                    teamName, red, blue,
                                     formatTime(plugin.getGameManager().getGameTime())));
                 }
             }
@@ -180,6 +170,10 @@ public class ScoreboardManager {
         }
 
         applyPlayerListName(player, gp);
+    }
+
+    private String localizedTeamName(Player player, GameTeam team) {
+        return LangHelper.get(player, team == GameTeam.RED ? "sw.sb-team-red" : "sw.sb-team-blue");
     }
 
     /**
