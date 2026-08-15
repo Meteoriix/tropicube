@@ -143,9 +143,9 @@ Exemples :
 4. fusion des nouvelles traductions dans les configurations persistantes ;
 5. construction parallèle de `tropicube-lobby`, `tropicube-sheepwars` et `tropicube-velocity` ;
 6. double tag `latest` et `YYYYMMDD-HHMMSS` UTC ;
-7. `docker compose up -d --force-recreate --renew-anon-volumes velocity`.
+7. `docker compose up -d --force-recreate velocity` puis suppression contrôlée de l'éventuel ancien volume anonyme `/server`.
 
-Compose démarre ou vérifie automatiquement Redis, MySQL et `docker-proxy` grâce aux dépendances de santé. Par défaut, l'arrêt de l'ancien Velocity supprime les backends dynamiques et leurs volumes de données éphémères avant le redémarrage. `--renew-anon-volumes` remplace aussi le volume `/server` hérité de l'image Velocity : le JAR fraîchement construit ne peut donc plus être masqué par le contenu d'un ancien volume. Les futures instances utilisent les nouvelles images `latest`.
+Compose démarre ou vérifie automatiquement Redis, MySQL et `docker-proxy` grâce aux dépendances de santé. Par défaut, l'arrêt de l'ancien Velocity supprime les backends dynamiques et leurs volumes de données éphémères avant le redémarrage. Le `/server` de Velocity est un `tmpfs` initialisé depuis l'image : son contenu disparaît à l'arrêt et le JAR fraîchement construit ne peut pas être masqué par un ancien volume. Lors de la première migration, les scripts suppriment précisément l'ancien volume anonyme détecté sur ce chemin. Les futures instances utilisent les nouvelles images `latest`.
 
 Pour conserver exceptionnellement les parties actives pendant un redéploiement, régler auparavant `shutdown.stop-dynamic-servers: false` dans la configuration Velocity déployée. Le nouveau proxy restaurera alors les backends encore actifs. Cette option ne doit pas être utilisée pour un arrêt complet.
 
@@ -194,7 +194,7 @@ Les volumes nommés ne sont pas supprimés. Ne pas ajouter `-v` sauf si la suppr
 Redémarrage du proxy uniquement :
 
 ```bash
-docker compose up -d --force-recreate --renew-anon-volumes velocity
+docker compose up -d --force-recreate velocity
 ```
 
 Avec la configuration par défaut, l'arrêt propre du proxy arrête les serveurs dynamiques puis supprime leurs conteneurs et volumes `/data` éphémères. Au prochain démarrage, Velocity supprime aussi tout volume dynamique étiqueté qui n'est plus relié à une instance connue. Attendre la fin de ce nettoyage avant d'arrêter `docker-proxy` ou le daemon Docker ; un arrêt brutal peut interrompre une sauvegarde de monde. Si `shutdown.stop-dynamic-servers` a été désactivé pour un redéploiement, rétablir la valeur `true` ou arrêter d'abord les instances avec `/tropi stop` avant un arrêt complet.
@@ -207,7 +207,7 @@ Chaque déploiement affiche un tag UTC. Pour revenir au lot précédent :
 docker tag tropicube-velocity:YYYYMMDD-HHMMSS tropicube-velocity:latest
 docker tag tropicube-lobby:YYYYMMDD-HHMMSS tropicube-lobby:latest
 docker tag tropicube-sheepwars:YYYYMMDD-HHMMSS tropicube-sheepwars:latest
-docker compose up -d --force-recreate --renew-anon-volumes velocity
+docker compose up -d --force-recreate velocity
 ```
 
 Les backends existants gardent leur image actuelle. Les arrêter proprement puis les recréer si le rollback doit également s'appliquer aux instances de jeu. Un rollback de code n'annule pas automatiquement une migration de données ; restaurer les sauvegardes compatibles si le schéma a changé.

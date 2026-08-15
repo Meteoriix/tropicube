@@ -73,6 +73,8 @@ services:
       - tropicube-control
     ports:
       - "25565:25577"
+    tmpfs:
+      - /server:size=512m,mode=0755
     environment:
       TYPE: VELOCITY
       VELOCITY_VERSION: "4.0.0"

@@ -91,6 +91,8 @@ Velocity and every Paper backend must receive the same modern-forwarding secret 
 
 Velocity creates a container from the selected template with a labelled ephemeral `/data` volume, waits for health checks, registers it with the proxy, and stores its `ServerInstance` in Redis. Empty servers are stopped after their configured delay. A finished minigame asks Velocity to transfer players and immediately remove its container, data volume, and shared state. Labelled orphan volumes are purged on startup.
 
+The Velocity container uses a `tmpfs` mount for `/server`, seeded from the image on every start. No anonymous proxy volume survives a stop. During the first deployment of this layout, the deployment scripts detect and remove the legacy anonymous `/server` volume after recreating the proxy.
+
 For private custom games, Velocity injects `HOST_UUID` and `CUSTOM_GAME_PRIVATE=true`; do not hard-code them in a template. If the host item or access list is missing, inspect `host:<uuid>` and the `whitelistedPlayers` field of `instance:<id>` in Redis. A target must have joined the network previously, unless the host supplies its UUID directly.
 
 The proxy's normal shutdown may preserve or remove dynamic instances according to `remove-dynamic-servers-on-shutdown`. Production deployments should validate this choice explicitly.

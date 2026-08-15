@@ -314,7 +314,12 @@ $build_failed && exit 1
 
 if ! $skip_restart; then
   step 'Recreating the Velocity stack...'
-  docker compose up -d --force-recreate --renew-anon-volumes velocity || fail 'Docker Compose deployment failed.'
+  legacy_velocity_volumes=$(docker inspect tropicube-velocity \
+    --format '{{range .Mounts}}{{if and (eq .Type "volume") (eq .Destination "/server")}}{{println .Name}}{{end}}{{end}}' 2>/dev/null || true)
+  docker compose up -d --force-recreate velocity || fail 'Docker Compose deployment failed.'
+  for volume in $legacy_velocity_volumes; do
+    docker volume rm "$volume" >/dev/null || fail "Could not remove legacy Velocity volume '$volume'."
+  done
   ok 'Velocity recreated; new game containers will use the freshly tagged images.'
 fi
 
