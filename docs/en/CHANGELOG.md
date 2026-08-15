@@ -18,6 +18,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Fixed
 
+- `/nick off` now restores the real name in the lobby tablist as well; a deferred refresh can no longer reapply the stale nicked profile name.
 - After reconnecting with `/nick`, the lobby join announcement now uses the restored nick name and fake grade without exposing the real grade.
 - Deferred lobby tablist refreshes now retain the `/nick` name together with its fake grade instead of restoring the real profile name.
 - `/lobby` now reports that the player is already there; outside an active `/nick` identity, the lobby tablist and join announcements retain the real grade.

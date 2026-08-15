@@ -3,6 +3,7 @@ package fr.tropicube.lobby.utils;
 import fr.tropicube.core.TropicubeCore;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -70,10 +71,18 @@ public final class LangHelper {
                 .orElse(fallbackName);
     }
 
-    /** Returns the current profile name, including an active nick, without changing the real grade lookup. */
+    /**
+     * Returns the display name last applied by Core. Unlike the Paper profile
+     * name, this value is updated immediately when `/nick off` restores the
+     * original identity.
+     */
     public static String getVisibleName(Player player) {
-        String profileName = player.getPlayerProfile().getName();
-        return profileName == null || profileName.isBlank() ? player.getName() : profileName;
+        return getVisibleName(player.displayName(), player.getName());
+    }
+
+    static String getVisibleName(Component displayName, String fallbackName) {
+        String visibleName = PlainTextComponentSerializer.plainText().serialize(displayName);
+        return visibleName.isBlank() ? fallbackName : visibleName;
     }
 
     /** Returns the current visible name decorated with the active display grade. */
