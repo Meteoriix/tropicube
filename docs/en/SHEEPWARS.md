@@ -96,6 +96,8 @@ When a player joins during `PLAYING`, SheepWars creates a non-living `GamePlayer
 
 The argumentless lobby command `/rejoin` uses `sw:left-game:<uuid>` for five minutes. Rejoining an active match follows the same spectator path; a disconnected living participant is eliminated before removal.
 
+The private-game host manages access through a zero-cost anvil accepting a valid Minecraft name or canonical UUID. The placeholder cannot be submitted. After an add or remove request, the menu waits for Velocity to save the instance and publish an acknowledgement before refreshing; a missing acknowledgement is reported after five seconds.
+
 ## Interface and languages
 
 All actions use hotbar items and inventory menus; the SheepWars Paper plugin declares no dedicated command. Under the tropical `🐑 SHEEPWARS` title, short separators keep the sidebar sections airy. While waiting, it shows current and maximum players, the required minimum, map, team, and class. During play, it shows time, map, survivor counts, personal team or spectator mode, class, eliminations, and sheep thrown. The tab list uses two-line `🐑 SHEEPWARS` and `🌴 TROPICUBE` branding and adapts its footer to waiting, starting, playing, and ending states.

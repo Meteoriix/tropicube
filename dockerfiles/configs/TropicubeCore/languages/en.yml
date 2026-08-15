@@ -356,6 +356,7 @@ sw:
   whitelist-item-lore: "<gray>Right-click to manage allowed players"
   whitelist-loading: "<sw><gray>Loading the whitelist..."
   whitelist-unavailable: "<sw><red>This game's whitelist is no longer available."
+  whitelist-update-timeout: "<sw><yellow>The proxy confirmation is taking too long. The list will be reloaded."
   whitelist-menu-title: "<dark_gray>» <gold>Private whitelist"
   whitelist-remove-lore: "<red>Click to remove this player"
   whitelist-add-name: "<green>Add a player"

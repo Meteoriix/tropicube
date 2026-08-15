@@ -364,6 +364,7 @@ sw:
   whitelist-item-lore: "<gray>Clic droit pour gérer les joueurs autorisés"
   whitelist-loading: "<sw><gray>Chargement de la whitelist..."
   whitelist-unavailable: "<sw><red>La whitelist de cette partie n'est plus disponible."
+  whitelist-update-timeout: "<sw><yellow>La confirmation du proxy tarde à arriver. La liste va être rechargée."
   whitelist-menu-title: "<dark_gray>» <gold>Whitelist privée"
   whitelist-remove-lore: "<red>Clique pour retirer ce joueur"
   whitelist-add-name: "<green>Ajouter un joueur"

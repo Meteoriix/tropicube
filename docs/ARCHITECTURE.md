@@ -138,7 +138,7 @@ Ce module est pour l'instant un squelette Maven sans classe, ressource, dépenda
 | `instances:active` | Velocity | Lobby/Velocity | Ensemble des identifiants actifs |
 | `instances:type:<type>` | Velocity | Lobby/Velocity | Index par type |
 | canal `servers` | Velocity | Intégrations | `SERVER_STARTED` / `SERVER_STOPPED` |
-| canal `commands` | Lobby/SheepWars/Velocity | Velocity | Commandes ciblées, notamment `PROXY:CONNECT:<uuid>:<serveur>`, `PROXY:HOST_WHITELIST:<hôte>:<opération>:<joueur>` et `PROXY:FINISH_GAME:<instanceId>` |
+| canal `commands` | Lobby/SheepWars/Velocity | Velocity/SheepWars | Commandes ciblées, notamment `PROXY:CONNECT:<uuid>:<serveur>`, la demande acquittée `PROXY:HOST_WHITELIST:<hôte>:<opération>:<requête>:<joueur>`, sa réponse `SHEEPWARS:HOST_WHITELIST_RESULT:<hôte>:<requête>` et `PROXY:FINISH_GAME:<instanceId>` |
 | canal `players` | Velocity | Intégrations | Changements de serveur d'un joueur |
 | `transfer:<uuid>` | Velocity | Core/Lobby | Marqueur court évitant de traiter un transfert comme une première arrivée |
 | `host:<uuid>` | Velocity | Lobby/SheepWars | Partie personnalisée administrée par le joueur |

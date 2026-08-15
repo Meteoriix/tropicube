@@ -101,6 +101,7 @@ public final class TropicubeSheepwars extends JavaPlugin {
         this.sheepManager.buildWeightCache();
 
         redisManager.subscribeToPlayerEvents(this::handlePlayerIdentityEvent);
+        redisManager.subscribeToCommands(whitelistMenu::handleProxyCommand);
 
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
         getServer().getPluginManager().registerEvents(new SheepListener(this), this);

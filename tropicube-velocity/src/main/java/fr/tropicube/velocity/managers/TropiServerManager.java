@@ -10,6 +10,7 @@ import fr.tropicube.docker.client.DockerManager;
 import fr.tropicube.docker.client.RedisManager;
 import fr.tropicube.docker.model.ServerInstance;
 import fr.tropicube.docker.model.ServerTemplate;
+import fr.tropicube.docker.model.WhitelistUpdateProtocol;
 import org.slf4j.Logger;
 import org.spongepowered.configurate.ConfigurationNode;
 
@@ -232,20 +233,15 @@ public class TropiServerManager {
                 return;
             }
 
-            // Format: "PROXY:HOST_WHITELIST:<hostUuid>:<ADD|REMOVE>:<nameOrUuid>"
-            if (message.startsWith("PROXY:HOST_WHITELIST:")) {
-                String[] args = message.substring("PROXY:HOST_WHITELIST:".length()).split(":", 3);
-                if (args.length != 3) return;
-                try {
-                    UUID hostId = UUID.fromString(args[0]);
-                    boolean add = "ADD".equalsIgnoreCase(args[1]);
-                    if (!add && !"REMOVE".equalsIgnoreCase(args[1])) return;
-                    WhitelistUpdate update = updateHostedWhitelist(hostId, args[2], add);
-                    proxy.getPlayer(hostId).ifPresent(player -> player.sendMessage(
-                            languageManager.getComponent(hostId, update.messageKey(), update.targetName())));
-                } catch (IllegalArgumentException e) {
-                    logger.warn(MessageStyle.log("PROXY", "<yellow>Commande HOST_WHITELIST invalide : {}"), e.getMessage());
-                }
+            var whitelistRequest = WhitelistUpdateProtocol.parseRequestMessage(message);
+            if (whitelistRequest.isPresent()) {
+                var request = whitelistRequest.get();
+                WhitelistUpdate update = updateHostedWhitelist(request.hostId(), request.target(), request.add());
+                proxy.getPlayer(request.hostId()).ifPresent(player -> player.sendMessage(
+                        languageManager.getComponent(request.hostId(), update.messageKey(), update.targetName())));
+                redisManager.publishCommand("SHEEPWARS",
+                        WhitelistUpdateProtocol.resultCommand(request.hostId(), request.requestId()));
+                return;
             }
         });
     }

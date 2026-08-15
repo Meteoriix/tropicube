@@ -1,6 +1,8 @@
 package fr.tropicube.sheepwars.menu;
 
 import fr.tropicube.docker.model.ServerInstance;
+import fr.tropicube.docker.model.WhitelistUpdateProtocol;
+import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.sheepwars.TropicubeSheepwars;
 import fr.tropicube.sheepwars.util.ItemBuilder;
 import fr.tropicube.sheepwars.util.LangHelper;
@@ -20,12 +22,15 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.view.AnvilView;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.NonNull;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 /** Host-only GUI for adding and removing members of a private custom game. */
 public final class WhitelistMenu implements Listener {
@@ -33,6 +38,8 @@ public final class WhitelistMenu implements Listener {
     private static final int SIZE = 54;
     private static final int ADD_SLOT = 45;
     private static final int CLOSE_SLOT = 53;
+    private static final long UPDATE_TIMEOUT_TICKS = 100L;
+    private static final Pattern PLAYER_NAME = Pattern.compile("[A-Za-z0-9_]{1,16}");
     private static final List<Integer> MEMBER_SLOTS = List.of(
             10, 11, 12, 13, 14, 15, 16,
             19, 20, 21, 22, 23, 24, 25,
@@ -41,6 +48,7 @@ public final class WhitelistMenu implements Listener {
 
     private final TropicubeSheepwars plugin;
     private final NamespacedKey selectorKey;
+    private final Map<UUID, PendingUpdate> pendingUpdates = new HashMap<>();
 
     public WhitelistMenu(TropicubeSheepwars plugin) {
         this.plugin = plugin;
@@ -125,7 +133,8 @@ public final class WhitelistMenu implements Listener {
     }
 
     private void openAnvil(Player player) {
-        AnvilHolder holder = new AnvilHolder();
+        String placeholder = LangHelper.get(player, "sw.whitelist-anvil-placeholder");
+        AnvilHolder holder = new AnvilHolder(placeholder);
         Inventory inventory = Bukkit.createInventory(holder, InventoryType.ANVIL,
                 LangHelper.component(player, "sw.whitelist-anvil-title"));
         holder.inventory = inventory;
@@ -137,14 +146,17 @@ public final class WhitelistMenu implements Listener {
 
     @EventHandler
     public void onPrepareAnvil(PrepareAnvilEvent event) {
-        if (!(event.getInventory().getHolder() instanceof AnvilHolder)) return;
+        if (!(event.getInventory().getHolder() instanceof AnvilHolder holder)) return;
+        event.getView().setRepairCost(0);
+        event.getView().setRepairItemCountCost(0);
+        event.getView().setMaximumRepairCost(1);
         String name = event.getView().getRenameText();
-        if (name == null || name.isBlank()) {
+        if (!isValidIdentifier(name) || name.trim().equalsIgnoreCase(holder.placeholder)) {
             event.setResult(null);
             return;
         }
         event.setResult(new ItemBuilder(Material.LIME_DYE)
-                .name(Component.text(name).decoration(TextDecoration.ITALIC, false)).build());
+                .name(Component.text(name.trim()).decoration(TextDecoration.ITALIC, false)).build());
     }
 
     @EventHandler
@@ -158,7 +170,7 @@ public final class WhitelistMenu implements Listener {
                 openAnvil(player);
             } else {
                 UUID memberId = holder.members.get(event.getRawSlot());
-                if (memberId != null) publishUpdate(player, "REMOVE", memberId.toString());
+                if (memberId != null) publishUpdate(player, false, memberId.toString());
             }
             return;
         }
@@ -167,21 +179,71 @@ public final class WhitelistMenu implements Listener {
         event.setCancelled(true);
         if (event.getRawSlot() != 2) return;
         String name = anvilView.getRenameText();
-        if (name == null || name.isBlank()) return;
-        publishUpdate(player, "ADD", name.trim());
+        if (!isValidIdentifier(name)) return;
+        publishUpdate(player, true, name.trim());
     }
 
-    private void publishUpdate(Player player, String operation, String target) {
+    private void publishUpdate(Player player, boolean add, String target) {
         UUID playerId = player.getUniqueId();
+        UUID requestId = UUID.randomUUID();
         player.closeInventory();
+        BukkitTask timeoutTask = Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            PendingUpdate pending = pendingUpdates.remove(requestId);
+            if (pending == null) return;
+            Player online = Bukkit.getPlayer(pending.hostId());
+            if (online != null) {
+                online.sendMessage(LangHelper.component(online, "sw.whitelist-update-timeout"));
+                open(online);
+            }
+        }, UPDATE_TIMEOUT_TICKS);
+        pendingUpdates.put(requestId, new PendingUpdate(playerId, timeoutTask));
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            plugin.getRedisManager().publishCommand("PROXY", "HOST_WHITELIST:"
-                    + playerId + ":" + operation + ":" + target);
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                Player online = Bukkit.getPlayer(playerId);
-                if (online != null) open(online);
-            }, 10L);
+            try {
+                plugin.getRedisManager().publishCommand("PROXY", WhitelistUpdateProtocol.requestCommand(
+                        playerId, add, requestId, target));
+            } catch (RuntimeException exception) {
+                plugin.getLogger().warning(MessageStyle.log("sw", "WHITELIST",
+                        "<yellow>Échec de publication : " + exception.getMessage()));
+                Bukkit.getScheduler().runTask(plugin, () -> failRequest(requestId));
+            }
         });
+    }
+
+    /** Handles the Velocity acknowledgement on the Paper scheduler before touching inventories. */
+    public void handleProxyCommand(String message) {
+        WhitelistUpdateProtocol.parseResultMessage(message).ifPresent(result ->
+                Bukkit.getScheduler().runTask(plugin, () -> completeRequest(result.hostId(), result.requestId())));
+    }
+
+    private void completeRequest(UUID hostId, UUID requestId) {
+        PendingUpdate pending = pendingUpdates.get(requestId);
+        if (pending == null || !pending.hostId().equals(hostId)) return;
+        pendingUpdates.remove(requestId);
+        pending.timeoutTask().cancel();
+        Player online = Bukkit.getPlayer(hostId);
+        if (online != null) open(online);
+    }
+
+    private void failRequest(UUID requestId) {
+        PendingUpdate pending = pendingUpdates.remove(requestId);
+        if (pending == null) return;
+        pending.timeoutTask().cancel();
+        Player online = Bukkit.getPlayer(pending.hostId());
+        if (online != null) {
+            online.sendMessage(LangHelper.component(online, "sw.whitelist-update-timeout"));
+            open(online);
+        }
+    }
+
+    static boolean isValidIdentifier(String value) {
+        if (value == null) return false;
+        String candidate = value.trim();
+        if (PLAYER_NAME.matcher(candidate).matches()) return true;
+        try {
+            return UUID.fromString(candidate).toString().equalsIgnoreCase(candidate);
+        } catch (IllegalArgumentException ignored) {
+            return false;
+        }
     }
 
     private static final class MemberHolder implements InventoryHolder {
@@ -191,7 +253,12 @@ public final class WhitelistMenu implements Listener {
     }
 
     private static final class AnvilHolder implements InventoryHolder {
+        private final String placeholder;
         private Inventory inventory;
+        private AnvilHolder(String placeholder) { this.placeholder = placeholder; }
         @Override public @NonNull Inventory getInventory() { return inventory; }
+    }
+
+    private record PendingUpdate(UUID hostId, BukkitTask timeoutTask) {
     }
 }
