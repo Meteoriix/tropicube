@@ -62,7 +62,7 @@ SheepWars publishes each game transition back to Redis. The lobby renders `GAME_
 | `host:<uuid>` | Velocity | Velocity, Lobby, SheepWars | Host ownership of one custom instance |
 | `player:uuid:<name>` / `player:name:<uuid>` | Velocity | Velocity, SheepWars | Previously seen player-name resolution; refreshed 30-day TTL |
 
-On `NICK_APPLY`, Core copies the `/nick` name and fake grade into a backend-local visual cache used by the tablist, while chat reads the same Redis identity. Neither path replaces the real grade used for permissions. The cache is cleared when the nick is disabled or the player is unloaded, then restored from `nick:<uuid>` after reconnecting.
+On `NICK_APPLY`, Core copies the `/nick` name and fake grade into a backend-local visual cache used by the tablist and lobby join announcements, while chat reads the same Redis identity. None of these display paths replaces the real grade used for permissions. The cache is cleared when the nick is disabled or the player is unloaded, then restored from `nick:<uuid>` after reconnecting.
 
 Redis subscriber callbacks must not mutate Bukkit state. Paper plugins always schedule entity, inventory, world, and profile changes back onto the server scheduler.
 

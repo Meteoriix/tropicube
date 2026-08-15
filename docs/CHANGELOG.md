@@ -29,6 +29,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Corrigé
 
+- Après reconnexion avec `/nick`, le message d'entrée du lobby utilise désormais le pseudonyme et le grade fictif restaurés, sans révéler le grade réel.
 - Le rafraîchissement différé de la tablist du lobby conserve désormais le pseudonyme `/nick` en plus du grade fictif, au lieu de réafficher le nom réel du profil.
 - `/lobby` affiche désormais un message neutre quand le joueur est déjà au lobby ; hors identité `/nick`, la tablist et le message de connexion conservent le grade réel.
 - Persistance du grade d'affichage factice de `/nick` après reconnexion : la déconnexion ne réduit plus son TTL à 30 secondes et le lobby utilise désormais ce grade dans la tablist sans modifier les permissions réelles. Les anciens payloads Redis restent compatibles ; les noms nickés conservent aussi la bonne couleur d'équipe dans SheepWars.

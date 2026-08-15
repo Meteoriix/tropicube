@@ -59,6 +59,17 @@ public final class LangHelper {
         return core.getPermissionManager().getFormattedName(uuid, fallbackName);
     }
 
+    /**
+     * Returns the formatted display identity, including an active nick name and
+     * fake grade, without changing the real grade used for permissions.
+     */
+    public static String getDisplayFormattedName(UUID uuid, String fallbackName) {
+        TropicubeCore core = getCore();
+        if (core == null) return fallbackName;
+        return core.getPermissionManager().getCachedDisplayFormattedName(uuid, fallbackName)
+                .orElse(fallbackName);
+    }
+
     /** Returns the current profile name, including an active nick, without changing the real grade lookup. */
     public static String getVisibleName(Player player) {
         String profileName = player.getPlayerProfile().getName();
