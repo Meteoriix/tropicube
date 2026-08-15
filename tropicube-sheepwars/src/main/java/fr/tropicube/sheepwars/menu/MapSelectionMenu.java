@@ -173,6 +173,8 @@ public class MapSelectionMenu implements Listener {
             player.closeInventory();
         } else if (uuid.equals(plugin.getGameManager().getHostUuid())) {
             plugin.getGameManager().setSelectedMap(clicked);
+            // Waiting sidebars are event-driven, so publish the host choice immediately.
+            plugin.getScoreboardManager().updateAll();
             player.sendMessage(LangHelper.component(player, "sw.map-pick-selected-msg", clicked.getName()));
             player.closeInventory();
         }

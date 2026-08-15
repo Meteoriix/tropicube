@@ -64,6 +64,8 @@ Every launched sheep records its thrower's UUID. A player who destroys another p
 
 A map defines a world, waiting lobby, void limit, and up to eight red plus eight blue spawns. Spawn lists are shuffled per match. A map cannot start when required locations are missing.
 
+When `map-vote-enabled` is `true`, players vote and a map is randomly selected among the tied winners. Otherwise, the host chooses the map directly, and that choice immediately appears in every player's waiting sidebar.
+
 Blocks destroyed during a match do not create collectible drops. This also covers all four rail variants detached by block physics when their supporting block disappears.
 
 Players may request a team during the waiting phase. The manager enforces balance and assigns a team automatically when needed. A successful selection immediately refreshes every player's tablist, including nicked names, so the displayed color follows the new team. Team selection closes once play begins.

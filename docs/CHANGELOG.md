@@ -20,6 +20,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Modifié
 
+- En partie SheepWars personnalisée sans vote de carte, la carte choisie par l'hôte apparaît désormais immédiatement dans le scoreboard d'attente de tous les joueurs.
 - Scoreboards Lobby et SheepWars enrichis et aérés par des séparateurs tropicaux : profil, solde, fréquentation réseau et parties visibles au lobby ; carte, capacité, minimum requis, équipe, classe et statistiques personnelles en jeu. Les données d'économie restent chargées hors du thread principal.
 - Tablists et scoreboards Lobby/SheepWars harmonisés avec une identité tropicale plus lisible, des titres localisés et des états de partie structurés ; les connexions et arrivées/départs de partie deviennent des annonces narratives sans préfixe.
 - Messages et locales entièrement harmonisés : identité `TROPICUBE >` ou `SHEEPWARS >` sans crochets décoratifs, grades modernisés, préfixes limités aux commandes et notifications, et logs MiniMessage rendus en ANSI avec fallback texte.
