@@ -10,6 +10,7 @@ Cette charte garantit une identité cohérente entre Core, Lobby, Velocity et le
 - le gris porte le texte neutre, le blanc ou l'or les valeurs, le vert les succès, le jaune les avertissements et le rouge les erreurs.
 
 Le gras est réservé à la marque, aux titres courts, aux grades et aux actions importantes. Les icônes restent ponctuelles et ne remplacent jamais une information textuelle.
+Les balises `<tc>` et `<sw>` réinitialisent explicitement le gras après la marque : le corps du message reste normal sauf lorsqu'une portion contient sa propre balise `<bold>`.
 
 ## Quand afficher le préfixe
 

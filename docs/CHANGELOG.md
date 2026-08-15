@@ -32,6 +32,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Corrigé
 
+- Les préfixes MiniMessage `<tc>` et `<sw>` ne propagent plus leur gras au corps des messages ; seuls la marque et les segments explicitement balisés restent en gras.
 - Cycle de vie Docker de Velocity : `/server` utilise désormais un `tmpfs` initialisé depuis l'image et libéré automatiquement à l'arrêt ; les scripts suppriment l'ancien volume anonyme lors de la migration.
 - SheepWars : l'explosion ou les dégâts d'un lanceur ne lui rendent plus son propre mouton ; seuls les moutons détruits par un autre joueur peuvent être récupérés. Les rails détachés par la destruction de leur bloc de support ne génèrent plus d'item.
 - Nettoyage Docker : les instances de jeu utilisent des volumes `/data` éphémères étiquetés, supprimés explicitement avec leur conteneur et purgés s'ils deviennent orphelins.

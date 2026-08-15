@@ -20,6 +20,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Fixed
 
+- The `<tc>` and `<sw>` MiniMessage prefixes no longer leak bold styling into message bodies; only branding and explicitly tagged segments remain bold.
 - Sheep delivery deadlines are now tracked per player and remain pending while the five-sheep stock is full; a standard ten-minute match exposes twenty-nine useful periodic deadlines plus the starting sheep.
 - `/nick off` no longer deletes its recovery state before the backend has restored the profile and can repair a desynchronized visual identity instead of incorrectly reporting that no nick is active.
 - Changing teams in the SheepWars waiting room now immediately refreshes the name color in the tablist, including for nicked players.

@@ -10,6 +10,7 @@ This guide keeps Core, Lobby, Velocity, and game messages visually consistent. E
 - gray is neutral, white or gold highlights values, green indicates success, yellow warns, and red reports errors.
 
 Bold is limited to branding, short headings, grades, and important actions. Icons remain occasional and never replace textual information.
+The `<tc>` and `<sw>` tags explicitly reset bold after the brand: message bodies remain regular unless a portion has its own `<bold>` tag.
 
 ## Prefix usage
 

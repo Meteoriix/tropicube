@@ -46,8 +46,10 @@ public final class MessageStyle {
     }
 
     private static Component prefix(String name, NamedTextColor color) {
-        return Component.text(name, color, TextDecoration.BOLD)
-                .append(Component.text(" > ", NamedTextColor.DARK_GRAY)
-                        .decoration(TextDecoration.BOLD, false));
+        return Component.text()
+                .decoration(TextDecoration.BOLD, false)
+                .append(Component.text(name, color, TextDecoration.BOLD))
+                .append(Component.text(" > ", NamedTextColor.DARK_GRAY))
+                .build();
     }
 }

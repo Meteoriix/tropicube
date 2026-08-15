@@ -15,9 +15,11 @@ import java.util.Locale;
 /** Central visual vocabulary for Velocity messages and technical logs. */
 public final class MessageStyle {
 
-    private static final Component NETWORK_PREFIX = Component.text("TROPICUBE", NamedTextColor.GOLD,
-                    TextDecoration.BOLD)
-            .append(Component.text(" > ", NamedTextColor.DARK_GRAY).decoration(TextDecoration.BOLD, false));
+    private static final Component NETWORK_PREFIX = Component.text()
+            .decoration(TextDecoration.BOLD, false)
+            .append(Component.text("TROPICUBE", NamedTextColor.GOLD, TextDecoration.BOLD))
+            .append(Component.text(" > ", NamedTextColor.DARK_GRAY))
+            .build();
     private static final MiniMessage MINI_MESSAGE = MiniMessage.builder()
             .tags(TagResolver.builder()
                     .resolver(StandardTags.defaults())
