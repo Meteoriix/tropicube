@@ -20,11 +20,11 @@ Sources historiques : [présentation d'Epicube et origine du nom](https://www.mi
 2. Les joueurs choisissent une équipe, une classe, un kit et, si le vote est actif, une carte.
 3. En partie classique, le démarrage automatique déclenche le compte à rebours lorsque le minimum configuré est atteint. En partie personnalisée, l'hôte lance le compte à rebours depuis son menu de réglages ou active explicitement le démarrage automatique.
 4. Au début de la manche, chaque joueur rejoint un spawn libre de son équipe avec une armure en cuir colorée, une épée, un arc Infinité, une flèche et un mouton aléatoire.
-5. Un mouton spécial supplémentaire est distribué périodiquement à chaque survivant. L'équipe en sous-nombre reçoit aussi trois moutons par joueur au lancement.
+5. Un mouton spécial supplémentaire est distribué périodiquement à chaque survivant qui en stocke moins de cinq. L'équipe en sous-nombre reçoit un pool de trois moutons par joueur manquant, réparti avec un plafond de deux bonus par joueur.
 6. Une mort est définitive pour la manche et place le joueur en spectateur. Tout joueur qui rejoint l'instance après le lancement arrive également en spectateur, sans équipe et sans influencer les conditions de victoire. La disparition de tous les survivants d'une équipe termine immédiatement la partie.
 7. Après l'écran de résultat, les joueurs sont renvoyés au lobby. Une prochaine instance est précréée lorsque possible et le lobby propose une revanche. Si elle démarre encore, les joueurs qui acceptent sont placés dans une file dédupliquée et la rejoignent automatiquement dès qu'elle est prête, sans multiplier les conteneurs.
 
-La durée par défaut est de 600 secondes, le compte à rebours de 10 secondes et la distribution des moutons de 10 secondes. Ces valeurs sont configurables.
+La durée par défaut est de 600 secondes, le compte à rebours de 10 secondes et la distribution des moutons de 25 secondes. Ces valeurs sont configurables.
 
 ## Classes et kits
 
@@ -32,14 +32,14 @@ Les classes organisent les kits par rôle. La classe elle-même sert de catégor
 
 | Classe | Kit | Effet |
 |---|---|---|
-| DPS | Épéiste | Épée en pierre avec Tranchant I à la place de l'épée en bois |
+| DPS | Épéiste | Épée en pierre à la place de l'épée en bois |
 | DPS | Archer | Arc avec Puissance I en plus d'Infinité |
-| DPS | Berger de la Mort | Moutons infligeant 50 % de dégâts supplémentaires |
-| Tank | Colosse | 14 cœurs maximum, soit 4 de plus que la base |
-| Tank | Ancre | 80 % de résistance au recul |
-| Tank | Plume d'Acier | 80 % de dégâts de chute en moins |
-| Support | Éleveur | Moutons possédant 40 PV au lieu de 16 |
-| Support | Médic | Flèches soignant les alliés touchés |
+| DPS | Berger de la Mort | Moutons infligeant 20 % de dégâts supplémentaires, sans agrandir leurs rayons |
+| Tank | Colosse | 12 cœurs maximum, soit 2 de plus que la base |
+| Tank | Ancre | 50 % de résistance au recul |
+| Tank | Plume d'Acier | 65 % de dégâts de chute en moins |
+| Support | Éleveur | Moutons destructibles possédant 30 PV au lieu de 20 |
+| Support | Médic | Flèches donnant Régénération I pendant 4 secondes, avec 3 secondes de recharge par allié |
 | Support | Acrobate | Saut amélioré II permanent |
 
 L'hôte peut désactiver des classes ou des kits. Le mode « kits aléatoires » ignore les choix individuels et attribue un kit actif au lancement.
@@ -49,22 +49,24 @@ L'hôte peut désactiver des classes ou des kits. Le mode « kits aléatoires »
 | Mouton | Fonction principale |
 |---|---|
 | Abordage | Transporte son lanceur pour franchir l'espace entre les îles |
-| TNT | Produit une forte explosion |
-| Distortion | Téléporte les blocs autour de l'impact |
-| Ténébreux | Ralentit et aveugle les ennemis touchés |
-| Feu | Enflamme les ennemis touchés |
-| Poison | Crée une zone persistante de poison |
+| TNT | Produit une explosion de 7 PV maximum dans un rayon de 6,5 blocs |
+| Distortion | Déplace jusqu'à 72 blocs dans un rayon de 4 blocs |
+| Ténébreux | Inflige Lenteur II, Cécité I et Fatigue I pendant 4 secondes dans un rayon de 5 blocs |
+| Feu | Inflige jusqu'à 3 PV et enflamme pendant 4 secondes |
+| Poison | Crée pendant 4 secondes une zone de Poison II et de faibles dégâts directs |
 | Échange | Échange le lanceur avec la cible proche, ou effectue un dash sans cible |
-| Météore | Déclenche une pluie de météores |
-| Tête chercheuse | Poursuit l'ennemi le plus proche de l'impact |
-| Soin | Soigne le lanceur et les alliés dans un rayon de cinq blocs |
-| Foudre | Frappe une cible puis enchaîne jusqu'à trois joueurs proches |
-| Gravité | Attire les joueurs proches puis les projette en l'air |
-| Mécha | Déploie un golem résistant qui attaque l'équipe ennemie |
-| Force | Renforce les dégâts du lanceur et des alliés proches |
-| Fragmentation | Libère cinq petits moutons explosifs |
+| Météore | Produit un impact modéré puis quatre projectiles contrôlés |
+| Tête chercheuse | Cherche à 12 blocs pendant 6 secondes puis poursuit sa cible pendant 6 secondes |
+| Soin | Rend jusqu'à 10 PV en 6 secondes dans un rayon de cinq blocs |
+| Foudre | Frappe les trois ennemis les plus proches pour 4 PV chacun |
+| Gravité | Attire dans un rayon de 7 blocs puis projette modérément les ennemis proches |
+| Mécha | Déploie pendant 20 secondes un golem de 50 PV qui attaque l'équipe ennemie |
+| Force | Augmente de 20 % les dégâts des alliés présents dans l'aura pendant 7 secondes |
+| Fragmentation | Libère quatre charges et plafonne les dégâts cumulés à 8 PV par cible |
 
 Chaque type possède une probabilité configurable dans `default-settings.sheep-probabilities`. Chaque joueur utilise sa propre pioche pondérée : les poids restent respectés sur la durée et deux distributions consécutives ne donnent pas le même type lorsque la pondération le permet. Les types peuvent également être désactivés via `force-settings.sheep-disabled` ou depuis le menu de l'hôte.
+
+Les explosions de moutons utilisent un calcul linéaire propre à SheepWars pour les dégâts joueurs. L'explosion Minecraft reste responsable des effets visuels et, selon le type, de la destruction des blocs ; ses dégâts natifs sur les joueurs sont annulés afin d'éviter leur cumul avec les dégâts configurés et de préserver l'absence de tir allié.
 
 ## Cartes et équipes
 

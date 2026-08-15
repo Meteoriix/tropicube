@@ -3,10 +3,14 @@ package fr.tropicube.sheepwars.sheep.types;
 import fr.tropicube.sheepwars.TropicubeSheepwars;
 import fr.tropicube.sheepwars.player.GamePlayer;
 import fr.tropicube.sheepwars.player.PlayerKit;
+import fr.tropicube.sheepwars.sheep.RadialDamage;
 import fr.tropicube.sheepwars.sheep.SheepType;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
+
+import java.util.Map;
+import java.util.UUID;
 
 /** Common contract of abilities triggered on launch and sheep impact. */
 public abstract class AbstractSheep {
@@ -32,31 +36,52 @@ public abstract class AbstractSheep {
 
     public abstract boolean onImpact(Player thrower, Sheep sheep);
 
-    /** Whether this sheep enters a 1.25s blink countdown before triggering. */
+    /** Whether this sheep enters the configured blink countdown before triggering. */
     public boolean hasCountdown() { return true; }
 
-    /** Returns the explosion power, boosted by 50% for DPS_SHEEP kit. */
-    protected float explosionPower(Player thrower, float base) {
+    /** Returns the damage multiplier of the DPS sheep kit without changing effect radii. */
+    protected double sheepDamageMultiplier(Player thrower) {
         GamePlayer gp = plugin.getGameManager().getPlayer(thrower);
         if (gp != null && gp.getKit() == PlayerKit.DPS_SHEEP) {
-            return base * 1.5f;
+            return plugin.getGameplayBalance().decimal("kits.dps-sheep-damage-multiplier");
         }
-        return base;
+        return 1.0;
     }
 
     /**
-     * Applies radial explosion damage to all alive enemies in range.
-     * Linear falloff: full damage at distance 0, zero at power*2 blocks.
-     * Completes {@code createExplosion} to guarantee damage to players.
+     * Applies the sole source of player damage for a sheep explosion.
+     * Native explosion damage is suppressed by the player listener.
      */
-    protected void applyExplosionDamage(Player thrower, Location center, float power) {
-        double radius = power * 2.0;
+    protected void applyExplosionDamage(Player thrower, Location center, double radius, double maximumDamage) {
+        applyExplosionDamage(thrower, center, radius, maximumDamage, null, 0);
+    }
+
+    /** Applies capped radial damage shared by every hit of one multi-explosion ability. */
+    protected void applyExplosionDamage(Player thrower, Location center, double radius, double maximumDamage,
+                                        Map<UUID, Double> damageLedger, double damageCap) {
+        double multiplier = sheepDamageMultiplier(thrower);
         for (Player target : center.getNearbyPlayers(radius)) {
             if (!isEnemy(thrower, target)) continue;
             double dist = target.getLocation().distance(center);
-            double damage = power * 2.0 * Math.max(0, 1.0 - dist / radius);
-            if (damage > 0) target.damage(damage, thrower);
+            double alreadyApplied = damageLedger == null
+                    ? 0 : damageLedger.getOrDefault(target.getUniqueId(), 0.0);
+            double damage = RadialDamage.calculate(dist, radius, maximumDamage, multiplier,
+                    alreadyApplied, damageCap);
+            if (damage <= 0) continue;
+            damageEnemy(thrower, target, damage);
+            if (damageLedger != null) damageLedger.merge(target.getUniqueId(), damage, Double::sum);
         }
+    }
+
+    /** Creates block and visual explosion effects while native player damage is temporarily suppressed. */
+    protected void createSheepExplosion(Player thrower, Location center, float blockPower,
+                                        boolean setFire, boolean breakBlocks) {
+        plugin.getSheepManager().createSheepExplosion(center, blockPower, setFire, breakBlocks, thrower);
+    }
+
+    /** Applies direct sheep damage with player attribution and no secondary melee multiplier. */
+    protected void damageEnemy(Player thrower, Player target, double damage) {
+        plugin.getSheepManager().damageWithSheep(target, damage, thrower);
     }
 
     /**

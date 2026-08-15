@@ -17,9 +17,6 @@ import java.util.UUID;
 /** Homing sheep pursuing an enemy target. */
 public class SearchingSheep extends AbstractSheep {
 
-    private static final int WAIT_TICKS = 160;   // 8 seconds scanning phase
-    private static final double SCAN_RADIUS = 15;
-
     public SearchingSheep() {
         super(SheepType.SEARCHING);
     }
@@ -34,6 +31,10 @@ public class SearchingSheep extends AbstractSheep {
         sheep.setAware(false);
         sheep.setInvulnerable(true);
         sheep.setVelocity(new org.bukkit.util.Vector(0, 0, 0));
+        var balance = plugin.getGameplayBalance();
+        int waitTicks = balance.ticks("sheep.searching.scan-seconds");
+        int pursuitTicks = balance.ticks("sheep.searching.pursuit-seconds");
+        double scanRadius = balance.decimal("sheep.searching.scan-radius");
 
         // Neutralizes fall damage while chasing.
         FallDamageBlocker blocker = new FallDamageBlocker(sheep.getUniqueId());
@@ -64,7 +65,7 @@ public class SearchingSheep extends AbstractSheep {
                     if (ticks % 5 == 0) {
                         sheep.setColor(ticks % 10 < 5 ? DyeColor.LIME : DyeColor.WHITE);
 
-                        target = sheep.getLocation().getNearbyPlayers(SCAN_RADIUS).stream()
+                        target = sheep.getLocation().getNearbyPlayers(scanRadius).stream()
                                 .filter(p -> isEnemy(thrower, p))
                                 .min(Comparator.comparingDouble(p -> p.getLocation().distanceSquared(sheep.getLocation())))
                                 .orElse(null);
@@ -80,7 +81,7 @@ public class SearchingSheep extends AbstractSheep {
                         }
                     }
 
-                    if (ticks >= WAIT_TICKS) {
+                    if (ticks >= waitTicks) {
         // Explode when the search expires without a target.
                         explodeAt(thrower, sheep);
                         org.bukkit.event.HandlerList.unregisterAll(blocker);
@@ -130,7 +131,8 @@ public class SearchingSheep extends AbstractSheep {
                     } else {
                         // Normal pathfinder-driven pursuit
                         if (ticks % 5 == 0) {
-                            sheep.getPathfinder().moveTo(target, 1.6);
+                            sheep.getPathfinder().moveTo(target,
+                                    balance.decimal("sheep.searching.pursuit-speed"));
                             sheep.setTarget(target);
                         }
 
@@ -158,8 +160,8 @@ public class SearchingSheep extends AbstractSheep {
                         return;
                     }
 
-                    // Safety timeout during pursuit (5 seconds)
-                    if (ticks >= WAIT_TICKS + 100) {
+                    // Safety timeout during pursuit (6 seconds)
+                    if (ticks >= waitTicks + pursuitTicks) {
                         explodeAt(thrower, sheep);
                         org.bukkit.event.HandlerList.unregisterAll(blocker);
                         cancel();
@@ -176,10 +178,12 @@ public class SearchingSheep extends AbstractSheep {
 
     private void explodeAt(Player thrower, Sheep sheep) {
         if (!sheep.isValid()) return;
-        float power = explosionPower(thrower, 3.0F);
         Location loc = sheep.getLocation();
-        loc.getWorld().createExplosion(loc, power, false, true, thrower);
-        applyExplosionDamage(thrower, loc, power);
+        var balance = plugin.getGameplayBalance();
+        createSheepExplosion(thrower, loc,
+                (float) balance.decimal("sheep.searching.block-power"), false, true);
+        applyExplosionDamage(thrower, loc, balance.decimal("sheep.searching.radius"),
+                balance.decimal("sheep.searching.damage"));
         sheep.remove();
     }
 

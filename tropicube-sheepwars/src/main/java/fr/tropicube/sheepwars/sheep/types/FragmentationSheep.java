@@ -10,12 +10,12 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /** Explosive sheep that projects several secondary charges. */
 public class FragmentationSheep extends AbstractSheep {
-
-    private static final int FRAG_COUNT = 5;
-    private static final double FRAG_EXPLOSION_POWER = 2.7;
 
     public FragmentationSheep() {
         super(SheepType.FRAGMENTATION);
@@ -27,16 +27,20 @@ public class FragmentationSheep extends AbstractSheep {
     @Override
     public boolean onImpact(Player thrower, Sheep sheep) {
         Location loc = sheep.getLocation();
+        var balance = plugin.getGameplayBalance();
+        double damageCap = balance.decimal("sheep.fragmentation.total-damage-cap");
+        Map<UUID, Double> damageLedger = new HashMap<>();
 
         // Small central explosion
-        float centralPower = explosionPower(thrower, 1.0F);
-        loc.getWorld().createExplosion(loc, centralPower, false, false, thrower);
-        applyExplosionDamage(thrower, loc, centralPower);
+        createSheepExplosion(thrower, loc,
+                (float) balance.decimal("sheep.fragmentation.central-block-power"), false, false);
+        applyExplosionDamage(thrower, loc, balance.decimal("sheep.fragmentation.central-radius"),
+                balance.decimal("sheep.fragmentation.central-damage"), damageLedger, damageCap);
 
         loc.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1.0F, 1.5F);
 
         // Projects FRAG_COUNT fragments in random directions.
-        for (int i = 0; i < FRAG_COUNT; i++) {
+        for (int i = 0; i < balance.integer("sheep.fragmentation.fragments"); i++) {
             ThreadLocalRandom rng = ThreadLocalRandom.current();
             Vector dir = new Vector(
                 rng.nextDouble(-1, 1),
@@ -59,16 +63,18 @@ public class FragmentationSheep extends AbstractSheep {
                 );
             });
 
-            // Each fragment explodes after 0.6 to 1.2 seconds.
-            int delay = 12 + rng.nextInt(12);
+            // Each fragment explodes after 0.8 to 1.3 seconds.
+            int delay = 16 + rng.nextInt(11);
             new BukkitRunnable() {
                 @Override
                 public void run() {
                     if (!fragSheep.isValid()) return;
                     Location fragLoc = fragSheep.getLocation();
-                    float power = explosionPower(thrower, (float) FRAG_EXPLOSION_POWER);
-                    fragLoc.getWorld().createExplosion(fragLoc, power, false, false, thrower);
-                    applyExplosionDamage(thrower, fragLoc, power);
+                    createSheepExplosion(thrower, fragLoc,
+                            (float) balance.decimal("sheep.fragmentation.fragment-block-power"), false, false);
+                    applyExplosionDamage(thrower, fragLoc,
+                            balance.decimal("sheep.fragmentation.fragment-radius"),
+                            balance.decimal("sheep.fragmentation.fragment-damage"), damageLedger, damageCap);
                     fragSheep.remove();
                 }
             }.runTaskLater(plugin, delay);

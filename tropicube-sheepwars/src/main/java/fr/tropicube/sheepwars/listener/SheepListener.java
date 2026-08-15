@@ -5,10 +5,12 @@ import fr.tropicube.sheepwars.game.GameState;
 import fr.tropicube.sheepwars.player.GamePlayer;
 import fr.tropicube.sheepwars.sheep.SheepManager;
 import fr.tropicube.sheepwars.sheep.types.DistortSheep;
+import fr.tropicube.sheepwars.sheep.types.MeteorSheep;
 import fr.tropicube.sheepwars.sheep.SheepType;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.Fireball;
 import org.bukkit.entity.IronGolem;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
@@ -21,6 +23,8 @@ import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.persistence.PersistentDataType;
+
+import java.util.UUID;
 
 /** Translates the use of sheep items into ability casting. */
 public class SheepListener implements Listener {
@@ -51,7 +55,11 @@ public class SheepListener implements Listener {
         if (typeName != null) {
             try {
                 SheepType type = SheepType.valueOf(typeName);
-                if(event.getDamageSource().getCausingEntity() instanceof Player player) player.getInventory().addItem(plugin.getSheepManager().createSheepItem(type));
+                if (event.getDamageSource().getCausingEntity() instanceof Player player
+                        && plugin.getSheepManager().countStoredSheep(player)
+                        < plugin.getGameplayBalance().integer("global.max-stored-sheep")) {
+                    player.getInventory().addItem(plugin.getSheepManager().createSheepItem(type));
+                }
             } catch (IllegalArgumentException ignored) {}
         }
     }
@@ -95,6 +103,9 @@ public class SheepListener implements Listener {
 
         if (throwerGp.getTeam() == targetGp.getTeam()) {
             event.setCancelled(true);
+        } else if (throwerGp.getKit() == fr.tropicube.sheepwars.player.PlayerKit.DPS_SHEEP) {
+            event.setDamage(event.getDamage()
+                    * plugin.getGameplayBalance().decimal("kits.dps-sheep-damage-multiplier"));
         }
     }
 
@@ -108,6 +119,21 @@ public class SheepListener implements Listener {
         var passenger = Bukkit.getEntity(data.passengerUUID());
         if (passenger != null) passenger.remove();
         event.getDrops().clear();
+    }
+
+    /** Replaces native meteor damage with the balanced, team-aware explosion model. */
+    @EventHandler
+    public void onMeteorImpact(ProjectileHitEvent event) {
+        if (!(event.getEntity() instanceof Fireball fireball)) return;
+        UUID throwerId = plugin.getSheepManager().consumeMeteorFireball(fireball.getUniqueId());
+        if (throwerId == null) return;
+        event.setCancelled(true);
+        Player thrower = Bukkit.getPlayer(throwerId);
+        if (thrower != null
+                && plugin.getSheepManager().getHandler(SheepType.METEOR) instanceof MeteorSheep meteor) {
+            meteor.explodeProjectile(thrower, fireball.getLocation());
+        }
+        fireball.remove();
     }
 
     // ── Tracking blocks for regeneration ──────────────────────────────

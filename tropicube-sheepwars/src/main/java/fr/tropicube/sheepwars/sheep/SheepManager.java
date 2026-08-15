@@ -43,6 +43,7 @@ public class SheepManager {
             if (passenger != null) passenger.remove();
         }
         mechaGolems.clear();
+        meteorFireballs.clear();
     }
 
     public record MechaData(UUID throwerUUID, UUID passengerUUID) {}
@@ -53,8 +54,15 @@ public class SheepManager {
     /** Match each mechanical golem to its launcher and passenger. */
     private final Map<UUID, MechaData> mechaGolems = new HashMap<>();
 
+    /** Associates controlled meteor projectiles with their caster. */
+    private final Map<UUID, UUID> meteorFireballs = new HashMap<>();
+
     /** Counts active strength bonuses per player. */
     private final Map<UUID, Integer> strengthBuffCounts = new HashMap<>();
+
+    /** Main-thread re-entrancy guard used to suppress native player explosion damage. */
+    private int customExplosionDepth;
+    private int customSheepDamageDepth;
 
     /** Weights cached and recalculated by {@link #buildWeightCache()}. */
     private EnumMap<SheepType, Integer> sheepWeights;
@@ -136,6 +144,18 @@ public class SheepManager {
         return mechaGolems.remove(golemId);
     }
 
+    public void registerMeteorFireball(UUID fireballId, UUID throwerId) {
+        meteorFireballs.put(fireballId, throwerId);
+    }
+
+    public UUID consumeMeteorFireball(UUID fireballId) {
+        return meteorFireballs.remove(fireballId);
+    }
+
+    public boolean isMeteorFireball(UUID fireballId) {
+        return meteorFireballs.containsKey(fireballId);
+    }
+
     // ── Strength buff ──────────────────────────────────────────────────────
 
     public void addStrengthBuff(UUID uuid) { strengthBuffCounts.merge(uuid, 1, Integer::sum); }
@@ -143,6 +163,30 @@ public class SheepManager {
         strengthBuffCounts.computeIfPresent(uuid, (_, count) -> count > 1 ? count - 1 : null);
     }
     public boolean hasStrengthBuff(UUID uuid) { return strengthBuffCounts.containsKey(uuid); }
+
+    public boolean isCreatingSheepExplosion() { return customExplosionDepth > 0; }
+    public boolean isApplyingSheepDamage() { return customSheepDamageDepth > 0; }
+
+    /** Applies attributed sheep damage without letting melee-only modifiers alter it again. */
+    public void damageWithSheep(Player target, double damage, Player source) {
+        customSheepDamageDepth++;
+        try {
+            target.damage(damage, source);
+        } finally {
+            customSheepDamageDepth--;
+        }
+    }
+
+    /** Runs a synchronous Minecraft explosion while listeners suppress its native player damage. */
+    public void createSheepExplosion(Location center, float power, boolean setFire,
+                                     boolean breakBlocks, Player source) {
+        customExplosionDepth++;
+        try {
+            center.getWorld().createExplosion(center, power, setFire, breakBlocks, source);
+        } finally {
+            customExplosionDepth--;
+        }
+    }
 
     // ── Item creation ──────────────────────────────────────────────────────
 
@@ -220,7 +264,7 @@ public class SheepManager {
                     countdownTicks++;
                     sheep.setColor(countdownTicks % 8 < 4 ? DyeColor.WHITE : originalColor);
 
-                    if (countdownTicks >= 25) {
+                    if (countdownTicks >= plugin.getGameplayBalance().ticks("global.countdown-seconds")) {
                         sheep.setColor(originalColor);
                         explode(thrower, sheep, handler);
                         cancel();
@@ -299,10 +343,12 @@ public class SheepManager {
                         sheep.setGravity(false);
                         sheep.setVelocity(new Vector(0, 0, 0));
 
-                        // Base 25 HP; SUPPORT_SHEEP kit raises this to 40
-                        double mineHp = 25.0;
+                        // Balanced destructible sheep: 20 HP, or 30 HP for the breeder kit.
+                        double mineHp = plugin.getGameplayBalance().decimal("global.countdown-sheep-health");
                         GamePlayer gp = plugin.getGameManager().getPlayer(thrower);
-                        if (gp != null && gp.getKit() == PlayerKit.SUPPORT_SHEEP) mineHp = 40.0;
+                        if (gp != null && gp.getKit() == PlayerKit.SUPPORT_SHEEP) {
+                            mineHp = plugin.getGameplayBalance().decimal("global.breeder-sheep-health");
+                        }
                         var maxHp = sheep.getAttribute(Attribute.MAX_HEALTH);
                         if (maxHp != null) {
                             maxHp.setBaseValue(mineHp);
@@ -348,5 +394,14 @@ public class SheepManager {
         } catch (IllegalArgumentException e) {
             return null;
         }
+    }
+
+    /** Counts stored sheep items, including stacked items, to enforce the match stock limit. */
+    public int countStoredSheep(Player player) {
+        int count = 0;
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (getSheepType(item) != null) count += item.getAmount();
+        }
+        return count;
     }
 }

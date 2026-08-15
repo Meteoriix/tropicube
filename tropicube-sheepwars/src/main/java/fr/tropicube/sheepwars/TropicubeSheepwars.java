@@ -5,6 +5,7 @@ import fr.tropicube.core.managers.DatabaseManager;
 import fr.tropicube.core.util.ConfigUpdater;
 import fr.tropicube.docker.client.RedisManager;
 import fr.tropicube.sheepwars.game.GameManager;
+import fr.tropicube.sheepwars.config.GameplayBalance;
 import fr.tropicube.sheepwars.listener.PlayerListener;
 import fr.tropicube.sheepwars.listener.ProtectionListener;
 import fr.tropicube.sheepwars.listener.SheepListener;
@@ -39,6 +40,7 @@ public final class TropicubeSheepwars extends JavaPlugin {
     private MapSelectionMenu mapSelectionMenu;
     private GameSettingsMenu gameSettingsMenu;
     private WhitelistMenu whitelistMenu;
+    private GameplayBalance gameplayBalance;
 
     @Override
     public void onEnable() {
@@ -48,6 +50,14 @@ public final class TropicubeSheepwars extends JavaPlugin {
             ConfigUpdater.update(this, "config.yml", new File(getDataFolder(), "config.yml"));
         } catch (Exception e) {
             getLogger().warning("[ConfigUpdater] config.yml: " + e.getMessage());
+        }
+
+        try {
+            gameplayBalance = GameplayBalance.load(getConfig());
+        } catch (IllegalArgumentException exception) {
+            getLogger().severe(exception.getMessage());
+            getServer().getPluginManager().disablePlugin(this);
+            return;
         }
 
         String redisHost = getConfig().getString("redis.host", "localhost");
@@ -136,4 +146,5 @@ public final class TropicubeSheepwars extends JavaPlugin {
     public GameSettingsMenu getGameSettingsMenu() { return gameSettingsMenu; }
     public MapSelectionMenu getMapVoteMenu() { return mapSelectionMenu; }
     public WhitelistMenu getWhitelistMenu() { return whitelistMenu; }
+    public GameplayBalance getGameplayBalance() { return gameplayBalance; }
 }

@@ -16,11 +16,17 @@ public class DarknessSheep extends AbstractSheep {
 
     @Override
     public boolean onImpact(Player thrower, Sheep sheep) {
-        for (Entity entity : sheep.getNearbyEntities(6, 6, 6)) {
+        var balance = plugin.getGameplayBalance();
+        double radius = balance.decimal("sheep.darkness.radius");
+        int duration = balance.ticks("sheep.darkness.duration-seconds");
+        for (Entity entity : sheep.getNearbyEntities(radius, radius, radius)) {
             if (entity instanceof Player target && isEnemy(thrower, target)) {
-                target.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 100, 3));
-                target.addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE, 100, 1));
-                target.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 100, 1));
+                target.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, duration,
+                        balance.integer("sheep.darkness.slowness-amplifier")));
+                target.addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE, duration,
+                        balance.integer("sheep.darkness.mining-fatigue-amplifier")));
+                target.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, duration,
+                        balance.integer("sheep.darkness.blindness-amplifier")));
             }
         }
         return true;

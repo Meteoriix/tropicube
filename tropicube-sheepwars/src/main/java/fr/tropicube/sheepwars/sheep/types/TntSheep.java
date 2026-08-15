@@ -14,10 +14,11 @@ public class TntSheep extends AbstractSheep {
 
     @Override
     public boolean onImpact(Player thrower, Sheep sheep) {
-        float power = explosionPower(thrower, 4.5F);
         Location loc = sheep.getLocation();
-        loc.getWorld().createExplosion(loc, power, false, true, thrower);
-        applyExplosionDamage(thrower, loc, power);
+        var balance = plugin.getGameplayBalance();
+        createSheepExplosion(thrower, loc, (float) balance.decimal("sheep.tnt.block-power"), false, true);
+        applyExplosionDamage(thrower, loc, balance.decimal("sheep.tnt.radius"),
+                balance.decimal("sheep.tnt.damage"));
         return true;
     }
 }

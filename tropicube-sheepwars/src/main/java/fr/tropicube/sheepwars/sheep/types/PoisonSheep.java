@@ -14,9 +14,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 /** Sheep that applies a poison effect in its area of ​​impact. */
 public class PoisonSheep extends AbstractSheep {
 
-    private static final int CLOUD_DURATION_TICKS = 100; // 5 seconds
-    private static final double CLOUD_RADIUS = 4.0;
-
     public PoisonSheep() {
         super(SheepType.POISON);
     }
@@ -27,11 +24,15 @@ public class PoisonSheep extends AbstractSheep {
     @Override
     public boolean onImpact(Player thrower, Sheep sheep) {
         Location loc = sheep.getLocation();
+        var balance = plugin.getGameplayBalance();
+        int cloudDurationTicks = balance.ticks("sheep.poison.duration-seconds");
+        double cloudRadius = balance.decimal("sheep.poison.radius");
+        int damagePeriod = balance.integer("sheep.poison.damage-period-ticks");
 
         // Spawn area effect cloud (lingering poison zone)
         AreaEffectCloud cloud = loc.getWorld().spawn(loc, AreaEffectCloud.class, c -> {
-            c.setDuration(CLOUD_DURATION_TICKS);
-            c.setRadius((float) CLOUD_RADIUS);
+            c.setDuration(cloudDurationTicks);
+            c.setRadius((float) cloudRadius);
             c.setRadiusPerTick(-0.01f); // shrinks slowly
             c.setRadiusOnUse(0f);
             c.setReapplicationDelay(20);
@@ -45,18 +46,20 @@ public class PoisonSheep extends AbstractSheep {
 
             @Override
             public void run() {
-                if (ticks >= CLOUD_DURATION_TICKS || !cloud.isValid()) {
+                if (ticks >= cloudDurationTicks || !cloud.isValid()) {
                     cancel();
                     return;
                 }
-                if (ticks % 5 == 0) {
+                if (ticks % damagePeriod == 0) {
                     loc.getWorld().spawnParticle(Particle.ENTITY_EFFECT, loc.clone().add(0, 0.5, 0),
-                            20, CLOUD_RADIUS * 0.4, 0.5, CLOUD_RADIUS * 0.4, 0.01, Color.fromARGB(85, 0, 255, 120));
+                            20, cloudRadius * 0.4, 0.5, cloudRadius * 0.4, 0.01, Color.fromARGB(85, 0, 255, 120));
                     // Applies damage to enemies in the area.
-                    for (Player target : loc.getNearbyPlayers(CLOUD_RADIUS)) {
+                    for (Player target : loc.getNearbyPlayers(cloudRadius)) {
                         if (isEnemy(thrower, target)) {
-                            target.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 30, 2));
-                            target.damage(0.5, thrower);
+                            target.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 30,
+                                    balance.integer("sheep.poison.poison-amplifier")));
+                            damageEnemy(thrower, target, balance.decimal("sheep.poison.direct-damage")
+                                    * sheepDamageMultiplier(thrower));
                         }
                     }
                 }

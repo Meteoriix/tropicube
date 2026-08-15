@@ -29,6 +29,10 @@ public class StrengthSheep extends AbstractSheep {
         GamePlayer throwerGp = plugin.getGameManager().getPlayer(thrower);
         if (throwerGp == null) return true;
         GameTeam throwerTeam = throwerGp.getTeam();
+        var balance = plugin.getGameplayBalance();
+        int duration = balance.ticks("sheep.strength.duration-seconds");
+        int refreshPeriod = balance.integer("sheep.strength.refresh-period-ticks");
+        double radius = balance.decimal("sheep.strength.radius");
 
         Set<UUID> buffed = new HashSet<>();
 
@@ -37,20 +41,24 @@ public class StrengthSheep extends AbstractSheep {
 
             @Override
             public void run() {
-                if (ticks >= 100 || sheep.isDead() || !sheep.isValid()) {
+                if (ticks >= duration || sheep.isDead() || !sheep.isValid()) {
                     buffed.forEach(plugin.getSheepManager()::removeStrengthBuff);
                     sheep.remove();
                     cancel();
                     return;
                 }
 
-                if (ticks % 20 == 0) {
-                    grantBuff(thrower, throwerTeam, buffed);
-                    for (Entity entity : sheep.getNearbyEntities(5, 5, 5)) {
+                if (ticks % refreshPeriod == 0) {
+                    Set<UUID> playersInAura = new HashSet<>();
+                    for (Entity entity : sheep.getNearbyEntities(radius, radius, radius)) {
                         if (entity instanceof Player target) {
-                            grantBuff(target, throwerTeam, buffed);
+                            grantBuff(target, throwerTeam, buffed, playersInAura);
                         }
                     }
+                    Set<UUID> playersWhoLeft = new HashSet<>(buffed);
+                    playersWhoLeft.removeAll(playersInAura);
+                    playersWhoLeft.forEach(plugin.getSheepManager()::removeStrengthBuff);
+                    buffed.removeAll(playersWhoLeft);
                     sheep.getWorld().spawnParticle(Particle.SWEEP_ATTACK, sheep.getLocation().add(0, 1, 0), 6, 0.5, 0.5, 0.5, 0);
                     sheep.getWorld().playSound(sheep.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.6F, 1.5F);
                 }
@@ -62,9 +70,10 @@ public class StrengthSheep extends AbstractSheep {
         return false;
     }
 
-    private void grantBuff(Player target, GameTeam team, Set<UUID> buffed) {
+    private void grantBuff(Player target, GameTeam team, Set<UUID> buffed, Set<UUID> playersInAura) {
         GamePlayer gp = plugin.getGameManager().getPlayer(target);
         if (gp == null || gp.getTeam() != team || !gp.isAlive()) return;
+        playersInAura.add(target.getUniqueId());
         if (buffed.add(target.getUniqueId())) {
             plugin.getSheepManager().addStrengthBuff(target.getUniqueId());
         }

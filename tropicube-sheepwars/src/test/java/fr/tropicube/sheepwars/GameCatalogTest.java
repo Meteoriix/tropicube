@@ -1,6 +1,7 @@
 package fr.tropicube.sheepwars;
 
 import fr.tropicube.sheepwars.player.PlayerClass;
+import fr.tropicube.sheepwars.config.GameplayBalance;
 import fr.tropicube.sheepwars.player.PlayerKit;
 import fr.tropicube.sheepwars.sheep.SheepType;
 import org.bukkit.configuration.ConfigurationSection;
@@ -72,13 +73,22 @@ class GameCatalogTest {
     }
 
     @Test
-    void defaultSheepDistributionIsLimitedToThirtyPeriodicDrawsPerFullGame() {
+    void defaultGameplayBalanceIsCompleteAndValid() {
+        GameplayBalance balance = GameplayBalance.load(loadDefaultConfiguration());
+
+        assertEquals(1.2, balance.decimal("kits.dps-sheep-damage-multiplier"), 0.0001);
+        assertEquals(30, balance.ticks("global.countdown-seconds"));
+        assertEquals(8, balance.integer("sheep.fragmentation.total-damage-cap"));
+    }
+
+    @Test
+    void defaultSheepDistributionIsLimitedToTwentyFourPeriodicDrawsPerFullGame() {
         YamlConfiguration configuration = loadDefaultConfiguration();
 
         int duration = configuration.getInt("default-settings.game-duration");
         int delay = configuration.getInt("default-settings.sheep-give-delay");
-        assertEquals(20, delay);
-        assertEquals(30, duration / delay);
+        assertEquals(25, delay);
+        assertEquals(24, duration / delay);
     }
 
     private static YamlConfiguration loadDefaultConfiguration() {

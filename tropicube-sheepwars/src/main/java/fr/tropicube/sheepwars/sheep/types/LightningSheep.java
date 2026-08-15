@@ -7,6 +7,7 @@ import org.bukkit.entity.Sheep;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
+import java.util.Comparator;
 
 /** Sheep that strikes nearby enemies with lightning. */
 public class LightningSheep extends AbstractSheep {
@@ -18,11 +19,13 @@ public class LightningSheep extends AbstractSheep {
     @Override
     public boolean onImpact(Player thrower, Sheep sheep) {
         Location impact = sheep.getLocation();
+        var balance = plugin.getGameplayBalance();
         impact.getWorld().strikeLightningEffect(impact);
 
-        List<Player> chainTargets = impact.getNearbyPlayers(10).stream()
+        List<Player> chainTargets = impact.getNearbyPlayers(balance.decimal("sheep.lightning.radius")).stream()
                 .filter(p -> isEnemy(thrower, p))
-                .limit(3)
+                .sorted(Comparator.comparingDouble(p -> p.getLocation().distanceSquared(impact)))
+                .limit(balance.integer("sheep.lightning.targets"))
                 .toList();
 
         new BukkitRunnable() {
@@ -37,7 +40,8 @@ public class LightningSheep extends AbstractSheep {
                 Player target = chainTargets.get(index);
                 if (target.isOnline() && isEnemy(thrower, target)) {
                     target.getWorld().strikeLightningEffect(target.getLocation());
-                    target.damage(5.0, thrower);
+                    damageEnemy(thrower, target, balance.decimal("sheep.lightning.damage")
+                            * sheepDamageMultiplier(thrower));
                 }
                 index++;
             }

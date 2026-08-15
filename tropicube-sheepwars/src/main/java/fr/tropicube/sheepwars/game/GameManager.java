@@ -396,7 +396,7 @@ public class GameManager {
         plugin.getSheepManager().reset();
 
         int sheepDelaySeconds = Math.max(1,
-                plugin.getConfig().getInt("default-settings.sheep-give-delay", 20));
+                plugin.getConfig().getInt("default-settings.sheep-give-delay", 25));
         if (sheepDelaySeconds < 5) {
             Player host = Bukkit.getPlayer(hostUuid);
             if (host != null)
@@ -457,10 +457,15 @@ public class GameManager {
         int redCount = getTeamPlayers(GameTeam.RED).size();
         if (blueCount != redCount) {
             GameTeam disadvantaged = blueCount > redCount ? GameTeam.RED : GameTeam.BLUE;
-            for (GamePlayer player : getTeamPlayers(disadvantaged)) {
-                Player bukkitPlayer = player.getBukkitPlayer();
+            List<GamePlayer> disadvantagedPlayers = getTeamPlayers(disadvantaged);
+            List<Integer> bonuses = UnderdogBonusAllocator.allocate(disadvantagedPlayers.size(),
+                    Math.abs(blueCount - redCount),
+                    plugin.getGameplayBalance().integer("global.underdog-sheep-per-missing-player"),
+                    plugin.getGameplayBalance().integer("global.underdog-max-per-player"));
+            for (int playerIndex = 0; playerIndex < bonuses.size(); playerIndex++) {
+                Player bukkitPlayer = disadvantagedPlayers.get(playerIndex).getBukkitPlayer();
                 if (bukkitPlayer == null) continue;
-                for (int i = 0; i < 3; i++) {
+                for (int bonus = 0; bonus < bonuses.get(playerIndex); bonus++) {
                     bukkitPlayer.getInventory().addItem(plugin.getSheepManager()
                             .createSheepItem(plugin.getSheepManager().randomSheepType(bukkitPlayer.getUniqueId())));
                 }
@@ -495,7 +500,6 @@ public class GameManager {
             sword = new ItemStack(Material.STONE_SWORD);
             ItemMeta m = sword.getItemMeta();
             m.setUnbreakable(true);
-            m.addEnchant(Enchantment.SHARPNESS, 1, true);
             sword.setItemMeta(m);
         } else {
             sword = new ItemStack(Material.WOODEN_SWORD);
@@ -560,13 +564,15 @@ public class GameManager {
             case TANK_HEARTS -> {
                 var maxHp = p.getAttribute(Attribute.MAX_HEALTH);
                 if (maxHp != null) {
-                    maxHp.setBaseValue(28.0);
-                    p.setHealth(28.0);
+                    double health = plugin.getGameplayBalance().decimal("kits.tank-health");
+                    maxHp.setBaseValue(health);
+                    p.setHealth(health);
                 }
             }
             case TANK_KNOCKBACK -> {
                 var kb = p.getAttribute(Attribute.KNOCKBACK_RESISTANCE);
-                if (kb != null) kb.setBaseValue(0.8);
+                if (kb != null) kb.setBaseValue(
+                        plugin.getGameplayBalance().decimal("kits.tank-knockback-resistance"));
             }
             case SUPPORT_JUMP ->
                 p.addPotionEffect(new PotionEffect(
@@ -595,6 +601,8 @@ public class GameManager {
         for (GamePlayer gp : getAlivePlayers()) {
             Player p = gp.getBukkitPlayer();
             if (p == null) continue;
+            if (plugin.getSheepManager().countStoredSheep(p)
+                    >= plugin.getGameplayBalance().integer("global.max-stored-sheep")) continue;
             SheepType type = plugin.getSheepManager().randomSheepType(p.getUniqueId());
             p.getInventory().addItem(plugin.getSheepManager().createSheepItem(type));
             p.playSound(p.getLocation(), Sound.ENTITY_SHEEP_AMBIENT, 1.0F, 1.0F);

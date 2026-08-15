@@ -17,30 +17,129 @@ default-settings:
   # Random Kits (ignores player selection)
   random-kits: false
   # Delay between sheep spawns (in seconds)
-  sheep-give-delay: 20
+  sheep-give-delay: 25
   # Map vote: true = all vote, false = host chooses
   map-vote-enabled: true
   # Relative spawn weights of special sheep
   sheep-probabilities:
-    boarding: 5
-    tnt: 7
-    distort: 8
-    darkness: 8
-    searching: 5
-    fire: 7
-    poison: 7
-    swap: 5
+    boarding: 7
+    tnt: 9
+    distort: 4
+    darkness: 6
+    searching: 7
+    fire: 8
+    poison: 6
+    swap: 6
     meteor: 5
-    healing: 6
+    healing: 9
     lightning: 8
-    gravity: 8
-    mecha: 8
-    strength: 6
-    fragmentation: 7
+    gravity: 5
+    mecha: 4
+    strength: 10
+    fragmentation: 6
 
 custom-game-default-settings:
   # A custom game waits by default for its host to manually launch
   auto-start: false
+# Validated gameplay tuning. Durations are expressed in seconds and damage/health in HP.
+gameplay-balance:
+  global:
+    max-stored-sheep: 5
+    underdog-sheep-per-missing-player: 3
+    underdog-max-per-player: 2
+    countdown-sheep-health: 20
+    breeder-sheep-health: 30
+    countdown-seconds: 1.5
+  kits:
+    dps-sheep-damage-multiplier: 1.20
+    tank-health: 24
+    tank-knockback-resistance: 0.50
+    normal-fall-damage-multiplier: 0.50
+    tank-fall-damage-multiplier: 0.35
+    medic-regeneration-seconds: 4
+    medic-regeneration-amplifier: 0
+    medic-cooldown-seconds: 3
+    strength-damage-multiplier: 1.20
+  sheep:
+    tnt:
+      block-power: 3.5
+      radius: 6.5
+      damage: 7
+    fire:
+      radius: 4
+      fire-seconds: 4
+      block-power: 1.5
+      damage: 3
+    poison:
+      radius: 3.5
+      duration-seconds: 4
+      direct-damage: 0.25
+      damage-period-ticks: 10
+      poison-amplifier: 1
+    darkness:
+      radius: 5
+      duration-seconds: 4
+      slowness-amplifier: 1
+      mining-fatigue-amplifier: 0
+      blindness-amplifier: 0
+    distort:
+      radius: 4
+      duration-seconds: 3
+      waves-period-ticks: 10
+      blocks-per-wave: 12
+    searching:
+      scan-radius: 12
+      scan-seconds: 6
+      pursuit-seconds: 6
+      pursuit-speed: 1.4
+      block-power: 2.5
+      radius: 5
+      damage: 6
+    meteor:
+      impact-block-power: 1.5
+      impact-radius: 4
+      impact-damage: 3
+      projectile-count: 4
+      projectile-spread: 5
+      projectile-period-ticks: 8
+      projectile-block-power: 2
+      projectile-radius: 3.5
+      projectile-damage: 3
+    healing:
+      radius: 5
+      duration-seconds: 6
+      pulse-period-ticks: 25
+      pulse-heal: 2
+    lightning:
+      radius: 10
+      targets: 3
+      damage: 4
+    gravity:
+      pull-radius: 7
+      pull-seconds: 0.75
+      pull-speed: 0.35
+      launch-radius: 5.5
+      launch-speed: 1.1
+    mecha:
+      health: 50
+      lifespan-seconds: 20
+      scan-radius: 15
+      attack-damage: 4
+      attack-knockback: 1.2
+    strength:
+      radius: 5
+      duration-seconds: 7
+      refresh-period-ticks: 20
+    fragmentation:
+      fragments: 4
+      central-block-power: 0.75
+      central-radius: 2
+      central-damage: 2
+      fragment-block-power: 1.5
+      fragment-radius: 3.5
+      fragment-damage: 3
+      total-damage-cap: 8
+
 
 force-settings:
   # Disabled class IDs (ex: ["DPS", "SUPPORT"])

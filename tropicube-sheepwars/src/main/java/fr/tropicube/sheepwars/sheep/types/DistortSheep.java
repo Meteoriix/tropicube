@@ -25,7 +25,6 @@ public class DistortSheep extends AbstractSheep {
 
     public static final String FB_KEY = "ender_sheep_fb";
 
-    private static final double MAX_RADIUS = 5;
     private static final double FLIGHT_TICKS = 12.0;
     // Horizontal drag factor: sum of 0.98^i over the duration of the flight.
     private static final double DRAG_FACTOR = (1.0 - Math.pow(0.98, FLIGHT_TICKS)) / 0.02;
@@ -46,10 +45,15 @@ public class DistortSheep extends AbstractSheep {
     @Override
     public boolean onImpact(Player thrower, Sheep sheep) {
         sheep.setVelocity(new Vector(0, 0, 0));
+        var balance = plugin.getGameplayBalance();
+        int duration = balance.ticks("sheep.distort.duration-seconds");
+        int wavePeriod = balance.integer("sheep.distort.waves-period-ticks");
+        double maxRadius = balance.decimal("sheep.distort.radius");
+        int blocksPerWave = balance.integer("sheep.distort.blocks-per-wave");
 
         sheep.getWorld().playSound(sheep.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1.5F, 0.7F);
 
-        // Distorts the area for five seconds, then disappears.
+        // Distorts a bounded part of the area for three seconds, then disappears.
         new BukkitRunnable() {
             int elapsed = 0;
 
@@ -60,9 +64,9 @@ public class DistortSheep extends AbstractSheep {
                     return;
                 }
 
-                // New wave of FallingBlocks every 10 ticks (0.5s) → 10 waves over 5s
-                if (elapsed % 10 == 0) {
-                    spawnWave(sheep);
+                // Six waves of at most twelve blocks limit map erosion and entity load.
+                if (elapsed % wavePeriod == 0) {
+                    spawnWave(sheep, maxRadius, blocksPerWave);
                 }
 
                 // Ambient portal particles
@@ -79,7 +83,7 @@ public class DistortSheep extends AbstractSheep {
 
                 elapsed++;
 
-                if (elapsed >= 100) {
+                if (elapsed >= duration) {
                     sheep.getWorld().spawnParticle(Particle.PORTAL,
                             sheep.getLocation().add(0, 1, 0), 120, 1.5, 1.5, 1.5, 0.3);
                     sheep.getWorld().playSound(sheep.getLocation(),
@@ -94,13 +98,13 @@ public class DistortSheep extends AbstractSheep {
     }
 
     @SuppressWarnings("deprecation")
-    private void spawnWave(Sheep sheep) {
+    private void spawnWave(Sheep sheep, double maxRadius, int blocksPerWave) {
         ThreadLocalRandom rand = ThreadLocalRandom.current();
         Location sheepLoc = sheep.getLocation();
         Block centerBlock = sheepLoc.getBlock();
         Block below = centerBlock.getRelative(0, -1, 0);
 
-        int r = (int) MAX_RADIUS;
+        int r = (int) Math.ceil(maxRadius);
 
         // Center-weighted candidate collection:
         // The probability decreases quadratically with the distance from the center.
@@ -111,8 +115,8 @@ public class DistortSheep extends AbstractSheep {
                     Block b = centerBlock.getRelative(x, y, z);
                     if (!b.getType().isSolid() || b.getType().hasGravity() || b.equals(below)) continue;
                     double dist = Math.sqrt(x * x + y * y + z * z);
-                    if (dist > MAX_RADIUS) continue;
-                    double prob = Math.pow(1.0 - dist / MAX_RADIUS, 2);
+                    if (dist > maxRadius) continue;
+                    double prob = Math.pow(1.0 - dist / maxRadius, 2);
                     if (rand.nextDouble() < prob) candidates.add(b);
                 }
             }
@@ -121,7 +125,7 @@ public class DistortSheep extends AbstractSheep {
         Collections.shuffle(candidates, rand);
 
         List<FallingBlock> wave = new ArrayList<>();
-        for (int i = 0; i < Math.min(30, candidates.size()); i++) {
+        for (int i = 0; i < Math.min(blocksPerWave, candidates.size()); i++) {
             Block source = candidates.get(i);
 
             Vector toBlock = source.getLocation().subtract(sheepLoc).toVector();
@@ -135,8 +139,8 @@ public class DistortSheep extends AbstractSheep {
             // Tangential = 90° rotation in horizontal plane (clockwise spin)
             Vector tangential = new Vector(-radial.getZ(), 0, radial.getX());
 
-            double inward = rand.nextDouble(0.5, 2.0) * (distH / MAX_RADIUS);
-            double spin   = rand.nextDouble(1.0, 3.0) * Math.max(0.3, distH / MAX_RADIUS);
+            double inward = rand.nextDouble(0.5, 2.0) * (distH / maxRadius);
+            double spin   = rand.nextDouble(1.0, 3.0) * Math.max(0.3, distH / maxRadius);
 
             int dx = (int) Math.round(-radial.getX() * inward + tangential.getX() * spin) + rand.nextInt(-1, 2);
             int dy = rand.nextInt(-1, 2);

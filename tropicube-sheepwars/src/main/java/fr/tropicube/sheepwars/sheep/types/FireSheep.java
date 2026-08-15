@@ -15,15 +15,16 @@ public class FireSheep extends AbstractSheep {
 
     @Override
     public boolean onImpact(Player thrower, Sheep sheep) {
-        for (Entity entity : sheep.getNearbyEntities(5, 5, 5)) {
+        var balance = plugin.getGameplayBalance();
+        double radius = balance.decimal("sheep.fire.radius");
+        for (Entity entity : sheep.getNearbyEntities(radius, radius, radius)) {
             if (entity instanceof Player target && isEnemy(thrower, target)) {
-                target.setFireTicks(120);
+                target.setFireTicks(balance.ticks("sheep.fire.fire-seconds"));
             }
         }
-        float power = explosionPower(thrower, 2.0F);
         Location loc = sheep.getLocation();
-        loc.getWorld().createExplosion(loc, power, true, true, thrower);
-        applyExplosionDamage(thrower, loc, power);
+        createSheepExplosion(thrower, loc, (float) balance.decimal("sheep.fire.block-power"), true, true);
+        applyExplosionDamage(thrower, loc, radius, balance.decimal("sheep.fire.damage"));
         return true;
     }
 }

@@ -17,10 +17,6 @@ import java.util.Comparator;
 /** Sheep who summons a mechanical unit controlled and monitored by the manager. */
 public class MechaSheep extends AbstractSheep {
 
-    private static final double MECHA_HP    = 100.0;
-    private static final int    LIFESPAN    = 600;   // 30 seconds
-    private static final double SCAN_RADIUS = 15;
-
     public MechaSheep() {
         super(SheepType.MECHA);
     }
@@ -28,6 +24,9 @@ public class MechaSheep extends AbstractSheep {
     @Override
     public boolean onImpact(Player thrower, Sheep impactSheep) {
         Location loc = findSafeLocation(impactSheep.getLocation());
+        var balance = plugin.getGameplayBalance();
+        double mechaHealth = balance.decimal("sheep.mecha.health");
+        int lifespan = balance.ticks("sheep.mecha.lifespan-seconds");
 
         // The sheep is the vehicle (bottom) — it keeps its AI and pilots the golem
         Sheep pilot = loc.getWorld().spawn(loc, Sheep.class, s -> {
@@ -39,14 +38,14 @@ public class MechaSheep extends AbstractSheep {
 
         IronGolem golem = loc.getWorld().spawn(loc, IronGolem.class, g -> {
             AttributeInstance dmg = g.getAttribute(Attribute.ATTACK_DAMAGE);
-            if (dmg != null) dmg.setBaseValue(3.0);
+            if (dmg != null) dmg.setBaseValue(balance.decimal("sheep.mecha.attack-damage"));
 
             AttributeInstance knockback = g.getAttribute(Attribute.ATTACK_KNOCKBACK);
-            if (knockback != null) knockback.setBaseValue(2.0);
+            if (knockback != null) knockback.setBaseValue(balance.decimal("sheep.mecha.attack-knockback"));
 
             AttributeInstance maxHp = g.getAttribute(Attribute.MAX_HEALTH);
-            if (maxHp != null) maxHp.setBaseValue(MECHA_HP);
-            g.setHealth(MECHA_HP);
+            if (maxHp != null) maxHp.setBaseValue(mechaHealth);
+            g.setHealth(mechaHealth);
 
             // No need for speed on the golem, it's the sheep that moves
             g.setPlayerCreated(false);
@@ -70,7 +69,7 @@ public class MechaSheep extends AbstractSheep {
                 }
 
                 ticks++;
-                if (ticks >= LIFESPAN) {
+                if (ticks >= lifespan) {
                     golem.remove();
                     pilot.remove();
                     sm.removeGolem(golem.getUniqueId());
@@ -83,7 +82,8 @@ public class MechaSheep extends AbstractSheep {
                 GamePlayer throwerGp = plugin.getGameManager().getPlayer(thrower);
                 if (throwerGp == null) return;
 
-                Player nearestEnemy = pilot.getLocation().getNearbyPlayers(SCAN_RADIUS).stream()
+                Player nearestEnemy = pilot.getLocation()
+                        .getNearbyPlayers(balance.decimal("sheep.mecha.scan-radius")).stream()
                         .filter(p -> {
                             GamePlayer gp = plugin.getGameManager().getPlayer(p);
                             return gp != null && gp.isAlive() && gp.getTeam() != throwerGp.getTeam();

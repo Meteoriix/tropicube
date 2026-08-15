@@ -28,25 +28,28 @@ public class HealingSheep extends AbstractSheep {
         GamePlayer throwerGp = plugin.getGameManager().getPlayer(thrower);
         if (throwerGp == null) return true;
         GameTeam throwerTeam = throwerGp.getTeam();
+        var balance = plugin.getGameplayBalance();
+        int duration = balance.ticks("sheep.healing.duration-seconds");
+        int period = balance.integer("sheep.healing.pulse-period-ticks");
+        double radius = balance.decimal("sheep.healing.radius");
 
         new BukkitRunnable() {
             int ticks = 0;
 
             @Override
             public void run() {
-                if (ticks >= 150 || sheep.isDead() || !sheep.isValid()) {
+                if (ticks >= duration || sheep.isDead() || !sheep.isValid()) {
                     sheep.remove();
                     cancel();
                     return;
                 }
 
-                if (ticks % 20 == 0) {
-                    for (Entity entity : sheep.getNearbyEntities(5, 5, 5)) {
+                if (ticks % period == 0) {
+                    for (Entity entity : sheep.getNearbyEntities(radius, radius, radius)) {
                         if (entity instanceof Player target) {
                             healIfTeammate(target, throwerTeam);
                         }
                     }
-                    healIfTeammate(thrower, throwerTeam);
 
                     sheep.getWorld().spawnParticle(Particle.HEART, sheep.getLocation().add(0, 1, 0), 6, 0.5, 0.5, 0.5, 0);
                     sheep.getWorld().playSound(sheep.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.6F, 1.5F);
@@ -63,6 +66,7 @@ public class HealingSheep extends AbstractSheep {
         GamePlayer gp = plugin.getGameManager().getPlayer(target);
         if (gp == null || gp.getTeam() != team || !gp.isAlive()) return;
         double maxHealth = Objects.requireNonNull(target.getAttribute(Attribute.MAX_HEALTH)).getValue();
-        target.setHealth(Math.min(target.getHealth() + 2.0, maxHealth));
+        target.setHealth(Math.min(target.getHealth()
+                + plugin.getGameplayBalance().decimal("sheep.healing.pulse-heal"), maxHealth));
     }
 }

@@ -33,10 +33,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 /** Applies SheepWars connection, combat, death and interaction rules. */
 public class PlayerListener implements Listener {
 
     private final TropicubeSheepwars plugin;
+    private final Map<UUID, Integer> nextMedicHealTick = new HashMap<>();
 
     public PlayerListener(TropicubeSheepwars plugin) {
         this.plugin = plugin;
@@ -204,6 +209,10 @@ public class PlayerListener implements Listener {
         boolean isArrow;
 
         if (event.getDamager() instanceof Projectile projectile && projectile.getShooter() instanceof Player p) {
+            if (plugin.getSheepManager().isMeteorFireball(projectile.getUniqueId())) {
+                event.setCancelled(true);
+                return;
+            }
             shooter = p;
             isArrow = projectile instanceof AbstractArrow;
         } else if (event.getDamager() instanceof Player p) {
@@ -225,15 +234,25 @@ public class PlayerListener implements Listener {
         if (isArrow && shooterGp.getTeam() == targetGp.getTeam()) {
             event.setCancelled(true);
             if (shooterGp.getKit() == PlayerKit.SUPPORT_ARROWS) {
-                target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 60, 1));
+                int currentTick = org.bukkit.Bukkit.getCurrentTick();
+                int availableAt = nextMedicHealTick.getOrDefault(target.getUniqueId(), 0);
+                if (currentTick >= availableAt) {
+                    target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION,
+                            plugin.getGameplayBalance().ticks("kits.medic-regeneration-seconds"),
+                            plugin.getGameplayBalance().integer("kits.medic-regeneration-amplifier")));
+                    nextMedicHealTick.put(target.getUniqueId(), currentTick
+                            + plugin.getGameplayBalance().ticks("kits.medic-cooldown-seconds"));
+                }
             }
             return;
         }
 
-        // STRENGTH SHEEP: +15% damage against enemies
+        // STRENGTH SHEEP: +20% damage against enemies
         if (shooterGp.getTeam() != targetGp.getTeam()
+                && !plugin.getSheepManager().isApplyingSheepDamage()
                 && plugin.getSheepManager().hasStrengthBuff(shooter.getUniqueId())) {
-            event.setDamage(event.getDamage() * 1.15);
+            event.setDamage(event.getDamage()
+                    * plugin.getGameplayBalance().decimal("kits.strength-damage-multiplier"));
         }
     }
 
@@ -256,6 +275,13 @@ public class PlayerListener implements Listener {
     public void onDamage(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
 
+        if (plugin.getSheepManager().isCreatingSheepExplosion()
+                && (event.getCause() == EntityDamageEvent.DamageCause.BLOCK_EXPLOSION
+                || event.getCause() == EntityDamageEvent.DamageCause.ENTITY_EXPLOSION)) {
+            event.setCancelled(true);
+            return;
+        }
+
         if (plugin.getGameManager().getState() != GameState.PLAYING) {
             event.setCancelled(true);
             return;
@@ -271,12 +297,14 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        // TANK_FALL: reduce fall damage by 80%
+        // Everyone takes half fall damage; the tank specialist takes 35% of vanilla.
         if (event.getCause() == EntityDamageEvent.DamageCause.FALL) {
             if (gp.getKit() == PlayerKit.TANK_FALL) {
-                event.setDamage(event.getDamage() * 0.2);
+                event.setDamage(event.getDamage()
+                        * plugin.getGameplayBalance().decimal("kits.tank-fall-damage-multiplier"));
             } else {
-                event.setDamage(event.getDamage() * 0.5);
+                event.setDamage(event.getDamage()
+                        * plugin.getGameplayBalance().decimal("kits.normal-fall-damage-multiplier"));
             }
         }
 

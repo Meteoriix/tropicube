@@ -19,6 +19,8 @@ public class GravitySheep extends AbstractSheep {
     @Override
     public boolean onImpact(Player thrower, Sheep sheep) {
         Location center = sheep.getLocation().clone();
+        var balance = plugin.getGameplayBalance();
+        int pullTicks = balance.ticks("sheep.gravity.pull-seconds");
 
         new BukkitRunnable() {
             int ticks = 0;
@@ -28,22 +30,22 @@ public class GravitySheep extends AbstractSheep {
                 ticks++;
                 center.getWorld().spawnParticle(Particle.PORTAL, center, 25, 4, 2, 4);
 
-                if (ticks <= 20) {
+                if (ticks <= pullTicks) {
                     // Only attracts enemies to the center
-                    for (Player target : center.getNearbyPlayers(10)) {
+                    for (Player target : center.getNearbyPlayers(balance.decimal("sheep.gravity.pull-radius"))) {
                         if (!isEnemy(thrower, target)) continue;
                         Vector pull = center.toVector()
                                 .subtract(target.getLocation().toVector())
                                 .normalize()
-                                .multiply(0.7);
+                                .multiply(balance.decimal("sheep.gravity.pull-speed"));
                         target.setVelocity(pull);
                     }
-                } else if (ticks == 21) {
+                } else if (ticks == pullTicks + 1) {
         // Launch enemies into the air
                     center.getWorld().playSound(center, Sound.ENTITY_GENERIC_EXPLODE, 1.5F, 0.4F);
-                    for (Player target : center.getNearbyPlayers(7)) {
+                    for (Player target : center.getNearbyPlayers(balance.decimal("sheep.gravity.launch-radius"))) {
                         if (!isEnemy(thrower, target)) continue;
-                        target.setVelocity(new Vector(0, 1.8, 0));
+                        target.setVelocity(new Vector(0, balance.decimal("sheep.gravity.launch-speed"), 0));
                     }
                     cancel();
                 }

@@ -118,6 +118,8 @@ Une instance SheepWars suit les phases attente, sélection, compte à rebours, j
 
 Les types inclus sont Boarding, TNT, Distort, Darkness, Searching, Fire, Poison, Swap, Meteor, Healing, Lightning, Gravity, Mecha, Strength et Fragmentation.
 
+Les explosions offensives séparent désormais trois responsabilités : l'explosion Paper produit l'effet visuel et la destruction éventuelle des blocs, `PlayerListener` annule ses dégâts natifs pendant l'exécution contrôlée, puis le gestionnaire applique aux seuls ennemis un dégât radial linéaire configuré. Cette séparation empêche les doubles dégâts, dissocie le bonus du kit DPS du rayon et permet aux capacités multiples comme Fragmentation de partager un plafond par cible. Les valeurs sont chargées et validées une fois au démarrage depuis `gameplay-balance`.
+
 ### `tropicube-fallenkingdoms`
 
 Ce module est pour l'instant un squelette Maven sans classe, ressource, dépendance Paper ni intégration Docker. Il participe au build global pour réserver son identité, mais n'est pas un plugin installable. Son futur déploiement nécessitera au minimum une classe `JavaPlugin`, un `plugin.yml`, une dépendance Paper/Core, une configuration, une image et un template Velocity.
