@@ -311,18 +311,19 @@ public class PermissionManager {
      * back to the cached real grade. This method never changes permissions.
      */
     public Optional<String> getCachedDisplayFormattedName(UUID uuid, String username) {
-        String gradeName = displayGradeOverrides.get(uuid).orElseGet(() -> playerGrades.get(uuid));
-        if (gradeName == null) return Optional.empty();
-        return Optional.of(formatName(gradeRegistry, gradeName, username));
+        DisplayGradeOverrideCache.DisplayOverride identity = displayGradeOverrides.resolve(
+                uuid, username, playerGrades.get(uuid));
+        if (identity.gradeName() == null) return Optional.empty();
+        return Optional.of(formatName(gradeRegistry, identity.gradeName(), identity.name()));
     }
 
-    /** Installs the visual grade carried by an active nick identity. */
-    public void setDisplayGradeOverride(UUID uuid, String gradeName) {
-        displayGradeOverrides.put(uuid, gradeName);
+    /** Installs the name and visual grade carried by an active nick identity. */
+    public void setDisplayIdentityOverride(UUID uuid, String displayName, String gradeName) {
+        displayGradeOverrides.put(uuid, displayName, gradeName);
     }
 
-    /** Removes the nick visual grade while leaving the real grade untouched. */
-    public void clearDisplayGradeOverride(UUID uuid) {
+    /** Removes the nick display identity while leaving the real profile untouched. */
+    public void clearDisplayIdentityOverride(UUID uuid) {
         displayGradeOverrides.remove(uuid);
     }
 

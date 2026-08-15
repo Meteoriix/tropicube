@@ -18,6 +18,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Fixed
 
+- Deferred lobby tablist refreshes now retain the `/nick` name together with its fake grade instead of restoring the real profile name.
 - `/lobby` now reports that the player is already there; outside an active `/nick` identity, the lobby tablist and join announcements retain the real grade.
 - The fake `/nick` display grade now survives reconnects: disconnecting no longer shortens its TTL to 30 seconds, and the lobby tablist uses that grade without changing real permissions. Legacy Redis payloads remain compatible and default to `PREMIUM`.
 - Nickname profile changes no longer leave SheepWars tablist entries under the historical Bukkit name, which could produce white glowing and incorrect team colors.

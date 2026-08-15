@@ -16,11 +16,16 @@ class DisplayGradeOverrideCacheTest {
         UUID uuid = UUID.randomUUID();
         DisplayGradeOverrideCache cache = new DisplayGradeOverrideCache();
 
-        cache.put(uuid, " premium ");
+        cache.put(uuid, " MaskedWolf ", " premium ");
 
-        assertEquals("PREMIUM", cache.get(uuid).orElseThrow());
+        DisplayGradeOverrideCache.DisplayOverride identity = cache.get(uuid).orElseThrow();
+        assertEquals("MaskedWolf", identity.name());
+        assertEquals("PREMIUM", identity.gradeName());
+        assertEquals(identity, cache.resolve(uuid, "RealPlayer", "ADMIN"));
         cache.remove(uuid);
         assertTrue(cache.get(uuid).isEmpty());
+        assertEquals(new DisplayGradeOverrideCache.DisplayOverride("RealPlayer", "ADMIN"),
+                cache.resolve(uuid, "RealPlayer", "ADMIN"));
     }
 
     @Test

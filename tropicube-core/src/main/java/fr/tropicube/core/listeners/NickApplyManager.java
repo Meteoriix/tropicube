@@ -60,7 +60,8 @@ public class NickApplyManager {
     private void applyNick(UUID uuid, NickIdentity identity) {
         Player target = plugin.getServer().getPlayer(uuid);
         if (target == null) return;
-        plugin.getPermissionManager().setDisplayGradeOverride(uuid, identity.displayGrade());
+        plugin.getPermissionManager().setDisplayIdentityOverride(
+                uuid, identity.name(), identity.displayGrade());
         swapSkin(target, identity.name(), identity.skinValue(), identity.skinSignature());
     }
 
@@ -86,7 +87,7 @@ public class NickApplyManager {
     private void resetNick(UUID uuid, String raw) {
         Player target = plugin.getServer().getPlayer(uuid);
         if (target == null) return;
-        plugin.getPermissionManager().clearDisplayGradeOverride(uuid);
+        plugin.getPermissionManager().clearDisplayIdentityOverride(uuid);
         if (raw == null) return;
 
         try {
