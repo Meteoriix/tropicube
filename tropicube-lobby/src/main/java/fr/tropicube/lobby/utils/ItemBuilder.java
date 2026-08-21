@@ -15,7 +15,7 @@ import org.bukkit.inventory.meta.components.CustomModelDataComponent;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -79,15 +79,12 @@ public class ItemBuilder {
         return this;
     }
 
-    /** Assigns a stable player profile to a player head without an offline-player lookup. */
-    public ItemBuilder skullOwner(UUID playerId, String playerName) {
+    /** Assigns an already resolved player profile to a player head. */
+    public ItemBuilder skullProfile(ResolvableProfile profile) {
         if (item.getType() != Material.PLAYER_HEAD) {
-            throw new IllegalStateException("skullOwner nécessite un item PLAYER_HEAD");
+            throw new IllegalStateException("skullProfile nécessite un item PLAYER_HEAD");
         }
-        skullProfile = ResolvableProfile.resolvableProfile()
-                .uuid(playerId)
-                .name(playerName)
-                .build();
+        skullProfile = Objects.requireNonNull(profile, "profile");
         return this;
     }
 

@@ -57,6 +57,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Corrigé
 
+- Les têtes du menu Social embarquent désormais les textures de skin résolues côté serveur ; elles ne dépendent plus d'une résolution implicite côté client ni d'une reconnexion récente de l'ami.
 - Le menu Social ne provoque plus de `LinkageError` : Core est désormais l'unique fournisseur Paper des modèles `tropicube-docker-api`, qui ne sont plus dupliqués dans les JAR Lobby et SheepWars.
 - Le menu Social gère désormais ses erreurs de construction, n'affiche plus la balise littérale `<tc>` et emploie le style de lore commun à la hotbar.
 - Les préfixes MiniMessage `<tc>` et `<sw>` ne propagent plus leur gras au corps des messages ; seuls la marque et les segments explicitement balisés restent en gras.

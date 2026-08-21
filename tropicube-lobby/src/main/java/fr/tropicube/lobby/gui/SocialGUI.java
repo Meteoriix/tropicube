@@ -5,6 +5,7 @@ import fr.tropicube.docker.model.PartyMember;
 import fr.tropicube.docker.model.PartySnapshot;
 import fr.tropicube.lobby.utils.ItemBuilder;
 import fr.tropicube.lobby.utils.LangHelper;
+import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /** Snapshot-based social menu. Its holder contains immutable actions instead of trusting item text. */
@@ -45,7 +47,7 @@ public final class SocialGUI {
             FriendEntry friend = friends.get(index);
             int slot = FRIEND_SLOTS[index];
             inventory.setItem(slot, new ItemBuilder(Material.PLAYER_HEAD)
-                    .skullOwner(friend.playerId(), friend.username())
+                    .skullProfile(friend.profile())
                     .name(LangHelper.get(player, friend.online() ? "social.friend-list-online" : "social.friend-list-offline", friend.username()))
                     .lore(friend.online() ? "<gray>/friend join " + friend.username() : "<dark_gray>Hors ligne")
                     .build());
@@ -100,7 +102,13 @@ public final class SocialGUI {
         return inventory;
     }
 
-    public record FriendEntry(UUID playerId, String username, boolean online) { }
+    public record FriendEntry(UUID playerId, String username, boolean online, ResolvableProfile profile) {
+        public FriendEntry {
+            Objects.requireNonNull(playerId, "playerId");
+            Objects.requireNonNull(username, "username");
+            Objects.requireNonNull(profile, "profile");
+        }
+    }
     public record Action(ActionType type, String argument) { }
     public enum ActionType { FRIEND_JOIN, FRIEND_ACCEPT, PARTY_ACCEPT, FOLLOW_TOGGLE, PARTY_WARP }
 

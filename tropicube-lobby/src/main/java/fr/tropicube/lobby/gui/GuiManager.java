@@ -4,6 +4,7 @@ import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.lobby.TropicubeLobby;
 import fr.tropicube.lobby.utils.LangHelper;
+import fr.tropicube.lobby.utils.PlayerHeadProfileCache;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -12,6 +13,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -20,12 +22,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GuiManager {
 
     private final TropicubeLobby plugin;
+    private final PlayerHeadProfileCache playerHeadProfiles;
 
     /** Associates the player with the open GUI type, to route clicks. */
     private final Map<UUID, GuiType> openGuis = new ConcurrentHashMap<>();
 
     public GuiManager(TropicubeLobby plugin) {
         this.plugin = plugin;
+        this.playerHeadProfiles = new PlayerHeadProfileCache(plugin.getLogger());
     }
 
     public enum GuiType {
@@ -119,17 +123,22 @@ public class GuiManager {
         UUID playerId = player.getUniqueId();
         var social = core.getSocialService();
         social.friends(playerId).thenCombine(social.requests(playerId), (friends, requests) -> {
-            List<SocialGUI.FriendEntry> entries = friends.stream()
-                    .map(friend -> new SocialGUI.FriendEntry(
-                            friend.playerId(), friend.username(), social.isOnline(friend.playerId())))
+            List<CompletableFuture<SocialGUI.FriendEntry>> entryFutures = friends.stream()
+                    .map(friend -> playerHeadProfiles.resolve(friend.playerId(), friend.username())
+                            .thenApply(profile -> new SocialGUI.FriendEntry(friend.playerId(), friend.username(),
+                                    social.isOnline(friend.playerId()), profile)))
                     .toList();
             var party = social.party(playerId);
             var invites = social.partyInvites(playerId);
             Map<UUID, String> names = new HashMap<>();
             if (party != null) party.members().forEach(member -> names.put(member.playerId(), social.displayName(member.playerId())));
             invites.keySet().forEach(id -> names.put(id, social.displayName(id)));
-            return new SocialSnapshot(entries, requests, party, invites, names);
-        }).whenComplete((snapshot, error) -> Bukkit.getScheduler().runTask(plugin, () -> {
+            return CompletableFuture.allOf(entryFutures.toArray(CompletableFuture[]::new))
+                    .thenApply(ignored -> new SocialSnapshot(
+                            entryFutures.stream().map(CompletableFuture::join).toList(),
+                            requests, party, invites, names));
+        }).thenCompose(snapshot -> snapshot)
+                .whenComplete((snapshot, error) -> Bukkit.getScheduler().runTask(plugin, () -> {
             Player online = Bukkit.getPlayer(playerId);
             if (online == null) return;
             if (error != null) {
@@ -187,6 +196,7 @@ public class GuiManager {
     }
     public void clearAll() {
         openGuis.clear();
+        playerHeadProfiles.clear();
     }
 
     public void onPlayerQuit(UUID playerId) {
