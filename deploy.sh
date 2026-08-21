@@ -313,11 +313,11 @@ done
 $build_failed && exit 1
 
 step 'Verifying prewarmed Paper runtimes...'
-paper_cache_check='set -eu; test -s "/data/paper-${TROPICUBE_PAPER_VERSION}-${TROPICUBE_PAPER_BUILD}.jar"; test -s "/data/cache/mojang_${TROPICUBE_PAPER_VERSION}.jar"; test -s "/data/versions/${TROPICUBE_PAPER_VERSION}/paper-${TROPICUBE_PAPER_VERSION}.jar"'
+paper_cache_check='set -eu; test -s "/data/paper-${TROPICUBE_PAPER_VERSION}-${TROPICUBE_PAPER_BUILD}.jar"; test -s "/data/cache/mojang_${TROPICUBE_PAPER_VERSION}.jar"; test -s "/data/versions/${TROPICUBE_PAPER_VERSION}/paper-${TROPICUBE_PAPER_VERSION}.jar"; test -s "/data/bukkit.yml"; test -s "/data/config/paper-world-defaults.yml"'
 for image in tropicube-lobby:latest tropicube-sheepwars:latest; do
   docker run --rm --entrypoint /bin/sh "$image" -c "$paper_cache_check" \
     || fail "Prewarmed Paper runtime is incomplete in $image."
-  ok "$image contains Paper, Mojang and patched runtime artifacts."
+  ok "$image contains Paper runtime artifacts and offline startup configs."
 done
 
 if ! $skip_restart; then

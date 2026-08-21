@@ -24,6 +24,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Modifié
 
+- Les instances Lobby et SheepWars embarquent désormais les configurations Bukkit/Paper par défaut ; leur démarrage sur un volume neuf évite deux téléchargements séquentiels et gagne environ quatre secondes sur la pile de référence.
 - Le bouton du sélecteur de parties utilise la tête HeadDatabase 52706, le réglage de langue s'intitule désormais « Langues / Language » et un nouveau profil reprend la langue du client Minecraft avec repli anglais.
 - Le bouton Langue du menu Paramètres reprend la tête HeadDatabase 71786, le bouton Paramètres de la hotbar utilise la tête 89489 et l'autocomplétion après `/` publie uniquement les commandes Tropicube.
 - Le proxy masque les commandes étrangères à Tropicube, refuse les commandes Bukkit/vanilla et les backends bloquent les interfaces de panneaux, fours, tables de craft et coffres. `/money` n'affiche plus que le solde personnel.

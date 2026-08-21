@@ -66,7 +66,7 @@ Pour Docker rootless, régler `DOCKER_SOCKET_PATH`, par exemple `/run/user/1000/
 
 Les images Paper Lobby et SheepWars copient aussi `dockerfiles/configs/spigot.yml`. Ce fichier désactive l'enregistrement et le chargement de tous les advancements (`*`) ; il doit rester présent dans les deux images pour éviter les notifications et la progression vanilla sur l'ensemble des backends.
 
-Le build de ces deux images télécharge Paper, le JAR serveur Mojang et produit le runtime patché avec `paperclip.patchonly`. Ces artefacts sont stockés dans une couche Docker commune et amorcent ensuite chaque nouveau volume `/data`. Le premier build ou un changement de version nécessite donc un accès à PaperMC et Mojang, tandis que la création d'une instance Lobby ou SheepWars n'en dépend plus.
+Le build de ces deux images télécharge Paper, le JAR serveur Mojang et produit le runtime patché avec `paperclip.patchonly`. Ces artefacts, leurs bibliothèques et les fichiers `bukkit.yml` et `paper-world-defaults.yml` sont stockés dans une couche Docker commune et amorcent ensuite chaque nouveau volume `/data`. Le premier build ou un changement de version nécessite donc un accès à PaperMC et Mojang, tandis que la création d'une instance Lobby ou SheepWars ne télécharge plus aucun de ces éléments. Sur la pile de référence, cela retire deux appels HTTP séquentiels qui ajoutaient environ quatre secondes avant le lancement de la JVM.
 7. Exécuter le déploiement complet.
 
 Windows :
@@ -109,7 +109,7 @@ Le premier `docker compose up` télécharge MySQL, Redis, le proxy de socket et 
 | Fusionne uniquement les clés de langue absentes | natif PowerShell/.NET | Python 3 | oui |
 | Refuse sections/clés dupliquées et feuilles trop imbriquées | oui | oui | oui |
 | Construit trois images en parallèle avec `--pull` | jobs PowerShell | processus Bash | oui |
-| Vérifie Paper, le JAR Mojang et le runtime patché dans les images | oui | oui | oui |
+| Vérifie Paper, le JAR Mojang, le runtime patché et les configurations de démarrage dans les images | oui | oui | oui |
 | Crée les tags `latest` et UTC horodaté | oui | oui | oui |
 | Attend tous les builds et restitue leurs logs | oui | oui | oui |
 | Recrée Velocity, sauf option contraire | oui | oui | oui |
@@ -147,7 +147,7 @@ Exemples :
 3. copie des JAR ombrés vers les contextes Docker avec contrôle d'intégrité ;
 4. fusion des nouvelles traductions dans les configurations persistantes ;
 5. construction parallèle de `tropicube-lobby`, `tropicube-sheepwars` et `tropicube-velocity` ;
-6. vérification des caches Paper/Mojang dans les deux images de backend ;
+6. vérification des caches Paper/Mojang et des configurations de démarrage dans les deux images de backend ;
 7. double tag `latest` et `YYYYMMDD-HHMMSS` UTC ;
 8. `docker compose up -d --force-recreate velocity` puis suppression contrôlée de l'éventuel ancien volume anonyme `/server`.
 
@@ -277,7 +277,7 @@ Relancer sans cette option. Le contrôle est intentionnel : il empêche de dépl
 
 ### Cache Paper préchauffé incomplet
 
-Les scripts refusent le déploiement si `paper-<version>-<build>.jar`, `cache/mojang_<version>.jar` ou le runtime patché sous `versions/<version>` manque dans une image Lobby ou SheepWars. Vérifier l'accès réseau de Docker à PaperMC et Mojang, puis reconstruire sans réutiliser une couche de build défectueuse. La version et le build des Dockerfiles doivent rester alignés avec `VERSION` et `PAPER_BUILD` dans les templates Velocity.
+Les scripts refusent le déploiement si `paper-<version>-<build>.jar`, `cache/mojang_<version>.jar`, le runtime patché sous `versions/<version>`, `bukkit.yml` ou `config/paper-world-defaults.yml` manque dans une image Lobby ou SheepWars. Vérifier l'accès réseau de Docker à PaperMC et Mojang, puis reconstruire sans réutiliser une couche de build défectueuse. La version et le build des Dockerfiles doivent rester alignés avec `VERSION` et `PAPER_BUILD` dans les templates Velocity.
 
 ### Docker rootless
 

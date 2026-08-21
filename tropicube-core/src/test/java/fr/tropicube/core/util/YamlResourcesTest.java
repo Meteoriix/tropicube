@@ -153,6 +153,23 @@ class YamlResourcesTest {
     }
 
     @Test
+    void paperBackendsBundleConfigsRequiredForOfflineStartup() throws Exception {
+        Path configs = Path.of("../dockerfiles/configs");
+        YamlConfiguration bukkit = YamlConfiguration.loadConfiguration(configs.resolve("bukkit.yml").toFile());
+        YamlConfiguration worldDefaults = YamlConfiguration.loadConfiguration(
+                configs.resolve("paper-world-defaults.yml").toFile());
+
+        assertEquals("permissions.yml", bukkit.getString("settings.permissions-file"));
+        assertEquals(31, worldDefaults.getInt("_version"));
+
+        for (String dockerfileName : List.of("Dockerfile.lobby", "Dockerfile.sheepwars")) {
+            String dockerfile = Files.readString(Path.of("../dockerfiles", dockerfileName));
+            assertTrue(dockerfile.contains("dockerfiles/configs/bukkit.yml"), dockerfileName);
+            assertTrue(dockerfile.contains("dockerfiles/configs/paper-world-defaults.yml"), dockerfileName);
+        }
+    }
+
+    @Test
     void playerDrivenNarrativeMessagesStayUnprefixed() {
         List<String> narrativeKeys = List.of(
                 "join.message",

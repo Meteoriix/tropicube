@@ -352,11 +352,11 @@ foreach ($r in $results) {
 if ($anyFailed) { exit 1 }
 
 Step "Verifying prewarmed Paper runtimes..."
-$paperCacheCheck = 'set -eu; test -s "/data/paper-${TROPICUBE_PAPER_VERSION}-${TROPICUBE_PAPER_BUILD}.jar"; test -s "/data/cache/mojang_${TROPICUBE_PAPER_VERSION}.jar"; test -s "/data/versions/${TROPICUBE_PAPER_VERSION}/paper-${TROPICUBE_PAPER_VERSION}.jar"'
+$paperCacheCheck = 'set -eu; test -s "/data/paper-${TROPICUBE_PAPER_VERSION}-${TROPICUBE_PAPER_BUILD}.jar"; test -s "/data/cache/mojang_${TROPICUBE_PAPER_VERSION}.jar"; test -s "/data/versions/${TROPICUBE_PAPER_VERSION}/paper-${TROPICUBE_PAPER_VERSION}.jar"; test -s "/data/bukkit.yml"; test -s "/data/config/paper-world-defaults.yml"'
 foreach ($image in @("tropicube-lobby:latest", "tropicube-sheepwars:latest")) {
     & docker run --rm --entrypoint /bin/sh $image -c $paperCacheCheck
     if ($LASTEXITCODE -ne 0) { Fail "Prewarmed Paper runtime is incomplete in $image." }
-    Ok "$image contains Paper, Mojang and patched runtime artifacts."
+    Ok "$image contains Paper runtime artifacts and offline startup configs."
 }
 
 if (-not $SkipRestart) {

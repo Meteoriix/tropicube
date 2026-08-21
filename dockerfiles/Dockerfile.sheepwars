@@ -28,6 +28,8 @@ ENV TROPICUBE_PAPER_VERSION="${PAPER_VERSION}" \
 COPY --from=paper-runtime --chown=1000:1000 /opt/tropicube/paper/              /data/
 
 COPY --chown=1000:1000 dockerfiles/configs/paper-global.yml                   /data/config/paper-global.yml
+COPY --chown=1000:1000 dockerfiles/configs/paper-world-defaults.yml           /data/config/paper-world-defaults.yml
+COPY --chown=1000:1000 dockerfiles/configs/bukkit.yml                         /data/bukkit.yml
 COPY --chown=1000:1000 dockerfiles/configs/spigot.yml                         /data/spigot.yml
 
 COPY --chown=1000:1000 dockerfiles/configs/TropicubeCore                      /data/plugins/TropicubeCore/
