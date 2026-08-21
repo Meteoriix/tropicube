@@ -124,7 +124,7 @@ public class GuiManager {
         var social = core.getSocialService();
         social.friends(playerId).thenCombine(social.requests(playerId), (friends, requests) -> {
             List<CompletableFuture<SocialGUI.FriendEntry>> entryFutures = friends.stream()
-                    .map(friend -> playerHeadProfiles.resolve(friend.playerId(), friend.username())
+                    .map(friend -> playerHeadProfiles.resolve(friend.playerId())
                             .thenApply(profile -> new SocialGUI.FriendEntry(friend.playerId(), friend.username(),
                                     social.isOnline(friend.playerId()), profile)))
                     .toList();

@@ -28,10 +28,9 @@ public final class PlayerHeadProfileCache {
      * Returns a profile containing the current skin texture. Concurrent requests for the same
      * player share one network lookup. Failed or incomplete lookups are evicted so a later menu can retry.
      */
-    public CompletableFuture<ResolvableProfile> resolve(UUID playerId, String playerName) {
+    public CompletableFuture<ResolvableProfile> resolve(UUID playerId) {
         Objects.requireNonNull(playerId, "playerId");
-        Objects.requireNonNull(playerName, "playerName");
-        ResolvableProfile fallback = unresolvedProfile(playerId, playerName);
+        ResolvableProfile fallback = unresolvedProfile(playerId);
         CompletableFuture<ResolvableProfile> resolved;
         try {
             resolved = profiles.computeIfAbsent(playerId, ignored -> fallback.resolve()
@@ -61,10 +60,11 @@ public final class PlayerHeadProfileCache {
         profiles.clear();
     }
 
-    private static ResolvableProfile unresolvedProfile(UUID playerId, String playerName) {
+    private static ResolvableProfile unresolvedProfile(UUID playerId) {
+        // Paper 26.2 treats UUID + name without properties as a static partial profile;
+        // UUID alone is intentionally required to trigger the server-side dynamic lookup.
         return ResolvableProfile.resolvableProfile()
                 .uuid(playerId)
-                .name(playerName)
                 .build();
     }
 }

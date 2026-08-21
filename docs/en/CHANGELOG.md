@@ -30,7 +30,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Fixed
 
-- Social-menu heads now embed skin textures resolved by the server, instead of depending on implicit client-side resolution or on each friend reconnecting recently.
+- Social-menu heads now start dynamic resolution with the UUID alone and embed the server-resolved texture; incomplete static profiles no longer produce an incorrect default skin, and friends do not need to reconnect recently.
 - The Social menu no longer raises a `LinkageError`: Core is now the sole Paper provider of `tropicube-docker-api` models, which are no longer duplicated in Lobby and SheepWars JARs.
 - The Social menu no longer renders `<tc>`, reports construction failures safely, and follows the common hotbar style.
 - The `<tc>` and `<sw>` MiniMessage prefixes no longer leak bold styling into message bodies; only branding and explicitly tagged segments remain bold.
