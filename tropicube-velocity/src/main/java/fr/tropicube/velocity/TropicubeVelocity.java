@@ -95,6 +95,9 @@ public class TropicubeVelocity {
 
     private void shutdownComponents() {
         if (!shuttingDown.compareAndSet(false, true)) return;
+        if (partyCoordinator != null) {
+            partyCoordinator.close();
+        }
         if (queueManager != null) {
             queueManager.shutdown();
         }
@@ -180,7 +183,18 @@ public class TropicubeVelocity {
         tropiServerManager = new TropiServerManager(server, dockerManager, redisManager, config, logger, languageManager);
         queueManager = new QueueManager(server, tropiServerManager, languageManager);
         tropiServerManager.initialize();
-        partyCoordinator = new PartyCoordinator(this, tropiServerManager, redisManager, languageManager, logger);
+        int partyDisconnectGraceSeconds = partyDisconnectGraceSeconds(config);
+        partyCoordinator = new PartyCoordinator(this, tropiServerManager, redisManager, languageManager, logger,
+                partyDisconnectGraceSeconds);
+    }
+
+    static int partyDisconnectGraceSeconds(ConfigurationNode config) {
+        int value = config.node("party", "disconnect-grace-seconds").getInt(60);
+        if (value <= 0) {
+            throw new IllegalArgumentException(
+                    "party.disconnect-grace-seconds doit être strictement positif, valeur reçue : " + value);
+        }
+        return value;
     }
 
     private void initNickManager() {

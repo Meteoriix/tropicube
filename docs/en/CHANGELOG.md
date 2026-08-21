@@ -15,6 +15,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Changed
 
+- Party members are removed after one offline minute; leadership then moves to an online member and fully offline parties are deleted immediately. The Social menu now displays every friend's profile head.
 - The game selector uses HeadDatabase head 52706, the language setting is now labelled “Langues / Language”, and new profiles inherit the Minecraft client language with an English fallback.
 - The Settings menu Language button now reuses HeadDatabase head 71786, the hotbar Settings button uses head 89489, and slash completion publishes only Tropicube commands.
 - Non-Tropicube command discovery and Bukkit/vanilla commands are blocked network-wide; protected container interfaces are disabled and `/money` is personal-only.

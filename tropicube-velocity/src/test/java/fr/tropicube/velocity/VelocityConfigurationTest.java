@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class VelocityConfigurationTest {
@@ -44,6 +45,16 @@ class VelocityConfigurationTest {
         assertEquals(
                 java.util.List.of("PREMIUM", "HELPER", "MODERATEUR", "ADMIN", "OWNER"),
                 config.node("nick", "allowed-grades").getList(String.class));
+    }
+
+    @Test
+    void bundledPartyConfigurationKeepsOneMinuteDisconnectGrace() throws IOException {
+        ConfigurationNode config = loadBundledConfig();
+
+        assertEquals(60, TropicubeVelocity.partyDisconnectGraceSeconds(config));
+        config.node("party", "disconnect-grace-seconds").set(0);
+        assertThrows(IllegalArgumentException.class,
+                () -> TropicubeVelocity.partyDisconnectGraceSeconds(config));
     }
 
     private ConfigurationNode loadBundledConfig() throws IOException {

@@ -1,8 +1,9 @@
 package fr.tropicube.docker.client;
 
-import fr.tropicube.docker.model.ServerInstance;
+import fr.tropicube.docker.model.PartyDisconnectResult;
 import fr.tropicube.docker.model.PartyMember;
 import fr.tropicube.docker.model.PartySnapshot;
+import fr.tropicube.docker.model.ServerInstance;
 import redis.clients.jedis.ConnectionPoolConfig;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.JedisClientConfig;
@@ -150,6 +151,52 @@ public class RedisManager {
             for _, member in ipairs(members) do redis.call('DEL', ARGV[2] .. member) end
             redis.call('DEL', KEYS[1], KEYS[2])
             return 'OK'
+            """;
+    private static final String RECONCILE_PARTY_DISCONNECT_SCRIPT = """
+            if redis.call('EXISTS', KEYS[1]) == 1 then
+                redis.call('DEL', KEYS[2])
+                return 'ONLINE'
+            end
+            local disconnectedAt = tonumber(redis.call('GET', KEYS[2]))
+            if not disconnectedAt then return 'WAITING' end
+            local partyId = redis.call('GET', KEYS[3])
+            if not partyId then
+                redis.call('DEL', KEYS[2])
+                return 'NOT_MEMBER'
+            end
+            local leaderKey = ARGV[2] .. 'party:' .. partyId .. ':leader'
+            local membersKey = ARGV[2] .. 'party:' .. partyId .. ':members'
+            local members = redis.call('HKEYS', membersKey)
+            if redis.call('HEXISTS', membersKey, ARGV[1]) == 0 then
+                redis.call('DEL', KEYS[2], KEYS[3])
+                return 'NOT_MEMBER'
+            end
+            local onlineMembers = {}
+            for _, member in ipairs(members) do
+                if member ~= ARGV[1]
+                        and redis.call('EXISTS', ARGV[2] .. 'player:online:' .. member) == 1 then
+                    table.insert(onlineMembers, member)
+                end
+            end
+            if #onlineMembers == 0 then
+                for _, member in ipairs(members) do
+                    redis.call('DEL', ARGV[2] .. 'party:member:' .. member)
+                    redis.call('DEL', ARGV[2] .. 'party:offline:' .. member)
+                end
+                redis.call('DEL', leaderKey, membersKey)
+                return 'DISBANDED'
+            end
+            if disconnectedAt > tonumber(ARGV[3]) then return 'WAITING' end
+            redis.call('HDEL', membersKey, ARGV[1])
+            redis.call('DEL', KEYS[2], KEYS[3])
+            redis.call('EXPIRE', membersKey, ARGV[4])
+            if redis.call('GET', leaderKey) == ARGV[1] then
+                local nextLeader = onlineMembers[1]
+                redis.call('SET', leaderKey, nextLeader, 'EX', ARGV[4])
+                return 'PROMOTED:' .. nextLeader
+            end
+            redis.call('EXPIRE', leaderKey, ARGV[4])
+            return 'LEFT'
             """;
     private static final String CONSUME_AUTO_REPLAY_SCRIPT = """
             local value = redis.call('GET', KEYS[1])
@@ -547,10 +594,76 @@ public class RedisManager {
         return "OK".equals(String.valueOf(result));
     }
 
+    /** Persists the disconnect instant so reconciliation survives a proxy restart. */
+    public void markPartyMemberDisconnected(UUID playerId, long disconnectedAtEpochSecond) {
+        Objects.requireNonNull(playerId, "playerId");
+        if (disconnectedAtEpochSecond < 0) throw new IllegalArgumentException("Instant de déconnexion invalide");
+        redis().set(partyOfflineKey(playerId), Long.toString(disconnectedAtEpochSecond),
+                SetParams.setParams().ex(PARTY_TTL_SECONDS));
+    }
+
+    /** Clears a pending party departure when the player reconnects during the grace period. */
+    public void clearPartyMemberDisconnected(UUID playerId) {
+        Objects.requireNonNull(playerId, "playerId");
+        redis().del(partyOfflineKey(playerId));
+    }
+
+    /**
+     * Atomically removes an offline member whose grace period elapsed. The script rechecks
+     * presence, transfers leadership only to an online member and disbands an entirely offline party.
+     */
+    public PartyDisconnectResult reconcilePartyMemberDisconnect(UUID playerId, long cutoffEpochSecond) {
+        Objects.requireNonNull(playerId, "playerId");
+        Object result = redis().eval(RECONCILE_PARTY_DISCONNECT_SCRIPT,
+                List.of(KEY_PREFIX + "player:online:" + playerId, partyOfflineKey(playerId), partyMemberKey(playerId)),
+                List.of(playerId.toString(), KEY_PREFIX, Long.toString(cutoffEpochSecond),
+                        Integer.toString(PARTY_TTL_SECONDS)));
+        return parsePartyDisconnectResult(String.valueOf(result));
+    }
+
+    /** Returns disconnect markers old enough to reconcile, using bounded Redis SCAN batches. */
+    public List<UUID> getExpiredPartyDisconnects(long cutoffEpochSecond) {
+        List<UUID> result = new ArrayList<>();
+        String cursor = "0";
+        ScanParams params = new ScanParams().match(KEY_PREFIX + "party:offline:*").count(100);
+        do {
+            var scan = redis().scan(cursor, params);
+            cursor = scan.getCursor();
+            for (String key : scan.getResult()) {
+                String rawTimestamp = redis().get(key);
+                try {
+                    if (rawTimestamp != null && Long.parseLong(rawTimestamp) <= cutoffEpochSecond) {
+                        result.add(UUID.fromString(key.substring((KEY_PREFIX + "party:offline:").length())));
+                    }
+                } catch (IllegalArgumentException ignored) {
+                    redis().del(key);
+                }
+            }
+        } while (!"0".equals(cursor));
+        return List.copyOf(result);
+    }
+
+    static PartyDisconnectResult parsePartyDisconnectResult(String rawResult) {
+        return switch (rawResult) {
+            case "ONLINE", "WAITING", "NOT_MEMBER" ->
+                    new PartyDisconnectResult(PartyDisconnectResult.Status.UNCHANGED, null);
+            case "LEFT" -> new PartyDisconnectResult(PartyDisconnectResult.Status.REMOVED, null);
+            case "DISBANDED" -> new PartyDisconnectResult(PartyDisconnectResult.Status.DISBANDED, null);
+            default -> {
+                if (!rawResult.startsWith("PROMOTED:")) {
+                    throw new IllegalStateException("Résultat de réconciliation party inconnu : " + rawResult);
+                }
+                yield new PartyDisconnectResult(PartyDisconnectResult.Status.PROMOTED,
+                        UUID.fromString(rawResult.substring("PROMOTED:".length())));
+            }
+        };
+    }
+
     private static String partyMemberKey(UUID playerId) { return KEY_PREFIX + "party:member:" + playerId; }
     private static String partyLeaderKey(String partyId) { return KEY_PREFIX + "party:" + partyId + ":leader"; }
     private static String partyMembersKey(String partyId) { return KEY_PREFIX + "party:" + partyId + ":members"; }
     private static String partyInvitesKey(UUID playerId) { return KEY_PREFIX + "party:invites:" + playerId; }
+    private static String partyOfflineKey(UUID playerId) { return KEY_PREFIX + "party:offline:" + playerId; }
 
     // ===== PLAYER SETTINGS =====
 

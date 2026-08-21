@@ -10,6 +10,11 @@ redis:
 language:
   default: "fr"
 
+party:
+  # Offline members are removed after this grace period; leadership is then transferred to an online member.
+  # A party with no online member is deleted immediately.
+  disconnect-grace-seconds: 60
+
 # Deletes dynamic servers and their managed ephemeral data volumes when the proxy is stopped.
 # Set to false only to preserve games during a Velocity redeploy.
 shutdown:

@@ -2,7 +2,9 @@ package fr.tropicube.velocity.managers;
 
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
+import com.velocitypowered.api.scheduler.ScheduledTask;
 import fr.tropicube.docker.client.RedisManager;
+import fr.tropicube.docker.model.PartyDisconnectResult;
 import fr.tropicube.docker.model.PartyMember;
 import fr.tropicube.docker.model.PartySnapshot;
 import fr.tropicube.docker.model.ServerInstance;
@@ -14,6 +16,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Validates and performs social cross-server transfers. Redis callbacks are kept off
@@ -29,17 +32,28 @@ public final class PartyCoordinator {
     private final RedisManager redis;
     private final VelocityLanguageManager languages;
     private final Logger logger;
+    private final int disconnectGraceSeconds;
     private final Set<UUID> suppressFollowOnce = ConcurrentHashMap.newKeySet();
+    private final ConcurrentHashMap<UUID, ScheduledTask> suppressCleanupTasks = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, ScheduledTask> departureTasks = new ConcurrentHashMap<>();
+    private final ScheduledTask reconciliationTask;
+    private final AtomicBoolean closed = new AtomicBoolean();
 
     public PartyCoordinator(TropicubeVelocity plugin, TropiServerManager servers, RedisManager redis,
-                            VelocityLanguageManager languages, Logger logger) {
+                            VelocityLanguageManager languages, Logger logger, int disconnectGraceSeconds) {
+        if (disconnectGraceSeconds <= 0) {
+            throw new IllegalArgumentException("party.disconnect-grace-seconds doit être strictement positif");
+        }
         this.plugin = plugin;
         this.proxy = plugin.getServer();
         this.servers = servers;
         this.redis = redis;
         this.languages = languages;
         this.logger = logger;
+        this.disconnectGraceSeconds = disconnectGraceSeconds;
         redis.subscribeToCommands(this::onCommand);
+        this.reconciliationTask = proxy.getScheduler().buildTask(plugin, this::reconcileExpiredDisconnects)
+                .repeat(Math.min(10, disconnectGraceSeconds), TimeUnit.SECONDS).schedule();
     }
 
     private void onCommand(String message) {
@@ -73,19 +87,90 @@ public final class PartyCoordinator {
             suppressFollowOnce.remove(requesterId);
             return;
         }
-        proxy.getScheduler().buildTask(plugin, () -> suppressFollowOnce.remove(requesterId))
-                .delay(10, TimeUnit.SECONDS).schedule();
+        ScheduledTask cleanup = proxy.getScheduler().buildTask(plugin, () -> {
+            suppressFollowOnce.remove(requesterId);
+            suppressCleanupTasks.remove(requesterId);
+        }).delay(10, TimeUnit.SECONDS).schedule();
+        ScheduledTask previousCleanup = suppressCleanupTasks.put(requesterId, cleanup);
+        if (previousCleanup != null) previousCleanup.cancel();
         message(requester, instance.getStatus() == ServerInstance.Status.GAME_PLAYING
                 ? "social.friend-join-spectator" : "social.friend-join-connecting", target.getUsername());
     }
 
     /** Called after a successful backend switch; a leader automatically brings opted-in members. */
     public void onServerConnected(UUID playerId, String instanceId) {
-        if (suppressFollowOnce.remove(playerId)) return;
+        if (suppressFollowOnce.remove(playerId)) {
+            ScheduledTask cleanup = suppressCleanupTasks.remove(playerId);
+            if (cleanup != null) cleanup.cancel();
+            return;
+        }
         runAsync(() -> {
             PartySnapshot party = redis.getParty(playerId);
             if (party != null && party.isLeader(playerId)) warpFollowers(playerId, instanceId, party);
         });
+    }
+
+    /** Cancels a pending departure and clears its durable marker after a successful proxy login. */
+    public void onPlayerConnected(UUID playerId) {
+        ScheduledTask pending = departureTasks.remove(playerId);
+        if (pending != null) pending.cancel();
+        runAsync(() -> redis.clearPartyMemberDisconnected(playerId));
+    }
+
+    /** Starts the configured durable party grace period without blocking the disconnect event thread. */
+    public void onPlayerDisconnected(UUID playerId) {
+        ScheduledTask previous = departureTasks.remove(playerId);
+        if (previous != null) previous.cancel();
+        ScheduledTask scheduled = proxy.getScheduler().buildTask(plugin, () -> reconcileDisconnect(playerId))
+                .delay(disconnectGraceSeconds, TimeUnit.SECONDS).schedule();
+        departureTasks.put(playerId, scheduled);
+        runAsync(() -> {
+            redis.markPartyMemberDisconnected(playerId, nowEpochSecond());
+            reconcileDisconnect(playerId, false);
+        });
+    }
+
+    private void reconcileExpiredDisconnects() {
+        if (closed.get()) return;
+        try {
+            long cutoff = nowEpochSecond() - disconnectGraceSeconds;
+            redis.getExpiredPartyDisconnects(cutoff).forEach(this::reconcileDisconnect);
+        } catch (RuntimeException exception) {
+            logger.error("Échec du balayage des membres de party déconnectés", exception);
+        }
+    }
+
+    private void reconcileDisconnect(UUID playerId) {
+        reconcileDisconnect(playerId, true);
+    }
+
+    private void reconcileDisconnect(UUID playerId, boolean cancelScheduledTask) {
+        if (closed.get()) return;
+        if (cancelScheduledTask) {
+            ScheduledTask pending = departureTasks.remove(playerId);
+            if (pending != null) pending.cancel();
+        }
+        try {
+            PartyDisconnectResult result = redis.reconcilePartyMemberDisconnect(
+                    playerId, nowEpochSecond() - disconnectGraceSeconds);
+            if (result.status() == PartyDisconnectResult.Status.PROMOTED) {
+                logger.info("Chef de party déconnecté retiré ; nouveau chef : {}", result.promotedLeaderId());
+            } else if (result.status() == PartyDisconnectResult.Status.DISBANDED) {
+                logger.info("Party supprimée automatiquement car tous ses membres sont hors ligne");
+            }
+        } catch (RuntimeException exception) {
+            logger.error("Échec de la réconciliation party pour " + playerId, exception);
+        }
+    }
+
+    /** Cancels all owned tasks before Redis is closed. */
+    public void close() {
+        if (!closed.compareAndSet(false, true)) return;
+        reconciliationTask.cancel();
+        suppressCleanupTasks.values().forEach(ScheduledTask::cancel);
+        suppressCleanupTasks.clear();
+        departureTasks.values().forEach(ScheduledTask::cancel);
+        departureTasks.clear();
     }
 
     private void warpFollowers(UUID leaderId) {
@@ -151,9 +236,11 @@ public final class PartyCoordinator {
     }
 
     private void runAsync(Runnable task) {
+        if (closed.get()) return;
         proxy.getScheduler().buildTask(plugin, () -> {
+            if (closed.get()) return;
             try { task.run(); }
-            catch (RuntimeException exception) { logger.error("Échec d'un transfert social", exception); }
+            catch (RuntimeException exception) { logger.error("Échec d'une opération sociale", exception); }
         }).schedule();
     }
 
@@ -165,5 +252,9 @@ public final class PartyCoordinator {
     private static UUID parseUuid(String raw) {
         try { return UUID.fromString(raw); }
         catch (IllegalArgumentException exception) { return null; }
+    }
+
+    private static long nowEpochSecond() {
+        return System.currentTimeMillis() / 1000;
     }
 }

@@ -170,6 +170,18 @@ class YamlResourcesTest {
     }
 
     @Test
+    void velocityPartyDisconnectGraceMatchesDeploymentCopy() {
+        YamlConfiguration bundled = YamlConfiguration.loadConfiguration(
+                Path.of("../tropicube-velocity/src/main/resources/config.yml").toFile());
+        YamlConfiguration deployed = YamlConfiguration.loadConfiguration(
+                Path.of("../dockerfiles/configs/TropicubeVelocity/config.yml").toFile());
+
+        assertEquals(60, bundled.getInt("party.disconnect-grace-seconds"));
+        assertEquals(bundled.getInt("party.disconnect-grace-seconds"),
+                deployed.getInt("party.disconnect-grace-seconds"));
+    }
+
+    @Test
     void playerDrivenNarrativeMessagesStayUnprefixed() {
         List<String> narrativeKeys = List.of(
                 "join.message",

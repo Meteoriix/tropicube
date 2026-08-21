@@ -1,9 +1,13 @@
 package fr.tropicube.docker.client;
 
+import fr.tropicube.docker.model.PartyDisconnectResult;
 import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -51,5 +55,21 @@ class RedisManagerTest {
         assertTrue(RedisManager.isInstanceReference("tropicube:post-game:player", name + "|SHEEPWARS", id, name));
         assertFalse(RedisManager.isInstanceReference("tropicube:host:other", "other-id", id, name));
         assertFalse(RedisManager.isInstanceReference("tropicube:post-game:other", "|SHEEPWARS", id, name));
+    }
+
+    @Test
+    void decodesAtomicPartyDisconnectOutcomes() {
+        UUID promoted = UUID.randomUUID();
+
+        assertEquals(PartyDisconnectResult.Status.UNCHANGED,
+                RedisManager.parsePartyDisconnectResult("ONLINE").status());
+        assertEquals(PartyDisconnectResult.Status.REMOVED,
+                RedisManager.parsePartyDisconnectResult("LEFT").status());
+        assertEquals(PartyDisconnectResult.Status.DISBANDED,
+                RedisManager.parsePartyDisconnectResult("DISBANDED").status());
+        assertEquals(promoted,
+                RedisManager.parsePartyDisconnectResult("PROMOTED:" + promoted).promotedLeaderId());
+        assertThrows(IllegalStateException.class,
+                () -> RedisManager.parsePartyDisconnectResult("UNKNOWN"));
     }
 }

@@ -45,6 +45,7 @@ public final class SocialGUI {
             FriendEntry friend = friends.get(index);
             int slot = FRIEND_SLOTS[index];
             inventory.setItem(slot, new ItemBuilder(Material.PLAYER_HEAD)
+                    .skullOwner(friend.playerId(), friend.username())
                     .name(LangHelper.get(player, friend.online() ? "social.friend-list-online" : "social.friend-list-offline", friend.username()))
                     .lore(friend.online() ? "<gray>/friend join " + friend.username() : "<dark_gray>Hors ligne")
                     .build());
@@ -99,7 +100,7 @@ public final class SocialGUI {
         return inventory;
     }
 
-    public record FriendEntry(String username, boolean online) { }
+    public record FriendEntry(UUID playerId, String username, boolean online) { }
     public record Action(ActionType type, String argument) { }
     public enum ActionType { FRIEND_JOIN, FRIEND_ACCEPT, PARTY_ACCEPT, FOLLOW_TOGGLE, PARTY_WARP }
 

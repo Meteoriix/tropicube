@@ -120,7 +120,8 @@ public class GuiManager {
         var social = core.getSocialService();
         social.friends(playerId).thenCombine(social.requests(playerId), (friends, requests) -> {
             List<SocialGUI.FriendEntry> entries = friends.stream()
-                    .map(friend -> new SocialGUI.FriendEntry(friend.username(), social.isOnline(friend.playerId())))
+                    .map(friend -> new SocialGUI.FriendEntry(
+                            friend.playerId(), friend.username(), social.isOnline(friend.playerId())))
                     .toList();
             var party = social.party(playerId);
             var invites = social.partyInvites(playerId);

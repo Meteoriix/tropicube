@@ -54,6 +54,7 @@ Sheep distribution uses an immutable effective-weight table followed by an indep
 | `player:server:<uuid>` | Velocity | Core, Lobby, commands | Current instance assignment |
 | `party:member:<uuid>` | Core | Core, Velocity, Lobby | Player-to-party index with a 24-hour TTL |
 | `party:<id>:leader` / `party:<id>:members` | Core | Core, Velocity, Lobby | Leader and atomic `uuid -> follow` membership hash, with a 24-hour TTL |
+| `party:offline:<uuid>` | Velocity | Velocity | Durable disconnect timestamp with a 24-hour TTL, cleared on reconnect or reconciliation |
 | `party:invites:<uuid>` | Core | Core, Lobby | Invitations indexed by leader UUID with configured TTL |
 | `player:grade:<uuid>` | Core | Velocity | Current network grade, 24-hour TTL |
 | `player:language:<uuid>` | Core | Velocity | Current interface language |
@@ -76,7 +77,9 @@ Redis subscriber callbacks must not mutate Bukkit state. Paper plugins always sc
 
 On Paper, `TropicubeCore` is the sole runtime provider of `tropicube-docker-api`. Lobby and SheepWars declare it as Maven `provided` and resolve it through their mandatory Paper dependency on Core. Their shaded JARs must never embed `fr.tropicube.docker.*`, otherwise social objects crossing plugin boundaries belong to incompatible classloaders.
 
-Friendships are durable MySQL pairs. Core checks that relation before publishing `PROXY:FRIEND_JOIN`; Velocity then revalidates both players, the target instance, whitelist, state, and capacity. A `GAME_PLAYING` SheepWars arrival becomes a spectator. Party transfer requests use the same proxy boundary and include only online members whose individual `follow` flag is enabled. Moving between parties is one atomic Lua transition, including leader succession. Lobby exposes these actions through a Social hotbar menu loaded outside the Paper thread. It also atomically consumes the automatic-replay counter and requires `/replayconfirm` after each five-game batch.
+Friendships are durable MySQL pairs. Core checks that relation before publishing `PROXY:FRIEND_JOIN`; Velocity then revalidates both players, the target instance, whitelist, state, and capacity. Each friend in the Social menu is represented by a player head tied to that friend's profile UUID. A `GAME_PLAYING` SheepWars arrival becomes a spectator. Party transfer requests use the same proxy boundary and include only online members whose individual `follow` flag is enabled. Moving between parties is one atomic Lua transition, including leader succession. Lobby exposes these actions through a Social hotbar menu loaded outside the Paper thread. It also atomically consumes the automatic-replay counter and requires `/replayconfirm` after each five-game batch.
+
+On disconnect, Velocity writes `party:offline:<uuid>` and reconciles the member after `party.disconnect-grace-seconds`. The Lua transition atomically rechecks presence: reconnecting preserves membership; otherwise the member is removed and an offline leader is replaced by an online member. As soon as the last online member leaves, every party index is deleted without waiting for the individual grace period. A periodic sweep resumes expired markers after a proxy restart.
 
 Velocity is the only whitelist writer. Both `/whitelist` and the SheepWars GUI reach the same ownership-checked mutation. Lobby snapshots are filtered before counts, pagination, best-server selection, and final clicks, while `ServerPreConnectEvent` independently enforces the boundary so hidden instances cannot be reached by a stale menu or direct command.
 

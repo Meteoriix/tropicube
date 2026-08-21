@@ -112,6 +112,7 @@ public class PlayerConnectionListener {
         redisManager.set("player:name:" + player.getUniqueId(), player.getUsername(), 2_592_000);
         redisManager.publishPlayerEvent("PLAYER_JOIN",
                 player.getUniqueId() + ":" + player.getUsername());
+        plugin.getPartyCoordinator().onPlayerConnected(player.getUniqueId());
 
         logger.debug(MessageStyle.log("PROXY", "<dark_gray>" + "Joueur connecté : {}"), player.getUsername());
     }
@@ -130,6 +131,7 @@ public class PlayerConnectionListener {
         lm.unloadPlayer(player.getUniqueId());
         redisManager.publishPlayerEvent("PLAYER_QUIT",
                 player.getUniqueId() + ":" + player.getUsername());
+        plugin.getPartyCoordinator().onPlayerDisconnected(player.getUniqueId());
 
         // If SheepWars reports an active game in Redis, keeps a game key
         // reconnection so that the player finds the same instance within five minutes.

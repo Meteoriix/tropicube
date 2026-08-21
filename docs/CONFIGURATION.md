@@ -86,6 +86,8 @@ Le lobby est une dépendance de routage essentielle et reste activé. Pour ajout
 
 `shutdown.stop-dynamic-servers` vaut `true` par défaut. Un arrêt propre de Velocity arrête alors toutes les instances dynamiques, supprime leurs conteneurs et leurs volumes `/data` éphémères étiquetés par Tropicube. Au démarrage, les volumes étiquetés sans conteneur connu sont également purgés. Le proxy de socket autorise donc l'API Docker `VOLUMES` en plus de `CONTAINERS`, mais les volumes persistants `mysql-data` et `redis-data`, non étiquetés comme dynamiques, ne sont jamais concernés.
 
+`party.disconnect-grace-seconds` vaut `60` et doit être strictement positif. Un joueur qui revient avant cette échéance reste dans sa party. Après l'échéance, il est retiré atomiquement et, si c'était le chef, le rôle passe à un membre connecté. Une party devenue entièrement hors ligne est supprimée immédiatement.
+
 Le service Compose `velocity` monte `/server` en `tmpfs` avec une limite de 512 Mio. Cette donnée d'exécution est réinitialisée depuis l'image à chaque démarrage et libérée automatiquement dès l'arrêt du conteneur ; elle ne doit pas être remplacée par un volume persistant.
 
 La valeur `false` conserve les backends et leurs volumes afin qu'un redémarrage de Velocity puisse restaurer les parties actives. Cette dérogation doit être réservée aux redéploiements où cette continuité est explicitement recherchée ; si la clé est absente, le comportement sûr reste la suppression.

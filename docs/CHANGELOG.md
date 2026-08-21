@@ -24,6 +24,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Modifié
 
+- Les membres déconnectés sont retirés de leur party après une minute ; le rôle de chef passe alors à un membre en ligne et une party entièrement hors ligne est supprimée immédiatement. Le menu Social affiche désormais la tête de profil de chaque ami.
 - Les instances Lobby et SheepWars embarquent désormais les configurations Bukkit/Paper par défaut ; leur démarrage sur un volume neuf évite deux téléchargements séquentiels et gagne environ quatre secondes sur la pile de référence.
 - Le bouton du sélecteur de parties utilise la tête HeadDatabase 52706, le réglage de langue s'intitule désormais « Langues / Language » et un nouveau profil reprend la langue du client Minecraft avec repli anglais.
 - Le bouton Langue du menu Paramètres reprend la tête HeadDatabase 71786, le bouton Paramètres de la hotbar utilise la tête 89489 et l'autocomplétion après `/` publie uniquement les commandes Tropicube.

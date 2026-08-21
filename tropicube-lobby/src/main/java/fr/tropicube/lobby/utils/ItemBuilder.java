@@ -1,5 +1,7 @@
 package fr.tropicube.lobby.utils;
 
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -13,6 +15,7 @@ import org.bukkit.inventory.meta.components.CustomModelDataComponent;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -25,6 +28,7 @@ public class ItemBuilder {
 
     private final ItemStack item;
     private final ItemMeta meta;
+    private ResolvableProfile skullProfile;
 
     public ItemBuilder(Material material) {
         this(material, 1);
@@ -75,8 +79,21 @@ public class ItemBuilder {
         return this;
     }
 
+    /** Assigns a stable player profile to a player head without an offline-player lookup. */
+    public ItemBuilder skullOwner(UUID playerId, String playerName) {
+        if (item.getType() != Material.PLAYER_HEAD) {
+            throw new IllegalStateException("skullOwner nécessite un item PLAYER_HEAD");
+        }
+        skullProfile = ResolvableProfile.resolvableProfile()
+                .uuid(playerId)
+                .name(playerName)
+                .build();
+        return this;
+    }
+
     public ItemStack build() {
         item.setItemMeta(meta);
+        if (skullProfile != null) item.setData(DataComponentTypes.PROFILE, skullProfile);
         return item;
     }
 

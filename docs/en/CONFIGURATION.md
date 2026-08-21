@@ -17,6 +17,7 @@ Secrets and deployment-specific values belong in `.env`, never in Git. `.env.exa
 Source: `tropicube-velocity/src/main/resources/config.yml`; deployment copy: `dockerfiles/configs/TropicubeVelocity/config.yml`.
 
 - `admin-uuids` grants proxy administration permissions to approved UUIDs;
+- `party.disconnect-grace-seconds` defaults to `60`, removes members who remain offline after that grace period and transfers leadership to an online member; fully offline parties are deleted immediately;
 - `remove-dynamic-servers-on-shutdown` controls cleanup during a normal proxy shutdown;
 - health-check values define probe frequency, timeout, and failed-start cleanup;
 - `nick.allowed-grades` defines grades that may enable `/nick`;
