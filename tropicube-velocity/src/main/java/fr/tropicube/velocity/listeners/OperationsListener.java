@@ -90,7 +90,7 @@ public final class OperationsListener {
     @Subscribe
     public void onPing(ProxyPingEvent event) {
         String line1 = config.node("motd", "line-1").getString(
-                "<gold><bold>Tropicube</bold></gold> <gray>•</gray> <aqua>Votre prochaine aventure commence ici !</aqua>");
+                "<gold><bold>Tropicube</bold></gold> <gray>•</gray> <aqua>Des cubes, du soleil et de l’aventure !</aqua>");
         String line2 = maintenance.blocksNetwork()
                 ? config.node("motd", "maintenance-line").getString("<red>Maintenance en cours</red>")
                 : config.node("motd", "line-2").getString("<yellow>{games}</yellow>");

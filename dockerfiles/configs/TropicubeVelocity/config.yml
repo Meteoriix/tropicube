@@ -27,7 +27,7 @@ maintenance:
   default-deadline-minutes: 30
 
 motd:
-  line-1: "<gold><bold>Tropicube</bold></gold> <gray>•</gray> <aqua>Votre prochaine aventure commence ici !</aqua>"
+  line-1: "<gold><bold>Tropicube</bold></gold> <gray>•</gray> <aqua>Des cubes, du soleil et de l’aventure !</aqua>"
   line-2: "<yellow>{games}</yellow>"
   games-separator: " <dark_gray>•</dark_gray> "
   no-games: "<gray>De nouveaux jeux arrivent bientôt</gray>"

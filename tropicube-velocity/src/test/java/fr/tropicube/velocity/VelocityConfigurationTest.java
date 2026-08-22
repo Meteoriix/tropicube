@@ -64,7 +64,7 @@ class VelocityConfigurationTest {
 
         String line1 = motd.node("line-1").getString("");
         String line2 = motd.node("line-2").getString("");
-        assertTrue(line1.contains("Votre prochaine aventure commence ici"));
+        assertTrue(line1.contains("Des cubes, du soleil et de l’aventure !"));
         assertTrue(line2.contains("{games}"));
         assertFalse(line1.contains("FR / EN") || line2.contains("FR / EN"));
         assertFalse(line1.contains("{online}") || line2.contains("{online}"));
