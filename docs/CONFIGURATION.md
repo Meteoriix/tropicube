@@ -126,7 +126,7 @@ Une identité active est enregistrée sous `nick:<uuid>` avec le pseudonyme, le 
 ### Exploitation réseau
 
 - `connection-protection.address-limit`, `global-limit`, `window-seconds` et `quarantine-seconds` contrôlent les limites adaptatives avant authentification. Aucun historique d'adresse n'est persisté.
-- `motd.line-1`, `line-2` et `maintenance-line` décrivent uniquement l'entrée publique Velocity. `{online}` est remplacé par l'effectif courant.
+- `motd.line-1`, `line-2` et `maintenance-line` décrivent uniquement l'entrée publique Velocity. `{games}` est remplacé par les types de jeux activés, dédupliqués entre leurs différentes files ; `motd.game-<TYPE>`, `games-separator` et `no-games` contrôlent leurs libellés et le repli. Le MOTD ne publie ni langues ni effectif connecté.
 - `announcements.interval-seconds` et `announcements.entries[].message-key/target` définissent la rotation localisée. Une cible vaut `network`, un type, un template ou une instance.
 - `/maintenance` persiste un drain dans Redis pendant sept jours au plus. L'échéance vaut de 1 à 1 440 minutes.
 

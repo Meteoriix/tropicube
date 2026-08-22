@@ -8,6 +8,7 @@ import com.velocitypowered.api.event.connection.PreLoginEvent;
 import com.velocitypowered.api.event.player.ServerPreConnectEvent;
 import com.velocitypowered.api.event.proxy.ProxyPingEvent;
 import com.velocitypowered.api.proxy.ProxyServer;
+import fr.tropicube.docker.model.ServerTemplate;
 import fr.tropicube.velocity.managers.ConnectionRateLimiter;
 import fr.tropicube.velocity.managers.MaintenanceManager;
 import fr.tropicube.velocity.managers.TropiServerManager;
@@ -15,6 +16,11 @@ import fr.tropicube.velocity.util.MessageStyle;
 import fr.tropicube.docker.client.RedisManager;
 import net.kyori.adventure.text.Component;
 import org.spongepowered.configurate.ConfigurationNode;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 /** Enforces ingress protection and publishes the public proxy status. */
 public final class OperationsListener {
@@ -83,11 +89,39 @@ public final class OperationsListener {
 
     @Subscribe
     public void onPing(ProxyPingEvent event) {
-        String line1 = config.node("motd", "line-1").getString("<gold><bold>Tropicube</bold></gold> <gray>•</gray> <aqua>FR / EN</aqua>");
+        String line1 = config.node("motd", "line-1").getString(
+                "<gold><bold>Tropicube</bold></gold> <gray>•</gray> <aqua>Votre prochaine aventure commence ici !</aqua>");
         String line2 = maintenance.blocksNetwork()
                 ? config.node("motd", "maintenance-line").getString("<red>Maintenance en cours</red>")
-                : config.node("motd", "line-2").getString("<green>{online} joueurs en ligne</green>");
-        String rendered = (line1 + "\n" + line2).replace("{online}", Integer.toString(proxy.getPlayerCount()));
+                : config.node("motd", "line-2").getString("<yellow>{games}</yellow>");
+        String rendered = (line1 + "\n" + line2).replace("{games}", availableGameNames());
         event.setPing(event.getPing().asBuilder().description(MessageStyle.component(rendered)).build());
+    }
+
+    private String availableGameNames() {
+        String separator = config.node("motd", "games-separator").getString(" <dark_gray>•</dark_gray> ");
+        String names = availableGameTypes(servers.getTemplates().values()).stream()
+                .map(type -> config.node("motd", "game-" + type).getString(humanize(type)))
+                .collect(Collectors.joining(separator));
+        return names.isBlank()
+                ? config.node("motd", "no-games").getString("De nouveaux jeux arrivent bientôt")
+                : names;
+    }
+
+    static List<String> availableGameTypes(Collection<ServerTemplate> templates) {
+        return templates.stream()
+                .filter(ServerTemplate::isEnabled)
+                .filter(template -> !template.isMaintenanceMode())
+                .map(ServerTemplate::getServerType)
+                .filter(type -> type != null && !type.isBlank() && !type.equalsIgnoreCase("LOBBY"))
+                .map(type -> type.toUpperCase(Locale.ROOT))
+                .distinct()
+                .sorted()
+                .toList();
+    }
+
+    private static String humanize(String type) {
+        String value = type.toLowerCase(Locale.ROOT).replace('_', ' ');
+        return Character.toUpperCase(value.charAt(0)) + value.substring(1);
     }
 }

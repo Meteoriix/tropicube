@@ -46,6 +46,8 @@ Chaque instance porte aussi un mode fonctionnel rétrocompatible : `LOBBY`, `QUI
 
 La maintenance globale ou par type est orchestrée par Velocity. Elle bloque les nouvelles entrées et créations, laisse les parties actives se terminer jusqu'à l'échéance, puis transfère vers un lobby ou déconnecte proprement. L'état court est partagé dans Redis ; les limites de connexions ne conservent que des compteurs en mémoire et des quarantaines temporaires.
 
+Le MOTD de l'unique entrée publique Velocity affiche une accroche et les types de jeux activés, dédupliqués entre leurs différentes files. Il ne publie ni langues, ni effectif réseau, ni serveur Paper individuel.
+
 Si un arrêt Docker échoue alors que le conteneur reste actif, Velocity restaure l'état jouable antérieur dans son registre et dans Redis. Le Lobby exclut `STOPPING`, `STOPPED` et `ERROR` de ses listes et de ses totaux ; ses menus ne comptent ainsi que les instances en démarrage ou dans un état de jeu actif.
 
 ## Responsabilités des modules

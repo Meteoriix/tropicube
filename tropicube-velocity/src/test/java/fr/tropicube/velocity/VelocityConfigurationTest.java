@@ -7,6 +7,7 @@ import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -55,6 +56,19 @@ class VelocityConfigurationTest {
         config.node("party", "disconnect-grace-seconds").set(0);
         assertThrows(IllegalArgumentException.class,
                 () -> TropicubeVelocity.partyDisconnectGraceSeconds(config));
+    }
+
+    @Test
+    void bundledMotdPromotesAvailableGamesWithoutLanguagesOrPlayerCount() throws IOException {
+        ConfigurationNode motd = loadBundledConfig().node("motd");
+
+        String line1 = motd.node("line-1").getString("");
+        String line2 = motd.node("line-2").getString("");
+        assertTrue(line1.contains("Votre prochaine aventure commence ici"));
+        assertTrue(line2.contains("{games}"));
+        assertFalse(line1.contains("FR / EN") || line2.contains("FR / EN"));
+        assertFalse(line1.contains("{online}") || line2.contains("{online}"));
+        assertEquals("SheepWars", motd.node("game-SHEEPWARS").getString());
     }
 
     private ConfigurationNode loadBundledConfig() throws IOException {
