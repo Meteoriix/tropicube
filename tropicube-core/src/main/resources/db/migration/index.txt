@@ -3,3 +3,4 @@ V002__guild_progression.sql
 V003__sheepwars_competitive.sql
 V004__completion_features.sql
 V005__repeatable_sheepwars_matches.sql
+V006__flat_season_reward_translation_keys.sql

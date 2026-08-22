@@ -364,10 +364,10 @@ public final class SheepWarsProgressionService {
         }
         String suffix = season.key().toLowerCase(java.util.Locale.ROOT) + "-" + tier.name().toLowerCase(java.util.Locale.ROOT);
         if (reward.title()) insertProfileReward(connection, "tropicube_profile_titles", "title_id",
-                playerId, "sw-season-" + suffix, "season.reward-title." + tier.name().toLowerCase(java.util.Locale.ROOT),
+                playerId, "sw-season-" + suffix, "season.reward-title-" + tier.name().toLowerCase(java.util.Locale.ROOT),
                 season.id(), now);
         if (reward.badge()) insertProfileReward(connection, "tropicube_profile_badges", "badge_id",
-                playerId, "sw-season-" + suffix, "season.reward-badge." + tier.name().toLowerCase(java.util.Locale.ROOT),
+                playerId, "sw-season-" + suffix, "season.reward-badge-" + tier.name().toLowerCase(java.util.Locale.ROOT),
                 season.id(), now);
     }
 

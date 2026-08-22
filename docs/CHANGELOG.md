@@ -73,6 +73,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Corrigé
 
+- Les libellés de récompenses saisonnières utilisent de nouveau des clés plates compatibles avec la fusion de langues au déploiement ; V006 convertit les éventuelles récompenses déjà enregistrées.
 - Le précontrôle des scripts de déploiement diagnostique désormais une clé `TOTP_MASTER_KEY` absente ou invalide et indique comment générer une clé AES-256 sans la versionner.
 
 - Toutes les migrations SQL présentes sont désormais indexées ; la contrainte qui empêchait plusieurs résultats SheepWars pour une même instance a été remplacée par un index d'historique non unique.
