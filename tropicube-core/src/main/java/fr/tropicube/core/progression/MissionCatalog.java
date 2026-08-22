@@ -11,7 +11,8 @@ import java.util.List;
 
 /** Immutable, versioned mission definitions loaded from missions.yml. */
 public record MissionCatalog(int version, List<Mission> daily, List<Mission> weekly) {
-    public record Mission(String id, String event, long target, long experience, double currency) {}
+    public record Mission(String id, String event, long target, long experience, double currency,
+                          int rerollTokens) {}
 
     public MissionCatalog {
         if (version <= 0) throw new IllegalArgumentException("version de catalogue invalide");
@@ -38,9 +39,11 @@ public record MissionCatalog(int version, List<Mission> daily, List<Mission> wee
             long target = yaml.getLong(base + ".target");
             long experience = yaml.getLong(base + ".reward-experience");
             double currency = yaml.getDouble(base + ".reward-currency");
-            if (!id.matches("[a-z0-9_-]{1,64}") || event.isBlank() || target <= 0 || experience < 0 || currency < 0)
+            int rerollTokens = yaml.getInt(base + ".reward-reroll-tokens", 0);
+            if (!id.matches("[a-z0-9_-]{1,64}") || event.isBlank() || target <= 0 || experience < 0
+                    || currency < 0 || rerollTokens < 0 || rerollTokens > 5)
                 throw new IllegalArgumentException("Mission invalide: " + id);
-            values.add(new Mission(id, event, target, experience, currency));
+            values.add(new Mission(id, event, target, experience, currency, rerollTokens));
         }
         return List.copyOf(values);
     }

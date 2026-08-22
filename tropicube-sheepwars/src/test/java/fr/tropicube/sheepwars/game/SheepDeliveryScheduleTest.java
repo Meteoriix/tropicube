@@ -76,6 +76,17 @@ class SheepDeliveryScheduleTest {
         assertFalse(schedule.isDue(FIRST_PLAYER));
     }
 
+    @Test
+    void masteryCanChooseTheNextPersonalInterval() {
+        SheepDeliverySchedule schedule = new SheepDeliverySchedule(10, List.of(FIRST_PLAYER));
+        advance(schedule, 10);
+        schedule.markDelivered(FIRST_PLAYER, 9);
+        advance(schedule, 8);
+        assertFalse(schedule.isDue(FIRST_PLAYER));
+        schedule.advanceSecond();
+        assertTrue(schedule.isDue(FIRST_PLAYER));
+    }
+
     private static void advance(SheepDeliverySchedule schedule, int seconds) {
         for (int second = 0; second < seconds; second++) schedule.advanceSecond();
     }

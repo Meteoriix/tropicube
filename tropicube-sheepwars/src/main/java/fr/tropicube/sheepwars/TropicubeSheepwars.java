@@ -8,6 +8,8 @@ import fr.tropicube.docker.client.RedisManager;
 import fr.tropicube.sheepwars.game.GameManager;
 import fr.tropicube.sheepwars.config.GameplayBalance;
 import fr.tropicube.sheepwars.competitive.SheepWarsProgressionService;
+import fr.tropicube.sheepwars.competitive.KitMasteryCatalog;
+import fr.tropicube.sheepwars.competitive.SeasonRewardCatalog;
 import fr.tropicube.sheepwars.command.SheepWarsCommand;
 import fr.tropicube.sheepwars.listener.PlayerListener;
 import fr.tropicube.sheepwars.listener.ProtectionListener;
@@ -47,6 +49,9 @@ public final class TropicubeSheepwars extends JavaPlugin {
     private GameplayBalance gameplayBalance;
     private SheepWarsProgressionService progressionService;
     private KitMasteryMenu kitMasteryMenu;
+    private KitMasteryCatalog kitMasteryCatalog;
+    private SeasonRewardCatalog seasonRewardCatalog;
+    private volatile boolean shuttingDown;
 
     @Override
     public void onEnable() {
@@ -62,6 +67,29 @@ public final class TropicubeSheepwars extends JavaPlugin {
             gameplayBalance = GameplayBalance.load(getConfig());
         } catch (IllegalArgumentException exception) {
             getLogger().severe(MessageStyle.log("sw", "SYSTEM", "<red>" + exception.getMessage()));
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
+        File masteryFile = new File(getDataFolder(), "kit-mastery.yml");
+        if (!masteryFile.exists()) saveResource("kit-mastery.yml", false);
+        try {
+            ConfigUpdater.update(this, "kit-mastery.yml", masteryFile);
+            kitMasteryCatalog = KitMasteryCatalog.load(masteryFile);
+        } catch (Exception exception) {
+            getLogger().log(Level.SEVERE, MessageStyle.log("sw", "CONFIG",
+                    "<red>Catalogue de maîtrise invalide : " + exception.getMessage()), exception);
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        File seasonRewardsFile = new File(getDataFolder(), "season-rewards.yml");
+        if (!seasonRewardsFile.exists()) saveResource("season-rewards.yml", false);
+        try {
+            ConfigUpdater.update(this, "season-rewards.yml", seasonRewardsFile);
+            seasonRewardCatalog = SeasonRewardCatalog.load(seasonRewardsFile);
+        } catch (Exception exception) {
+            getLogger().log(Level.SEVERE, MessageStyle.log("sw", "CONFIG",
+                    "<red>Catalogue de récompenses saisonnières invalide : " + exception.getMessage()), exception);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -93,7 +121,8 @@ public final class TropicubeSheepwars extends JavaPlugin {
         this.gameManager = new GameManager(this);
 
         this.playerDataManager = new PlayerDataManager(this, databaseManager);
-        this.progressionService = new SheepWarsProgressionService(databaseManager, core);
+        this.progressionService = new SheepWarsProgressionService(
+                databaseManager, core, kitMasteryCatalog, seasonRewardCatalog);
 
         this.sheepManager = new SheepManager(this);
 
@@ -142,6 +171,7 @@ public final class TropicubeSheepwars extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        shuttingDown = true;
         if (scoreboardManager != null) scoreboardManager.clearAll();
         if (gameManager != null) gameManager.shutdown();
         if (playerDataManager != null) playerDataManager.close();
@@ -161,4 +191,6 @@ public final class TropicubeSheepwars extends JavaPlugin {
     public GameplayBalance getGameplayBalance() { return gameplayBalance; }
     public SheepWarsProgressionService getProgressionService() { return progressionService; }
     public KitMasteryMenu getKitMasteryMenu() { return kitMasteryMenu; }
+    public KitMasteryCatalog getKitMasteryCatalog() { return kitMasteryCatalog; }
+    public boolean isShuttingDown() { return shuttingDown; }
 }

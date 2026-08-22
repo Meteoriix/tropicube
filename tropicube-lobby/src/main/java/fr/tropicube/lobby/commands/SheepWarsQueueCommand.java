@@ -71,6 +71,8 @@ public final class SheepWarsQueueCommand implements CommandExecutor {
         }
         plugin.getLobbyServerManager().requestStartTemplate(player, queue.templateId);
         player.sendMessage(LangHelper.component(player, "lobby.sheepwars-queue-joined", queue.label));
+        plugin.getGuiManager().showHint(player, queue.ranked ? "COMPETITIVE_QUEUE" : "QUICK_PLAY",
+                queue.ranked ? "lobby.hint-competitive" : "lobby.hint-quick-play");
     }
 
     private Queue resolve(String command, String[] args) {

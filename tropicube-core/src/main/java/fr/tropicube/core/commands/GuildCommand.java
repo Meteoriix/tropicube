@@ -3,8 +3,6 @@ package fr.tropicube.core.commands;
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.core.guild.GuildService;
 import fr.tropicube.core.util.CommandAsync;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -33,6 +31,7 @@ public final class GuildCommand implements CommandExecutor {
             case "promote" -> target(player, args, TargetAction.PROMOTE);
             case "demote" -> target(player, args, TargetAction.DEMOTE);
             case "transfer" -> target(player, args, TargetAction.TRANSFER);
+            case "ranking", "classement" -> { ranking(player); yield true; }
             default -> { usage(player); yield true; }
         };
     }
@@ -69,9 +68,13 @@ public final class GuildCommand implements CommandExecutor {
                     operation.thenAccept(result -> {
                         reply(player, result);
                         if (action == TargetAction.INVITE && result == GuildService.Result.SUCCESS) {
-                            plugin.getNotificationService().create(target, "GUILD", "guild.invitation",
-                                    List.of(player.getName()), null,
-                                    System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000);
+                            plugin.getGuildService().guild(player.getUniqueId()).thenAccept(guild -> {
+                                if (guild != null) plugin.getNotificationService().create(target, "GUILD", "guild.invitation",
+                                        List.of(player.getName(), guild.tag()),
+                                        new fr.tropicube.core.network.NotificationService.Action(
+                                                fr.tropicube.core.network.NotificationService.ActionType.SUGGEST_COMMAND,
+                                                "/guild accept " + guild.tag()));
+                            });
                         }
                     });
                 });
@@ -81,15 +84,25 @@ public final class GuildCommand implements CommandExecutor {
     private void info(Player player) {
         plugin.getGuildService().guild(player.getUniqueId()).thenAccept(guild ->
                 plugin.getServer().getScheduler().runTask(plugin, () -> {
-                    if (guild == null) { player.sendMessage(Component.text("Tu n'appartiens à aucune guilde.", NamedTextColor.RED)); return; }
-                    player.sendMessage(Component.text("[" + guild.tag() + "] " + guild.name()
-                            + " • niveau " + guild.level() + " • " + guild.experience() + " XP", NamedTextColor.GOLD));
-                    for (GuildService.Member member : guild.members()) player.sendMessage(Component.text(
-                            member.role() + " • " + member.username() + " • contribution "
-                                    + member.weeklyContribution(), NamedTextColor.GRAY));
-                    for (GuildService.Challenge challenge : guild.challenges()) player.sendMessage(Component.text(
-                            "Défi " + challenge.id() + " • " + challenge.progress() + "/" + challenge.target()
-                                    + (challenge.completed() ? " ✓" : ""), NamedTextColor.AQUA));
+                    if (guild == null) { message(player, "guild.none"); return; }
+                    message(player, "guild.info", guild.tag(), guild.name(), guild.level(), guild.experience());
+                    for (GuildService.Member member : guild.members()) message(player, "guild.member",
+                            member.role(), member.username(), member.weeklyContribution());
+                    for (GuildService.Challenge challenge : guild.challenges()) message(player, "guild.challenge",
+                            challenge.id(), challenge.progress(), challenge.target(), challenge.completed() ? "✓" : "");
+                }));
+    }
+
+    private void ranking(Player player) {
+        plugin.getGuildService().currentRanking(20).thenAccept(values ->
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    player.sendMessage(plugin.getLanguageManager().getComponent(player.getUniqueId(), "guild.ranking-header"));
+                    for (int index = 0; index < values.size(); index++) {
+                        GuildService.Ranking value = values.get(index);
+                        player.sendMessage(plugin.getLanguageManager().getComponent(player.getUniqueId(),
+                                "guild.ranking-entry", index + 1, value.tag(), value.name(),
+                                Math.round(value.score()), value.rankedMatches()));
+                    }
                 }));
     }
 
@@ -97,10 +110,11 @@ public final class GuildCommand implements CommandExecutor {
         operation.thenAccept(result -> reply(player, result));
     }
     private void reply(Player player, GuildService.Result result) {
-        plugin.getServer().getScheduler().runTask(plugin, () -> player.sendMessage(Component.text(
-                "Guilde : " + result, result == GuildService.Result.SUCCESS ? NamedTextColor.GREEN : NamedTextColor.RED)));
+        plugin.getServer().getScheduler().runTask(plugin, () -> message(player, "guild.result-" + result.name().toLowerCase(Locale.ROOT)));
     }
-    private void usage(Player player) { player.sendMessage(Component.text(
-            "/guild info|create <nom> <tag>|invite|accept|leave|kick|promote|demote|transfer", NamedTextColor.YELLOW)); }
+    private void usage(Player player) { message(player, "guild.usage"); }
+    private void message(Player player, String key, Object... arguments) {
+        player.sendMessage(plugin.getLanguageManager().getComponent(player.getUniqueId(), key, arguments));
+    }
     private enum TargetAction { INVITE, KICK, PROMOTE, DEMOTE, TRANSFER }
 }

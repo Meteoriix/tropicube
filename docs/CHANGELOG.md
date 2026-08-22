@@ -8,7 +8,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 - Chaîne de migrations renforcée : V003 est désormais indexée et un test interdit toute ressource SQL oubliée ; V004 prépare les archives, récompenses de profil, aides contextuelles et demandes de confidentialité.
 - SheepWars Quick Play et compétition : files 4v4/8v8 à cote partagée, incertitude individuelle, fenêtre progressive, saisons trimestrielles archivées, placements et reset souple.
-- Progression SheepWars : XP propre à chaque kit en Quick Play, deux branches exclusives réversibles sans bonus encore activé, missions/niveau réseau, historique détaillé et distinctions de fin.
+- Progression SheepWars : XP propre à chaque kit en Quick Play, deux branches exclusives réversibles débloquées au niveau 5 et effets équilibrés pilotés par YAML, missions/niveau réseau, historique détaillé et distinctions de fin.
 - Garde-fous compétitifs : taille de party limitée à une demi-équipe, limites de rôles, vote court pondéré sur trois cartes et sanctions d'abandon graduées.
 
 - Socle d'exploitation Velocity : migrations SQL versionnées, modes d'instance typés, événements Redis versionnés, maintenance avec drain, MOTD bilingue, annonces ciblées, diagnostic réseau et protection adaptative des connexions.
@@ -17,6 +17,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 - Profils réseau à détails réglables, niveaux réseau, catalogue YAML de missions versionné, rotations personnelles de 5 quotidiennes et 3 hebdomadaires, rerolls et récompenses atomiques.
 - Lobby enrichi avec aide contextuelle désactivable, visibilité persistante tous/amis/party/personne et sélection de partie intelligente orientée remplissage.
 - Guildes persistantes complètes : 50 membres, rôles bornés, invitations, audit, contributions plafonnées, défis hebdomadaires, classement compétitif agrégé et succession automatique du chef inactif.
+- Centre joueur localisé : profil enrichi, archives saisonnières, titres/badges, missions avec jetons de reroll, classement des guildes et boîte de notifications filtrable conservée sept jours.
+- Outillage de confidentialité TOTP : exports JSON exhaustifs supprimés après sept jours, demandes d'anonymisation différées de trente jours, annulation, suivi et gel légal des preuves de modération.
+- Reconnexion classée SheepWars : grâce de trois minutes, forfait après trente secondes lorsqu'une équipe entière est hors ligne, sanctions graduées uniquement à expiration ou lors d'un abandon explicite.
+- Récompenses de saison SheepWars : archivage trimestriel idempotent, reset souple, titre, badge et monnaie sans avantage de jeu pour les joueurs ayant terminé leurs placements.
 
 - Menu Paramètres du lobby avec choix de langue et rejeu automatique par séries confirmées de cinq parties.
 - Système social réseau complet : amis persistants, parties Redis, chat de groupe, suivi individuel du chef, rassemblement `/party warp`, `/friend join` avec arrivée en spectateur et menu Social dans la hotbar du lobby.
@@ -68,6 +72,9 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 - Fin des parties SheepWars : transfert confirmé de tous les joueurs au lobby, puis destruction immédiate du conteneur et purge de son état Redis.
 
 ### Corrigé
+
+- Toutes les migrations SQL présentes sont désormais indexées ; la contrainte qui empêchait plusieurs résultats SheepWars pour une même instance a été remplacée par un index d'historique non unique.
+- Le mode staff restaure le mode de jeu antérieur, y compris après un transfert interserveurs, au lieu d'imposer systématiquement le mode Aventure.
 
 - Les têtes du menu Social initialisent désormais leur résolution dynamique avec le seul UUID, puis embarquent la texture obtenue côté serveur ; elles n'affichent plus un skin par défaut causé par un profil statique incomplet et ne dépendent pas d'une reconnexion récente de l'ami.
 - Le menu Social ne provoque plus de `LinkageError` : Core est désormais l'unique fournisseur Paper des modèles `tropicube-docker-api`, qui ne sont plus dupliqués dans les JAR Lobby et SheepWars.

@@ -158,6 +158,9 @@ Ce module est pour l'instant un squelette Maven sans classe, ressource, dépenda
 | `sw:queue-size:<uuid>` | Lobby | Velocity | Nombre de membres effectivement transférés, TTL 30 min |
 | `sw:queue-since:<uuid>` | Lobby | Velocity | Début d'attente en millisecondes, TTL 30 min |
 | `sw:ranked-penalty:<uuid>` | SheepWars | Lobby | Échéance d'interdiction temporaire de file ; TTL égal à la sanction |
+| `sw:left-game:<uuid>` | SheepWars | Lobby/Velocity | Instance classée à rejoindre pendant la grâce de 180 secondes |
+| `contextual-hint-session:<uuid>` | Core | Core/Lobby | Verrou `SET NX EX` limitant l'aide à un message par session de douze heures |
+| `staff-mode:<uuid>` / `staff-previous-mode:<uuid>` | Core | Core | Mode spectateur staff et mode de jeu à restaurer, TTL huit heures |
 | `party:offline:<uuid>` | Velocity | Velocity | Instant de déconnexion persistant, TTL 24 h, supprimé à la reconnexion ou après réconciliation |
 | `party:invites:<uuid>` | Core | Core/Lobby | Invitations indexées par UUID du chef, TTL configurable |
 | canal `commands` (`PROXY:FRIEND_JOIN`, `PROXY:PARTY_WARP`) | Core | Velocity | Demandes de transfert social revalidées par le proxy |
@@ -201,6 +204,10 @@ Les migrations MySQL de Core sont listées explicitement sous `db/migration/inde
 
 La progression réseau suit une courbe stable : le niveau `n` commence à `100 × (n-1)²` XP. Les rotations personnelles utilisent le fuseau `Europe/Paris`, une clé par date ou semaine ISO, cinq emplacements quotidiens et trois hebdomadaires. Deux rerolls quotidiens sont accordés par défaut, deux supplémentaires via `tropicube.missions.reroll.bonus`. La réclamation marque la mission, crédite la monnaie, journalise la transaction et ajoute l'XP dans une même transaction SQL afin d'empêcher les doubles récompenses.
 
+Les notifications conservent une clé de message, ses arguments et une action strictement validée pendant sept jours. La pagination, les filtres, la lecture et la suppression sont toujours bornés au propriétaire. Les exports de confidentialité sont produits hors thread Paper dans le dossier privé du plugin, supprimés après sept jours et ne collectent aucune donnée nouvelle. L'anonymisation attend trente jours et reste en `LEGAL_HOLD` tant qu'une sanction active ou une preuve de signalement encore requise existe.
+
+À la rotation trimestrielle SheepWars, l'instance qui observe la nouvelle saison archive les cotes et compte les parties classées. Les clés primaires `(season_id, player_uuid)` rendent l'archive et l'attribution de récompense idempotentes entre instances concurrentes. Seuls les joueurs sans placement restant reçoivent monnaie, titre et badge ; la cote courante subit ensuite le reset souple lors de son premier chargement dans la nouvelle saison.
+
 Les guildes sont persistantes et indépendantes des parties. `OWNER`, `OFFICER` et `MEMBER` déterminent les mutations autorisées ; la capacité et le nombre d'officiers sont validés côté SQL. Les contributions issues du jeu sont plafonnées par membre et semaine, font progresser le niveau de guilde et deux défis hebdomadaires (`CONTRIBUTION`, `RANKED_MATCHES`). Le classement compétitif additionne les variations de cote des membres par saison, sans créer de file distincte. Un balayage quotidien remplace un chef inactif depuis 30 jours par le membre actif ayant rejoint le plus tôt ; chaque transition est auditée.
 
 Le profil agrège identité, niveau, solde, relations, guilde et statistiques SheepWars. Un tiers reçoit soit le résumé public, soit les détails réservés aux amis, soit aucun contenu selon la préférence persistante. Le lobby charge ces préférences hors thread Paper, masque seulement les entités selon `EVERYONE`, `FRIENDS`, `PARTY` ou `NOBODY`, puis réapplique le filtre après une arrivée ou un changement. Son sélecteur intelligent privilégie une partie dont le compte à rebours est lancé puis remplit la partie la plus avancée disposant d'assez de places.
@@ -218,6 +225,8 @@ Le profil agrège identité, niveau, solde, relations, guilde et statistiques Sh
 - `tropicube_sheepwars_ratings` : cote unique 4v4/8v8, incertitude, placements et saison ;
 - `tropicube_sheepwars_kit_mastery` : XP par kit et branche exclusive ;
 - `tropicube_sheepwars_abandons` et `tropicube_sheepwars_preferences` : sanctions graduées et visibilité des détails ;
+- `tropicube_sheepwars_season_ratings`, `tropicube_profile_titles`, `tropicube_profile_badges` et `tropicube_season_reward_grants` : archives et récompenses saisonnières idempotentes ;
+- `tropicube_notifications`, `tropicube_contextual_hints` et `tropicube_privacy_requests` : centre joueur, aide persistante et workflow de confidentialité ;
 - `tropicube_friendships` : paire canonique de joueurs, demandeur, état `PENDING`/`ACCEPTED` et dates ; index par membre, état et ancienneté.
 
 Les grades déclarés dans la configuration Core sont resynchronisés au démarrage. Une modification manuelle en base ou via la sous-commande de définition de grade peut donc être écrasée par la configuration au prochain redémarrage.

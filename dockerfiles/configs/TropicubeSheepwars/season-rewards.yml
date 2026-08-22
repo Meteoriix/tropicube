@@ -1,0 +1,11 @@
+version: 1
+tiers:
+  IRON: { currency: 100, title: true, badge: true }
+  BRONZE: { currency: 175, title: true, badge: true }
+  SILVER: { currency: 250, title: true, badge: true }
+  GOLD: { currency: 350, title: true, badge: true }
+  PLATINUM: { currency: 500, title: true, badge: true }
+  DIAMOND: { currency: 700, title: true, badge: true }
+  ASCENDANT: { currency: 900, title: true, badge: true }
+  IMMORTAL: { currency: 1200, title: true, badge: true }
+  RADIANT: { currency: 1500, title: true, badge: true }

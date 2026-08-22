@@ -15,8 +15,6 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Bukkit;
-import org.bukkit.damage.DamageSource;
-import org.bukkit.damage.DamageType;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -57,7 +55,8 @@ public class PlayerListener implements Listener {
         Player player = event.getPlayer();
         event.joinMessage(null);
 
-        plugin.getPlayerDataManager().loadPlayer(player).thenRun(() ->
+        plugin.getPlayerDataManager().loadPlayer(player)
+                .thenCompose(ignored -> plugin.getProgressionService().loadMasteries(player.getUniqueId())).thenRun(() ->
             plugin.getServer().getScheduler().runTask(plugin, () -> {
                 if (!player.isOnline()) return;
                 if (!plugin.getGameManager().getGameMaps().isEmpty() && plugin.getGameManager().canJoin()) {
@@ -87,16 +86,7 @@ public class PlayerListener implements Listener {
         Player player = event.getPlayer();
         GamePlayer gamePlayer = plugin.getGameManager().getPlayer(player);
         if (gamePlayer != null) {
-            if (plugin.getGameManager().getState() == GameState.PLAYING && gamePlayer.isAlive()) {
-                if (plugin.getGameManager().getMode().ranked()) {
-                    plugin.getProgressionService().recordAbandon(player.getUniqueId()).thenAccept(penalty ->
-                            plugin.getRedisManager().set("sw:ranked-penalty:" + player.getUniqueId(),
-                                    Long.toString(penalty.until()), (int) Math.max(1,
-                                            (penalty.until() - System.currentTimeMillis()) / 1000)));
-                }
-                player.kill(DamageSource.builder(DamageType.GENERIC).build());
-            }
-            plugin.getGameManager().removePlayer(player);
+            plugin.getGameManager().disconnectPlayer(player);
         }
         plugin.getScoreboardManager().clear(player);
         plugin.getPlayerDataManager().unloadPlayer(player.getUniqueId());
@@ -183,15 +173,7 @@ public class PlayerListener implements Listener {
         // The bed always leaves the match for the main lobby.
         if (plugin.getGameManager().isLeaveItem(item)) {
             event.setCancelled(true);
-            GameState state = plugin.getGameManager().getState();
-            if (state == GameState.PLAYING) {
-                // Pass the exact instance so that /sw join can reconnect the player to it.
-                String instanceId = plugin.getGameManager().getInstanceId();
-                if (instanceId != null && !instanceId.isBlank()) {
-                    plugin.getRedisManager().set("sw:left-game:" + player.getUniqueId(), instanceId, 300);
-                }
-            }
-            plugin.getGameManager().removePlayer(player);
+            plugin.getGameManager().abandonPlayer(player);
             plugin.getGameManager().sendToLobby(player);
             return;
         }
@@ -254,10 +236,14 @@ public class PlayerListener implements Listener {
                 int availableAt = nextMedicHealTick.getOrDefault(target.getUniqueId(), 0);
                 if (currentTick >= availableAt) {
                     target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION,
-                            plugin.getGameplayBalance().ticks("kits.medic-regeneration-seconds"),
+                            (int) Math.round(20 * plugin.getGameManager().masteryEffect(shooterGp,
+                                    "regeneration-seconds", plugin.getGameplayBalance().decimal(
+                                            "kits.medic-regeneration-seconds"))),
                             plugin.getGameplayBalance().integer("kits.medic-regeneration-amplifier")));
                     nextMedicHealTick.put(target.getUniqueId(), currentTick
-                            + plugin.getGameplayBalance().ticks("kits.medic-cooldown-seconds"));
+                            + (int) Math.round(20 * plugin.getGameManager().masteryEffect(shooterGp,
+                                    "medic-cooldown-seconds", plugin.getGameplayBalance().decimal(
+                                            "kits.medic-cooldown-seconds"))));
                 }
             }
             return;
@@ -265,14 +251,16 @@ public class PlayerListener implements Listener {
 
         if (isArrow) {
             event.setDamage(LegacyCombatRules.bowDamage(event.getDamage(),
-                    plugin.getGameplayBalance().decimal("pvp.bow-damage-multiplier")));
+                    plugin.getGameplayBalance().decimal("pvp.bow-damage-multiplier"))
+                    * plugin.getGameManager().masteryEffect(shooterGp, "bow-multiplier", 1.0));
         } else if (event.getDamager() instanceof Player meleeAttacker
                 && shooterGp.getTeam() != targetGp.getTeam()) {
             Material weapon = meleeAttacker.getInventory().getItemInMainHand().getType();
             event.setDamage(LegacyCombatRules.meleeDamage(event.getDamage(),
                     weapon == Material.WOODEN_SWORD, weapon == Material.STONE_SWORD,
                     plugin.getGameplayBalance().decimal("pvp.wooden-sword-damage"),
-                    plugin.getGameplayBalance().decimal("pvp.stone-sword-damage")));
+                    plugin.getGameplayBalance().decimal("pvp.stone-sword-damage"))
+                    * plugin.getGameManager().masteryEffect(shooterGp, "melee-multiplier", 1.0));
             Vector previous = target.getVelocity().clone();
             double directionX = target.getX() - meleeAttacker.getX();
             double directionZ = target.getZ() - meleeAttacker.getZ();
@@ -342,7 +330,8 @@ public class PlayerListener implements Listener {
         if (event.getCause() == EntityDamageEvent.DamageCause.FALL) {
             if (gp.getKit() == PlayerKit.TANK_FALL) {
                 event.setDamage(event.getDamage()
-                        * plugin.getGameplayBalance().decimal("kits.tank-fall-damage-multiplier"));
+                        * plugin.getGameManager().masteryEffect(gp, "fall-damage-multiplier",
+                                plugin.getGameplayBalance().decimal("kits.tank-fall-damage-multiplier")));
             } else {
                 event.setDamage(event.getDamage()
                         * plugin.getGameplayBalance().decimal("kits.normal-fall-damage-multiplier"));

@@ -5,8 +5,6 @@ import fr.tropicube.core.network.PlayerPreferenceService;
 import fr.tropicube.core.network.ProfileService;
 import fr.tropicube.core.progression.MissionService;
 import fr.tropicube.core.util.CommandAsync;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -25,6 +23,7 @@ public final class PlayerCenterCommand implements CommandExecutor {
                                        @NonNull String label, String @NonNull [] args) {
         if (!(sender instanceof Player player)) return false;
         return switch (label.toLowerCase(Locale.ROOT)) {
+            case "center", "centre" -> { plugin.getPlayerCenterMenu().openHome(player); yield true; }
             case "profile", "profil" -> profile(player, args);
             case "settings", "preferences", "parametres" -> settings(player, args);
             case "missions" -> missions(player, args);
@@ -34,6 +33,12 @@ public final class PlayerCenterCommand implements CommandExecutor {
     }
 
     private boolean profile(Player player, String[] args) {
+        if (args.length == 2 && args[0].equalsIgnoreCase("title")) {
+            plugin.getProfileService().selectTitle(player.getUniqueId(), args[1])
+                    .thenAccept(selected -> syncSend(player, selected
+                            ? "center.profile-title-selected" : "center.profile-title-unavailable"));
+            return true;
+        }
         if (args.length == 0) { showProfile(player, player.getUniqueId()); return true; }
         String language = plugin.getLanguageManager().getPlayerLanguage(player.getUniqueId());
         CommandAsync.run(plugin, player, language,
@@ -50,28 +55,35 @@ public final class PlayerCenterCommand implements CommandExecutor {
                 plugin.getServer().getScheduler().runTask(plugin, () -> {
                     if (profile == null) return;
                     if (profile.access() == ProfileService.Access.HIDDEN) {
-                        viewer.sendMessage(Component.text("Ce profil est privé.", NamedTextColor.RED));
+                        send(viewer, "center.profile-private");
                         return;
                     }
-                    viewer.sendMessage(Component.text("Profil de " + profile.username(), NamedTextColor.GOLD));
-                    viewer.sendMessage(Component.text("Niveau réseau " + profile.networkLevel() + " • "
-                            + profile.networkExperience() + " XP • grade " + profile.grade(), NamedTextColor.AQUA));
-                    viewer.sendMessage(Component.text("SheepWars : " + profile.matches() + " parties • "
-                            + profile.wins() + " victoires • " + profile.kills() + " éliminations", NamedTextColor.GRAY));
-                    if (profile.access() == ProfileService.Access.FULL) viewer.sendMessage(Component.text(
-                            "Cote " + Math.round(profile.rating()) + " • " + profile.friends() + " amis • guilde "
-                                    + (profile.guildName() == null ? "aucune" : profile.guildName()) + " • solde "
-                                    + plugin.getEconomyManager().format(profile.balance()), NamedTextColor.GRAY));
+                    send(viewer, "center.profile-header", profile.username());
+                    if (profile.selectedTitleKey() != null) send(viewer, "center.profile-title",
+                            plugin.getLanguageManager().get(viewer.getUniqueId(), profile.selectedTitleKey()));
+                    send(viewer, "center.profile-network", profile.networkLevel(), profile.networkExperience(), profile.grade());
+                    send(viewer, "center.profile-sheepwars", profile.matches(), profile.wins(), profile.kills());
+                    if (profile.access() == ProfileService.Access.FULL) {
+                        send(viewer, "center.profile-details", Math.round(profile.rating()), profile.friends(),
+                                profile.guildName() == null ? "—" : profile.guildName(),
+                                plugin.getEconomyManager().format(profile.balance()));
+                        profile.badges().forEach(badge -> send(viewer, "center.profile-badge",
+                                plugin.getLanguageManager().get(viewer.getUniqueId(), badge.displayKey())));
+                        profile.seasonArchives().forEach(archive -> send(viewer, "center.profile-season",
+                                archive.seasonKey(), archive.tier(), Math.round(archive.rating()), archive.rankedMatches()));
+                        profile.kitMasteries().forEach(mastery -> send(viewer, "center.profile-mastery",
+                                mastery.kitId(), mastery.level(), mastery.experience(),
+                                mastery.branch() == null ? "—" : mastery.branch()));
+                    }
                 }));
     }
 
     private boolean settings(Player player, String[] args) {
         if (args.length == 0) {
             plugin.getPlayerPreferenceService().load(player.getUniqueId()).thenAccept(value ->
-                    plugin.getServer().getScheduler().runTask(plugin, () -> player.sendMessage(Component.text(
-                            "Profil=" + value.profileVisibility() + " • MP=" + value.messagePrivacy()
-                                    + " • chat global=" + value.globalChatEnabled() + " • entités="
-                                    + value.lobbyVisibility() + " • aide=" + value.contextualHelp(), NamedTextColor.AQUA))));
+                    plugin.getServer().getScheduler().runTask(plugin, () -> send(player, "center.settings-status",
+                            value.profileVisibility(), value.messagePrivacy(), value.globalChatEnabled(),
+                            value.lobbyVisibility(), value.contextualHelp())));
             return true;
         }
         plugin.getPlayerPreferenceService().load(player.getUniqueId()).thenCompose(current -> {
@@ -83,10 +95,10 @@ public final class PlayerCenterCommand implements CommandExecutor {
             plugin.getCommunicationService().preferenceChanged(player.getUniqueId());
             plugin.getRedisManager().publishPlayerEvent("PREFERENCES_CHANGED", player.getUniqueId().toString());
             plugin.getServer().getScheduler().runTask(plugin, () ->
-                    player.sendMessage(Component.text("Préférence enregistrée.", NamedTextColor.GREEN)));
+                    send(player, "center.settings-saved"));
         })
                 .exceptionally(error -> { plugin.getServer().getScheduler().runTask(plugin, () ->
-                        player.sendMessage(Component.text("Usage : /settings profile|messages|global|entities|hints <valeur>", NamedTextColor.RED)));
+                        send(player, "center.settings-usage"));
                     return null; });
         return true;
     }
@@ -117,50 +129,57 @@ public final class PlayerCenterCommand implements CommandExecutor {
         if (args.length >= 2 && args[0].equalsIgnoreCase("reroll")) {
             int slot;
             try { slot = parseSlot(args[1]); }
-            catch (NumberFormatException error) { reply(player, "Usage : /missions reroll <1..5>"); return true; }
+            catch (NumberFormatException error) { send(player, "center.missions-reroll-usage"); return true; }
             int allowance = player.hasPermission("tropicube.missions.reroll.bonus") ? 4 : 2;
             plugin.getMissionService().rerollDaily(player.getUniqueId(), slot, allowance)
-                    .thenAccept(result -> reply(player, "Reroll : " + result));
+                    .thenAccept(result -> syncSend(player, "center.missions-reroll-result", result));
             return true;
         }
         if (args.length >= 3 && args[0].equalsIgnoreCase("claim")) {
             try {
                 MissionService.Rotation rotation = MissionService.Rotation.valueOf(args[1].toUpperCase(Locale.ROOT));
                 plugin.getMissionService().claim(player.getUniqueId(), rotation, parseSlot(args[2]))
-                        .thenAccept(result -> reply(player, "Récompense : " + result));
-            } catch (IllegalArgumentException error) { reply(player, "Usage : /missions claim <daily|weekly> <1..5>"); }
+                        .thenAccept(result -> syncSend(player, "center.missions-claim-result", result));
+            } catch (IllegalArgumentException error) { send(player, "center.missions-claim-usage"); }
             return true;
         }
         plugin.getMissionService().current(player.getUniqueId()).thenAccept(values ->
                 plugin.getServer().getScheduler().runTask(plugin, () -> {
-                    player.sendMessage(Component.text("Missions personnelles", NamedTextColor.GOLD));
-                    values.forEach(value -> player.sendMessage(Component.text(value.rotation() + " "
-                            + (value.slot() + 1) + " • " + value.mission().id() + " • " + value.progress()
-                            + "/" + value.mission().target() + (value.rewarded() ? " ✓" : ""), NamedTextColor.GRAY)));
+                    send(player, "center.missions-header");
+                    values.forEach(value -> send(player, "center.missions-entry", value.rotation(),
+                            value.slot() + 1, value.mission().id(), value.progress(), value.mission().target(),
+                            value.rewarded() ? "✓" : ""));
                 }));
         return true;
     }
 
     private boolean notifications(Player player, String[] args) {
+        if (args.length == 0 && plugin.getServer().getPluginManager().isPluginEnabled("TropicubeLobby")) {
+            plugin.getPlayerCenterMenu().openNotifications(player, 0, "ALL");
+            return true;
+        }
         if (args.length == 2 && args[0].equalsIgnoreCase("read")) {
             try { plugin.getNotificationService().markRead(player.getUniqueId(), Long.parseLong(args[1])); }
-            catch (NumberFormatException ignored) { reply(player, "Identifiant invalide."); }
+            catch (NumberFormatException ignored) { send(player, "center.notification-invalid-id"); }
             return true;
         }
         plugin.getNotificationService().inbox(player.getUniqueId(), 20).thenAccept(values ->
                 plugin.getServer().getScheduler().runTask(plugin, () -> {
-                    player.sendMessage(Component.text("Centre de notifications", NamedTextColor.GOLD));
-                    values.forEach(value -> player.sendMessage(Component.text("#" + value.id() + " ["
-                                    + value.category() + "] ", value.read() ? NamedTextColor.GRAY : NamedTextColor.AQUA)
-                            .append(plugin.getLanguageManager().getComponent(player.getUniqueId(), value.messageKey(),
-                                    value.arguments().toArray()))
-                            .append(Component.text(value.read() ? "" : " • nouveau", NamedTextColor.AQUA))));
+                    send(player, "center.notifications");
+                    values.forEach(value -> player.sendMessage(
+                            plugin.getLanguageManager().getComponent(player.getUniqueId(), "center.notification-line",
+                                    value.id(), value.category(),
+                                    plugin.getLanguageManager().get(player.getUniqueId(), value.messageKey(), value.arguments().toArray()),
+                                    value.read() ? "" : plugin.getLanguageManager().get(player.getUniqueId(), "center.unread"))));
                 }));
         return true;
     }
 
-    private void reply(Player player, String text) {
-        plugin.getServer().getScheduler().runTask(plugin, () -> player.sendMessage(Component.text(text, NamedTextColor.AQUA)));
+    private void send(Player player, String key, Object... values) {
+        player.sendMessage(plugin.getLanguageManager().getComponent(player.getUniqueId(), key, values));
+    }
+    private void syncSend(Player player, String key, Object... values) {
+        plugin.getServer().getScheduler().runTask(plugin, () -> send(player, key, values));
     }
     private static int parseSlot(String value) { return Integer.parseInt(value) - 1; }
     private static boolean parseBoolean(String value) {

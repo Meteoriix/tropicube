@@ -55,6 +55,8 @@ public class GameManager {
     public final NamespacedKey leaveItemKey;
     private final List<GameMap> gameMaps = new ArrayList<>();
     private final Map<UUID, GamePlayer> players = new ConcurrentHashMap<>();
+    private final Map<UUID, BukkitTask> reconnectTasks = new ConcurrentHashMap<>();
+    private final Map<GameTeam, BukkitTask> teamForfeitTasks = new EnumMap<>(GameTeam.class);
     private static final UUID NO_HOST = new UUID(0, 0);
     private final UUID hostUuid;
     private final boolean privateCustomGame;
@@ -143,6 +145,12 @@ public class GameManager {
 
     public SheepWarsMode getMode() { return mode; }
 
+    /** Returns a mastery effect only in Quick Play; ranked and custom games keep base kits. */
+    public double masteryEffect(GamePlayer player, String key, double fallback) {
+        if (player == null || !mode.kitMasteryEnabled() || player.getKit() == PlayerKit.NONE) return fallback;
+        return plugin.getProgressionService().masteryEffect(player.getUuid(), player.getKit(), key, fallback);
+    }
+
     public void setSelectedMap(GameMap map) { this.selectedMap = map; }
 
     // ============================================================
@@ -154,12 +162,15 @@ public class GameManager {
     }
 
     public void addPlayer(Player player) {
+        GamePlayer existing = players.get(player.getUniqueId());
+        if (existing != null) {
+            if (state == GameState.PLAYING && !existing.isConnected()) reconnectPlayer(player, existing);
+            return;
+        }
         if (!canJoin()) {
             player.sendMessage(LangHelper.component(player, "sw.game-already-started"));
             return;
         }
-
-        if (players.containsKey(player.getUniqueId())) return;
 
         if (GameJoinPolicy.admissionFor(state) == GameJoinPolicy.Admission.SPECTATOR) {
             addSpectator(player);
@@ -248,6 +259,110 @@ public class GameManager {
             cancelCountdown();
         }
         plugin.getScoreboardManager().updateAll();
+    }
+
+    /** Keeps a ranked participant in the match for the configured reconnection grace period. */
+    public void disconnectPlayer(Player player) {
+        GamePlayer gamePlayer = players.get(player.getUniqueId());
+        if (gamePlayer == null) return;
+        if (state == GameState.PLAYING && mode.ranked() && gamePlayer.getTeam() != null
+                && !gamePlayer.isAlive()) {
+            gamePlayer.setConnected(false);
+            return;
+        }
+        if (state != GameState.PLAYING || !mode.ranked() || !gamePlayer.isAlive() || plugin.isShuttingDown()) {
+            removePlayer(player);
+            return;
+        }
+        gamePlayer.setConnected(false);
+        gamePlayer.setDisconnectLocation(player.getLocation());
+        gamePlayer.captureDisconnectState(player);
+        disableGlowingFor(gamePlayer);
+        String id = instanceId;
+        if (id != null && !id.isBlank()) plugin.getRedisManager().set(
+                "sw:left-game:" + player.getUniqueId(), id, ReconnectPolicy.PLAYER_GRACE_SECONDS);
+        BukkitTask old = reconnectTasks.remove(player.getUniqueId());
+        if (old != null) old.cancel();
+        reconnectTasks.put(player.getUniqueId(), Bukkit.getScheduler().runTaskLater(plugin,
+                () -> expireDisconnected(player.getUniqueId()), ReconnectPolicy.PLAYER_GRACE_SECONDS * 20L));
+        scheduleTeamForfeit(gamePlayer.getTeam());
+        broadcastLang("sw.player-disconnected", PlayerDisplayName.resolve(player), ReconnectPolicy.PLAYER_GRACE_SECONDS);
+        plugin.getScoreboardManager().updateAll();
+    }
+
+    /** Applies an immediate ranked abandon when the player deliberately leaves through the bed. */
+    public void abandonPlayer(Player player) {
+        GamePlayer gamePlayer = players.get(player.getUniqueId());
+        if (gamePlayer != null && state == GameState.PLAYING && mode.ranked() && gamePlayer.isAlive()) {
+            applyAbandonPenalty(player.getUniqueId());
+            gamePlayer.setAlive(false);
+            gamePlayer.setConnected(false);
+            plugin.getRedisManager().delete("sw:left-game:" + player.getUniqueId());
+            disableGlowingFor(gamePlayer);
+            checkWinCondition();
+            plugin.getScoreboardManager().updateAll();
+            return;
+        }
+        removePlayer(player);
+    }
+
+    private void reconnectPlayer(Player player, GamePlayer gamePlayer) {
+        BukkitTask task = reconnectTasks.remove(player.getUniqueId());
+        if (task != null) task.cancel();
+        gamePlayer.setConnected(true);
+        cancelTeamForfeitIfActive(gamePlayer.getTeam());
+        plugin.getRedisManager().delete("sw:left-game:" + player.getUniqueId());
+        resetPlayer(player);
+        Location destination = gamePlayer.getDisconnectLocation();
+        if (destination == null || destination.getWorld() == null) {
+            List<Location> spawns = selectedMap == null ? List.of() : selectedMap.getSpawns(gamePlayer.getTeam());
+            destination = spawns.isEmpty() ? lobby : spawns.getFirst();
+        }
+        if (destination != null) player.teleport(destination);
+        player.setGameMode(gamePlayer.isAlive() ? GameMode.SURVIVAL : GameMode.SPECTATOR);
+        if (gamePlayer.isAlive()) {
+            applyKitEffects(player, gamePlayer);
+            gamePlayer.restoreDisconnectState(player);
+        }
+        player.sendMessage(LangHelper.component(player, "sw.player-reconnected"));
+        enableTeamGlowing();
+        plugin.getScoreboardManager().updateAll();
+    }
+
+    private void expireDisconnected(UUID playerId) {
+        reconnectTasks.remove(playerId);
+        GamePlayer player = players.get(playerId);
+        if (state != GameState.PLAYING || player == null || player.isConnected() || !player.isAlive()) return;
+        player.setAlive(false);
+        plugin.getRedisManager().delete("sw:left-game:" + playerId);
+        applyAbandonPenalty(playerId);
+        cancelTeamForfeitIfActive(player.getTeam());
+        broadcastLang("sw.reconnect-expired", playerId.toString().substring(0, 8));
+        checkWinCondition();
+    }
+
+    private void applyAbandonPenalty(UUID playerId) {
+        plugin.getProgressionService().recordAbandon(playerId).thenAccept(penalty ->
+                plugin.getRedisManager().set("sw:ranked-penalty:" + playerId,
+                        Long.toString(penalty.until()), (int) Math.max(1,
+                                (penalty.until() - System.currentTimeMillis()) / 1000)));
+    }
+
+    private void scheduleTeamForfeit(GameTeam team) {
+        if (team == null || getAliveTeamPlayers(team).stream().anyMatch(GamePlayer::isConnected)
+                || teamForfeitTasks.containsKey(team)) return;
+        teamForfeitTasks.put(team, Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            teamForfeitTasks.remove(team);
+            if (state != GameState.PLAYING || getAliveTeamPlayers(team).stream().anyMatch(GamePlayer::isConnected)) return;
+            getAliveTeamPlayers(team).stream().filter(player -> !player.isConnected())
+                    .map(GamePlayer::getUuid).toList().forEach(this::expireDisconnected);
+        }, ReconnectPolicy.EMPTY_TEAM_FORFEIT_SECONDS * 20L));
+    }
+
+    private void cancelTeamForfeitIfActive(GameTeam team) {
+        if (team == null || getAliveTeamPlayers(team).stream().noneMatch(GamePlayer::isConnected)) return;
+        BukkitTask task = teamForfeitTasks.remove(team);
+        if (task != null) task.cancel();
     }
 
     public GameTeam assignTeam() {
@@ -339,6 +454,8 @@ public class GameManager {
         Objects.requireNonNull(player.getAttribute(Attribute.MAX_HEALTH)).setBaseValue(20.0);
         var knockbackAttr = player.getAttribute(Attribute.KNOCKBACK_RESISTANCE);
         if (knockbackAttr != null) knockbackAttr.setBaseValue(0.0);
+        var movement = player.getAttribute(Attribute.MOVEMENT_SPEED);
+        if (movement != null) movement.setBaseValue(0.1);
         restoreCombatAttributes(player);
 
         player.getInventory().clear();
@@ -615,21 +732,35 @@ public class GameManager {
             case TANK_HEARTS -> {
                 var maxHp = p.getAttribute(Attribute.MAX_HEALTH);
                 if (maxHp != null) {
-                    double health = plugin.getGameplayBalance().decimal("kits.tank-health");
+                    double health = masteryEffect(gp, "max-health",
+                            plugin.getGameplayBalance().decimal("kits.tank-health"));
                     maxHp.setBaseValue(health);
                     p.setHealth(health);
                 }
             }
             case TANK_KNOCKBACK -> {
                 var kb = p.getAttribute(Attribute.KNOCKBACK_RESISTANCE);
-                if (kb != null) kb.setBaseValue(
-                        plugin.getGameplayBalance().decimal("kits.tank-knockback-resistance"));
+                if (kb != null) kb.setBaseValue(masteryEffect(gp, "knockback-resistance",
+                        plugin.getGameplayBalance().decimal("kits.tank-knockback-resistance")));
             }
             case SUPPORT_JUMP ->
                 p.addPotionEffect(new PotionEffect(
-                        PotionEffectType.JUMP_BOOST, Integer.MAX_VALUE, 1, false, false));
+                        PotionEffectType.JUMP_BOOST, Integer.MAX_VALUE,
+                        (int) masteryEffect(gp, "jump-amplifier", 1), false, false));
             default -> { /* other kits act through listeners */ }
         }
+        var maxHealth = p.getAttribute(Attribute.MAX_HEALTH);
+        double configuredMaxHealth = masteryEffect(gp, "max-health",
+                maxHealth == null ? 20.0 : maxHealth.getBaseValue());
+        if (maxHealth != null && configuredMaxHealth != maxHealth.getBaseValue()) {
+            maxHealth.setBaseValue(configuredMaxHealth);
+            p.setHealth(Math.min(configuredMaxHealth, Math.max(1.0, p.getHealth())));
+        }
+        var knockback = p.getAttribute(Attribute.KNOCKBACK_RESISTANCE);
+        if (knockback != null) knockback.setBaseValue(Math.min(1.0, knockback.getBaseValue()
+                + masteryEffect(gp, "knockback-bonus", 0.0)));
+        var movement = p.getAttribute(Attribute.MOVEMENT_SPEED);
+        if (movement != null) movement.setBaseValue(0.1 * masteryEffect(gp, "movement-speed", 1.0));
     }
 
     private void gameTick() {
@@ -662,7 +793,9 @@ public class GameManager {
                     >= plugin.getGameplayBalance().integer("global.max-stored-sheep")) continue;
             SheepType type = plugin.getSheepManager().randomSheepType(p.getUniqueId());
             if (!p.getInventory().addItem(plugin.getSheepManager().createSheepItem(type)).isEmpty()) continue;
-            sheepDeliverySchedule.markDelivered(p.getUniqueId());
+            int nextInterval = (int) Math.max(1, Math.round(sheepDeliverySchedule.intervalSeconds()
+                    * masteryEffect(gp, "delivery-interval-multiplier", 1.0)));
+            sheepDeliverySchedule.markDelivered(p.getUniqueId(), nextInterval);
             p.playSound(p.getLocation(), Sound.ENTITY_SHEEP_AMBIENT, 1.0F, 1.0F);
         }
     }
@@ -723,6 +856,7 @@ public class GameManager {
         updateInstanceStatus(ServerInstance.Status.GAME_ENDING);
 
         if (currentTask != null) currentTask.cancel();
+        cancelReconnectTasks();
         sheepDeliverySchedule = null;
 
         List<SheepWarsProgressionService.Participant> resultSnapshot = players.values().stream()
@@ -1014,12 +1148,20 @@ public class GameManager {
     public void shutdown() {
         if (currentTask != null) currentTask.cancel();
         currentTask = null;
+        cancelReconnectTasks();
         sheepDeliverySchedule = null;
         players.values().stream().map(GamePlayer::getBukkitPlayer).filter(Objects::nonNull)
                 .forEach(this::restoreCombatAttributes);
         players.clear();
         glowingEntities.disable();
         if (plugin.getSheepManager() != null) plugin.getSheepManager().reset();
+    }
+
+    private void cancelReconnectTasks() {
+        reconnectTasks.values().forEach(BukkitTask::cancel);
+        reconnectTasks.clear();
+        teamForfeitTasks.values().forEach(BukkitTask::cancel);
+        teamForfeitTasks.clear();
     }
 
     private UUID parseHostUuid(String value) {

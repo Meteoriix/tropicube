@@ -31,10 +31,17 @@ final class SheepDeliverySchedule {
     }
 
     void markDelivered(UUID playerId) {
+        markDelivered(playerId, intervalSeconds);
+    }
+
+    void markDelivered(UUID playerId, int nextIntervalSeconds) {
+        if (nextIntervalSeconds <= 0) throw new IllegalArgumentException("L'intervalle doit être positif");
         if (nextDeliverySeconds.containsKey(playerId)) {
-            nextDeliverySeconds.put(playerId, Math.addExact(elapsedSeconds, intervalSeconds));
+            nextDeliverySeconds.put(playerId, Math.addExact(elapsedSeconds, nextIntervalSeconds));
         }
     }
+
+    int intervalSeconds() { return intervalSeconds; }
 
     void remove(UUID playerId) {
         nextDeliverySeconds.remove(playerId);

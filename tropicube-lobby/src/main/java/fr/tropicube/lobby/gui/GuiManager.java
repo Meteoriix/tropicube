@@ -55,6 +55,7 @@ public class GuiManager {
         Inventory inv = ServerTypeSelectorGUI.build(plugin, player);
         openGuis.put(player.getUniqueId(), GuiType.SERVER_TYPE_SELECTOR);
         player.openInventory(inv);
+        showHint(player, "GAME_SELECTOR", "lobby.hint-game-selector");
     }
 
     public void openLanguageSelector(Player player) {
@@ -80,6 +81,7 @@ public class GuiManager {
                     }
                     openGuis.put(playerId, GuiType.SETTINGS);
                     online.openInventory(SettingsGUI.build(online, snapshot.autoReplay(), snapshot.preferences()));
+                    showHint(online, "SETTINGS", "lobby.hint-settings");
                 }));
     }
 
@@ -156,12 +158,24 @@ public class GuiManager {
                         snapshot.invites(), snapshot.names());
                 openGuis.put(playerId, GuiType.SOCIAL);
                 online.openInventory(inventory);
+                showHint(online, "SOCIAL", "lobby.hint-social");
             } catch (RuntimeException exception) {
                 plugin.getLogger().log(java.util.logging.Level.WARNING,
                         "Impossible de construire le menu Social pour " + playerId, exception);
                 online.sendMessage(LangHelper.component(online, "general.operation-failed"));
             }
         }));
+    }
+
+    public void showHint(Player player, String hintId, String messageKey) {
+        if (!(Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core)) return;
+        core.getContextualHelpService().claim(player.getUniqueId(), hintId).thenAccept(show -> {
+            if (!show) return;
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                Player online = Bukkit.getPlayer(player.getUniqueId());
+                if (online != null) online.sendMessage(LangHelper.component(online, messageKey));
+            });
+        });
     }
 
     public void openCustomGameMenu(Player player, boolean whitelisted) {

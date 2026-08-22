@@ -103,6 +103,16 @@ public final class GuildService {
     public CompletableFuture<List<Ranking>> ranking(long seasonId, int limit) {
         return database.supplyAsync(() -> loadRanking(seasonId, Math.max(1, Math.min(limit, 100))));
     }
+    public CompletableFuture<List<Ranking>> currentRanking(int limit) {
+        return database.supplyAsync(() -> {
+            try (Connection connection = database.getConnection(); PreparedStatement statement = connection.prepareStatement(
+                    "SELECT id FROM tropicube_seasons WHERE season_key LIKE 'SW-%' AND status = 'ACTIVE' ORDER BY starts_at DESC LIMIT 1")) {
+                try (ResultSet result = statement.executeQuery()) {
+                    return result.next() ? loadRanking(result.getLong(1), Math.max(1, Math.min(limit, 100))) : List.of();
+                }
+            }
+        });
+    }
 
     private Result createNow(UUID owner, String rawName, String rawTag) throws SQLException {
         String name = rawName == null ? "" : rawName.trim();

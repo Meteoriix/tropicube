@@ -55,7 +55,7 @@ Les classes organisent les kits par rôle. La classe elle-même sert de catégor
 
 L'hôte peut désactiver des classes ou des kits. Le mode « kits aléatoires » ignore les choix individuels et attribue un kit actif au lancement.
 
-En Quick Play, chaque kit reçoit sa propre expérience. `/sheepwars mastery` présente les deux branches côte à côte ; le joueur peut aussi utiliser `/sheepwars mastery a|b` et revenir sur son choix. Les branches sont persistées, mais leurs bonus ne sont volontairement pas actifs : leur catalogue YAML et leur équilibrage devront faire l'objet d'une validation de game design dédiée. Une partie personnalisée ne produit aucune progression et le classé utilise uniquement les effets de base des kits.
+En Quick Play, chaque kit reçoit sa propre expérience. `/sheepwars mastery` présente les deux branches côte à côte avec niveau, XP et effets ; le joueur peut aussi utiliser `/sheepwars mastery a|b` et revenir sur son choix. Les branches se débloquent au niveau 5, sont exclusives, réversibles et définies dans `kit-mastery.yml`. Chaque choix échange un avantage contre un coût ou une orientation différente. Une partie personnalisée ne produit aucune progression et le classé utilise uniquement les effets de base des kits. La version du catalogue sélectionnée est enregistrée avec le choix et avec chaque résultat de partie.
 
 ## Moutons spéciaux
 
@@ -106,7 +106,9 @@ Chaque mouton lancé mémorise l'UUID de son lanceur. Lorsqu'un autre joueur dé
 - Les paliers localisés reprennent les noms Iron, Bronze, Silver, Gold, Platinum, Diamond, Ascendant, Immortal et Radiant. `/sheepwars rank` affiche cote, incertitude et placements restants.
 - Les compositions classées sont bornées par rôle. Par défaut, le 4v4 autorise 2 DPS, 1 Tank et 1 Support par équipe ; le 8v8 double ces limites.
 
-Une déconnexion en vie pendant une partie classée élimine le joueur, conserve `/rejoin` en spectateur et applique une interdiction de file graduée de 1, 5, 15 puis 60 minutes. Les récidives sont remises à zéro après sept jours sans abandon. Aucune intégration anti-triche externe n'est ajoutée.
+Une déconnexion en vie pendant une partie classée conserve le joueur et sa place pendant trois minutes. `/rejoin` le replace en jeu avec sa position, son inventaire, sa vie, sa faim et ses effets actifs d'avant la déconnexion. Si aucun survivant d'une équipe n'est connecté pendant trente secondes, les membres absents de cette équipe expirent ensemble et la condition de victoire est réévaluée. La sanction graduée de 1, 5, 15 puis 60 minutes n'est appliquée qu'à l'expiration de la grâce ou lors d'une sortie volontaire par le lit. Un arrêt du plugin ne sanctionne jamais les joueurs. Les récidives sont remises à zéro après sept jours sans abandon. Aucune intégration anti-triche externe n'est ajoutée.
+
+Une saison dure trois mois. Avant d'activer le nouveau trimestre, les cotes, incertitudes, rangs et nombres de parties de l'ancienne saison sont archivés. Les joueurs ayant terminé leurs placements reçoivent exactement une fois la monnaie, le titre et le badge configurés dans `season-rewards.yml`. Le profil expose jusqu'à douze archives ; le reset reste souple et relance cinq placements.
 
 ## Cartes et équipes
 
@@ -144,11 +146,11 @@ Le scoreboard affiche sous le titre tropical `🐑 SHEEPWARS` des sections aér�
 
 Les annonces système autonomes utilisent l'identité `SHEEPWARS >` sans crochets. Les arrivées et départs de joueurs restent narratifs, sans préfixe, et indiquent qu'un joueur « a rejoint la partie ». Les menus, titles, scoreboards et tablists restent sans préfixe afin de préserver leur lisibilité.
 
-La commande `/rejoin`, fournie par TropicubeLobby et utilisée sans argument, permet de rejoindre de nouveau une partie quittée mais encore active ; le joueur revient alors comme spectateur. Le lit de sortie transmet l'ID de l'instance pendant cinq minutes avant de transférer le joueur au lobby. Dans le sélecteur de serveurs, une partie en cours porte le statut bleu `PLAYING` et reste joignable comme spectateur tant que l'instance n'est pas pleine.
+La commande `/rejoin`, fournie par TropicubeLobby et utilisée sans argument, permet de reprendre une partie classée pendant la grâce de trois minutes. Une arrivée tardive sans participation préalable reste spectatrice. Le lit constitue une sortie volontaire immédiate et ne crée pas de droit à la reconnexion. Dans le sélecteur de serveurs, une partie en cours porte le statut bleu `PLAYING` et reste joignable comme spectateur tant que l'instance n'est pas pleine.
 
 ## Configuration technique
 
-La configuration source se trouve dans `tropicube-sheepwars/src/main/resources/config.yml`. Les sections principales sont :
+Les configurations sources se trouvent dans `tropicube-sheepwars/src/main/resources/`. `config.yml` porte les règles générales, `kit-mastery.yml` les deux branches de chaque kit et `season-rewards.yml` les récompenses de confort par rang. Les sections principales de `config.yml` sont :
 
 - `redis` : connexion à l'état partagé ;
 - `default-settings` : règles initiales de la manche ;

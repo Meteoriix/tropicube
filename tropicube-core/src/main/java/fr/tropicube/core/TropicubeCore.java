@@ -66,6 +66,9 @@ public class TropicubeCore extends JavaPlugin {
     private SocialService socialService;
     private PlayerPreferenceService playerPreferenceService;
     private NotificationService notificationService;
+    private fr.tropicube.core.menu.PlayerCenterMenu playerCenterMenu;
+    private fr.tropicube.core.network.ContextualHelpService contextualHelpService;
+    private fr.tropicube.core.network.PrivacyService privacyService;
     private ModerationService moderationService;
     private NetworkCommunicationService communicationService;
     private StaffSecurityService staffSecurityService;
@@ -194,6 +197,10 @@ public class TropicubeCore extends JavaPlugin {
 
             playerPreferenceService = new PlayerPreferenceService(databaseManager);
             notificationService = new NotificationService(databaseManager);
+            playerCenterMenu = new fr.tropicube.core.menu.PlayerCenterMenu(this);
+            contextualHelpService = new fr.tropicube.core.network.ContextualHelpService(
+                    this, databaseManager, playerPreferenceService);
+            privacyService = new fr.tropicube.core.network.PrivacyService(this, databaseManager);
             networkProgressionService = new NetworkProgressionService(databaseManager);
             profileService = new ProfileService(databaseManager, playerPreferenceService);
             try (var input = java.nio.file.Files.newInputStream(
@@ -215,6 +222,8 @@ public class TropicubeCore extends JavaPlugin {
             getServer().getAsyncScheduler().runAtFixedRate(this, task -> {
                 notificationService.purgeExpired();
                 moderationService.purgeExpiredEvidence();
+                privacyService.processDue();
+                privacyService.purgeExports();
             }, 1, 1, java.util.concurrent.TimeUnit.HOURS);
 
             headDatabaseManager = new HeadDatabaseManager();
@@ -287,6 +296,8 @@ public class TropicubeCore extends JavaPlugin {
             Objects.requireNonNull(getCommand("settings")).setExecutor(playerCenter);
             Objects.requireNonNull(getCommand("missions")).setExecutor(playerCenter);
             Objects.requireNonNull(getCommand("notifications")).setExecutor(playerCenter);
+            Objects.requireNonNull(getCommand("center")).setExecutor(playerCenter);
+            Objects.requireNonNull(getCommand("privacy")).setExecutor(new fr.tropicube.core.commands.PrivacyCommand(this));
             Objects.requireNonNull(getCommand("guild")).setExecutor(new GuildCommand(this));
 
             var friendCommand = new FriendCommand(this);
@@ -321,6 +332,7 @@ public class TropicubeCore extends JavaPlugin {
 
             getServer().getPluginManager().registerEvents(new NetworkProtectionListener(), this);
             getServer().getPluginManager().registerEvents(new StaffModeListener(this), this);
+            getServer().getPluginManager().registerEvents(playerCenterMenu, this);
 
             // Custom Head Manager Listener (HeadDatabase)
             getServer().getPluginManager().registerEvents(headDatabaseManager, this);
@@ -381,6 +393,9 @@ public class TropicubeCore extends JavaPlugin {
     public SocialService getSocialService()         { return socialService; }
     public PlayerPreferenceService getPlayerPreferenceService() { return playerPreferenceService; }
     public NotificationService getNotificationService() { return notificationService; }
+    public fr.tropicube.core.menu.PlayerCenterMenu getPlayerCenterMenu() { return playerCenterMenu; }
+    public fr.tropicube.core.network.ContextualHelpService getContextualHelpService() { return contextualHelpService; }
+    public fr.tropicube.core.network.PrivacyService getPrivacyService() { return privacyService; }
     public ModerationService getModerationService() { return moderationService; }
     public NetworkCommunicationService getCommunicationService() { return communicationService; }
     public StaffSecurityService getStaffSecurityService() { return staffSecurityService; }

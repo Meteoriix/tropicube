@@ -162,6 +162,8 @@ Sections métier :
 
 `TropicubeCore/missions.yml` est un catalogue métier versionné. Chaque définition déclare un événement, une cible, de l'XP réseau et de la monnaie. Le catalogue livré contient au moins six missions quotidiennes et quatre hebdomadaires afin que les rotations de 5 + 3 puissent toujours proposer un remplacement sans doublon. Toute modification exige une hausse explicite de `version`, des identifiants stables et des valeurs positives validées au démarrage.
 
+Une mission peut déclarer `reward-reroll-tokens`. Les jetons sont crédités atomiquement avec les autres récompenses, plafonnés à cinq, puis consommés seulement après les deux rerolls quotidiens gratuits — quatre avec `tropicube.missions.reroll.bonus`.
+
 Les noms de grades sont utilisés comme identifiants stables dans la boutique, le nick et les permissions. Une modification doit donc être répercutée dans tous les fichiers concernés.
 
 ## TropicubeLobby
@@ -180,6 +182,11 @@ Le `grade-key` d'une entrée VIP doit exister dans Core. Le prix doit être posi
 ## TropicubeSheepwars
 
 Fichier : `dockerfiles/configs/TropicubeSheepwars/config.yml`.
+
+Catalogues complémentaires :
+
+- `kit-mastery.yml` doit définir une `version`, le `unlock-level` et exactement `BRANCH_A`/`BRANCH_B` pour chacun des neuf kits. Les effets ne sont appliqués qu'en Quick Play ; le classé et les parties personnalisées utilisent les kits de base ;
+- `season-rewards.yml` versionne la monnaie et les récompenses de confort (titre/badge) de chaque rang. Une récompense de saison ne doit jamais accorder d'avantage en partie.
 
 - `default-settings` fixe capacité, démarrage, durées, kits, vote et fréquence des moutons ; `sheep-give-delay` vaut 15 secondes par défaut. En partie classique, la cadence est figée au lancement selon l'effectif : 10 secondes de 2 à 4 joueurs, 12 secondes de 5 à 8, puis 15 secondes de 9 à 16. Une partie personnalisée conserve la valeur choisie par l'hôte ;
 - `default-settings.min-players` et `max-players` sont bornés entre 2 et 16. L'hôte ne peut pas réduire le maximum sous l'effectif déjà présent, et chaque modification du maximum est propagée à l'instance Redis afin que Velocity applique immédiatement la capacité ;

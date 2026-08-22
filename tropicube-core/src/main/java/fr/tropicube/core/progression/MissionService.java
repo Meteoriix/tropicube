@@ -138,6 +138,18 @@ public final class MissionService {
                     progression.setLong(4, now);
                     progression.executeUpdate();
                 }
+                if (assignment.mission().rerollTokens() > 0) {
+                    try (PreparedStatement comfort = connection.prepareStatement("""
+                            INSERT INTO tropicube_player_comfort(player_uuid, selected_title_id, reroll_tokens, updated_at)
+                            VALUES (?, NULL, ?, ?) ON DUPLICATE KEY UPDATE
+                            reroll_tokens=LEAST(5, reroll_tokens + VALUES(reroll_tokens)), updated_at=VALUES(updated_at)
+                            """)) {
+                        comfort.setString(1, playerId.toString());
+                        comfort.setInt(2, assignment.mission().rerollTokens());
+                        comfort.setLong(3, now);
+                        comfort.executeUpdate();
+                    }
+                }
                 connection.commit();
                 plugin.getEconomyManager().invalidateCache(playerId);
                 return ClaimResult.CLAIMED;
@@ -155,7 +167,6 @@ public final class MissionService {
         Assignment current = daily.stream().filter(value -> value.slot() == slot).findFirst().orElse(null);
         if (current == null || current.rewarded()) return RerollResult.INVALID_SLOT;
         int used = daily.stream().mapToInt(Assignment::rerolls).sum();
-        if (used >= allowance) return RerollResult.LIMIT_REACHED;
         Set<String> assigned = new HashSet<>();
         daily.forEach(value -> assigned.add(value.mission().id()));
         List<MissionCatalog.Mission> candidates = catalog.daily().stream()
@@ -163,13 +174,47 @@ public final class MissionService {
         if (candidates.isEmpty()) return RerollResult.NO_REPLACEMENT;
         MissionCatalog.Mission replacement = candidates.get(Math.floorMod(
                 java.util.Objects.hash(playerId, key, slot, used, catalog.version()), candidates.size()));
-        database.executeUpdate("""
-                UPDATE tropicube_mission_assignments
-                SET mission_id = ?, progress = 0, target = ?, completed_at = NULL,
-                    rewarded_at = NULL, reroll_count = reroll_count + 1
-                WHERE player_uuid = ? AND rotation_type = 'DAILY' AND rotation_key = ? AND slot_index = ?
-                """, replacement.id(), replacement.target(), playerId.toString(), key, slot);
-        return RerollResult.REROLLED;
+        try (Connection connection = database.getConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                if (used >= allowance) {
+                    try (PreparedStatement token = connection.prepareStatement("""
+                            UPDATE tropicube_player_comfort SET reroll_tokens = reroll_tokens - 1, updated_at = ?
+                            WHERE player_uuid = ? AND reroll_tokens > 0
+                            """)) {
+                        token.setLong(1, System.currentTimeMillis());
+                        token.setString(2, playerId.toString());
+                        if (token.executeUpdate() != 1) {
+                            connection.rollback();
+                            return RerollResult.LIMIT_REACHED;
+                        }
+                    }
+                }
+                try (PreparedStatement update = connection.prepareStatement("""
+                        UPDATE tropicube_mission_assignments
+                        SET mission_id = ?, progress = 0, target = ?, completed_at = NULL,
+                            rewarded_at = NULL, reroll_count = reroll_count + 1
+                        WHERE player_uuid = ? AND rotation_type = 'DAILY' AND rotation_key = ? AND slot_index = ?
+                        """)) {
+                    update.setString(1, replacement.id());
+                    update.setLong(2, replacement.target());
+                    update.setString(3, playerId.toString());
+                    update.setString(4, key);
+                    update.setInt(5, slot);
+                    if (update.executeUpdate() != 1) {
+                        connection.rollback();
+                        return RerollResult.INVALID_SLOT;
+                    }
+                }
+                connection.commit();
+                return RerollResult.REROLLED;
+            } catch (SQLException | RuntimeException error) {
+                connection.rollback();
+                throw error;
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        }
     }
 
     private void ensureRotation(UUID playerId, Rotation rotation, String key, int slots,

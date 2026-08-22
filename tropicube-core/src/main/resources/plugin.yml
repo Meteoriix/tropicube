@@ -107,6 +107,14 @@ commands:
     description: "Ouvrir le centre de notifications"
     usage: /notifications [read <id>]
     aliases: [ inbox ]
+  center:
+    description: "Ouvrir le centre joueur"
+    usage: /center
+    aliases: [ centre ]
+  privacy:
+    description: "Exporter ou anonymiser les données d'un joueur"
+    usage: /privacy <export|erase|status|cancel> ...
+    permission: tropicube.privacy.manage
   guild:
     description: "Créer et gérer une guilde"
     usage: /guild <info|create|invite|accept|leave|kick|promote|demote|transfer>
@@ -169,6 +177,9 @@ permissions:
     default: op
   tropicube.moderation.chat-evidence:
     description: "Afficher les identifiants cliquables des messages"
+    default: op
+  tropicube.privacy.manage:
+    description: "Gérer les demandes relatives aux données personnelles"
     default: op
   tropicube.2fa.issue:
     description: "Émettre un jeton d'inscription TOTP"

@@ -1,8 +1,6 @@
 package fr.tropicube.core.commands;
 
 import fr.tropicube.core.TropicubeCore;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
@@ -28,7 +26,7 @@ public final class StaffCommand implements CommandExecutor {
                                        @NonNull String label, String @NonNull [] args) {
         if (!(sender instanceof Player player) || !player.hasPermission("tropicube.staff")) return false;
         if (!plugin.getStaffSecurityService().hasSession(player.getUniqueId())) {
-            player.sendMessage(Component.text("Valide d'abord ta session avec /2fa verify <code>.", NamedTextColor.RED));
+            message(player, "staff.session-required");
             return true;
         }
         if (label.equalsIgnoreCase("staffchat") || label.equalsIgnoreCase("sc")) {
@@ -42,6 +40,8 @@ public final class StaffCommand implements CommandExecutor {
         String key = "staff-mode:" + player.getUniqueId();
         boolean enable = !plugin.isStaffMode(player.getUniqueId());
         if (enable) {
+            plugin.getRedisManager().set("staff-previous-mode:" + player.getUniqueId(),
+                    player.getGameMode().name(), 8 * 60 * 60);
             plugin.setStaffMode(player.getUniqueId(), true);
             plugin.getRedisManager().set(key, "active", 8 * 60 * 60);
             player.setGameMode(GameMode.SPECTATOR);
@@ -50,11 +50,13 @@ public final class StaffCommand implements CommandExecutor {
         } else {
             plugin.setStaffMode(player.getUniqueId(), false);
             plugin.getRedisManager().delete(key);
-            player.setGameMode(GameMode.ADVENTURE);
+            String previous = plugin.getRedisManager().get("staff-previous-mode:" + player.getUniqueId());
+            plugin.getRedisManager().delete("staff-previous-mode:" + player.getUniqueId());
+            try { player.setGameMode(previous == null ? GameMode.ADVENTURE : GameMode.valueOf(previous)); }
+            catch (IllegalArgumentException ignored) { player.setGameMode(GameMode.ADVENTURE); }
             Bukkit.getOnlinePlayers().forEach(viewer -> viewer.showPlayer(plugin, player));
         }
-        player.sendMessage(Component.text("Mode staff " + (enable ? "activé" : "désactivé") + ".",
-                enable ? NamedTextColor.GREEN : NamedTextColor.YELLOW));
+        message(player, enable ? "staff.mode-enabled" : "staff.mode-disabled");
         return true;
     }
 
@@ -67,11 +69,13 @@ public final class StaffCommand implements CommandExecutor {
             Bukkit.getScheduler().runTask(plugin, () -> Bukkit.getOnlinePlayers().stream()
                     .filter(player -> player.hasPermission("tropicube.staff")
                             && plugin.getStaffSecurityService().hasSession(player.getUniqueId()))
-                    .forEach(player -> player.sendMessage(Component.text("[Staff] ", NamedTextColor.GOLD)
-                            .append(Component.text(fields[0] + " > ", NamedTextColor.WHITE))
-                            .append(Component.text(fields[1], NamedTextColor.YELLOW)))));
+                    .forEach(player -> message(player, "staff.chat", fields[0], fields[1])));
         } catch (RuntimeException ignored) {
             // Untrusted Redis payload: ignore malformed data.
         }
+    }
+
+    private void message(Player player, String key, Object... arguments) {
+        player.sendMessage(plugin.getLanguageManager().getComponent(player.getUniqueId(), key, arguments));
     }
 }

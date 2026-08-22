@@ -17,7 +17,6 @@ import java.util.concurrent.CompletableFuture;
 public final class LobbyVisibilityManager {
     private final TropicubeLobby plugin;
     private final TropicubeCore core;
-    private final Set<UUID> helped = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     public LobbyVisibilityManager(TropicubeLobby plugin, TropicubeCore core) {
         this.plugin = plugin;
@@ -66,13 +65,17 @@ public final class LobbyVisibilityManager {
             };
             if (show) viewer.showPlayer(plugin, target); else viewer.hidePlayer(plugin, target);
         }
-        if (snapshot.preferences().contextualHelp() && helped.add(viewerId)) Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            Player online = Bukkit.getPlayer(viewerId);
-            if (online != null) online.sendMessage(LangHelper.component(online, "lobby.contextual-help"));
-        }, 80L);
+        if (snapshot.preferences().contextualHelp()) core.getContextualHelpService().claim(viewerId, "LOBBY_JOIN")
+                .thenAccept(show -> {
+                    if (!show) return;
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                        Player online = Bukkit.getPlayer(viewerId);
+                        if (online != null) online.sendMessage(LangHelper.component(online, "lobby.contextual-help"));
+                    }, 80L);
+                });
     }
 
-    public void forget(UUID playerId) { helped.remove(playerId); }
+    public void forget(UUID playerId) { }
 
     private record Snapshot(PlayerPreferenceService.Preferences preferences, Set<UUID> allowed) {}
 }

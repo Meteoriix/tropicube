@@ -39,15 +39,20 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 | `/ignore <joueur>` | — | aucune | Active ou désactive l'ignorance persistante |
 | `/globalchat <message>` | `/g` | aucune | Envoie explicitement un message global |
 | `/profile [joueur]` | `/profil` | aucune | Affiche le profil réseau selon la visibilité choisie |
+| `/profile title <id>` | `/profil` | aucune | Sélectionne un titre saisonnier débloqué ; le centre joueur permet aussi de cliquer dessus |
 | `/settings profile\|messages\|global\|entities\|hints <valeur>` | `/preferences` | aucune | Modifie les préférences persistantes |
 | `/missions` | — | aucune | Affiche les 5 missions quotidiennes et 3 hebdomadaires personnelles |
 | `/missions reroll <1..5>` | — | aucune | Remplace une mission quotidienne (2/jour, 4 avec la permission bonus) |
 | `/missions claim <daily\|weekly> <slot>` | — | aucune | Réclame monnaie et XP réseau d'une mission terminée |
 | `/notifications [read <id>]` | `/inbox` | aucune | Consulte le centre de notifications ou marque une entrée comme lue |
+| `/center` | `/centre` | aucune | Ouvre le centre joueur et sa boîte de notifications paginée |
 | `/guild info` | `/guilde` | aucune | Affiche membres, rôles, niveau, contributions et défis hebdomadaires |
 | `/guild create <nom> <tag>` | `/guilde` | aucune | Crée une guilde dont la capacité initiale est 50 membres |
 | `/guild invite <joueur>` puis `/guild accept <tag>` | `/guilde` | officier/chef pour inviter | Gère les invitations conservées sept jours |
 | `/guild leave\|kick\|promote\|demote\|transfer ...` | `/guilde` | selon le rôle | Gère les membres, officiers et la propriété |
+| `/guild ranking` | `/guilde classement` | aucune | Affiche le classement agrégé de la saison classée active |
+| `/privacy export\|erase\|status <joueur>` | — | `tropicube.privacy.manage` + session TOTP | Exporte, programme l'anonymisation ou consulte les demandes RGPD |
+| `/privacy cancel <id>` | — | `tropicube.privacy.manage` + session TOTP | Annule une demande en attente ou placée sous gel légal |
 | `/2fa issue <joueur>` | — | `tropicube.2fa.issue` | Émet un jeton d'inscription TOTP à usage court |
 | `/2fa enroll\|confirm\|verify ...` | — | `tropicube.staff` | Inscrit l'application TOTP ou valide une session de quinze minutes |
 | `/staff` | — | `tropicube.staff` + session TOTP | Active le spectateur invisible sans interaction |

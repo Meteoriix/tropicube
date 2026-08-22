@@ -1,0 +1,30 @@
+version: 1
+unlock-level: 5
+kits:
+  DPS_SWORD:
+    BRANCH_A: { description-key: sw.mastery-dps-sword-a, effects: { melee-multiplier: 1.08, max-health: 18 } }
+    BRANCH_B: { description-key: sw.mastery-dps-sword-b, effects: { melee-multiplier: 0.94, movement-speed: 1.05 } }
+  DPS_BOW:
+    BRANCH_A: { description-key: sw.mastery-dps-bow-a, effects: { bow-multiplier: 1.08, movement-speed: 0.95 } }
+    BRANCH_B: { description-key: sw.mastery-dps-bow-b, effects: { bow-multiplier: 0.94, movement-speed: 1.05 } }
+  DPS_SHEEP:
+    BRANCH_A: { description-key: sw.mastery-dps-sheep-a, effects: { sheep-damage-multiplier: 1.30, sheep-health-multiplier: 0.85 } }
+    BRANCH_B: { description-key: sw.mastery-dps-sheep-b, effects: { sheep-damage-multiplier: 1.10, sheep-health-multiplier: 1.10 } }
+  TANK_HEARTS:
+    BRANCH_A: { description-key: sw.mastery-tank-hearts-a, effects: { max-health: 26, movement-speed: 0.95 } }
+    BRANCH_B: { description-key: sw.mastery-tank-hearts-b, effects: { max-health: 22, knockback-bonus: 0.10 } }
+  TANK_KNOCKBACK:
+    BRANCH_A: { description-key: sw.mastery-tank-knockback-a, effects: { knockback-resistance: 0.60, movement-speed: 0.95 } }
+    BRANCH_B: { description-key: sw.mastery-tank-knockback-b, effects: { knockback-resistance: 0.40, movement-speed: 1.05 } }
+  TANK_FALL:
+    BRANCH_A: { description-key: sw.mastery-tank-fall-a, effects: { fall-damage-multiplier: 0.20, movement-speed: 0.95 } }
+    BRANCH_B: { description-key: sw.mastery-tank-fall-b, effects: { fall-damage-multiplier: 0.50, movement-speed: 1.05 } }
+  SUPPORT_SHEEP:
+    BRANCH_A: { description-key: sw.mastery-support-sheep-a, effects: { sheep-health: 35, delivery-interval-multiplier: 1.10 } }
+    BRANCH_B: { description-key: sw.mastery-support-sheep-b, effects: { sheep-health: 25, delivery-interval-multiplier: 0.90 } }
+  SUPPORT_ARROWS:
+    BRANCH_A: { description-key: sw.mastery-support-arrows-a, effects: { regeneration-seconds: 5, medic-cooldown-seconds: 4 } }
+    BRANCH_B: { description-key: sw.mastery-support-arrows-b, effects: { regeneration-seconds: 3, medic-cooldown-seconds: 2 } }
+  SUPPORT_JUMP:
+    BRANCH_A: { description-key: sw.mastery-support-jump-a, effects: { jump-amplifier: 2, max-health: 18 } }
+    BRANCH_B: { description-key: sw.mastery-support-jump-b, effects: { jump-amplifier: 0, movement-speed: 1.05 } }

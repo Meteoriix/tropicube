@@ -854,6 +854,14 @@ public class RedisManager {
         redis().set(KEY_PREFIX + key, value, SetParams.setParams().ex(ttlSeconds));
     }
 
+    /** Stores a short-lived prefixed value only when no value already exists. */
+    public boolean setIfAbsent(String key, String value, int ttlSeconds) {
+        requireText(key, "key");
+        Objects.requireNonNull(value, "value");
+        if (ttlSeconds <= 0) throw new IllegalArgumentException("ttlSeconds doit être strictement positif");
+        return "OK".equals(redis().set(KEY_PREFIX + key, value, SetParams.setParams().nx().ex(ttlSeconds)));
+    }
+
     /** Stores an arbitrary prefixed value without expiry; use only for durable coordination state. */
     public void setPersistent(String key, String value) {
         requireText(key, "key");

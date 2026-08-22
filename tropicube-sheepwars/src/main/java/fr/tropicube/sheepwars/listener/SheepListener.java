@@ -100,7 +100,8 @@ public class SheepListener implements Listener {
             event.setCancelled(true);
         } else if (throwerGp.getKit() == fr.tropicube.sheepwars.player.PlayerKit.DPS_SHEEP) {
             event.setDamage(event.getDamage()
-                    * plugin.getGameplayBalance().decimal("kits.dps-sheep-damage-multiplier"));
+                    * plugin.getGameManager().masteryEffect(throwerGp, "sheep-damage-multiplier",
+                            plugin.getGameplayBalance().decimal("kits.dps-sheep-damage-multiplier")));
         }
     }
 

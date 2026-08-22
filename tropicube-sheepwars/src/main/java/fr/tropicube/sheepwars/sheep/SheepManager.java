@@ -173,6 +173,11 @@ public class SheepManager {
 
     /** Applies attributed sheep damage without letting melee-only modifiers alter it again. */
     public void damageWithSheep(Player target, double damage, Player source) {
+        GamePlayer sourcePlayer = plugin.getGameManager().getPlayer(source);
+        if (sourcePlayer != null && sourcePlayer.getKit() == PlayerKit.DPS_SHEEP) {
+            damage *= plugin.getGameManager().masteryEffect(sourcePlayer, "sheep-damage-multiplier",
+                    plugin.getGameplayBalance().decimal("kits.dps-sheep-damage-multiplier"));
+        }
         customSheepDamageDepth++;
         try {
             target.damage(damage, source);
@@ -355,7 +360,11 @@ public class SheepManager {
                         double mineHp = plugin.getGameplayBalance().decimal("global.countdown-sheep-health");
                         GamePlayer gp = plugin.getGameManager().getPlayer(thrower);
                         if (gp != null && gp.getKit() == PlayerKit.SUPPORT_SHEEP) {
-                            mineHp = plugin.getGameplayBalance().decimal("global.breeder-sheep-health");
+                            mineHp = plugin.getGameManager().masteryEffect(gp, "sheep-health",
+                                    plugin.getGameplayBalance().decimal("global.breeder-sheep-health"));
+                        } else if (gp != null && gp.getKit() == PlayerKit.DPS_SHEEP) {
+                            mineHp *= plugin.getGameManager().masteryEffect(gp,
+                                    "sheep-health-multiplier", 1.0);
                         }
                         var maxHp = sheep.getAttribute(Attribute.MAX_HEALTH);
                         if (maxHp != null) {

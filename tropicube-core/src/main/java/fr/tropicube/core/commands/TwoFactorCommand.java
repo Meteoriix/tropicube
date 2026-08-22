@@ -23,19 +23,21 @@ public final class TwoFactorCommand implements CommandExecutor {
                                        @NonNull String label, String @NonNull [] args) {
         StaffSecurityService security = plugin.getStaffSecurityService();
         if (!security.available()) {
-            sender.sendMessage(Component.text("TOTP indisponible : clé maîtresse non configurée.", NamedTextColor.RED));
+            if (sender instanceof Player player) message(player, "two-factor.unavailable");
+            else sender.sendMessage(Component.text("TOTP unavailable: master key is not configured."));
             return true;
         }
         if (args.length >= 2 && args[0].equalsIgnoreCase("issue")) {
             if (!sender.hasPermission("tropicube.2fa.issue")) return false;
             Player target = plugin.getServer().getPlayerExact(args[1]);
             if (target == null) {
-                sender.sendMessage(Component.text("Le joueur doit être connecté.", NamedTextColor.RED));
+                if (sender instanceof Player player) message(player, "two-factor.player-online-required");
+                else sender.sendMessage(Component.text("The player must be online."));
                 return true;
             }
             String token = security.issueEnrollment(target.getUniqueId());
-            sender.sendMessage(Component.text("Jeton d'inscription pour " + target.getName() + " : " + token,
-                    NamedTextColor.YELLOW));
+            if (sender instanceof Player player) message(player, "two-factor.issued", target.getName(), token);
+            else sender.sendMessage(Component.text("Enrollment token for " + target.getName() + ": " + token));
             return true;
         }
         if (!(sender instanceof Player player) || !sender.hasPermission("tropicube.staff")) return false;
@@ -44,13 +46,12 @@ public final class TwoFactorCommand implements CommandExecutor {
                 StaffSecurityService.Enrollment enrollment = security.beginEnrollment(player.getUniqueId(), args[1]);
                 String uri = "otpauth://totp/Tropicube:" + URLEncoder.encode(player.getName(), StandardCharsets.UTF_8)
                         + "?secret=" + enrollment.secret() + "&issuer=Tropicube";
-                player.sendMessage(Component.text("Ajoute ce compte dans ton application TOTP :", NamedTextColor.AQUA));
+                message(player, "two-factor.enroll-uri");
                 player.sendMessage(Component.text(uri, NamedTextColor.WHITE));
-                player.sendMessage(Component.text("Codes de récupération (à conserver hors jeu) : "
-                        + String.join(" ", enrollment.recoveryCodes()), NamedTextColor.GOLD));
-                player.sendMessage(Component.text("Confirme avec /2fa confirm <code>.", NamedTextColor.GRAY));
+                message(player, "two-factor.recovery-codes", String.join(" ", enrollment.recoveryCodes()));
+                message(player, "two-factor.confirm-help");
             } catch (IllegalArgumentException error) {
-                player.sendMessage(Component.text(error.getMessage(), NamedTextColor.RED));
+                message(player, "two-factor.enrollment-failed");
             }
             return true;
         }
@@ -62,14 +63,17 @@ public final class TwoFactorCommand implements CommandExecutor {
             security.verify(player.getUniqueId(), args[1]).thenAccept(ok -> reply(player, ok));
             return true;
         }
-        player.sendMessage(Component.text(security.hasSession(player.getUniqueId())
-                ? "Session staff vérifiée." : "Session non vérifiée. Utilise /2fa verify <code>.", NamedTextColor.AQUA));
+        message(player, security.hasSession(player.getUniqueId())
+                ? "two-factor.session-active" : "two-factor.session-inactive");
         return true;
     }
 
     private void reply(Player player, boolean ok) {
-        plugin.getServer().getScheduler().runTask(plugin, () -> player.sendMessage(Component.text(ok
-                ? "Session staff validée pour 15 minutes." : "Code invalide ou déjà utilisé.",
-                ok ? NamedTextColor.GREEN : NamedTextColor.RED)));
+        plugin.getServer().getScheduler().runTask(plugin, () -> message(player,
+                ok ? "two-factor.verified" : "two-factor.invalid-code"));
+    }
+
+    private void message(Player player, String key, Object... arguments) {
+        player.sendMessage(plugin.getLanguageManager().getComponent(player.getUniqueId(), key, arguments));
     }
 }

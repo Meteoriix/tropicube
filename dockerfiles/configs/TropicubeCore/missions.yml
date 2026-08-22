@@ -1,4 +1,4 @@
-version: 1
+version: 2
 daily:
   play_2:
     event: MATCH_PLAYED
@@ -41,23 +41,28 @@ weekly:
     target: 12
     reward-experience: 650
     reward-currency: 220
+    reward-reroll-tokens: 1
   win_5:
     event: MATCH_WON
     target: 5
     reward-experience: 800
     reward-currency: 260
+    reward-reroll-tokens: 1
   kills_35:
     event: PLAYER_KILL
     target: 35
     reward-experience: 750
     reward-currency: 250
+    reward-reroll-tokens: 1
   sheep_100:
     event: SHEEP_LAUNCHED
     target: 100
     reward-experience: 700
     reward-currency: 230
+    reward-reroll-tokens: 1
   party_5:
     event: PARTY_MATCH
     target: 5
     reward-experience: 600
     reward-currency: 210
+    reward-reroll-tokens: 1
