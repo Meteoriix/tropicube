@@ -131,7 +131,7 @@ commands:
     aliases: [ tropiadmin, ca ]
   help:
     description: "Affiche les commandes Tropicube disponibles"
-    usage: /help [general|games|profile|staff]
+    usage: /help [general|games|social|profile|staff]
   friend:
     description: "Gérer ses amis Tropicube"
     usage: /friend <add|accept|deny|remove|list|requests|join> ...

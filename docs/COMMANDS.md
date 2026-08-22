@@ -15,7 +15,7 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 | `/rank info <joueur>` | `/grade` | `tropicube.grade.admin` | Affiche le grade d'un joueur |
 | `/rank set <joueur> <grade>` | `/grade` | `tropicube.grade.admin` | Attribue un grade existant |
 | `/lang [fr|en|es|de]` | `/language`, `/langue` | aucune | Affiche ou change la langue |
-| `/help [general|games|profile|staff]` | — | aucune ; catégorie staff réservée au personnel | Résume les commandes disponibles par catégorie |
+| `/help [general|games|social|profile|staff]` | — | aucune ; catégorie staff réservée au personnel | Présente toutes les commandes et fonctionnalités disponibles par catégorie |
 | `/friend add|accept|deny|remove <joueur>` | — | aucune | Gère les relations d'amitié persistantes |
 | `/friend list|requests` | — | aucune | Liste les amis ou les demandes reçues |
 | `/friend join <joueur>` | — | aucune | Rejoint l'instance d'un ami ; devient spectateur si la partie a commencé |
@@ -63,6 +63,8 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 Durées acceptées : une valeur comprise par `DurationParser`, par exemple `30s`, `10m`, `2h`, `7d`. Une permission sans durée est permanente.
 
 Les amis sont persistants en MySQL. Une party est temporaire dans Redis, limitée par la configuration Core et créée lors de la première invitation. Accepter une invitation depuis une autre party retire atomiquement le joueur de l'ancienne ; s'il en était chef, un autre membre est promu, ou la party vide est dissoute. Le suivi est activé par défaut à l'entrée, puis reste un choix individuel. Les transferts sociaux respectent la whitelist et la capacité de l'instance cible.
+
+L'aide en jeu regroupe la navigation et le chat dans `general`, les files et la progression SheepWars dans `games`, les amis/parties/guildes dans `social`, la progression réseau et les préférences dans `profile`, puis les outils sécurisés de modération et d'exploitation dans `staff`. L'autocomplétion masque cette dernière catégorie aux joueurs non habilités.
 
 ### Gestion détaillée des permissions
 

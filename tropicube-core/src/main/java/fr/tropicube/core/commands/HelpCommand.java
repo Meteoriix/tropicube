@@ -11,7 +11,7 @@ import java.util.List;
 
 /** Displays the localized command catalog shared by every Paper backend. */
 public final class HelpCommand implements CommandExecutor, TabCompleter {
-    private static final List<String> CATEGORIES = List.of("general", "games", "profile", "staff");
+    private static final List<String> CATEGORIES = List.of("general", "games", "social", "profile", "staff");
     private final TropicubeCore plugin;
 
     public HelpCommand(TropicubeCore plugin) {

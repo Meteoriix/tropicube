@@ -40,6 +40,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Modifié
 
+- `/help` couvre désormais toutes les commandes et fonctionnalités réseau dans cinq rubriques localisées, dont une rubrique sociale dédiée et une rubrique staff masquée sans permission.
 - Le MOTD public affiche désormais une phrase d'accroche et la liste dédupliquée des jeux activés, sans indicateur FR/EN ni compteur de joueurs.
 - Les membres déconnectés sont retirés de leur party après une minute ; le rôle de chef passe alors à un membre en ligne et une party entièrement hors ligne est supprimée immédiatement. Le menu Social affiche désormais la tête de profil de chaque ami.
 - Les instances Lobby et SheepWars embarquent désormais les configurations Bukkit/Paper par défaut ; leur démarrage sur un volume neuf évite deux téléchargements séquentiels et gagne environ quatre secondes sur la pile de référence.

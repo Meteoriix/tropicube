@@ -229,6 +229,33 @@ class YamlResourcesTest {
                 Path.of("../dockerfiles/configs/TropicubeVelocity/languages"));
     }
 
+    @Test
+    void localizedHelpCatalogCoversEveryRegisteredCommandFamily() {
+        List<String> categories = List.of("general", "games", "social", "profile", "staff");
+        List<String> commands = List.of(
+                "help", "lobby", "spawn", "lang", "languages", "money", "vip",
+                "msg", "reply", "ignore", "globalchat", "report",
+                "play", "quickplay", "competitive", "server", "queue", "replay",
+                "replayconfirm", "rejoin", "whitelist", "sheepwars",
+                "friend", "party", "pc", "guild", "profile", "center", "missions",
+                "notifications", "settings", "nick", "fly", "2fa", "staff", "staffchat",
+                "reports", "kick", "mute", "unmute", "warn", "history", "ban", "tempban",
+                "unban", "privacy", "find", "send", "pull", "maintenance", "announce",
+                "networkdiag", "eco", "rank", "permissions", "tropicube", "coreadmin");
+
+        for (String language : List.of("fr", "en", "es", "de")) {
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(
+                    Path.of("src/main/resources/languages", language + ".yml").toFile());
+            String catalog = config.getString("help.header", "") + categories.stream()
+                    .flatMap(category -> config.getStringList("help." + category).stream())
+                    .reduce("", (left, right) -> left + '\n' + right);
+            for (String command : commands) {
+                assertTrue(catalog.contains("/" + command),
+                        () -> "Commande /" + command + " absente de l'aide " + language);
+            }
+        }
+    }
+
     private static void assertLanguageKeysMatch(Path bundled, Path deployed) {
         for (String language : List.of("fr", "en", "es", "de")) {
             Path bundledFile = bundled.resolve(language + ".yml");
