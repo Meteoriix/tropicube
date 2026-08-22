@@ -54,7 +54,8 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 | `/privacy export\|erase\|status <joueur>` | — | `tropicube.privacy.manage` + session TOTP | Exporte, programme l'anonymisation ou consulte les demandes RGPD |
 | `/privacy cancel <id>` | — | `tropicube.privacy.manage` + session TOTP | Annule une demande en attente ou placée sous gel légal |
 | `/2fa issue <joueur>` | — | `tropicube.2fa.issue` | Émet un jeton d'inscription TOTP à usage court |
-| `/2fa enroll\|confirm\|verify ...` | — | `tropicube.staff` | Inscrit l'application TOTP ou valide une session de quinze minutes |
+| `/2fa status` | — | `tropicube.staff` | Distingue compte non inscrit, compte inscrit et session active |
+| `/2fa enroll\|confirm\|verify ...` | — | `tropicube.staff` | Inscrit l'application TOTP ou valide une session de quinze minutes ; liens et codes de secours sont copiables |
 | `/staff` | — | `tropicube.staff` + session TOTP | Active le spectateur invisible sans interaction |
 | `/staffchat <message>` | `/sc` | `tropicube.staff` + session TOTP | Chat staff interserveurs |
 | `/coreadmin reload` | `/tropiadmin`, `/ca` | `tropicube.admin` | Recharge la configuration Core et les langues |
@@ -110,7 +111,9 @@ Permissions fonctionnelles du lobby :
 
 Les grades Core accordent déjà les permissions adaptées : VIP obtient un saut, VIP+ deux, Premium et le personnel des sauts illimités.
 
-Après la saisie de `/`, le client reçoit uniquement les commandes et alias fournis par l'infrastructure Tropicube. Les commandes externes et leurs espaces de noms restent masqués ; `/?`, les espaces de noms `bukkit:` et `minecraft:` ainsi que les commandes vanilla sont refusés sur l'ensemble du réseau.
+La hotbar du lobby conserve une disposition stable : jeux au slot 0, partie personnalisée au slot 1 pour les grades autorisés, social au slot 2, centre Tropicube au slot 4, réglages rapides au slot 6 et boutique au slot 8.
+
+Après la saisie de `/`, le client reçoit toutes les commandes et tous les alias Tropicube réellement enregistrés par Velocity, Core, Lobby et le mini-jeu courant. Les permissions continuent de masquer les commandes staff non accessibles. Les commandes externes et leurs espaces de noms restent masqués ; `/?`, les espaces de noms `bukkit:` et `minecraft:` ainsi que les commandes vanilla sont refusés sur l'ensemble du réseau.
 
 ## TropicubeSheepwars — Paper
 
@@ -122,7 +125,7 @@ Après la saisie de `/`, le client reçoit uniquement les commandes et alias fou
 
 `sheepwars.mapvote.weight.2` porte le poids d'un vote de carte à deux.
 
-Le plugin ne déclare aucune commande textuelle. La configuration de partie, la sélection de carte, d'équipe, de classe et de kit passent par les inventaires graphiques. Les commandes Core restent disponibles puisque `TropicubeCore` est chargé sur l'instance.
+La configuration de partie, la sélection de carte, d'équipe, de classe et de kit passent par les inventaires graphiques. La hotbar d'attente propose aussi le centre joueur global au slot 7 ; cet objet disparaît au lancement pour ne jamais occuper un emplacement de combat. Les commandes Core restent disponibles puisque `TropicubeCore` est chargé sur l'instance.
 
 ## Tropicube Fallen Kingdoms
 

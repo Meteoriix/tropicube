@@ -685,17 +685,22 @@ help:
     - "  <gold>/tropicube, /coreadmin <dark_gray>— <gray>Administration technique"
 
 two-factor:
-  unavailable: "<tc>TOTP indisponible : clé maîtresse non configurée."
-  player-online-required: "<tc>Le joueur doit être connecté."
-  issued: "<tc>Jeton d'inscription pour {0} : {1}"
-  enroll-uri: "<tc>Ajoute ce compte dans ton application TOTP :"
-  recovery-codes: "<tc>Codes de récupération (à conserver hors jeu) : {0}"
-  confirm-help: "<tc>Confirme avec /2fa confirm &lt;code&gt;."
-  enrollment-failed: "<tc>Impossible de démarrer l'inscription TOTP."
-  session-active: "<tc>Session staff vérifiée."
-  session-inactive: "<tc>Session non vérifiée. Utilise /2fa verify &lt;code&gt;."
-  verified: "<tc>Session staff validée pour 15 minutes."
-  invalid-code: "<tc>Code invalide ou déjà utilisé."
+  unavailable: "<tc><red>TOTP indisponible : la clé maîtresse n'est pas configurée."
+  player-online-required: "<tc><red>Le joueur doit être connecté."
+  staff-required: "<tc><red>Le joueur ciblé ne possède pas la permission staff."
+  issued: "<tc><green>Jeton d'inscription créé pour <white>{0}</white> : <yellow>{1}</yellow>"
+  enroll-uri: "<tc><aqua>Ajoute ce compte dans ton application TOTP, puis clique sur le lien pour le copier :"
+  recovery-codes: "<tc><yellow>Codes de récupération à conserver hors jeu : <white>{0}</white>"
+  copy-hover: "<yellow>Cliquer pour copier dans le presse-papiers"
+  copy-recovery: "<aqua><underlined>Cliquer ici pour copier les codes de récupération</underlined>"
+  confirm-help: "<tc><gray>Termine l'inscription avec <white>/2fa confirm &lt;code à 6 chiffres&gt;</white>."
+  enrollment-failed: "<tc><red>Jeton d'inscription invalide ou expiré. Demande un nouveau jeton au personnel habilité."
+  session-active: "<tc><green>Ta session staff est active."
+  session-inactive: "<tc><yellow>Ton compte 2FA est configuré, mais la session est inactive. Utilise <white>/2fa verify &lt;code&gt;</white>."
+  not-enrolled: "<tc><yellow>Ton compte staff n'est pas encore configuré en 2FA. Utilise le jeton reçu avec <white>/2fa enroll &lt;jeton&gt;</white>."
+  verified: "<tc><green>Session staff validée pour 15 minutes."
+  invalid-code: "<tc><red>Code invalide, expiré ou déjà utilisé."
+  usage: "<tc><yellow>Utilisation : <white>/2fa &lt;status|enroll|confirm|verify&gt; [valeur]</white>"
 
 staff:
   session-required: "<tc><red>Valide d'abord ta session avec <white>/2fa verify &lt;code&gt;</white>."
@@ -728,6 +733,8 @@ guild:
   usage: "<tc><yellow>Usage : /guild info|create <nom> <tag>|invite|accept|leave|kick|promote|demote|transfer|ranking"
 
 center:
+  hotbar-name: "<gold><bold>Centre Tropicube</bold>"
+  hotbar-lore: "<gray>Profil, missions, notifications et guilde · <yellow>Clic droit"
   title: "<dark_gray>Centre joueur"
   profile: "<gold>Profil complet"
   missions: "<aqua>Missions"

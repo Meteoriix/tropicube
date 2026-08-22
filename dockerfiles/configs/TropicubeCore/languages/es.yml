@@ -666,17 +666,22 @@ help:
     - "  <gold>/tropicube, /coreadmin <dark_gray>— <gray>Administración técnica"
 
 two-factor:
-  unavailable: "<tc>TOTP no está disponible: la clave maestra no está configurada."
-  player-online-required: "<tc>El jugador debe estar conectado."
-  issued: "<tc>Token de inscripción para {0}: {1}"
-  enroll-uri: "<tc>Añade esta cuenta a tu aplicación TOTP:"
-  recovery-codes: "<tc>Códigos de recuperación (guárdalos fuera del juego): {0}"
-  confirm-help: "<tc>Confirma con /2fa confirm &lt;código&gt;."
-  enrollment-failed: "<tc>No se pudo iniciar la inscripción TOTP."
-  session-active: "<tc>Sesión staff verificada."
-  session-inactive: "<tc>Sesión sin verificar. Usa /2fa verify &lt;código&gt;."
-  verified: "<tc>Sesión staff validada durante 15 minutos."
-  invalid-code: "<tc>Código no válido o ya utilizado."
+  unavailable: "<tc><red>TOTP no está disponible: la clave maestra no está configurada."
+  player-online-required: "<tc><red>El jugador debe estar conectado."
+  staff-required: "<tc><red>El jugador seleccionado no tiene el permiso de staff."
+  issued: "<tc><green>Token de inscripción creado para <white>{0}</white>: <yellow>{1}</yellow>"
+  enroll-uri: "<tc><aqua>Añade esta cuenta a tu aplicación TOTP y haz clic en el enlace para copiarlo:"
+  recovery-codes: "<tc><yellow>Códigos de recuperación para guardar fuera del juego: <white>{0}</white>"
+  copy-hover: "<yellow>Haz clic para copiar al portapapeles"
+  copy-recovery: "<aqua><underlined>Haz clic aquí para copiar los códigos de recuperación</underlined>"
+  confirm-help: "<tc><gray>Termina la inscripción con <white>/2fa confirm &lt;código de 6 dígitos&gt;</white>."
+  enrollment-failed: "<tc><red>Token de inscripción no válido o caducado. Solicita uno nuevo al personal autorizado."
+  session-active: "<tc><green>Tu sesión de staff está activa."
+  session-inactive: "<tc><yellow>Tu cuenta 2FA está configurada, pero la sesión está inactiva. Usa <white>/2fa verify &lt;código&gt;</white>."
+  not-enrolled: "<tc><yellow>Tu cuenta de staff aún no está configurada con 2FA. Usa <white>/2fa enroll &lt;token&gt;</white>."
+  verified: "<tc><green>Sesión de staff validada durante 15 minutos."
+  invalid-code: "<tc><red>Código no válido, caducado o ya utilizado."
+  usage: "<tc><yellow>Uso: <white>/2fa &lt;status|enroll|confirm|verify&gt; [valor]</white>"
 
 staff:
   session-required: "<tc><red>Valida primero tu sesión con <white>/2fa verify &lt;código&gt;</white>."
@@ -709,6 +714,8 @@ guild:
   usage: "<tc><yellow>Uso: /guild info|create <nombre> <etiqueta>|invite|accept|leave|kick|promote|demote|transfer|ranking"
 
 center:
+  hotbar-name: "<gold><bold>Centro Tropicube</bold>"
+  hotbar-lore: "<gray>Perfil, misiones, notificaciones y gremio · <yellow>Clic derecho"
   title: "<dark_gray>Centro del jugador"
   profile: "<gold>Perfil completo"
   missions: "<aqua>Misiones"

@@ -180,7 +180,7 @@ Les messages de transfert ne doivent jamais appeler Bukkit depuis le thread d'ab
 
 Le chat global et les messages privés sont relayés par Redis. Chaque message public reçoit un identifiant aléatoire de douze caractères ; le contenu et un contexte borné aux sept messages récents de l'instance restent quinze minutes dans Redis. Seul un membre habilité voit l'action cliquable préparant `/mute ... --evidence`. La capture copie alors le message, son contexte et son empreinte SHA-256 dans MySQL pendant exactement 90 jours. L'identité de l'auteur du signalement n'est exposée que par le workflow staff. Les messages privés non livrés expirent après sept jours et les listes d'ignorés restent en MySQL.
 
-Les bannissements sont autoritaires en MySQL et mis en cache sous `ban:<uuid>` afin que Velocity refuse la connexion avant tout transfert Paper. Une sanction nouvelle est publiée immédiatement au proxy pour expulser une session active. Les actions staff sensibles exigent en plus `staff-session:<uuid>`, session Redis de quinze minutes obtenue avec un code TOTP non rejouable ou un code de récupération à usage unique. Les secrets TOTP sont chiffrés AES-256-GCM avec une clé fournie uniquement par l'environnement ; aucune adresse IP ni donnée d'appareil supplémentaire n'est collectée.
+Les bannissements sont autoritaires en MySQL et mis en cache sous `ban:<uuid>` afin que Velocity refuse la connexion avant tout transfert Paper. Une sanction nouvelle est publiée immédiatement au proxy pour expulser une session active. Les actions staff sensibles exigent en plus `staff-session:<uuid>`, session Redis de quinze minutes obtenue avec un code TOTP non rejouable ou un code de récupération à usage unique. La consommation du pas TOTP ou du code de secours verrouille la ligne MySQL dans une transaction avant d'ouvrir la session, ce qui interdit deux validations concurrentes. Les secrets TOTP sont chiffrés AES-256-GCM avec une clé fournie uniquement par l'environnement ; aucune adresse IP ni donnée d'appareil supplémentaire n'est collectée.
 
 Sur Paper, `TropicubeCore` est l'unique fournisseur d'exécution de `tropicube-docker-api`. Lobby et SheepWars le déclarent en dépendance Maven `provided` et le retrouvent via leur dépendance Paper obligatoire vers Core. Leurs JAR ombrés ne doivent jamais réembarquer `fr.tropicube.docker.*`, faute de quoi les objets sociaux échangés entre plugins appartiendraient à des classloaders incompatibles.
 
@@ -199,6 +199,8 @@ Les amitiés sont lues depuis MySQL par Core. Les commandes et le menu Social du
 La purge d'une instance supprime atomiquement son document et ses index principaux, puis balaie les références secondaires connues (`host`, serveur courant, reconnexion, abandon, revanche et post-partie). Chaque référence est relue avant suppression afin de ne pas effacer une valeur réaffectée concurremment à une autre instance.
 
 Un changement de langue publie `LANG_CHANGED:<uuid>:<langue>` sur le canal joueurs. Le lobby reconstruit alors, sur le thread Paper, la hotbar, le scoreboard personnel et la tablist. Le scoreboard du lobby est donc entièrement localisé et reste cohérent que la langue soit changée depuis le menu ou avec `/lang`.
+
+Le centre joueur appartient à Core et fournit un objet de hotbar localisé marqué par données persistantes. Lobby le place au centre de sa barre et SheepWars au slot 7 uniquement durant l'attente ; Core reste l'unique gestionnaire du clic et ouvre ainsi la même interface dans les deux contextes sans dépendance métier entre jeux.
 
 ## Persistance MySQL
 

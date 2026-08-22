@@ -14,6 +14,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
@@ -30,12 +32,36 @@ public final class PlayerCenterMenu implements Listener {
     private final TropicubeCore plugin;
     private final NamespacedKey actionKey;
     private final NamespacedKey idKey;
+    private final NamespacedKey hotbarKey;
     private final Map<UUID, State> states = new ConcurrentHashMap<>();
 
     public PlayerCenterMenu(TropicubeCore plugin) {
         this.plugin = plugin;
         this.actionKey = new NamespacedKey(plugin, "center_action");
         this.idKey = new NamespacedKey(plugin, "notification_id");
+        this.hotbarKey = new NamespacedKey(plugin, "center_hotbar");
+    }
+
+    /** Builds the same localized player-center entry point for every game waiting area. */
+    public ItemStack createHotbarItem(Player player) {
+        ItemStack item = new ItemStack(Material.NETHER_STAR);
+        item.editMeta(meta -> {
+            meta.itemName(message(player, "center.hotbar-name"));
+            meta.lore(List.of(message(player, "center.hotbar-lore")));
+            meta.getPersistentDataContainer().set(hotbarKey, PersistentDataType.BYTE, (byte) 1);
+        });
+        return item;
+    }
+
+    /** Opens the global center when a lobby or mini-game places its shared hotbar item. */
+    @EventHandler
+    public void interact(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        ItemStack item = event.getItem();
+        if (item == null || !item.hasItemMeta() || !item.getItemMeta().getPersistentDataContainer()
+                .has(hotbarKey, PersistentDataType.BYTE)) return;
+        event.setCancelled(true);
+        openHome(event.getPlayer());
     }
 
     public void openHome(Player player) {

@@ -6,6 +6,8 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Added
 
+- Registered Tropicube commands and aliases are now all suggested after `/`, subject to permissions; Lobby and SheepWars share a localized player-center hotbar item.
+
 - Velocity operations foundation: versioned SQL migrations, typed instance modes, versioned Redis events, draining maintenance, bilingual MOTD, targeted announcements, network diagnostics, and adaptive connection protection.
 - Network communication and moderation: global chat, offline private messages, ignores, proxy-enforced bans, reports, and 90-day chat evidence.
 - TOTP-protected staff tools: fifteen-minute sessions, recovery codes, cross-server staff chat, and controlled invisible spectator mode.
@@ -36,6 +38,8 @@ This document records functional, technical, and operational changes. Entries ar
 - Team entries are installed before glow metadata, and tablist names are colored explicitly for participants and spectators.
 
 ### Fixed
+
+- Staff 2FA now reports enrollment/session state, completes subcommands, provides copyable enrollment data, uses consistent four-language colors, and consumes codes transactionally to prevent concurrent replay.
 
 - Social-menu heads now start dynamic resolution with the UUID alone and embed the server-resolved texture; incomplete static profiles no longer produce an incorrect default skin, and friends do not need to reconnect recently.
 - The Social menu no longer raises a `LinkageError`: Core is now the sole Paper provider of `tropicube-docker-api` models, which are no longer duplicated in Lobby and SheepWars JARs.

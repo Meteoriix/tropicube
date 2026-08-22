@@ -676,17 +676,22 @@ help:
     - "  <gold>/tropicube, /coreadmin <dark_gray>— <gray>Technical administration"
 
 two-factor:
-  unavailable: "<tc>TOTP is unavailable: the master key is not configured."
-  player-online-required: "<tc>The player must be online."
-  issued: "<tc>Enrollment token for {0}: {1}"
-  enroll-uri: "<tc>Add this account to your TOTP application:"
-  recovery-codes: "<tc>Recovery codes (store them outside the game): {0}"
-  confirm-help: "<tc>Confirm with /2fa confirm &lt;code&gt;."
-  enrollment-failed: "<tc>Could not start TOTP enrollment."
-  session-active: "<tc>Staff session verified."
-  session-inactive: "<tc>Session not verified. Use /2fa verify &lt;code&gt;."
-  verified: "<tc>Staff session verified for 15 minutes."
-  invalid-code: "<tc>Invalid or already-used code."
+  unavailable: "<tc><red>TOTP is unavailable: the master key is not configured."
+  player-online-required: "<tc><red>The player must be online."
+  staff-required: "<tc><red>The target player does not have the staff permission."
+  issued: "<tc><green>Enrollment token created for <white>{0}</white>: <yellow>{1}</yellow>"
+  enroll-uri: "<tc><aqua>Add this account to your TOTP application, then click the link to copy it:"
+  recovery-codes: "<tc><yellow>Recovery codes to store outside the game: <white>{0}</white>"
+  copy-hover: "<yellow>Click to copy to clipboard"
+  copy-recovery: "<aqua><underlined>Click here to copy the recovery codes</underlined>"
+  confirm-help: "<tc><gray>Finish enrollment with <white>/2fa confirm &lt;6-digit code&gt;</white>."
+  enrollment-failed: "<tc><red>Invalid or expired enrollment token. Ask authorized staff for a new one."
+  session-active: "<tc><green>Your staff session is active."
+  session-inactive: "<tc><yellow>Your 2FA account is configured, but the session is inactive. Use <white>/2fa verify &lt;code&gt;</white>."
+  not-enrolled: "<tc><yellow>Your staff account is not configured for 2FA yet. Use the received token with <white>/2fa enroll &lt;token&gt;</white>."
+  verified: "<tc><green>Staff session verified for 15 minutes."
+  invalid-code: "<tc><red>Invalid, expired, or already-used code."
+  usage: "<tc><yellow>Usage: <white>/2fa &lt;status|enroll|confirm|verify&gt; [value]</white>"
 
 staff:
   session-required: "<tc><red>Verify your session first with <white>/2fa verify &lt;code&gt;</white>."
@@ -719,6 +724,8 @@ guild:
   usage: "<tc><yellow>Usage: /guild info|create <name> <tag>|invite|accept|leave|kick|promote|demote|transfer|ranking"
 
 center:
+  hotbar-name: "<gold><bold>Tropicube Center</bold>"
+  hotbar-lore: "<gray>Profile, missions, notifications and guild · <yellow>Right-click"
   title: "<dark_gray>Player center"
   profile: "<gold>Full profile"
   missions: "<aqua>Missions"

@@ -425,6 +425,10 @@ public class GameManager {
                 player.getInventory().setItem(6, plugin.getWhitelistMenu().createSelectorItem(player));
             }
         }
+        // Slot 7: same global player center as in the main lobby.
+        if (Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof fr.tropicube.core.TropicubeCore core) {
+            player.getInventory().setItem(7, core.getPlayerCenterMenu().createHotbarItem(player));
+        }
         // Slot 8: Leave game (bed)
         player.getInventory().setItem(8, createLeaveItem(player.getUniqueId()));
     }

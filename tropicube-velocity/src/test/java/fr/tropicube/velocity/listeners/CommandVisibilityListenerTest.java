@@ -13,6 +13,13 @@ class CommandVisibilityListenerTest {
         assertTrue(CommandVisibilityListener.isVisible("GROUPE"));
         assertTrue(CommandVisibilityListener.isVisible("replayconfirm"));
         assertTrue(CommandVisibilityListener.isVisible("balance"));
+        assertTrue(CommandVisibilityListener.isVisible("2fa"));
+        assertTrue(CommandVisibilityListener.isVisible("missions"));
+        assertTrue(CommandVisibilityListener.isVisible("quickplay"));
+        assertTrue(CommandVisibilityListener.isVisible("competitive"));
+        assertTrue(CommandVisibilityListener.isVisible("sheepwars"));
+        assertTrue(CommandVisibilityListener.isVisible("maintenance"));
+        assertTrue(CommandVisibilityListener.isVisible("networkdiag"));
     }
 
     @Test

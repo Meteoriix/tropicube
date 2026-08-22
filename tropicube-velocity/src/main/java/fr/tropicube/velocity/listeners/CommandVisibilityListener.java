@@ -12,13 +12,18 @@ import java.util.Set;
 public final class CommandVisibilityListener {
     private static final Set<String> TROPICUBE_COMMANDS = Set.of(
             "money", "balance", "eco", "rank", "grade", "lang", "language", "langue",
-            "mute", "unmute", "kick", "warn", "history", "permissions", "tropiperm",
+            "mute", "unmute", "kick", "warn", "history", "ban", "tempban", "unban",
+            "report", "reports", "msg", "tell", "w", "reply", "r", "ignore",
+            "globalchat", "g", "2fa", "staff", "staffchat", "sc", "profile", "profil",
+            "settings", "preferences", "parametres", "missions", "notifications", "inbox",
+            "center", "centre", "privacy", "guild", "guilde", "permissions", "tropiperm",
             "coreadmin", "tropiadmin", "ca", "help", "friend", "friends", "ami", "amis",
             "party", "groupe", "pc", "spawn", "play", "servers", "sv", "languages",
             "vip", "boutique", "shop", "fly", "flymode", "fm", "replay", "playnext",
-            "playagain", "rejouer", "replayconfirm", "rejoin", "tropicube", "tropi", "cm",
-            "server", "lobby", "hub", "send", "pull", "find", "nick", "queue", "file",
-            "whitelist");
+            "playagain", "rejouer", "replayconfirm", "rejoin", "quickplay", "competitive",
+            "sheepwars", "swprofile", "tropicube", "tropi", "cm", "server", "lobby", "hub",
+            "send", "pull", "find", "nick", "queue", "file", "whitelist", "maintenance",
+            "networkdiag", "netdiag", "announce");
 
     @Subscribe
     public void onAvailableCommands(PlayerAvailableCommandsEvent event) {

@@ -91,7 +91,9 @@ Velocity is the only whitelist writer. Both `/whitelist` and the SheepWars GUI r
 
 Global chat and private messages use Redis. Public messages receive a random twelve-character ID; the message and a seven-message instance context remain in Redis for fifteen minutes. Only authorized staff see the clickable moderation suggestion. Capturing evidence copies the message, context, and SHA-256 digest to MySQL for exactly 90 days. Offline private messages expire after seven days and ignore lists remain in MySQL.
 
-MySQL is authoritative for bans, while `ban:<uuid>` lets Velocity reject the login before a Paper transfer and a command event disconnects active sessions. Sensitive staff actions additionally require the fifteen-minute `staff-session:<uuid>` created by a non-replayable TOTP or one-time recovery code. TOTP secrets use AES-256-GCM under an environment-only key; no device or extra address data is collected.
+MySQL is authoritative for bans, while `ban:<uuid>` lets Velocity reject the login before a Paper transfer and a command event disconnects active sessions. Sensitive staff actions additionally require the fifteen-minute `staff-session:<uuid>` created by a non-replayable TOTP or one-time recovery code. Code consumption locks the MySQL row inside one transaction before the Redis session opens, preventing concurrent reuse. TOTP secrets use AES-256-GCM under an environment-only key; no device or extra address data is collected.
+
+Core owns the localized persistent-data player-center hotbar item. Lobby places it at the middle of its unified navigation bar, and SheepWars places it in slot 7 only while waiting; Core handles both clicks without introducing a game-to-game dependency.
 
 ## Persistence
 

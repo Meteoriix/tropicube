@@ -45,7 +45,7 @@ Velocity validates `/whitelist`: the sender must own an active private custom ga
 | `/report <player> <category> [#message] [details]` | none | Creates a report and optionally captures available chat evidence |
 | `/reports list|claim|resolve ...` | report management + TOTP session | Processes the staff report queue |
 | `/msg`, `/reply`, `/ignore`, `/globalchat` | none | Cross-server communication and persistent ignores |
-| `/2fa issue|enroll|confirm|verify ...` | staff/enrollment permissions | Enrolls TOTP and validates a fifteen-minute staff session |
+| `/2fa issue|enroll|confirm|verify|status ...` | staff/enrollment permissions | Enrolls TOTP, reports enrollment/session state, and validates a fifteen-minute staff session |
 | `/staff`, `/staffchat <message>` | staff + TOTP session | Invisible controlled spectator mode and cross-server staff chat |
 | `/profile [player]` | none | Displays the network profile according to its visibility |
 | `/settings profile|messages|global|entities|hints <value>` | none | Updates persistent preferences |
@@ -68,10 +68,12 @@ Velocity validates `/whitelist`: the sender must own an active private custom ga
 
 ## SheepWars controls
 
-SheepWars registers no standalone Paper command. Team, class, kit, map, host settings, start/cancel, and return-to-lobby actions use hotbar items and inventory menus. Late arrivals and reconnecting players enter spectator mode when the game is already in progress.
+Team, class, kit, map, host settings, start/cancel, and return-to-lobby actions use hotbar items and inventory menus. Waiting players also receive the shared player-center item in slot 7; it is removed before combat. Late arrivals and reconnecting players enter spectator mode when the game is already in progress.
+
+The lobby hotbar keeps stable positions: games in slot 0, custom games in slot 1 for eligible grades, social in slot 2, the Tropicube center in slot 4, quick settings in slot 6, and the store in slot 8.
 
 ## Administration principles
 
 Command handlers validate arguments and permissions at the boundary. Player-facing text comes from the four language files. Operations involving SQL, Redis, Docker, or disk must not block the Paper or Velocity event thread.
 
-After `/` is entered, clients receive only commands and aliases provided by the Tropicube infrastructure. External commands and namespaces stay hidden; `/?`, Bukkit/Minecraft namespaces, and vanilla commands are rejected network-wide. Accepting a party invitation while already grouped atomically leaves the old party, promotes a successor when needed, and joins the new one.
+After `/` is entered, clients receive every registered Tropicube command and alias from Velocity, Core, Lobby, and the current game, while permission checks continue to hide inaccessible staff commands. External commands and namespaces stay hidden; `/?`, Bukkit/Minecraft namespaces, and vanilla commands are rejected network-wide. Accepting a party invitation while already grouped atomically leaves the old party, promotes a successor when needed, and joins the new one.

@@ -140,7 +140,7 @@ Le lobby permet d'arrêter le serveur tant que la manche n'a pas commencé. Apr�
 
 ## Interface, langues et commandes
 
-Les actions de partie passent par les objets de hotbar et les inventaires. La commande `/sheepwars` est limitée au profil compétitif, au choix réversible de branche et à la visibilité `public|team|private` des détails de résumé.
+Les actions de partie passent par les objets de hotbar et les inventaires. En attente, les slots 0, 1 et 2 ouvrent respectivement équipe, classe/kit et vote de carte ; l'hôte conserve les réglages au slot 4 et la whitelist privée au slot 6. Le centre Tropicube commun au lobby est placé au slot 7 et le lit de sortie au slot 8. Au lancement, toute la barre d'attente est supprimée avant de remettre l'équipement de combat. La commande `/sheepwars` est limitée au profil compétitif, au choix réversible de branche et à la visibilité `public|team|private` des détails de résumé.
 
 Le scoreboard affiche sous le titre tropical `🐑 SHEEPWARS` des sections aérées par de courts séparateurs. Pendant l'attente, il indique l'effectif actuel et maximal, le minimum requis, la carte, l'équipe et la classe du joueur. En partie, il présente le temps restant, la carte, les survivants par équipe, l'équipe ou le statut spectateur, la classe, les éliminations et les moutons lancés. La tablist reprend les identités `🐑 SHEEPWARS` et `🌴 TROPICUBE` sur deux lignes, puis adapte son pied à l'attente, au lancement, au jeu ou à la fin de partie. Les textes proviennent de TropicubeCore et sont disponibles en français, anglais, espagnol et allemand.
 

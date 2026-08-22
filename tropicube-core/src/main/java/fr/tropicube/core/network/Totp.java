@@ -29,6 +29,7 @@ public final class Totp {
     }
 
     public static long acceptedStep(String secret, String code, long epochSeconds, long lastUsedStep) {
+        if (code == null || !code.matches("\\d{6}")) return -1;
         long current = epochSeconds / 30;
         for (long step = current - 1; step <= current + 1; step++) {
             if (step > lastUsedStep && generate(secret, step).equals(code)) return step;

@@ -287,7 +287,9 @@ public class TropicubeCore extends JavaPlugin {
             Objects.requireNonNull(getCommand("reply")).setExecutor(messageCommand);
             Objects.requireNonNull(getCommand("ignore")).setExecutor(messageCommand);
             Objects.requireNonNull(getCommand("globalchat")).setExecutor(new GlobalChatCommand(this));
-            Objects.requireNonNull(getCommand("2fa")).setExecutor(new TwoFactorCommand(this));
+            var twoFactorCommand = new TwoFactorCommand(this);
+            Objects.requireNonNull(getCommand("2fa")).setExecutor(twoFactorCommand);
+            Objects.requireNonNull(getCommand("2fa")).setTabCompleter(twoFactorCommand);
             var staffCommand = new StaffCommand(this);
             Objects.requireNonNull(getCommand("staff")).setExecutor(staffCommand);
             Objects.requireNonNull(getCommand("staffchat")).setExecutor(staffCommand);

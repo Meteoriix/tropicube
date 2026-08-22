@@ -666,17 +666,22 @@ help:
     - "  <gold>/tropicube, /coreadmin <dark_gray>— <gray>Technische Verwaltung"
 
 two-factor:
-  unavailable: "<tc>TOTP ist nicht verfügbar: Der Hauptschlüssel ist nicht konfiguriert."
-  player-online-required: "<tc>Der Spieler muss online sein."
-  issued: "<tc>Registrierungstoken für {0}: {1}"
-  enroll-uri: "<tc>Füge dieses Konto deiner TOTP-App hinzu:"
-  recovery-codes: "<tc>Wiederherstellungscodes (außerhalb des Spiels aufbewahren): {0}"
-  confirm-help: "<tc>Bestätige mit /2fa confirm &lt;Code&gt;."
-  enrollment-failed: "<tc>TOTP-Registrierung konnte nicht gestartet werden."
-  session-active: "<tc>Staffsitzung bestätigt."
-  session-inactive: "<tc>Sitzung nicht bestätigt. Nutze /2fa verify &lt;Code&gt;."
-  verified: "<tc>Staffsitzung für 15 Minuten bestätigt."
-  invalid-code: "<tc>Ungültiger oder bereits verwendeter Code."
+  unavailable: "<tc><red>TOTP ist nicht verfügbar: Der Hauptschlüssel ist nicht konfiguriert."
+  player-online-required: "<tc><red>Der Spieler muss online sein."
+  staff-required: "<tc><red>Der Zielspieler hat keine Staff-Berechtigung."
+  issued: "<tc><green>Registrierungstoken für <white>{0}</white> erstellt: <yellow>{1}</yellow>"
+  enroll-uri: "<tc><aqua>Füge dieses Konto deiner TOTP-App hinzu und klicke dann auf den Link, um ihn zu kopieren:"
+  recovery-codes: "<tc><yellow>Wiederherstellungscodes außerhalb des Spiels aufbewahren: <white>{0}</white>"
+  copy-hover: "<yellow>Klicken, um in die Zwischenablage zu kopieren"
+  copy-recovery: "<aqua><underlined>Hier klicken, um die Wiederherstellungscodes zu kopieren</underlined>"
+  confirm-help: "<tc><gray>Schließe die Registrierung mit <white>/2fa confirm &lt;6-stelliger Code&gt;</white> ab."
+  enrollment-failed: "<tc><red>Ungültiger oder abgelaufener Registrierungstoken. Fordere einen neuen Token an."
+  session-active: "<tc><green>Deine Staffsitzung ist aktiv."
+  session-inactive: "<tc><yellow>Dein 2FA-Konto ist eingerichtet, aber die Sitzung ist inaktiv. Nutze <white>/2fa verify &lt;Code&gt;</white>."
+  not-enrolled: "<tc><yellow>Dein Staffkonto ist noch nicht für 2FA eingerichtet. Nutze <white>/2fa enroll &lt;Token&gt;</white>."
+  verified: "<tc><green>Staffsitzung für 15 Minuten bestätigt."
+  invalid-code: "<tc><red>Ungültiger, abgelaufener oder bereits verwendeter Code."
+  usage: "<tc><yellow>Verwendung: <white>/2fa &lt;status|enroll|confirm|verify&gt; [Wert]</white>"
 
 staff:
   session-required: "<tc><red>Bestätige zuerst deine Sitzung mit <white>/2fa verify &lt;Code&gt;</white>."
@@ -709,6 +714,8 @@ guild:
   usage: "<tc><yellow>Nutzung: /guild info|create <Name> <Tag>|invite|accept|leave|kick|promote|demote|transfer|ranking"
 
 center:
+  hotbar-name: "<gold><bold>Tropicube-Zentrale</bold>"
+  hotbar-lore: "<gray>Profil, Missionen, Benachrichtigungen und Gilde · <yellow>Rechtsklick"
   title: "<dark_gray>Spielerzentrum"
   profile: "<gold>Vollständiges Profil"
   missions: "<aqua>Missionen"

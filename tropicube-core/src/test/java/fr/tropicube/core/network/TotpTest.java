@@ -11,5 +11,8 @@ class TotpTest {
         long step = 59L / 30;
         assertTrue(Totp.verify(secret, "287082", 59L, step - 1));
         assertFalse(Totp.verify(secret, "287082", 59L, step));
+        assertEquals(-1, Totp.acceptedStep(secret, "28708", 59L, -1));
+        assertEquals(-1, Totp.acceptedStep(secret, "abcdef", 59L, -1));
+        assertEquals(-1, Totp.acceptedStep(secret, null, 59L, -1));
     }
 }

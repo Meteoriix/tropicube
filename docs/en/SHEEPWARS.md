@@ -100,7 +100,7 @@ The private-game host manages access through a zero-cost anvil accepting a valid
 
 ## Interface and languages
 
-All actions use hotbar items and inventory menus; the SheepWars Paper plugin declares no dedicated command. Under the tropical `🐑 SHEEPWARS` title, short separators keep the sidebar sections airy. While waiting, it shows current and maximum players, the required minimum, map, team, and class. During play, it shows time, map, survivor counts, personal team or spectator mode, class, eliminations, and sheep thrown. The tab list uses two-line `🐑 SHEEPWARS` and `🌴 TROPICUBE` branding and adapts its footer to waiting, starting, playing, and ending states.
+All game actions use hotbar items and inventory menus. Waiting slots 0, 1, and 2 open team, class/kit, and map vote; hosts keep settings in slot 4 and private whitelist management in slot 6. The shared Tropicube player center occupies slot 7 and the leave bed slot 8. Every waiting item is removed before combat equipment is granted. Under the tropical `🐑 SHEEPWARS` title, short separators keep the sidebar sections airy. While waiting, it shows current and maximum players, the required minimum, map, team, and class. During play, it shows time, map, survivor counts, personal team or spectator mode, class, eliminations, and sheep thrown. The tab list uses two-line `🐑 SHEEPWARS` and `🌴 TROPICUBE` branding and adapts its footer to waiting, starting, playing, and ending states.
 
 Player-facing messages come from TropicubeCore and exist in French, English, German, and Spanish.
 

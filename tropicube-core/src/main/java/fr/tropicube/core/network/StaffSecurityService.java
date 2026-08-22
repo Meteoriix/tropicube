@@ -98,10 +98,39 @@ public final class StaffSecurityService {
         return database.supplyAsync(() -> verifyStored(playerId, code));
     }
 
+    /** Checks whether the player has completed enrollment without decrypting the stored secret. */
+    public CompletableFuture<Boolean> isEnrolled(UUID playerId) {
+        requireAvailable();
+        return database.supplyAsync(() -> {
+            try (Connection connection = database.getConnection();
+                 PreparedStatement statement = connection.prepareStatement(
+                         "SELECT 1 FROM tropicube_staff_totp WHERE player_uuid = ? LIMIT 1")) {
+                statement.setString(1, playerId.toString());
+                try (ResultSet result = statement.executeQuery()) { return result.next(); }
+            }
+        });
+    }
+
     private boolean verifyStored(UUID playerId, String code) throws SQLException {
-        try (Connection connection = database.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                     "SELECT encrypted_secret, recovery_hashes, last_used_step FROM tropicube_staff_totp WHERE player_uuid = ?")) {
+        try (Connection connection = database.getConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                boolean verified = verifyAndConsume(connection, playerId, code);
+                connection.commit();
+                if (verified) openSession(playerId);
+                return verified;
+            } catch (SQLException | RuntimeException error) {
+                connection.rollback();
+                throw error;
+            }
+        }
+    }
+
+    /** Serializes code consumption so one TOTP step or recovery code cannot win twice. */
+    private boolean verifyAndConsume(Connection connection, UUID playerId, String code) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT encrypted_secret, recovery_hashes, last_used_step FROM tropicube_staff_totp "
+                        + "WHERE player_uuid = ? FOR UPDATE")) {
             statement.setString(1, playerId.toString());
             try (ResultSet result = statement.executeQuery()) {
                 if (!result.next()) return false;
@@ -109,18 +138,23 @@ public final class StaffSecurityService {
                 long lastStep = result.getLong("last_used_step");
                 long step = Totp.acceptedStep(secret, code, System.currentTimeMillis() / 1000, lastStep);
                 if (step >= 0) {
-                    database.executeUpdate("UPDATE tropicube_staff_totp SET last_used_step = ? WHERE player_uuid = ?",
-                            step, playerId.toString());
-                    openSession(playerId);
+                    try (PreparedStatement update = connection.prepareStatement(
+                            "UPDATE tropicube_staff_totp SET last_used_step = ? WHERE player_uuid = ?")) {
+                        update.setLong(1, step);
+                        update.setString(2, playerId.toString());
+                        update.executeUpdate();
+                    }
                     return true;
                 }
-                List<String> hashes = GSON.fromJson(result.getString("recovery_hashes"),
-                        new TypeToken<List<String>>() {}.getType());
-                String candidate = hash(code);
-                if (!hashes.remove(candidate)) return false;
-                database.executeUpdate("UPDATE tropicube_staff_totp SET recovery_hashes = ? WHERE player_uuid = ?",
-                        GSON.toJson(hashes), playerId.toString());
-                openSession(playerId);
+                List<String> hashes = new ArrayList<>(GSON.fromJson(result.getString("recovery_hashes"),
+                        new TypeToken<List<String>>() {}.getType()));
+                if (!hashes.remove(hash(code))) return false;
+                try (PreparedStatement update = connection.prepareStatement(
+                        "UPDATE tropicube_staff_totp SET recovery_hashes = ? WHERE player_uuid = ?")) {
+                    update.setString(1, GSON.toJson(hashes));
+                    update.setString(2, playerId.toString());
+                    update.executeUpdate();
+                }
                 return true;
             }
         }

@@ -43,9 +43,10 @@ public class PlayerLobbyListener implements Listener {
 
     // Lobby hotbar items
     private static final int SLOT_SERVERS     = 0;
-    private static final int SLOT_CUSTOM_GAME = 2;
-    private static final int SLOT_SETTINGS    = 4;
-    private static final int SLOT_SOCIAL      = 6;
+    private static final int SLOT_CUSTOM_GAME = 1;
+    private static final int SLOT_SOCIAL      = 2;
+    private static final int SLOT_CENTER      = 4;
+    private static final int SLOT_SETTINGS    = 6;
     private static final int SLOT_VIP         = 8;
 
     /** Minimum priority of rank allowed to host a custom game. */
@@ -355,6 +356,11 @@ public class PlayerLobbyListener implements Listener {
                                 LangHelper.get(player, "social.hotbar-lore2"))
                         .customModelData(1005)
                         .glow().build());
+
+        if (Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core) {
+            player.getInventory().setItem(SLOT_CENTER,
+                    core.getPlayerCenterMenu().createHotbarItem(player));
+        }
     }
 
     private boolean hasMinGradePriority(Player player) {
