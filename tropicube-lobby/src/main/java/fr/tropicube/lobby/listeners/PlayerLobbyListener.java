@@ -99,6 +99,7 @@ public class PlayerLobbyListener implements Listener {
                 player.setAllowFlight(player.hasPermission("tropicube.lobby.fly") || max > 0);
                 plugin.getScoreboardManager().setup(player);
                 plugin.getScoreboardManager().updateAll();
+                plugin.getVisibilityManager().refreshAll();
 
                 // Offer to rejoin the still active part.
                 if (hasRejoinFlag) {
@@ -157,6 +158,8 @@ public class PlayerLobbyListener implements Listener {
         rejoinTargets.remove(uuid);
         plugin.getGuiManager().onPlayerQuit(uuid);
         plugin.getScoreboardManager().clear(e.getPlayer());
+        plugin.getVisibilityManager().forget(uuid);
+        plugin.getVisibilityManager().refreshAll();
         Bukkit.getScheduler().runTask(plugin, () -> plugin.getScoreboardManager().updateAll());
     }
 

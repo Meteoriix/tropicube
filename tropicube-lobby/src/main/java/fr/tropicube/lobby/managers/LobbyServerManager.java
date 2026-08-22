@@ -131,9 +131,12 @@ public class LobbyServerManager {
 
     /** Finds the best available server of a given type (fewer players, ONLINE, not full). */
     public Optional<ServerInfo> getBestServer(String type, UUID playerId) {
-        return getServersByType(type, playerId).stream()
-                .filter(ServerInfo::isMatchmakingJoinable)
-                .min(Comparator.comparingInt(ServerInfo::playerCount));
+        return getBestServer(type, playerId, 1);
+    }
+
+    /** Fill-first selection that rejects instances unable to receive the complete party. */
+    public Optional<ServerInfo> getBestServer(String type, UUID playerId, int groupSize) {
+        return SmartServerSelector.select(getServersByType(type, playerId), groupSize);
     }
 
     public int getTotalPlayers() {

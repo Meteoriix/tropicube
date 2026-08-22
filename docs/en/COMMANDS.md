@@ -47,6 +47,10 @@ Velocity validates `/whitelist`: the sender must own an active private custom ga
 | `/msg`, `/reply`, `/ignore`, `/globalchat` | none | Cross-server communication and persistent ignores |
 | `/2fa issue|enroll|confirm|verify ...` | staff/enrollment permissions | Enrolls TOTP and validates a fifteen-minute staff session |
 | `/staff`, `/staffchat <message>` | staff + TOTP session | Invisible controlled spectator mode and cross-server staff chat |
+| `/profile [player]` | none | Displays the network profile according to its visibility |
+| `/settings profile|messages|global|entities|hints <value>` | none | Updates persistent preferences |
+| `/missions [reroll|claim] ...` | none | Displays and manages personal daily/weekly missions |
+| `/notifications [read <id>]` | none | Reads the complete notification center |
 | `/coreadmin reload` | Core administration | Reloads supported Core configuration (`/tropiadmin` remains an alias) |
 
 ## Lobby commands

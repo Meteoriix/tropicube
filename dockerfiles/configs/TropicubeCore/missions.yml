@@ -1,0 +1,63 @@
+version: 1
+daily:
+  play_2:
+    event: MATCH_PLAYED
+    target: 2
+    reward-experience: 120
+    reward-currency: 40
+  win_1:
+    event: MATCH_WON
+    target: 1
+    reward-experience: 150
+    reward-currency: 50
+  kills_5:
+    event: PLAYER_KILL
+    target: 5
+    reward-experience: 130
+    reward-currency: 45
+  sheep_12:
+    event: SHEEP_LAUNCHED
+    target: 12
+    reward-experience: 100
+    reward-currency: 35
+  damage_250:
+    event: DAMAGE_DEALT
+    target: 250
+    reward-experience: 140
+    reward-currency: 45
+  party_1:
+    event: PARTY_MATCH
+    target: 1
+    reward-experience: 100
+    reward-currency: 35
+  survive_1:
+    event: MATCH_SURVIVED
+    target: 1
+    reward-experience: 120
+    reward-currency: 40
+weekly:
+  play_12:
+    event: MATCH_PLAYED
+    target: 12
+    reward-experience: 650
+    reward-currency: 220
+  win_5:
+    event: MATCH_WON
+    target: 5
+    reward-experience: 800
+    reward-currency: 260
+  kills_35:
+    event: PLAYER_KILL
+    target: 35
+    reward-experience: 750
+    reward-currency: 250
+  sheep_100:
+    event: SHEEP_LAUNCHED
+    target: 100
+    reward-experience: 700
+    reward-currency: 230
+  party_5:
+    event: PARTY_MATCH
+    target: 5
+    reward-experience: 600
+    reward-currency: 210

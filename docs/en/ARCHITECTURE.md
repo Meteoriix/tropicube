@@ -95,6 +95,10 @@ MySQL is authoritative for bans, while `ban:<uuid>` lets Velocity reject the log
 
 ## Persistence
 
+Network level `n` begins at `100 × (n-1)²` XP. Personal rotations use the `Europe/Paris` day and ISO week, with five daily and three weekly slots. Players receive two daily rerolls, plus two through `tropicube.missions.reroll.bonus`. Claiming completion, currency, transaction history, and XP is one SQL transaction.
+
+Profiles aggregate identity, level, balance, social state, guild, and SheepWars statistics while enforcing summary/friends/private visibility. Lobby resolves preferences away from the Paper thread, hides only entities according to everyone/friends/party/nobody, and reapplies the filter after joins or changes. Smart selection favors a started countdown and then the fullest instance with enough capacity.
+
 MySQL stores durable profiles, friendships, grades, permissions, balances, moderation history, and SheepWars preferences. Redis accelerates reads and coordinates ephemeral network state. Any SQL schema change requires a compatible migration and suitable indexes; any Redis contract change must document its key, TTL, atomicity, and consumers.
 
 ## Shutdown

@@ -60,6 +60,10 @@ public final class NetworkCommunicationService {
         ignoreCache.remove(playerId);
     }
 
+    public void preferenceChanged(UUID playerId) {
+        preferences.load(playerId).thenAccept(value -> preferenceCache.put(playerId, value));
+    }
+
     public NetworkChatMessage publishGlobal(Player author, String body) {
         String messageId = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
         String instanceId = System.getenv().getOrDefault("INSTANCE_ID", Bukkit.getServer().getName());

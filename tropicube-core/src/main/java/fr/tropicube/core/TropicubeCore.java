@@ -19,6 +19,10 @@ import fr.tropicube.core.network.NetworkCommunicationService;
 import fr.tropicube.core.network.NotificationService;
 import fr.tropicube.core.network.PlayerPreferenceService;
 import fr.tropicube.core.network.StaffSecurityService;
+import fr.tropicube.core.network.ProfileService;
+import fr.tropicube.core.progression.MissionCatalog;
+import fr.tropicube.core.progression.MissionService;
+import fr.tropicube.core.progression.NetworkProgressionService;
 import org.bukkit.GameRules;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -65,6 +69,9 @@ public class TropicubeCore extends JavaPlugin {
     private NetworkCommunicationService communicationService;
     private StaffSecurityService staffSecurityService;
     private final Set<UUID> staffModePlayers = ConcurrentHashMap.newKeySet();
+    private NetworkProgressionService networkProgressionService;
+    private MissionService missionService;
+    private ProfileService profileService;
 
     /**
      * Called by Paper when activating the plugin.
@@ -79,6 +86,8 @@ public class TropicubeCore extends JavaPlugin {
         // Copy config.yml and default language files if missing
         saveDefaultConfig();
         saveDefaultLanguages();
+        File missionFile = new File(getDataFolder(), "missions.yml");
+        if (!missionFile.exists()) saveResource("missions.yml", false);
 
         // Updates existing configuration files with new keys
         updateConfigs();
@@ -183,6 +192,12 @@ public class TropicubeCore extends JavaPlugin {
 
             playerPreferenceService = new PlayerPreferenceService(databaseManager);
             notificationService = new NotificationService(databaseManager);
+            networkProgressionService = new NetworkProgressionService(databaseManager);
+            profileService = new ProfileService(databaseManager, playerPreferenceService);
+            try (var input = java.nio.file.Files.newInputStream(
+                    new File(getDataFolder(), "missions.yml").toPath())) {
+                missionService = new MissionService(this, databaseManager, MissionCatalog.load(input));
+            }
             moderationService = new ModerationService(databaseManager, redisManager);
             staffSecurityService = new StaffSecurityService(databaseManager, redisManager,
                     System.getenv("TROPICUBE_TOTP_MASTER_KEY"));
@@ -259,6 +274,11 @@ public class TropicubeCore extends JavaPlugin {
             var staffCommand = new StaffCommand(this);
             Objects.requireNonNull(getCommand("staff")).setExecutor(staffCommand);
             Objects.requireNonNull(getCommand("staffchat")).setExecutor(staffCommand);
+            var playerCenter = new PlayerCenterCommand(this);
+            Objects.requireNonNull(getCommand("profile")).setExecutor(playerCenter);
+            Objects.requireNonNull(getCommand("settings")).setExecutor(playerCenter);
+            Objects.requireNonNull(getCommand("missions")).setExecutor(playerCenter);
+            Objects.requireNonNull(getCommand("notifications")).setExecutor(playerCenter);
 
             var friendCommand = new FriendCommand(this);
             Objects.requireNonNull(getCommand("friend")).setExecutor(friendCommand);
@@ -328,6 +348,7 @@ public class TropicubeCore extends JavaPlugin {
     private void updateConfigs() {
         try {
             ConfigUpdater.update(this, "config.yml", new File(getDataFolder(), "config.yml"));
+            ConfigUpdater.update(this, "missions.yml", new File(getDataFolder(), "missions.yml"));
 
             String[] langs = {"fr", "en", "es", "de"};
             for (String lang : langs) {
@@ -354,6 +375,9 @@ public class TropicubeCore extends JavaPlugin {
     public ModerationService getModerationService() { return moderationService; }
     public NetworkCommunicationService getCommunicationService() { return communicationService; }
     public StaffSecurityService getStaffSecurityService() { return staffSecurityService; }
+    public NetworkProgressionService getNetworkProgressionService() { return networkProgressionService; }
+    public MissionService getMissionService() { return missionService; }
+    public ProfileService getProfileService() { return profileService; }
     public boolean isStaffMode(UUID playerId) { return staffModePlayers.contains(playerId); }
     public void setStaffMode(UUID playerId, boolean active) {
         if (active) staffModePlayers.add(playerId); else staffModePlayers.remove(playerId);

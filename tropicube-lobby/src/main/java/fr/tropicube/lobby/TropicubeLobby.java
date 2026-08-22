@@ -17,6 +17,8 @@ import fr.tropicube.lobby.listeners.LobbyProtectionListener;
 import fr.tropicube.lobby.listeners.PlayerLobbyListener;
 import fr.tropicube.lobby.managers.LobbyScoreboardManager;
 import fr.tropicube.lobby.managers.LobbyServerManager;
+import fr.tropicube.lobby.managers.LobbyVisibilityManager;
+import fr.tropicube.core.TropicubeCore;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -37,6 +39,7 @@ public class TropicubeLobby extends JavaPlugin {
     private GuiManager guiManager;
     private PlayerLobbyListener playerLobbyListener;
     private LobbyScoreboardManager scoreboardManager;
+    private LobbyVisibilityManager visibilityManager;
 
     @Override
     public void onEnable() {
@@ -67,6 +70,12 @@ public class TropicubeLobby extends JavaPlugin {
         lobbyServerManager = new LobbyServerManager(this, redisManager);
         guiManager = new GuiManager(this);
         scoreboardManager = new LobbyScoreboardManager(this);
+        if (!(Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core)) {
+            getLogger().severe("TropicubeCore est requis pour les préférences du lobby.");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
+        visibilityManager = new LobbyVisibilityManager(this, core);
 
         // Listeners
         playerLobbyListener = new PlayerLobbyListener(this);
@@ -151,6 +160,17 @@ public class TropicubeLobby extends JavaPlugin {
             }
         });
 
+        redisManager.subscribeToPlayerEvents(message -> {
+            if (!message.startsWith("PREFERENCES_CHANGED:")) return;
+            try {
+                java.util.UUID playerId = java.util.UUID.fromString(message.substring("PREFERENCES_CHANGED:".length()));
+                Bukkit.getScheduler().runTask(this, () -> {
+                    org.bukkit.entity.Player player = Bukkit.getPlayer(playerId);
+                    if (player != null) visibilityManager.refresh(player);
+                });
+            } catch (IllegalArgumentException ignored) { }
+        });
+
         getLogger().info(MessageStyle.log("tc", "LOBBY", "<gray>Tropicube Lobby activé !"));
     }
 
@@ -199,6 +219,7 @@ public class TropicubeLobby extends JavaPlugin {
     public GuiManager getGuiManager() { return guiManager; }
     public PlayerLobbyListener getPlayerLobbyListener() { return playerLobbyListener; }
     public LobbyScoreboardManager getScoreboardManager() { return scoreboardManager; }
+    public LobbyVisibilityManager getVisibilityManager() { return visibilityManager; }
     public int getAutoReplayBatchSize() {
         return Math.max(1, Math.min(100, getConfig().getInt("auto-replay.batch-size", 5)));
     }

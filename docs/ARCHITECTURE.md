@@ -187,6 +187,10 @@ Un changement de langue publie `LANG_CHANGED:<uuid>:<langue>` sur le canal joueu
 
 ## Persistance MySQL
 
+La progression réseau suit une courbe stable : le niveau `n` commence à `100 × (n-1)²` XP. Les rotations personnelles utilisent le fuseau `Europe/Paris`, une clé par date ou semaine ISO, cinq emplacements quotidiens et trois hebdomadaires. Deux rerolls quotidiens sont accordés par défaut, deux supplémentaires via `tropicube.missions.reroll.bonus`. La réclamation marque la mission, crédite la monnaie, journalise la transaction et ajoute l'XP dans une même transaction SQL afin d'empêcher les doubles récompenses.
+
+Le profil agrège identité, niveau, solde, relations, guilde et statistiques SheepWars. Un tiers reçoit soit le résumé public, soit les détails réservés aux amis, soit aucun contenu selon la préférence persistante. Le lobby charge ces préférences hors thread Paper, masque seulement les entités selon `EVERYONE`, `FRIENDS`, `PARTY` ou `NOBODY`, puis réapplique le filtre après une arrivée ou un changement. Son sélecteur intelligent privilégie une partie dont le compte à rebours est lancé puis remplit la partie la plus avancée disposant d'assez de places.
+
 `DatabaseManager` crée et fait évoluer les tables suivantes au démarrage :
 
 - `tropicube_players` : identité, langue et métadonnées du joueur ;

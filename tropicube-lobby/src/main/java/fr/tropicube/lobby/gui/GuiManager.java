@@ -65,9 +65,11 @@ public class GuiManager {
 
     public void openSettings(Player player) {
         UUID playerId = player.getUniqueId();
-        java.util.concurrent.CompletableFuture
-                .supplyAsync(() -> plugin.getRedisManager().getAutoReplayRemaining(playerId))
-                .whenComplete((remaining, error) -> Bukkit.getScheduler().runTask(plugin, () -> {
+        if (!(Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core)) return;
+        var replay = java.util.concurrent.CompletableFuture
+                .supplyAsync(() -> plugin.getRedisManager().getAutoReplayRemaining(playerId));
+        replay.thenCombine(core.getPlayerPreferenceService().load(playerId), SettingsSnapshot::new)
+                .whenComplete((snapshot, error) -> Bukkit.getScheduler().runTask(plugin, () -> {
                     Player online = Bukkit.getPlayer(playerId);
                     if (online == null) return;
                     if (error != null) {
@@ -77,9 +79,12 @@ public class GuiManager {
                         return;
                     }
                     openGuis.put(playerId, GuiType.SETTINGS);
-                    online.openInventory(SettingsGUI.build(online, remaining));
+                    online.openInventory(SettingsGUI.build(online, snapshot.autoReplay(), snapshot.preferences()));
                 }));
     }
+
+    private record SettingsSnapshot(int autoReplay,
+                                    fr.tropicube.core.network.PlayerPreferenceService.Preferences preferences) {}
 
     public void openVipShop(Player player) {
         var corePlugin = Bukkit.getPluginManager().getPlugin("TropicubeCore");

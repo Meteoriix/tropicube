@@ -92,6 +92,21 @@ commands:
     usage: /staffchat <message>
     aliases: [ sc ]
     permission: tropicube.staff
+  profile:
+    description: "Afficher un profil réseau"
+    usage: /profile [joueur]
+    aliases: [ profil ]
+  settings:
+    description: "Gérer les préférences persistantes"
+    usage: /settings <profile|messages|global|entities|hints> <valeur>
+    aliases: [ preferences, parametres ]
+  missions:
+    description: "Afficher, relancer et réclamer les missions"
+    usage: /missions [reroll|claim] ...
+  notifications:
+    description: "Ouvrir le centre de notifications"
+    usage: /notifications [read <id>]
+    aliases: [ inbox ]
   permissions:
     description: "Gérer les permissions individuelles"
     usage: /permissions <add|remove|list|grade> ...
@@ -154,6 +169,9 @@ permissions:
   tropicube.2fa.issue:
     description: "Émettre un jeton d'inscription TOTP"
     default: op
+  tropicube.missions.reroll.bonus:
+    description: "Accorde deux rerolls quotidiens supplémentaires"
+    default: false
   tropicube.bypass.whitelist:
     description: "Bypasser la whitelist"
     default: op

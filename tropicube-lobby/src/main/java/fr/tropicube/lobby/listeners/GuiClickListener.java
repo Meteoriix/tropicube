@@ -224,6 +224,28 @@ public class GuiClickListener implements Listener {
             plugin.getGuiManager().openLanguageSelector(player);
             return;
         }
+        if (slot == SettingsGUI.VISIBILITY_SLOT || slot == SettingsGUI.HINTS_SLOT) {
+            if (!(Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core)) return;
+            UUID playerId = player.getUniqueId();
+            core.getPlayerPreferenceService().load(playerId).thenCompose(current -> {
+                var visibility = current.lobbyVisibility();
+                if (slot == SettingsGUI.VISIBILITY_SLOT) {
+                    var values = fr.tropicube.core.network.PlayerPreferenceService.LobbyVisibility.values();
+                    visibility = values[(visibility.ordinal() + 1) % values.length];
+                }
+                var updated = new fr.tropicube.core.network.PlayerPreferenceService.Preferences(
+                        current.profileVisibility(), current.messagePrivacy(), current.globalChatEnabled(),
+                        visibility, slot == SettingsGUI.HINTS_SLOT ? !current.contextualHelp() : current.contextualHelp());
+                return core.getPlayerPreferenceService().save(playerId, updated);
+            }).thenRun(() -> {
+                core.getRedisManager().publishPlayerEvent("PREFERENCES_CHANGED", playerId.toString());
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    Player online = Bukkit.getPlayer(playerId);
+                    if (online != null) plugin.getGuiManager().openSettings(online);
+                });
+            });
+            return;
+        }
         if (slot != SettingsGUI.AUTO_REPLAY_SLOT) return;
         UUID playerId = player.getUniqueId();
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {

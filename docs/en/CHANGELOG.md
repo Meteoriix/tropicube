@@ -9,6 +9,8 @@ This document records functional, technical, and operational changes. Entries ar
 - Velocity operations foundation: versioned SQL migrations, typed instance modes, versioned Redis events, draining maintenance, bilingual MOTD, targeted announcements, network diagnostics, and adaptive connection protection.
 - Network communication and moderation: global chat, offline private messages, ignores, proxy-enforced bans, reports, and 90-day chat evidence.
 - TOTP-protected staff tools: fifteen-minute sessions, recovery codes, cross-server staff chat, and controlled invisible spectator mode.
+- Visibility-aware network profiles, network levels, a versioned mission catalog, personal 5-daily/3-weekly rotations, rerolls, and atomic rewards.
+- Lobby contextual help, persistent entity visibility, and fill-oriented smart match selection.
 
 - Lobby Settings menu with language selection and confirmed five-game automatic replay batches.
 - Complete network social system: durable friends, Redis parties, party chat, individual leader following, `/party warp`, spectator-capable `/friend join`, and the lobby Social hotbar menu.

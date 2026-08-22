@@ -1,6 +1,7 @@
 package fr.tropicube.lobby.gui;
 
 import fr.tropicube.core.TropicubeCore;
+import fr.tropicube.core.network.PlayerPreferenceService;
 import fr.tropicube.lobby.utils.ItemBuilder;
 import fr.tropicube.lobby.utils.LangHelper;
 import me.arcaniax.hdb.api.HeadDatabaseAPI;
@@ -17,12 +18,15 @@ public final class SettingsGUI {
     private static final String LANGUAGE_HEAD_ID = "71786";
 
     public static final int LANGUAGE_SLOT = 11;
+    public static final int VISIBILITY_SLOT = 13;
     public static final int AUTO_REPLAY_SLOT = 15;
+    public static final int HINTS_SLOT = 22;
     public static final int CLOSE_SLOT = 26;
 
     private SettingsGUI() { }
 
-    public static Inventory build(Player player, int autoReplayRemaining) {
+    public static Inventory build(Player player, int autoReplayRemaining,
+                                  PlayerPreferenceService.Preferences preferences) {
         Holder holder = new Holder();
         Inventory inventory = Bukkit.createInventory(holder, 27,
                 LangHelper.component(player, "lobby.settings-title"));
@@ -37,6 +41,14 @@ public final class SettingsGUI {
         inventory.setItem(AUTO_REPLAY_SLOT, new ItemBuilder(enabled ? Material.LIME_DYE : Material.GRAY_DYE)
                 .name(LangHelper.get(player, "lobby.settings-auto-replay-name"))
                 .lore(LangHelper.get(player, stateKey, autoReplayRemaining)).build());
+        inventory.setItem(VISIBILITY_SLOT, new ItemBuilder(Material.ENDER_EYE)
+                .name(LangHelper.get(player, "lobby.settings-visibility-name"))
+                .lore(LangHelper.get(player, "lobby.settings-visibility-lore", preferences.lobbyVisibility().name()))
+                .build());
+        inventory.setItem(HINTS_SLOT, new ItemBuilder(preferences.contextualHelp() ? Material.LIME_DYE : Material.GRAY_DYE)
+                .name(LangHelper.get(player, "lobby.settings-hints-name"))
+                .lore(LangHelper.get(player, preferences.contextualHelp()
+                        ? "lobby.settings-hints-on" : "lobby.settings-hints-off")).build());
         inventory.setItem(CLOSE_SLOT, ItemBuilder.closeButton(player));
         return inventory;
     }
