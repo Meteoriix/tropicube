@@ -6,6 +6,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Ajouté
 
+- Chaîne de migrations renforcée : V003 est désormais indexée et un test interdit toute ressource SQL oubliée ; V004 prépare les archives, récompenses de profil, aides contextuelles et demandes de confidentialité.
 - SheepWars Quick Play et compétition : files 4v4/8v8 à cote partagée, incertitude individuelle, fenêtre progressive, saisons trimestrielles archivées, placements et reset souple.
 - Progression SheepWars : XP propre à chaque kit en Quick Play, deux branches exclusives réversibles sans bonus encore activé, missions/niveau réseau, historique détaillé et distinctions de fin.
 - Garde-fous compétitifs : taille de party limitée à une demi-équipe, limites de rôles, vote court pondéré sur trois cartes et sanctions d'abandon graduées.

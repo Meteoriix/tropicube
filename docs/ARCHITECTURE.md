@@ -197,6 +197,8 @@ Un changement de langue publie `LANG_CHANGED:<uuid>:<langue>` sur le canal joueu
 
 ## Persistance MySQL
 
+Les migrations MySQL de Core sont listées explicitement sous `db/migration/index.txt`, appliquées dans l'ordre et enregistrées dans `tropicube_schema_migrations`. Les tests comparent l'index à toutes les ressources SQL afin qu'une migration ajoutée ne puisse pas être ignorée silencieusement.
+
 La progression réseau suit une courbe stable : le niveau `n` commence à `100 × (n-1)²` XP. Les rotations personnelles utilisent le fuseau `Europe/Paris`, une clé par date ou semaine ISO, cinq emplacements quotidiens et trois hebdomadaires. Deux rerolls quotidiens sont accordés par défaut, deux supplémentaires via `tropicube.missions.reroll.bonus`. La réclamation marque la mission, crédite la monnaie, journalise la transaction et ajoute l'XP dans une même transaction SQL afin d'empêcher les doubles récompenses.
 
 Les guildes sont persistantes et indépendantes des parties. `OWNER`, `OFFICER` et `MEMBER` déterminent les mutations autorisées ; la capacité et le nombre d'officiers sont validés côté SQL. Les contributions issues du jeu sont plafonnées par membre et semaine, font progresser le niveau de guilde et deux défis hebdomadaires (`CONTRIBUTION`, `RANKED_MATCHES`). Le classement compétitif additionne les variations de cote des membres par saison, sans créer de file distincte. Un balayage quotidien remplace un chef inactif depuis 30 jours par le membre actif ayant rejoint le plus tôt ; chaque transition est auditée.

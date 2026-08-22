@@ -51,12 +51,22 @@ final class SchemaMigrationManager {
         InputStream input = SchemaMigrationManager.class.getResourceAsStream(INDEX_RESOURCE);
         if (input == null) throw new SQLException("Index de migrations introuvable: " + INDEX_RESOURCE);
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
-            return reader.lines().map(String::trim)
-                    .filter(line -> !line.isEmpty() && !line.startsWith("#"))
-                    .toList();
+            return readIndex(reader.lines().toList());
         } catch (IOException error) {
             throw new SQLException("Impossible de lire l'index de migrations", error);
         }
+    }
+
+    static List<String> readIndex(List<String> lines) {
+        List<String> resources = lines.stream().map(String::trim)
+                .filter(line -> !line.isEmpty() && !line.startsWith("#"))
+                .toList();
+        if (resources.size() != resources.stream().distinct().count()) {
+            throw new IllegalArgumentException("L'index des migrations contient un doublon");
+        }
+        List<String> sorted = resources.stream().sorted().toList();
+        if (!resources.equals(sorted)) throw new IllegalArgumentException("L'index des migrations n'est pas ordonné");
+        return resources;
     }
 
     private boolean isApplied(Connection connection, String version) throws SQLException {
