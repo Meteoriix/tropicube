@@ -311,7 +311,7 @@ public class TropicubeVelocity {
         server.getEventManager().register(this, new NickListener(nickManager, logger));
         server.getEventManager().register(this, new CommandVisibilityListener());
         server.getEventManager().register(this, new OperationsListener(server, tropiServerManager,
-                maintenanceManager, connectionRateLimiter, config));
+                maintenanceManager, connectionRateLimiter, config, redisManager));
         logger.info(MessageStyle.log("PROXY", "<gray>Listeners enregistrés."));
     }
 

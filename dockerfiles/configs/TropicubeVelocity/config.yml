@@ -136,6 +136,7 @@ templates:
       TROPICUBE_DB_NAME: "${MYSQL_DATABASE}"
       TROPICUBE_DB_USER: "${MYSQL_USER}"
       TROPICUBE_DB_PASSWORD: "${MYSQL_PASSWORD}"
+      TROPICUBE_TOTP_MASTER_KEY: "${TOTP_MASTER_KEY}"
       OPS: |
         Meteoriix
         OloWak
@@ -181,6 +182,7 @@ templates:
       TROPICUBE_DB_NAME: "${MYSQL_DATABASE}"
       TROPICUBE_DB_USER: "${MYSQL_USER}"
       TROPICUBE_DB_PASSWORD: "${MYSQL_PASSWORD}"
+      TROPICUBE_TOTP_MASTER_KEY: "${TOTP_MASTER_KEY}"
       OPS: |
         Meteoriix
         OloWak

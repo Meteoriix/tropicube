@@ -1,12 +1,7 @@
 package fr.tropicube.core.listeners;
 
 import fr.tropicube.core.TropicubeCore;
-import fr.tropicube.core.managers.PermissionManager;
-import fr.tropicube.docker.model.NickIdentity;
 import io.papermc.paper.event.player.AsyncChatEvent;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -52,35 +47,11 @@ public class PlayerChatListener implements Listener {
         }
         lastMessage.put(uuid, now);
 
-        // Format the message
-        PermissionManager pm = plugin.getPermissionManager();
-        // An active identity carries its persistent display grade in Redis.
-        String nickPayload = plugin.getRedisManager().get(NickIdentity.key(uuid));
-        String displayGradeName = NickIdentity.fromJson(nickPayload)
-                .map(NickIdentity::displayGrade)
-                .orElse(null);
-        PermissionManager.Grade displayGrade = displayGradeName == null
-                ? pm.getGradeInfo(uuid)
-                : pm.getAllGrades().getOrDefault(displayGradeName, pm.getGradeInfo(uuid));
-        String prefix = displayGrade != null ? displayGrade.prefix() : "";
-        String playerColor = displayGrade != null ? displayGrade.color() : "<white>";
-
-        // Retrieve the raw text of the message
+        // Network chat is rendered once by every backend after Redis delivery.
         String rawText = PlainTextComponentSerializer.plainText().serialize(event.message());
-        Component playerMessage;
-        if (player.hasPermission("tropicube.chat.color")) {
-            // Players with permission can use codes &
-            playerMessage = LegacyComponentSerializer.legacyAmpersand().deserialize(rawText);
-        } else {
-            rawText = rawText.replaceAll("&[0-9a-fk-or]", "");
-            playerMessage = Component.text(rawText);
-        }
-
-        String chatName = PlainTextComponentSerializer.plainText().serialize(player.displayName());
-        Component formattedMessage = MiniMessage.miniMessage()
-                .deserialize(prefix + playerColor + MiniMessage.miniMessage().escapeTags(chatName) + " <dark_gray>> <white>")
-                .append(playerMessage);
-        event.renderer((source, sourceDisplayName, message, viewer) -> formattedMessage);
+        rawText = rawText.replaceAll("&[0-9a-fk-or]", "");
+        event.setCancelled(true);
+        plugin.getCommunicationService().publishGlobal(player, rawText);
     }
 
     private String formatTimeLeft(long expiryEpoch) {

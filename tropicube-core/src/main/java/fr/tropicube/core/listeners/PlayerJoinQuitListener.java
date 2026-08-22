@@ -35,6 +35,9 @@ public class PlayerJoinQuitListener implements Listener {
                     String transferKey = "transfer:" + uuid;
                     boolean isTransfer = plugin.getRedisManager().exists(transferKey);
                     if (isTransfer) plugin.getRedisManager().delete(transferKey);
+                    boolean restoreStaffMode = plugin.getRedisManager().exists("staff-mode:" + uuid);
+                    if (profile.banned()) plugin.getModerationService().cacheBan(uuid, player.getName(),
+                            profile.banReason(), profile.banExpiry());
 
                     // Welcome message (private, deleted if transferred)
                     plugin.getServer().getScheduler().runTask(plugin, () -> {
@@ -58,6 +61,14 @@ public class PlayerJoinQuitListener implements Listener {
                             String welcomeKey = firstJoin ? "join.first-join" : "join.welcome-back";
                             player.sendMessage(plugin.getLanguageManager().getComponent(uuid, welcomeKey, player.getName()));
                         }
+                        plugin.getCommunicationService().playerOnline(uuid);
+                        if (restoreStaffMode && player.hasPermission("tropicube.staff")) {
+                            plugin.setStaffMode(uuid, true);
+                            player.setGameMode(org.bukkit.GameMode.SPECTATOR);
+                            plugin.getServer().getOnlinePlayers().stream()
+                                    .filter(viewer -> !viewer.hasPermission("tropicube.staff"))
+                                    .forEach(viewer -> viewer.hidePlayer(plugin, player));
+                        }
                     });
                 });
     }
@@ -75,5 +86,7 @@ public class PlayerJoinQuitListener implements Listener {
 
         // Unload data
         plugin.getPlayerDataManager().unloadPlayer(player.getUniqueId());
+        plugin.getCommunicationService().playerOffline(player.getUniqueId());
+        plugin.setStaffMode(player.getUniqueId(), false);
     }
 }

@@ -81,6 +81,24 @@ moderation:
   already-banned: "<tc><white>{0} <red>is already banned."
   not-banned: "<tc><white>{0} <red>is not banned."
   warn-kick: "<tc><red>⚠ You reached {0} warnings and got kicked."
+  unban-success: "<tc><green><white>{0}</white>'s ban has been lifted."
+  report-usage: "<tc><red>Usage: /report <player> <chat|cheat|behavior|other> [#message] [details]"
+  report-category: "<tc><red>Unknown category: chat, cheat, behavior or other."
+  report-created: "<tc><green>Report submitted as <white>#{0}</white>."
+  report-failed: "<tc><red>The report could not be saved or its evidence expired."
+
+communication:
+  msg-usage: "<tc><red>Usage: /msg <player> <message>"
+  reply-usage: "<tc><red>Usage: /reply <message>"
+  ignore-usage: "<tc><red>Usage: /ignore <player>"
+  global-usage: "<tc><red>Usage: /globalchat <message>"
+  no-conversation: "<tc><red>No recent conversation."
+  sent: "<tc><gray>Message sent to <white>{0}</white>."
+  stored: "<tc><gray>{0} is offline: message retained for 7 days."
+  blocked: "<tc><red>This player does not accept private messages."
+  private: "<light_purple>[PM]</light_purple> <white>{0}</white><gray>: {1}"
+  ignored: "<tc><gray>You now ignore <white>{0}</white>."
+  unignored: "<tc><green>You no longer ignore <white>{0}</white>."
 
 time:
   permanent: "Permanent"

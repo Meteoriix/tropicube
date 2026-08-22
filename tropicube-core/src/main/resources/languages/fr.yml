@@ -88,6 +88,24 @@ moderation:
   already-banned: "<tc><white>{0} <red>est déjà banni."
   not-banned: "<tc><white>{0} <red>n'est pas banni."
   warn-kick: "<tc><red>⚠ Tu as atteint {0} avertissements et as été expulsé."
+  unban-success: "<tc><green>Le bannissement de <white>{0}</white> a été levé."
+  report-usage: "<tc><red>Usage : /report <joueur> <chat|cheat|behavior|other> [#message] [détails]"
+  report-category: "<tc><red>Catégorie inconnue : chat, cheat, behavior ou other."
+  report-created: "<tc><green>Signalement envoyé sous le numéro <white>#{0}</white>."
+  report-failed: "<tc><red>Le signalement n'a pas pu être enregistré ou sa preuve a expiré."
+
+communication:
+  msg-usage: "<tc><red>Usage : /msg <joueur> <message>"
+  reply-usage: "<tc><red>Usage : /reply <message>"
+  ignore-usage: "<tc><red>Usage : /ignore <joueur>"
+  global-usage: "<tc><red>Usage : /globalchat <message>"
+  no-conversation: "<tc><red>Aucune conversation récente."
+  sent: "<tc><gray>Message envoyé à <white>{0}</white>."
+  stored: "<tc><gray>{0} est hors ligne : message conservé pendant 7 jours."
+  blocked: "<tc><red>Ce joueur refuse les messages privés."
+  private: "<light_purple>[MP]</light_purple> <white>{0}</white><gray> : {1}"
+  ignored: "<tc><gray>Tu ignores maintenant <white>{0}</white>."
+  unignored: "<tc><green>Tu n'ignores plus <white>{0}</white>."
 
 # Formatted time
 time:

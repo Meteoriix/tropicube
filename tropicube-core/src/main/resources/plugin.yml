@@ -46,6 +46,52 @@ commands:
     description: "Voir l'historique de sanctions d'un joueur"
     usage: /history <joueur>
     permission: tropicube.history
+  ban:
+    description: "Bannir définitivement un joueur du réseau"
+    usage: /ban <joueur> [raison]
+    permission: tropicube.ban
+  tempban:
+    description: "Bannir temporairement un joueur du réseau"
+    usage: /tempban <joueur> <durée> [raison]
+    permission: tropicube.ban
+  unban:
+    description: "Lever un bannissement réseau"
+    usage: /unban <joueur>
+    permission: tropicube.ban
+  report:
+    description: "Signaler un joueur"
+    usage: /report <joueur> <chat|cheat|behavior|other> [#message] [détails]
+  reports:
+    description: "Gérer la file de signalements"
+    usage: /reports <list|claim|resolve> ...
+    permission: tropicube.reports.manage
+  msg:
+    description: "Envoyer un message privé interserveurs"
+    usage: /msg <joueur> <message>
+    aliases: [ tell, w ]
+  reply:
+    description: "Répondre au dernier message privé"
+    usage: /reply <message>
+    aliases: [ r ]
+  ignore:
+    description: "Bloquer ou débloquer un joueur"
+    usage: /ignore <joueur>
+  globalchat:
+    description: "Écrire explicitement dans le chat global"
+    usage: /globalchat <message>
+    aliases: [ g ]
+  2fa:
+    description: "Valider une session staff avec TOTP"
+    usage: /2fa <issue|enroll|confirm|verify|status>
+  staff:
+    description: "Activer le mode staff invisible contrôlé"
+    usage: /staff
+    permission: tropicube.staff
+  staffchat:
+    description: "Écrire dans le chat staff interserveurs"
+    usage: /staffchat <message>
+    aliases: [ sc ]
+    permission: tropicube.staff
   permissions:
     description: "Gérer les permissions individuelles"
     usage: /permissions <add|remove|list|grade> ...
@@ -98,6 +144,15 @@ permissions:
     default: op
   tropicube.history:
     description: "Voir l'historique de sanctions"
+    default: op
+  tropicube.reports.manage:
+    description: "Consulter et traiter les signalements"
+    default: op
+  tropicube.moderation.chat-evidence:
+    description: "Afficher les identifiants cliquables des messages"
+    default: op
+  tropicube.2fa.issue:
+    description: "Émettre un jeton d'inscription TOTP"
     default: op
   tropicube.bypass.whitelist:
     description: "Bypasser la whitelist"

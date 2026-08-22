@@ -41,6 +41,12 @@ Velocity validates `/whitelist`: the sender must own an active private custom ga
 | `/party warp` (`/party tp`) | party leader | Moves every online, follow-enabled member to the leader's server |
 | `/party chat <message>` (`/pc`) | none | Sends a party-only message |
 | `/mute`, `/unmute`, `/kick`, `/warn`, `/history` | moderation permissions | Performs and audits moderation actions |
+| `/ban`, `/tempban`, `/unban` | ban permission + TOTP session | Applies network-wide bans at the proxy |
+| `/report <player> <category> [#message] [details]` | none | Creates a report and optionally captures available chat evidence |
+| `/reports list|claim|resolve ...` | report management + TOTP session | Processes the staff report queue |
+| `/msg`, `/reply`, `/ignore`, `/globalchat` | none | Cross-server communication and persistent ignores |
+| `/2fa issue|enroll|confirm|verify ...` | staff/enrollment permissions | Enrolls TOTP and validates a fifteen-minute staff session |
+| `/staff`, `/staffchat <message>` | staff + TOTP session | Invisible controlled spectator mode and cross-server staff chat |
 | `/coreadmin reload` | Core administration | Reloads supported Core configuration (`/tropiadmin` remains an alias) |
 
 ## Lobby commands

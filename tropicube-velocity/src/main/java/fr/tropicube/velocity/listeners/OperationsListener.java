@@ -2,6 +2,7 @@ package fr.tropicube.velocity.listeners;
 
 import com.velocitypowered.api.event.ResultedEvent;
 import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.EventTask;
 import com.velocitypowered.api.event.connection.LoginEvent;
 import com.velocitypowered.api.event.connection.PreLoginEvent;
 import com.velocitypowered.api.event.player.ServerPreConnectEvent;
@@ -11,6 +12,7 @@ import fr.tropicube.velocity.managers.ConnectionRateLimiter;
 import fr.tropicube.velocity.managers.MaintenanceManager;
 import fr.tropicube.velocity.managers.TropiServerManager;
 import fr.tropicube.velocity.util.MessageStyle;
+import fr.tropicube.docker.client.RedisManager;
 import net.kyori.adventure.text.Component;
 import org.spongepowered.configurate.ConfigurationNode;
 
@@ -21,15 +23,18 @@ public final class OperationsListener {
     private final MaintenanceManager maintenance;
     private final ConnectionRateLimiter limiter;
     private final ConfigurationNode config;
+    private final RedisManager redis;
 
     public OperationsListener(ProxyServer proxy, TropiServerManager servers,
                               MaintenanceManager maintenance, ConnectionRateLimiter limiter,
-                              ConfigurationNode config) {
+                              ConfigurationNode config, RedisManager redis) {
         this.proxy = proxy;
         this.servers = servers;
         this.maintenance = maintenance;
         this.limiter = limiter;
         this.config = config;
+        this.redis = redis;
+        redis.subscribeToCommands(this::receiveCommand);
     }
 
     @Subscribe
@@ -42,11 +47,29 @@ public final class OperationsListener {
     }
 
     @Subscribe
-    public void onLogin(LoginEvent event) {
-        if (maintenance.blocksNetwork() && !event.getPlayer().hasPermission("tropicube.maintenance.bypass")) {
-            String reason = maintenance.state("network").map(MaintenanceManager.DrainState::reason)
-                    .orElse("Maintenance Tropicube");
-            event.setResult(ResultedEvent.ComponentResult.denied(Component.text(reason)));
+    public EventTask onLogin(LoginEvent event) {
+        return EventTask.async(() -> {
+            if (redis.exists("ban:" + event.getPlayer().getUniqueId())) {
+                event.setResult(ResultedEvent.ComponentResult.denied(
+                        MessageStyle.component("<tc><red>Vous êtes banni du réseau Tropicube.")));
+                return;
+            }
+            if (maintenance.blocksNetwork() && !event.getPlayer().hasPermission("tropicube.maintenance.bypass")) {
+                String reason = maintenance.state("network").map(MaintenanceManager.DrainState::reason)
+                        .orElse("Maintenance Tropicube");
+                event.setResult(ResultedEvent.ComponentResult.denied(Component.text(reason)));
+            }
+        });
+    }
+
+    private void receiveCommand(String command) {
+        if (!command.startsWith("PROXY:BAN_ENFORCE:")) return;
+        try {
+            java.util.UUID playerId = java.util.UUID.fromString(command.substring("PROXY:BAN_ENFORCE:".length()));
+            proxy.getPlayer(playerId).ifPresent(player ->
+                    player.disconnect(MessageStyle.component("<tc><red>Vous avez été banni du réseau Tropicube.")));
+        } catch (IllegalArgumentException ignored) {
+            // Ignore malformed internal commands.
         }
     }
 

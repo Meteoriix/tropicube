@@ -90,6 +90,7 @@ services:
       MYSQL_PASSWORD: "${MYSQL_PASSWORD:?MYSQL_PASSWORD manquant dans .env}"
       FORWARDING_SECRET: "${FORWARDING_SECRET:?FORWARDING_SECRET manquant dans .env}"
       RCON_PASSWORD: "${RCON_PASSWORD:?RCON_PASSWORD manquant dans .env}"
+      TOTP_MASTER_KEY: "${TOTP_MASTER_KEY:?TOTP_MASTER_KEY manquant dans .env}"
     stop_grace_period: 60s
     depends_on:
       redis:

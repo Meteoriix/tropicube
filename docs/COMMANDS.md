@@ -29,6 +29,19 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 | `/kick <joueur> [raison]` | — | `tropicube.kick` | Expulse et journalise l'action |
 | `/warn <joueur> <raison>` | — | `tropicube.warn` | Ajoute un avertissement |
 | `/history <joueur>` | — | `tropicube.history` | Affiche l'historique de sanctions |
+| `/ban <joueur> [raison]` | — | `tropicube.ban` + session TOTP | Bannit du réseau et expulse immédiatement |
+| `/tempban <joueur> <durée> [raison]` | — | `tropicube.ban` + session TOTP | Bannit temporairement du réseau |
+| `/unban <joueur>` | — | `tropicube.ban` + session TOTP | Lève un bannissement réseau |
+| `/report <joueur> <chat\|cheat\|behavior\|other> [#message] [détails]` | — | aucune | Crée un signalement et joint, si indiqué, une preuve de chat encore disponible |
+| `/reports list\|claim\|resolve ...` | — | `tropicube.reports.manage` + session TOTP | Traite la file de signalements |
+| `/msg <joueur> <message>` | `/tell`, `/w` | aucune | Message privé interserveurs, conservé sept jours hors ligne |
+| `/reply <message>` | `/r` | aucune | Répond au dernier interlocuteur |
+| `/ignore <joueur>` | — | aucune | Active ou désactive l'ignorance persistante |
+| `/globalchat <message>` | `/g` | aucune | Envoie explicitement un message global |
+| `/2fa issue <joueur>` | — | `tropicube.2fa.issue` | Émet un jeton d'inscription TOTP à usage court |
+| `/2fa enroll\|confirm\|verify ...` | — | `tropicube.staff` | Inscrit l'application TOTP ou valide une session de quinze minutes |
+| `/staff` | — | `tropicube.staff` + session TOTP | Active le spectateur invisible sans interaction |
+| `/staffchat <message>` | `/sc` | `tropicube.staff` + session TOTP | Chat staff interserveurs |
 | `/coreadmin reload` | `/tropiadmin`, `/ca` | `tropicube.admin` | Recharge la configuration Core et les langues |
 | `/coreadmin info` | `/tropiadmin`, `/ca` | `tropicube.admin` | Affiche l'état des services Core |
 

@@ -87,6 +87,12 @@ On disconnect, Velocity writes `party:offline:<uuid>` and reconciles the member 
 
 Velocity is the only whitelist writer. Both `/whitelist` and the SheepWars GUI reach the same ownership-checked mutation. Lobby snapshots are filtered before counts, pagination, best-server selection, and final clicks, while `ServerPreConnectEvent` independently enforces the boundary so hidden instances cannot be reached by a stale menu or direct command.
 
+## Communication and staff security
+
+Global chat and private messages use Redis. Public messages receive a random twelve-character ID; the message and a seven-message instance context remain in Redis for fifteen minutes. Only authorized staff see the clickable moderation suggestion. Capturing evidence copies the message, context, and SHA-256 digest to MySQL for exactly 90 days. Offline private messages expire after seven days and ignore lists remain in MySQL.
+
+MySQL is authoritative for bans, while `ban:<uuid>` lets Velocity reject the login before a Paper transfer and a command event disconnects active sessions. Sensitive staff actions additionally require the fifteen-minute `staff-session:<uuid>` created by a non-replayable TOTP or one-time recovery code. TOTP secrets use AES-256-GCM under an environment-only key; no device or extra address data is collected.
+
 ## Persistence
 
 MySQL stores durable profiles, friendships, grades, permissions, balances, moderation history, and SheepWars preferences. Redis accelerates reads and coordinates ephemeral network state. Any SQL schema change requires a compatible migration and suitable indexes; any Redis contract change must document its key, TTL, atomicity, and consumers.

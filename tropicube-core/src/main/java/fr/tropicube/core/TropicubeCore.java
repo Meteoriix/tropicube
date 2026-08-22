@@ -14,11 +14,19 @@ import fr.tropicube.core.util.ConfigUpdater;
 import fr.tropicube.docker.client.RedisManager;
 import fr.tropicube.core.social.FriendshipRepository;
 import fr.tropicube.core.social.SocialService;
+import fr.tropicube.core.network.ModerationService;
+import fr.tropicube.core.network.NetworkCommunicationService;
+import fr.tropicube.core.network.NotificationService;
+import fr.tropicube.core.network.PlayerPreferenceService;
+import fr.tropicube.core.network.StaffSecurityService;
 import org.bukkit.GameRules;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 /**
@@ -51,6 +59,12 @@ public class TropicubeCore extends JavaPlugin {
     // Custom Head Manager (HeadDatabase)
     private HeadDatabaseManager headDatabaseManager;
     private SocialService socialService;
+    private PlayerPreferenceService playerPreferenceService;
+    private NotificationService notificationService;
+    private ModerationService moderationService;
+    private NetworkCommunicationService communicationService;
+    private StaffSecurityService staffSecurityService;
+    private final Set<UUID> staffModePlayers = ConcurrentHashMap.newKeySet();
 
     /**
      * Called by Paper when activating the plugin.
@@ -167,6 +181,19 @@ public class TropicubeCore extends JavaPlugin {
                     maximumFriends, maximumPartySize, invitationSeconds);
             socialService.expireRequests(requestExpiryDays);
 
+            playerPreferenceService = new PlayerPreferenceService(databaseManager);
+            notificationService = new NotificationService(databaseManager);
+            moderationService = new ModerationService(databaseManager, redisManager);
+            staffSecurityService = new StaffSecurityService(databaseManager, redisManager,
+                    System.getenv("TROPICUBE_TOTP_MASTER_KEY"));
+            if (!staffSecurityService.available()) getLogger().warning(
+                    "TROPICUBE_TOTP_MASTER_KEY absente : les sessions staff sécurisées restent verrouillées.");
+            communicationService = new NetworkCommunicationService(this, databaseManager, playerPreferenceService);
+            getServer().getAsyncScheduler().runAtFixedRate(this, task -> {
+                notificationService.purgeExpired();
+                moderationService.purgeExpiredEvidence();
+            }, 1, 1, java.util.concurrent.TimeUnit.HOURS);
+
             headDatabaseManager = new HeadDatabaseManager();
 
             // Start Redis subscription for nickname synchronization (Nick)
@@ -215,6 +242,23 @@ public class TropicubeCore extends JavaPlugin {
             Objects.requireNonNull(getCommand("kick")).setExecutor(new KickCommand(this));
             Objects.requireNonNull(getCommand("warn")).setExecutor(new WarnCommand(this));
             Objects.requireNonNull(getCommand("history")).setExecutor(new HistoryCommand(this));
+            var banCommand = new BanCommand(this);
+            Objects.requireNonNull(getCommand("ban")).setExecutor(banCommand);
+            Objects.requireNonNull(getCommand("tempban")).setExecutor(banCommand);
+            Objects.requireNonNull(getCommand("unban")).setExecutor(banCommand);
+            var reportCommand = new ReportCommand(this);
+            Objects.requireNonNull(getCommand("report")).setExecutor(reportCommand);
+            Objects.requireNonNull(getCommand("reports")).setExecutor(reportCommand);
+
+            var messageCommand = new MessageCommand(this);
+            Objects.requireNonNull(getCommand("msg")).setExecutor(messageCommand);
+            Objects.requireNonNull(getCommand("reply")).setExecutor(messageCommand);
+            Objects.requireNonNull(getCommand("ignore")).setExecutor(messageCommand);
+            Objects.requireNonNull(getCommand("globalchat")).setExecutor(new GlobalChatCommand(this));
+            Objects.requireNonNull(getCommand("2fa")).setExecutor(new TwoFactorCommand(this));
+            var staffCommand = new StaffCommand(this);
+            Objects.requireNonNull(getCommand("staff")).setExecutor(staffCommand);
+            Objects.requireNonNull(getCommand("staffchat")).setExecutor(staffCommand);
 
             var friendCommand = new FriendCommand(this);
             Objects.requireNonNull(getCommand("friend")).setExecutor(friendCommand);
@@ -247,6 +291,7 @@ public class TropicubeCore extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new SuppressNotificationsListener(), this);
 
             getServer().getPluginManager().registerEvents(new NetworkProtectionListener(), this);
+            getServer().getPluginManager().registerEvents(new StaffModeListener(this), this);
 
             // Custom Head Manager Listener (HeadDatabase)
             getServer().getPluginManager().registerEvents(headDatabaseManager, this);
@@ -304,6 +349,15 @@ public class TropicubeCore extends JavaPlugin {
     public LanguageManager getLanguageManager()     { return languageManager; }
     public PlayerDataManager getPlayerDataManager() { return playerDataManager; }
     public SocialService getSocialService()         { return socialService; }
+    public PlayerPreferenceService getPlayerPreferenceService() { return playerPreferenceService; }
+    public NotificationService getNotificationService() { return notificationService; }
+    public ModerationService getModerationService() { return moderationService; }
+    public NetworkCommunicationService getCommunicationService() { return communicationService; }
+    public StaffSecurityService getStaffSecurityService() { return staffSecurityService; }
+    public boolean isStaffMode(UUID playerId) { return staffModePlayers.contains(playerId); }
+    public void setStaffMode(UUID playerId, boolean active) {
+        if (active) staffModePlayers.add(playerId); else staffModePlayers.remove(playerId);
+    }
     @SuppressWarnings("unused")
     public HeadDatabaseManager getHeadDatabaseManager() { return headDatabaseManager; }
 

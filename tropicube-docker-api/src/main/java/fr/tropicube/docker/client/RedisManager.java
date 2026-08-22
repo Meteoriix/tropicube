@@ -854,6 +854,32 @@ public class RedisManager {
         redis().set(KEY_PREFIX + key, value, SetParams.setParams().ex(ttlSeconds));
     }
 
+    /** Stores an arbitrary prefixed value without expiry; use only for durable coordination state. */
+    public void setPersistent(String key, String value) {
+        requireText(key, "key");
+        Objects.requireNonNull(value, "value");
+        redis().set(KEY_PREFIX + key, value);
+    }
+
+    /** Atomically prepends a value, caps the list and refreshes its expiry. */
+    public void prependCapped(String key, String value, int maximumSize, int ttlSeconds) {
+        requireText(key, "key");
+        Objects.requireNonNull(value, "value");
+        if (maximumSize <= 0 || ttlSeconds <= 0) throw new IllegalArgumentException(
+                "maximumSize et ttlSeconds doivent être strictement positifs");
+        redis().eval("redis.call('LPUSH', KEYS[1], ARGV[1]); "
+                        + "redis.call('LTRIM', KEYS[1], 0, tonumber(ARGV[2]) - 1); "
+                        + "redis.call('EXPIRE', KEYS[1], ARGV[3]); return 1",
+                List.of(KEY_PREFIX + key), List.of(value, Integer.toString(maximumSize), Integer.toString(ttlSeconds)));
+    }
+
+    /** Reads at most {@code maximumSize} most-recent values from a prefixed list. */
+    public List<String> recentList(String key, int maximumSize) {
+        requireText(key, "key");
+        if (maximumSize <= 0) throw new IllegalArgumentException("maximumSize doit être strictement positif");
+        return List.copyOf(redis().lrange(KEY_PREFIX + key, 0, maximumSize - 1L));
+    }
+
     /**
      * Creates a reservation only if neither it nor the blocking key
      * do not exist. Control and write form a single Redis operation.

@@ -7,6 +7,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 ### Ajouté
 
 - Socle d'exploitation Velocity : migrations SQL versionnées, modes d'instance typés, événements Redis versionnés, maintenance avec drain, MOTD bilingue, annonces ciblées, diagnostic réseau et protection adaptative des connexions.
+- Communication et modération réseau : chat global, messages privés hors ligne, réglages d'ignorance, bannissements appliqués au proxy, file de signalements et preuves de chat conservées 90 jours.
+- Outils staff sécurisés par TOTP : sessions secondaires de quinze minutes, codes de récupération, chat interserveurs et mode spectateur invisible sans interaction.
 
 - Menu Paramètres du lobby avec choix de langue et rejeu automatique par séries confirmées de cinq parties.
 - Système social réseau complet : amis persistants, parties Redis, chat de groupe, suivi individuel du chef, rassemblement `/party warp`, `/friend join` avec arrivée en spectateur et menu Social dans la hotbar du lobby.

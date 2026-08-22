@@ -11,6 +11,13 @@ Secrets and deployment-specific values belong in `.env`, never in Git. `.env.exa
 | `TROPICUBE_MYSQL_USER`, `TROPICUBE_MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD` | Database credentials |
 | `VELOCITY_FORWARDING_SECRET` | Shared Velocity/Paper forwarding secret |
 | `TROPICUBE_PROJECT_PATH` | Absolute Docker-host project path used for bind mounts |
+| `TOTP_MASTER_KEY` | Base64-encoded AES-256 key used to encrypt staff TOTP secrets |
+
+The TOTP key must encode exactly 32 random bytes, for example with `openssl rand -base64 32`. Losing it makes existing enrollments unreadable. When absent, Core starts but deliberately keeps protected staff commands locked.
+
+### Report privacy framework
+
+The implementation minimizes captured context and enforces retention, but code alone does not establish GDPR compliance. Before opening the service, the controller must document purpose and legal basis, register the processing, inform players before collection, restrict recipients, provide an effective rights-request channel, assess whether a DPIA is needed, cover processors contractually, and define a breach procedure. The chosen 90-day evidence period is an operator decision rather than a universally approved CNIL period and must be justified and reviewed. See CNIL guidance on [retention](https://www.cnil.fr/fr/passer-laction/les-durees-de-conservation-des-donnees), [security and minimisation](https://www.cnil.fr/fr/securite-des-donnees-les-regles-essentielles), and [data-subject rights](https://www.cnil.fr/fr/preparer-lexercice-des-droits-des-personnes).
 
 ## Velocity
 

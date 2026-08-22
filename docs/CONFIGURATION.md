@@ -24,6 +24,7 @@ Créer `.env` depuis `.env.example` et remplacer chaque valeur :
 | `MYSQL_PASSWORD` | Mot de passe du compte applicatif |
 | `FORWARDING_SECRET` | Authentification Velocity → Paper |
 | `RCON_PASSWORD` | RCON des instances dynamiques |
+| `TOTP_MASTER_KEY` | Clé AES-256 encodée en Base64 pour chiffrer les secrets TOTP du personnel |
 | `DOCKER_SOCKET_PATH` | Socket Docker de l'hôte, y compris rootless |
 
 Génération recommandée d'un secret sous PowerShell :
@@ -37,6 +38,16 @@ Sous Linux :
 ```bash
 openssl rand -hex 32
 ```
+
+La clé TOTP demande une représentation Base64 de 32 octets, par exemple
+`[Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))`
+sous PowerShell ou `openssl rand -base64 32` sous Linux. Elle doit être sauvegardée comme un secret d'exploitation : sa perte rend les inscriptions TOTP existantes illisibles. Sans cette variable, Core démarre mais verrouille volontairement les commandes staff protégées.
+
+### Cadre de protection des données pour les signalements
+
+Le code applique la minimisation et la limitation temporelle, mais cela ne suffit pas à lui seul à rendre l'exploitation conforme au RGPD. Avant l'ouverture au public, le responsable de traitement doit documenter la finalité et la base légale de la modération, inscrire le traitement au registre, informer clairement les joueurs avant la collecte, désigner les destinataires habilités et fournir un canal effectif d'accès, de rectification, d'opposition, de limitation et d'effacement. Il doit aussi vérifier si une AIPD est nécessaire, conclure les contrats utiles avec ses hébergeurs et définir une procédure de violation de données.
+
+La durée uniforme de 90 jours choisie pour les preuves constitue une décision de l'exploitant, pas une durée universellement validée par la CNIL. Elle doit être justifiée et réévaluée selon la finalité ; les preuves arrivées à échéance sont purgées automatiquement. La CNIL rappelle que la durée doit découler de l'objectif du traitement, que seules les données nécessaires doivent être collectées et que les personnes doivent être informées de leurs droits : [durées de conservation](https://www.cnil.fr/fr/passer-laction/les-durees-de-conservation-des-donnees), [sécurité et minimisation](https://www.cnil.fr/fr/securite-des-donnees-les-regles-essentielles), [droits des personnes](https://www.cnil.fr/fr/preparer-lexercice-des-droits-des-personnes). Les accès staff aux preuves devront également être journalisés et revus ; le schéma actuel conserve les actions de workflow mais ne constitue pas encore un portail autonome d'exercice des droits.
 
 Éviter les espaces et caractères interprétés par les syntaxes `.env`, YAML ou shell. Ne jamais copier les valeurs réelles dans une issue, un log ou un commit.
 

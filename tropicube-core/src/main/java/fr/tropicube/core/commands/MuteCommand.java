@@ -23,6 +23,7 @@ public class MuteCommand implements CommandExecutor {
             sender.sendMessage(lm.getComponentForLang(lang(sender), "general.no-permission"));
             return true;
         }
+        if (!StaffSecurityGate.allow(plugin, sender)) return true;
 
         if (label.equalsIgnoreCase("unmute")) {
             if (args.length < 1) { sender.sendMessage(lm.getComponentForLang(lang(sender), "commands.unmute-usage")); return true; }
@@ -67,8 +68,10 @@ public class MuteCommand implements CommandExecutor {
         UUID onlineUuid = online == null ? null : online.getUniqueId();
         UUID staffUuid = sender instanceof Player p ? p.getUniqueId() : null;
         String staffName = sender.getName();
-        String reason = args.length >= 3
-                ? String.join(" ", Arrays.copyOfRange(args, 2, args.length))
+        String evidenceId = evidenceId(args);
+        int reasonEnd = evidenceId == null ? args.length : args.length - 2;
+        String reason = reasonEnd >= 3
+                ? String.join(" ", Arrays.copyOfRange(args, 2, reasonEnd))
                 : lm.getForLang(language, "general.no-reason");
         CommandAsync.run(plugin, sender, language, () -> {
             UUID uuid = onlineUuid != null ? onlineUuid
@@ -87,8 +90,24 @@ public class MuteCommand implements CommandExecutor {
             Player target = plugin.getServer().getPlayer(uuid);
             if (target != null)
                 target.sendMessage(lm.getComponent(uuid, "moderation.mute-received", durationStr, reason));
+            if (evidenceId != null && staffUuid != null) {
+                String instanceId = System.getenv().getOrDefault("INSTANCE_ID", plugin.getServer().getName());
+                plugin.getModerationService().report(staffUuid, uuid, "CHAT", reason, instanceId, evidenceId)
+                        .thenCompose(reportId -> plugin.getModerationService()
+                                .resolve(reportId, staffUuid, "Sanction appliquée depuis la preuve de chat"))
+                        .exceptionally(error -> {
+                            plugin.getLogger().warning("Preuve de chat non jointe à la sanction: " + error.getMessage());
+                            return false;
+                        });
+            }
         });
         return true;
+    }
+
+    private static String evidenceId(String[] args) {
+        if (args.length < 2 || !"--evidence".equalsIgnoreCase(args[args.length - 2])) return null;
+        String value = args[args.length - 1];
+        return value.matches("[a-fA-F0-9]{12}") ? value.toLowerCase(Locale.ROOT) : null;
     }
 
     private String formatDuration(long seconds, String language) {

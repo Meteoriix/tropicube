@@ -81,6 +81,24 @@ moderation:
   already-banned: "<tc><white>{0} <red>ist bereits gebannt."
   not-banned: "<tc><white>{0} <red>ist nicht gebannt."
   warn-kick: "<tc><red>⚠ Du hast {0} Verwarnungen erreicht und wurdest gekickt."
+  unban-success: "<tc><green>Die Sperre von <white>{0}</white> wurde aufgehoben."
+  report-usage: "<tc><red>Verwendung: /report <Spieler> <chat|cheat|behavior|other> [#Nachricht] [Details]"
+  report-category: "<tc><red>Unbekannte Kategorie: chat, cheat, behavior oder other."
+  report-created: "<tc><green>Meldung als <white>#{0}</white> gesendet."
+  report-failed: "<tc><red>Die Meldung konnte nicht gespeichert werden oder der Beleg ist abgelaufen."
+
+communication:
+  msg-usage: "<tc><red>Verwendung: /msg <Spieler> <Nachricht>"
+  reply-usage: "<tc><red>Verwendung: /reply <Nachricht>"
+  ignore-usage: "<tc><red>Verwendung: /ignore <Spieler>"
+  global-usage: "<tc><red>Verwendung: /globalchat <Nachricht>"
+  no-conversation: "<tc><red>Keine aktuelle Unterhaltung."
+  sent: "<tc><gray>Nachricht an <white>{0}</white> gesendet."
+  stored: "<tc><gray>{0} ist offline: Nachricht wird 7 Tage gespeichert."
+  blocked: "<tc><red>Dieser Spieler nimmt keine privaten Nachrichten an."
+  private: "<light_purple>[PN]</light_purple> <white>{0}</white><gray>: {1}"
+  ignored: "<tc><gray>Du ignorierst jetzt <white>{0}</white>."
+  unignored: "<tc><green>Du ignorierst <white>{0}</white> nicht mehr."
 
 time:
   permanent: "Permanent"
