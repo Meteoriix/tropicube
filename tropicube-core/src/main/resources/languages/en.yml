@@ -580,6 +580,9 @@ help:
     - "  <gold>/eco, /rank, /permissions <dark_gray>— <gray>Accounts and permissions"
     - "  <gold>/tropicube, /coreadmin <dark_gray>— <gray>Technical administration"
 
+guild:
+  invitation: "<tc><yellow>{0}</yellow> invited you to a guild. Use <white>/guild accept [tag]</white>."
+
 social:
   self-target: "<tc><red>You cannot target yourself."
   player-unknown: "<tc><red>Unknown player: <white>{0}"

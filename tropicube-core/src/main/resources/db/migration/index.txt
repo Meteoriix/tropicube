@@ -1,1 +1,2 @@
 V001__network_features.sql
+V002__guild_progression.sql

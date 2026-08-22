@@ -152,6 +152,9 @@ Sections métier :
 - `social.friends.request-expiry-days` : expiration des demandes en attente (`30`) ;
 - `social.party.max-size` : taille maximale d'une party (`8`) ;
 - `social.party.invite-expiry-seconds` : validité d'une invitation de party (`60`) ;
+- `guilds.max-members` : capacité d'une guilde (`50`) ;
+- `guilds.max-officers` : nombre maximal d'officiers (`5`) ;
+- `guilds.weekly-contribution-cap` : contribution d'XP hebdomadaire maximale par membre (`5000`) ;
 - `language.default` : langue utilisée avant chargement d'un profil existant. À la création d'un joueur, la langue du client Minecraft sélectionne `fr`, `en`, `es` ou `de` ; toute autre locale utilise l'anglais ;
 - `grades` : présentation MiniMessage, priorité, statut VIP/staff et permissions.
 

@@ -23,6 +23,7 @@ import fr.tropicube.core.network.ProfileService;
 import fr.tropicube.core.progression.MissionCatalog;
 import fr.tropicube.core.progression.MissionService;
 import fr.tropicube.core.progression.NetworkProgressionService;
+import fr.tropicube.core.guild.GuildService;
 import org.bukkit.GameRules;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -72,6 +73,7 @@ public class TropicubeCore extends JavaPlugin {
     private NetworkProgressionService networkProgressionService;
     private MissionService missionService;
     private ProfileService profileService;
+    private GuildService guildService;
 
     /**
      * Called by Paper when activating the plugin.
@@ -196,8 +198,14 @@ public class TropicubeCore extends JavaPlugin {
             profileService = new ProfileService(databaseManager, playerPreferenceService);
             try (var input = java.nio.file.Files.newInputStream(
                     new File(getDataFolder(), "missions.yml").toPath())) {
-                missionService = new MissionService(this, databaseManager, MissionCatalog.load(input));
+            missionService = new MissionService(this, databaseManager, MissionCatalog.load(input));
             }
+            guildService = new GuildService(databaseManager,
+                    positiveConfig("guilds.max-members", 50, 2),
+                    positiveConfig("guilds.max-officers", 5, 1),
+                    positiveConfig("guilds.weekly-contribution-cap", 5000, 1));
+            getServer().getAsyncScheduler().runAtFixedRate(this, task -> guildService.applySuccession(),
+                    1, 24, java.util.concurrent.TimeUnit.HOURS);
             moderationService = new ModerationService(databaseManager, redisManager);
             staffSecurityService = new StaffSecurityService(databaseManager, redisManager,
                     System.getenv("TROPICUBE_TOTP_MASTER_KEY"));
@@ -279,6 +287,7 @@ public class TropicubeCore extends JavaPlugin {
             Objects.requireNonNull(getCommand("settings")).setExecutor(playerCenter);
             Objects.requireNonNull(getCommand("missions")).setExecutor(playerCenter);
             Objects.requireNonNull(getCommand("notifications")).setExecutor(playerCenter);
+            Objects.requireNonNull(getCommand("guild")).setExecutor(new GuildCommand(this));
 
             var friendCommand = new FriendCommand(this);
             Objects.requireNonNull(getCommand("friend")).setExecutor(friendCommand);
@@ -378,6 +387,7 @@ public class TropicubeCore extends JavaPlugin {
     public NetworkProgressionService getNetworkProgressionService() { return networkProgressionService; }
     public MissionService getMissionService() { return missionService; }
     public ProfileService getProfileService() { return profileService; }
+    public GuildService getGuildService() { return guildService; }
     public boolean isStaffMode(UUID playerId) { return staffModePlayers.contains(playerId); }
     public void setStaffMode(UUID playerId, boolean active) {
         if (active) staffModePlayers.add(playerId); else staffModePlayers.remove(playerId);

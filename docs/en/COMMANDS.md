@@ -51,6 +51,7 @@ Velocity validates `/whitelist`: the sender must own an active private custom ga
 | `/settings profile|messages|global|entities|hints <value>` | none | Updates persistent preferences |
 | `/missions [reroll|claim] ...` | none | Displays and manages personal daily/weekly missions |
 | `/notifications [read <id>]` | none | Reads the complete notification center |
+| `/guild info|create|invite|accept|leave|kick|promote|demote|transfer ...` | role-dependent | Manages a persistent 50-member guild |
 | `/coreadmin reload` | Core administration | Reloads supported Core configuration (`/tropiadmin` remains an alias) |
 
 ## Lobby commands

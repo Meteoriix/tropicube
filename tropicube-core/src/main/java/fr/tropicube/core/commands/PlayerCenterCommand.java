@@ -151,8 +151,10 @@ public final class PlayerCenterCommand implements CommandExecutor {
                 plugin.getServer().getScheduler().runTask(plugin, () -> {
                     player.sendMessage(Component.text("Centre de notifications", NamedTextColor.GOLD));
                     values.forEach(value -> player.sendMessage(Component.text("#" + value.id() + " ["
-                            + value.category() + "] " + value.messageKey() + (value.read() ? "" : " • nouveau"),
-                            value.read() ? NamedTextColor.GRAY : NamedTextColor.AQUA)));
+                                    + value.category() + "] ", value.read() ? NamedTextColor.GRAY : NamedTextColor.AQUA)
+                            .append(plugin.getLanguageManager().getComponent(player.getUniqueId(), value.messageKey(),
+                                    value.arguments().toArray()))
+                            .append(Component.text(value.read() ? "" : " • nouveau", NamedTextColor.AQUA))));
                 }));
         return true;
     }

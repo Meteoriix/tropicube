@@ -34,6 +34,11 @@ social:
     max-size: 8
     invite-expiry-seconds: 60
 
+guilds:
+  max-members: 50
+  max-officers: 5
+  weekly-contribution-cap: 5000
+
 language:
   default: "fr"
 

@@ -107,6 +107,10 @@ commands:
     description: "Ouvrir le centre de notifications"
     usage: /notifications [read <id>]
     aliases: [ inbox ]
+  guild:
+    description: "Créer et gérer une guilde"
+    usage: /guild <info|create|invite|accept|leave|kick|promote|demote|transfer>
+    aliases: [ guilde ]
   permissions:
     description: "Gérer les permissions individuelles"
     usage: /permissions <add|remove|list|grade> ...

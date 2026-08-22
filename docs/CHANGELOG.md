@@ -11,6 +11,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 - Outils staff sécurisés par TOTP : sessions secondaires de quinze minutes, codes de récupération, chat interserveurs et mode spectateur invisible sans interaction.
 - Profils réseau à détails réglables, niveaux réseau, catalogue YAML de missions versionné, rotations personnelles de 5 quotidiennes et 3 hebdomadaires, rerolls et récompenses atomiques.
 - Lobby enrichi avec aide contextuelle désactivable, visibilité persistante tous/amis/party/personne et sélection de partie intelligente orientée remplissage.
+- Guildes persistantes complètes : 50 membres, rôles bornés, invitations, audit, contributions plafonnées, défis hebdomadaires, classement compétitif agrégé et succession automatique du chef inactif.
 
 - Menu Paramètres du lobby avec choix de langue et rejeu automatique par séries confirmées de cinq parties.
 - Système social réseau complet : amis persistants, parties Redis, chat de groupe, suivi individuel du chef, rassemblement `/party warp`, `/friend join` avec arrivée en spectateur et menu Social dans la hotbar du lobby.

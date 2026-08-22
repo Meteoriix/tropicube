@@ -11,6 +11,7 @@ This document records functional, technical, and operational changes. Entries ar
 - TOTP-protected staff tools: fifteen-minute sessions, recovery codes, cross-server staff chat, and controlled invisible spectator mode.
 - Visibility-aware network profiles, network levels, a versioned mission catalog, personal 5-daily/3-weekly rotations, rerolls, and atomic rewards.
 - Lobby contextual help, persistent entity visibility, and fill-oriented smart match selection.
+- Complete persistent guilds with 50-member capacity, bounded roles, invites, audit, capped contributions, weekly challenges, aggregate competitive ranking, and inactive-owner succession.
 
 - Lobby Settings menu with language selection and confirmed five-game automatic replay batches.
 - Complete network social system: durable friends, Redis parties, party chat, individual leader following, `/party warp`, spectator-capable `/friend join`, and the lobby Social hotbar menu.

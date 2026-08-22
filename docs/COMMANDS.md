@@ -44,6 +44,10 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 | `/missions reroll <1..5>` | — | aucune | Remplace une mission quotidienne (2/jour, 4 avec la permission bonus) |
 | `/missions claim <daily\|weekly> <slot>` | — | aucune | Réclame monnaie et XP réseau d'une mission terminée |
 | `/notifications [read <id>]` | `/inbox` | aucune | Consulte le centre de notifications ou marque une entrée comme lue |
+| `/guild info` | `/guilde` | aucune | Affiche membres, rôles, niveau, contributions et défis hebdomadaires |
+| `/guild create <nom> <tag>` | `/guilde` | aucune | Crée une guilde dont la capacité initiale est 50 membres |
+| `/guild invite <joueur>` puis `/guild accept <tag>` | `/guilde` | officier/chef pour inviter | Gère les invitations conservées sept jours |
+| `/guild leave\|kick\|promote\|demote\|transfer ...` | `/guilde` | selon le rôle | Gère les membres, officiers et la propriété |
 | `/2fa issue <joueur>` | — | `tropicube.2fa.issue` | Émet un jeton d'inscription TOTP à usage court |
 | `/2fa enroll\|confirm\|verify ...` | — | `tropicube.staff` | Inscrit l'application TOTP ou valide une session de quinze minutes |
 | `/staff` | — | `tropicube.staff` + session TOTP | Active le spectateur invisible sans interaction |

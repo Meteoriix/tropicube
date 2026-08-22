@@ -62,6 +62,7 @@ public class PlayerJoinQuitListener implements Listener {
                             player.sendMessage(plugin.getLanguageManager().getComponent(uuid, welcomeKey, player.getName()));
                         }
                         plugin.getCommunicationService().playerOnline(uuid);
+                        plugin.getGuildService().touch(uuid);
                         if (restoreStaffMode && player.hasPermission("tropicube.staff")) {
                             plugin.setStaffMode(uuid, true);
                             player.setGameMode(org.bukkit.GameMode.SPECTATOR);
