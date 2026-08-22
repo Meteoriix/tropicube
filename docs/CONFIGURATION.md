@@ -41,7 +41,14 @@ openssl rand -hex 32
 
 La clé TOTP demande une représentation Base64 de 32 octets, par exemple
 `[Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))`
-sous PowerShell ou `openssl rand -base64 32` sous Linux. Elle doit être sauvegardée comme un secret d'exploitation : sa perte rend les inscriptions TOTP existantes illisibles. Sans cette variable, Core démarre mais verrouille volontairement les commandes staff protégées.
+sous PowerShell ou `openssl rand -base64 32` sous Linux. Elle doit être sauvegardée comme un secret d'exploitation : sa perte rend les inscriptions TOTP existantes illisibles. Le déploiement Compose de référence refuse de démarrer sans cette variable ou avec une clé mal formée. Un lancement autonome de Core sans cette variable verrouille volontairement les commandes staff protégées.
+
+Pour compléter un ancien `.env` sous PowerShell sans afficher la clé dans le terminal :
+
+```powershell
+$key = [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+Add-Content -LiteralPath .env -Value "TOTP_MASTER_KEY=$key"
+```
 
 ### Cadre de protection des données pour les signalements
 

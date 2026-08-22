@@ -73,6 +73,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Corrigé
 
+- Le précontrôle des scripts de déploiement diagnostique désormais une clé `TOTP_MASTER_KEY` absente ou invalide et indique comment générer une clé AES-256 sans la versionner.
+
 - Toutes les migrations SQL présentes sont désormais indexées ; la contrainte qui empêchait plusieurs résultats SheepWars pour une même instance a été remplacée par un index d'historique non unique.
 - Le mode staff restaure le mode de jeu antérieur, y compris après un transfert interserveurs, au lieu d'imposer systématiquement le mode Aventure.
 

@@ -45,6 +45,25 @@ ok() { printf '    %s\n' "$1"; }
 fail() { printf '\n[ERROR] %s\n' "$1" >&2; exit 1; }
 require_command() { command -v "$1" >/dev/null 2>&1 || fail "$1 not found on PATH."; }
 
+validate_totp_master_key() {
+  [[ -f .env ]] || fail 'Missing .env file. Copy .env.example to .env and replace every demonstration value.'
+  "${python_command[@]}" - <<'PY' || fail 'TOTP_MASTER_KEY is missing or invalid. Append a Base64-encoded 32-byte key with: printf "\nTOTP_MASTER_KEY=%s\n" "$(openssl rand -base64 32)" >> .env'
+import base64
+import binascii
+
+value = None
+with open('.env', encoding='utf-8') as stream:
+    for raw_line in stream:
+        if raw_line.startswith('TOTP_MASTER_KEY='):
+            value = raw_line.partition('=')[2].strip()
+try:
+    decoded = base64.b64decode(value or '', validate=True)
+except (binascii.Error, ValueError):
+    raise SystemExit(1)
+raise SystemExit(0 if len(decoded) == 32 else 1)
+PY
+}
+
 if ! $only_images; then require_command mvn; fi
 require_command docker
 if command -v python3 >/dev/null 2>&1 && python3 --version >/dev/null 2>&1; then
@@ -58,6 +77,7 @@ else
   fail 'Python 3 is required for safe language-file merging.'
 fi
 
+validate_totp_master_key
 docker info --format '{{.ServerVersion}}' >/dev/null 2>&1 || fail 'Docker daemon is not available.'
 docker compose version >/dev/null 2>&1 || fail 'docker compose is not available.'
 docker compose config --quiet || fail 'docker-compose.yml or .env is invalid.'

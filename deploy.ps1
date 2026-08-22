@@ -33,6 +33,24 @@ function Fail([string]$msg) {
     exit 1
 }
 
+function Assert-TotpMasterKey {
+    if (-not (Test-Path -LiteralPath ".env" -PathType Leaf)) {
+        Fail "Missing .env file. Copy .env.example to .env and replace every demonstration value."
+    }
+    $entry = Get-Content -LiteralPath ".env" |
+        Where-Object { $_ -match '^TOTP_MASTER_KEY=' } |
+        Select-Object -Last 1
+    if ($null -eq $entry -or $entry.Length -le "TOTP_MASTER_KEY=".Length) {
+        Fail 'TOTP_MASTER_KEY is missing in .env. Run: $key = [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32)); Add-Content -LiteralPath .env -Value "TOTP_MASTER_KEY=$key"'
+    }
+    $value = $entry.Substring("TOTP_MASTER_KEY=".Length).Trim()
+    try { $decoded = [Convert]::FromBase64String($value) }
+    catch { Fail "TOTP_MASTER_KEY must be a Base64-encoded 32-byte key. Generate a new key as documented in docs/CONFIGURATION.md." }
+    if ($decoded.Length -ne 32) {
+        Fail "TOTP_MASTER_KEY must decode to exactly 32 bytes (AES-256)."
+    }
+}
+
 # ── Lang-merge helpers ────────────────────────────────────────────────────────
 
 function script:Find-SectionStart([string[]]$lines, [string]$section) {
@@ -202,6 +220,7 @@ if (-not $OnlyImages) {
     if (-not (Get-Command mvn -ErrorAction SilentlyContinue)) { Fail "mvn not found on PATH." }
 }
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) { Fail "docker not found on PATH." }
+Assert-TotpMasterKey
 & docker info --format '{{.ServerVersion}}' *> $null
 if ($LASTEXITCODE -ne 0) { Fail "Docker daemon is not available." }
 & docker compose version *> $null

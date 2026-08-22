@@ -73,7 +73,9 @@ Windows :
 
 ```powershell
 Copy-Item .env.example .env
-# Éditer .env
+# Éditer .env et remplacer toutes les valeurs de démonstration.
+$key = [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+# Remplacer manuellement la valeur TOTP_MASTER_KEY par $key.
 ./deploy.ps1 -ValidateOnly
 ./deploy.ps1
 ```
@@ -82,10 +84,22 @@ Linux :
 
 ```bash
 cp .env.example .env
-# Éditer .env
+# Éditer .env, remplacer toutes les valeurs de démonstration et utiliser
+# `openssl rand -base64 32` comme valeur de TOTP_MASTER_KEY.
 chmod +x deploy.sh
 ./deploy.sh --validate-only
 ./deploy.sh
+```
+
+Lorsqu'un `.env` existant est antérieur à l'authentification TOTP, ajouter la variable sans afficher sa valeur :
+
+```powershell
+$key = [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+Add-Content -LiteralPath .env -Value "TOTP_MASTER_KEY=$key"
+```
+
+```bash
+printf '\nTOTP_MASTER_KEY=%s\n' "$(openssl rand -base64 32)" >> .env
 ```
 
 Le premier `docker compose up` télécharge MySQL, Redis, le proxy de socket et les images de base. Il peut donc prendre plusieurs minutes.

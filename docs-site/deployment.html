@@ -60,15 +60,22 @@ python3 --version</code></pre></div>
 <ol><li>Exécuter le déploiement complet.</li></ol>
 <p>Windows :</p>
 <div class="code-block"><span class="code-language">powershell</span><pre class=""><code>Copy-Item .env.example .env
-# Éditer .env
+# Éditer .env et remplacer toutes les valeurs de démonstration.
+$key = [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+# Remplacer manuellement la valeur TOTP_MASTER_KEY par $key.
 ./deploy.ps1 -ValidateOnly
 ./deploy.ps1</code></pre></div>
 <p>Linux :</p>
 <div class="code-block"><span class="code-language">bash</span><pre class=""><code>cp .env.example .env
-# Éditer .env
+# Éditer .env, remplacer toutes les valeurs de démonstration et utiliser
+# `openssl rand -base64 32` comme valeur de TOTP_MASTER_KEY.
 chmod +x deploy.sh
 ./deploy.sh --validate-only
 ./deploy.sh</code></pre></div>
+<p>Lorsqu'un <code>.env</code> existant est antérieur à l'authentification TOTP, ajouter la variable sans afficher sa valeur :</p>
+<div class="code-block"><span class="code-language">powershell</span><pre class=""><code>$key = [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+Add-Content -LiteralPath .env -Value &quot;TOTP_MASTER_KEY=$key&quot;</code></pre></div>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>printf '\nTOTP_MASTER_KEY=%s\n' &quot;$(openssl rand -base64 32)&quot; &gt;&gt; .env</code></pre></div>
 <p>Le premier <code>docker compose up</code> télécharge MySQL, Redis, le proxy de socket et les images de base. Il peut donc prendre plusieurs minutes.</p>
 <h2 id="parite-des-scripts-windows-et-linux">Parité des scripts Windows et Linux<a class="heading-anchor" href="#parite-des-scripts-windows-et-linux" aria-label="Lien vers cette section">#</a></h2>
 <p><code>deploy.ps1</code> et <code>deploy.sh</code> offrent les mêmes étapes et garanties fonctionnelles. Leur implémentation diffère uniquement pour utiliser les primitives naturelles de chaque plateforme.</p>
