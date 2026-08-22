@@ -202,7 +202,7 @@ Un changement de langue publie `LANG_CHANGED:<uuid>:<langue>` sur le canal joueu
 
 ## Persistance MySQL
 
-Les migrations MySQL de Core sont listées explicitement sous `db/migration/index.txt`, appliquées dans l'ordre et enregistrées dans `tropicube_schema_migrations`. Les tests comparent l'index à toutes les ressources SQL afin qu'une migration ajoutée ne puisse pas être ignorée silencieusement.
+Les migrations MySQL de Core sont listées explicitement sous `db/migration/index.txt`, appliquées dans l'ordre et enregistrées dans `tropicube_schema_migrations`. Les ajouts de colonnes consultent `information_schema.columns` puis exécutent un DDL préparé afin de rester idempotents sans dépendre de la syntaxe MariaDB `ADD COLUMN IF NOT EXISTS`, absente de MySQL. Les tests comparent l'index à toutes les ressources SQL et interdisent cette syntaxe incompatible afin qu'une migration ajoutée ne puisse pas être ignorée ou casser silencieusement le démarrage.
 
 La progression réseau suit une courbe stable : le niveau `n` commence à `100 × (n-1)²` XP. Les rotations personnelles utilisent le fuseau `Europe/Paris`, une clé par date ou semaine ISO, cinq emplacements quotidiens et trois hebdomadaires. Deux rerolls quotidiens sont accordés par défaut, deux supplémentaires via `tropicube.missions.reroll.bonus`. La réclamation marque la mission, crédite la monnaie, journalise la transaction et ajoute l'XP dans une même transaction SQL afin d'empêcher les doubles récompenses.
 

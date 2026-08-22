@@ -1,11 +1,50 @@
-ALTER TABLE tropicube_sheepwars_kit_mastery
-    ADD COLUMN IF NOT EXISTS selected_catalog_version INT AFTER selected_branch;
+SET @tropicube_column_exists = (
+    SELECT COUNT(*)
+    FROM information_schema.columns
+    WHERE table_schema = DATABASE()
+      AND table_name = 'tropicube_sheepwars_kit_mastery'
+      AND column_name = 'selected_catalog_version'
+);
+SET @tropicube_ddl = IF(
+    @tropicube_column_exists = 0,
+    'ALTER TABLE tropicube_sheepwars_kit_mastery ADD COLUMN selected_catalog_version INT AFTER selected_branch',
+    'SELECT 1'
+);
+PREPARE tropicube_migration_statement FROM @tropicube_ddl;
+EXECUTE tropicube_migration_statement;
+DEALLOCATE PREPARE tropicube_migration_statement;
 
-ALTER TABLE tropicube_sheepwars_matches
-    ADD COLUMN IF NOT EXISTS mastery_catalog_version INT AFTER timeline_json;
+SET @tropicube_column_exists = (
+    SELECT COUNT(*)
+    FROM information_schema.columns
+    WHERE table_schema = DATABASE()
+      AND table_name = 'tropicube_sheepwars_matches'
+      AND column_name = 'mastery_catalog_version'
+);
+SET @tropicube_ddl = IF(
+    @tropicube_column_exists = 0,
+    'ALTER TABLE tropicube_sheepwars_matches ADD COLUMN mastery_catalog_version INT AFTER timeline_json',
+    'SELECT 1'
+);
+PREPARE tropicube_migration_statement FROM @tropicube_ddl;
+EXECUTE tropicube_migration_statement;
+DEALLOCATE PREPARE tropicube_migration_statement;
 
-ALTER TABLE tropicube_mission_assignments
-    ADD COLUMN IF NOT EXISTS reward_reroll_tokens SMALLINT NOT NULL DEFAULT 0 AFTER reroll_count;
+SET @tropicube_column_exists = (
+    SELECT COUNT(*)
+    FROM information_schema.columns
+    WHERE table_schema = DATABASE()
+      AND table_name = 'tropicube_mission_assignments'
+      AND column_name = 'reward_reroll_tokens'
+);
+SET @tropicube_ddl = IF(
+    @tropicube_column_exists = 0,
+    'ALTER TABLE tropicube_mission_assignments ADD COLUMN reward_reroll_tokens SMALLINT NOT NULL DEFAULT 0 AFTER reroll_count',
+    'SELECT 1'
+);
+PREPARE tropicube_migration_statement FROM @tropicube_ddl;
+EXECUTE tropicube_migration_statement;
+DEALLOCATE PREPARE tropicube_migration_statement;
 
 CREATE TABLE IF NOT EXISTS tropicube_sheepwars_season_ratings (
     season_id BIGINT NOT NULL,

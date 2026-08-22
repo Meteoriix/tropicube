@@ -1,5 +1,18 @@
-ALTER TABLE tropicube_guild_members
-    ADD COLUMN IF NOT EXISTS contribution_week VARCHAR(16) NOT NULL DEFAULT '' AFTER last_active_at;
+SET @tropicube_column_exists = (
+    SELECT COUNT(*)
+    FROM information_schema.columns
+    WHERE table_schema = DATABASE()
+      AND table_name = 'tropicube_guild_members'
+      AND column_name = 'contribution_week'
+);
+SET @tropicube_ddl = IF(
+    @tropicube_column_exists = 0,
+    'ALTER TABLE tropicube_guild_members ADD COLUMN contribution_week VARCHAR(16) NOT NULL DEFAULT '''' AFTER last_active_at',
+    'SELECT 1'
+);
+PREPARE tropicube_migration_statement FROM @tropicube_ddl;
+EXECUTE tropicube_migration_statement;
+DEALLOCATE PREPARE tropicube_migration_statement;
 
 CREATE TABLE IF NOT EXISTS tropicube_guild_challenges (
     guild_id BIGINT NOT NULL,
