@@ -135,12 +135,16 @@ public class TeamSelectionMenu implements Listener {
         if (chosen == GameTeam.BLUE) blueCount++;
         if (chosen == GameTeam.RED) redCount++;
 
-        if (Math.abs(blueCount - redCount) <= 1) {
+        boolean balanced = Math.abs(blueCount - redCount) <= 1;
+        boolean roleAllowed = plugin.getGameManager().canSelectRole(gp, gp.getPlayerClass(), chosen);
+        if (balanced && roleAllowed) {
             gp.setTeam(chosen);
             player.sendMessage(LangHelper.component(player, "sw.team-joined", chosen.getDisplayName()));
             // Refreshes the team selection object in the quickbar.
             player.getInventory().setItem(0, createSelectorItem(player));
             plugin.getScoreboardManager().updateAll();
+        } else if (!roleAllowed) {
+            player.sendMessage(LangHelper.component(player, "sw.role-limit-reached"));
         } else {
             player.sendMessage(LangHelper.component(player, "sw.team-unbalanced", chosen.getDisplayName()));
         }

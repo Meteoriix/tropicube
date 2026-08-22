@@ -39,6 +39,7 @@ import org.bukkit.util.Vector;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /** Applies SheepWars connection, combat, death and interaction rules. */
@@ -69,6 +70,7 @@ public class PlayerListener implements Listener {
                 }
             })
         );
+        plugin.getProgressionService().loadSummaryVisibility(player.getUniqueId());
     }
 
     /** Halves the natural health regeneration of players in-game only. */
@@ -86,6 +88,12 @@ public class PlayerListener implements Listener {
         GamePlayer gamePlayer = plugin.getGameManager().getPlayer(player);
         if (gamePlayer != null) {
             if (plugin.getGameManager().getState() == GameState.PLAYING && gamePlayer.isAlive()) {
+                if (plugin.getGameManager().getMode().ranked()) {
+                    plugin.getProgressionService().recordAbandon(player.getUniqueId()).thenAccept(penalty ->
+                            plugin.getRedisManager().set("sw:ranked-penalty:" + player.getUniqueId(),
+                                    Long.toString(penalty.until()), (int) Math.max(1,
+                                            (penalty.until() - System.currentTimeMillis()) / 1000)));
+                }
                 player.kill(DamageSource.builder(DamageType.GENERIC).build());
             }
             plugin.getGameManager().removePlayer(player);
@@ -392,6 +400,12 @@ public class PlayerListener implements Listener {
         Player player = event.getPlayer();
         GamePlayer gp = plugin.getGameManager().getPlayer(player);
         if (gp == null || gp.getTeam() == null) return;
+
+        if (plugin.getGameManager().getMode().ranked()) {
+            event.viewers().removeIf(viewer -> viewer instanceof Player target
+                    && Optional.ofNullable(plugin.getGameManager().getPlayer(target))
+                    .map(GamePlayer::getTeam).filter(team -> team == gp.getTeam()).isEmpty());
+        }
 
         Component prefix = Component.text(gp.getTeam().getDisplayName(), gp.getTeam().getColor(),
                         TextDecoration.BOLD)

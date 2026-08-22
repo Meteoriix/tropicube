@@ -219,6 +219,10 @@ public class ClassKitSelectionMenu implements Listener {
                     return;
                 }
                 GamePlayer gp = plugin.getGameManager().getPlayer(player);
+                if (!plugin.getGameManager().canSelectRole(gp, pc)) {
+                    player.sendMessage(LangHelper.component(player, "sw.role-limit-reached"));
+                    return;
+                }
                 if (gp != null) {
                     gp.setKit(selected);
                     gp.setPlayerClass(pc);

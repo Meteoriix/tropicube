@@ -385,8 +385,11 @@ public class DockerManager implements Closeable {
         instance.setSpectatorSlots(template.getSpectatorSlots());
         instance.setServerType(template.getServerType());
         boolean customGame = Boolean.parseBoolean(effectiveExtraEnv.getOrDefault("IS_HOST", "false"));
-        String configuredMode = effectiveExtraEnv.get("GAME_MODE");
-        if (configuredMode == null || configuredMode.isBlank()) {
+        String configuredMode = effectiveExtraEnv.getOrDefault("GAME_MODE",
+                template.getEnvironmentVariables().get("GAME_MODE"));
+        if (customGame) {
+            instance.setMode(InstanceMode.CUSTOM);
+        } else if (configuredMode == null || configuredMode.isBlank()) {
             instance.setMode(InstanceMode.infer(template.getId(), customGame));
         } else {
             try {

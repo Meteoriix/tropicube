@@ -175,6 +175,8 @@ Vérifier ensuite :
 - connexion d'un compte Minecraft officiel sur `hôte:25565` ;
 - `/server`, transfert vers SheepWars et retour `/hub` ;
 - fin d'une partie SheepWars, retour de tous les joueurs au lobby puis disparition immédiate du conteneur avec `docker compose ps` ;
+- `/quickplay`, puis `/competitive 4v4` et `/competitive 8v8` avec les capacités exactes ; vérifier les plages 25625–25639, 25640–25649 et 25650–25659 uniquement depuis l'hôte, jamais publiées aux joueurs ;
+- transfert d'une party avec suivi activé, refus au-delà de 2 joueurs en classé 4v4 et 4 joueurs en classé 8v8 ;
 - chargement des profils, soldes, langues et permissions.
 
 Velocity sonde les backends prêts toutes les 10 secondes. Pour valider la protection contre les serveurs fantômes, interrompre un backend de test sans le retirer de Redis, attendre au moins 60 secondes depuis sa dernière réponse, puis vérifier sa disparition de Docker, de `/tropi list` et des clés `instance:*`/index Redis. Un template avec `min-instances` peut être recréé automatiquement après cette purge.

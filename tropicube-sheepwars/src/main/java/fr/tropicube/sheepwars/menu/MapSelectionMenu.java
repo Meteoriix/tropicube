@@ -30,6 +30,8 @@ public class MapSelectionMenu implements Listener {
 
     /** playerUuid → the map they voted for (or host-selected map when vote disabled) */
     private final Map<UUID, GameMap> votes = new HashMap<>();
+    private final Map<UUID, Integer> voteWeights = new HashMap<>();
+    private List<GameMap> ballot = List.of();
     private final Set<UUID> openMenus = new HashSet<>();
 
     public MapSelectionMenu(TropicubeSheepwars plugin) {
@@ -74,14 +76,15 @@ public class MapSelectionMenu implements Listener {
     // ── Vote menu (all players, vote mode enabled) ─────────────────────────
 
     private void openVoteMenu(Player player, List<GameMap> maps) {
+        List<GameMap> candidates = ballot(maps);
         Inventory inv = Bukkit.createInventory(null, 9,
                 LangHelper.component(player, "sw.map-vote-title"));
 
         GameMap myVote = votes.get(player.getUniqueId());
-        Map<GameMap, Integer> counts = countVotes(maps);
+        Map<GameMap, Integer> counts = countVotes(candidates);
 
-        for (int i = 0; i < maps.size() && i < 9; i++) {
-            GameMap map = maps.get(i);
+        for (int i = 0; i < candidates.size(); i++) {
+            GameMap map = candidates.get(i);
             boolean voted = map == myVote;
             inv.setItem(i, voteItem(player, map, counts.getOrDefault(map, 0), voted));
         }
@@ -162,13 +165,15 @@ public class MapSelectionMenu implements Listener {
                 || event.getClickedInventory() == player.getInventory()) return;
 
         int slot = event.getRawSlot();
-        List<GameMap> maps = plugin.getGameManager().getGameMaps();
+        List<GameMap> maps = plugin.getGameSettingsMenu().isMapVoteEnabled()
+                ? ballot(plugin.getGameManager().getGameMaps()) : plugin.getGameManager().getGameMaps();
         if (slot < 0 || slot >= maps.size()) return;
 
         GameMap clicked = maps.get(slot);
 
         if (plugin.getGameSettingsMenu().isMapVoteEnabled()) {
             votes.put(uuid, clicked);
+            voteWeights.put(uuid, player.hasPermission("sheepwars.mapvote.weight.2") ? 2 : 1);
             player.sendMessage(LangHelper.component(player, "sw.map-vote-cast", clicked.getName()));
             player.closeInventory();
         } else if (uuid.equals(plugin.getGameManager().getHostUuid())) {
@@ -192,7 +197,7 @@ public class MapSelectionMenu implements Listener {
      * votes are decided randomly. The votes are then erased.
      */
     public GameMap resolveWinnerAndReset() {
-        List<GameMap> maps = plugin.getGameManager().getGameMaps();
+        List<GameMap> maps = ballot(plugin.getGameManager().getGameMaps());
         if (maps.isEmpty()) return null;
 
         Map<GameMap, Integer> counts = countVotes(maps);
@@ -204,15 +209,20 @@ public class MapSelectionMenu implements Listener {
                 .toList();
 
         votes.clear();
+        voteWeights.clear();
+        ballot = List.of();
         return winners.get(ThreadLocalRandom.current().nextInt(winners.size()));
     }
 
     public void reset() {
         votes.clear();
+        voteWeights.clear();
+        ballot = List.of();
     }
 
     public void removeVote(UUID uuid) {
         votes.remove(uuid);
+        voteWeights.remove(uuid);
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────
@@ -220,9 +230,18 @@ public class MapSelectionMenu implements Listener {
     private Map<GameMap, Integer> countVotes(List<GameMap> maps) {
         Map<GameMap, Integer> counts = new LinkedHashMap<>();
         for (GameMap map : maps) counts.put(map, 0);
-        for (GameMap voted : votes.values()) {
-            if (counts.containsKey(voted)) counts.computeIfPresent(voted, (_, count) -> count + 1);
+        for (Map.Entry<UUID, GameMap> vote : votes.entrySet()) {
+            if (counts.containsKey(vote.getValue())) counts.computeIfPresent(vote.getValue(),
+                    (_, count) -> count + voteWeights.getOrDefault(vote.getKey(), 1));
         }
         return counts;
+    }
+
+    private List<GameMap> ballot(List<GameMap> maps) {
+        if (!ballot.isEmpty()) return ballot;
+        List<GameMap> shuffled = new ArrayList<>(maps);
+        Collections.shuffle(shuffled);
+        ballot = List.copyOf(shuffled.subList(0, Math.min(3, shuffled.size())));
+        return ballot;
     }
 }

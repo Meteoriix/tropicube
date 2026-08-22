@@ -94,6 +94,13 @@ nick:
 # MAX_MEMORY ← from ram-max (e.g. "2048M")
 # ENABLE_RCON, RCON_PORT, RCON_PASSWORD ← from docker.rcon-*
 # =====================================================
+matchmaking:
+  ranked:
+    initial-rating-range: 75
+    growth-per-step: 25
+    step-seconds: 15
+    maximum-rating-range: 500
+
 templates:
 
   lobby:
@@ -140,7 +147,7 @@ templates:
     image: "tropicube-sheepwars:latest"
     type: "SHEEPWARS"
     port-min: 25625
-    port-max: 25649
+    port-max: 25639
     max-players: 16
     spectator-slots: 8
     ram-min: 1024
@@ -152,6 +159,7 @@ templates:
     min-instances: 1
     max-instances: 5
     environment:
+      GAME_MODE: "QUICK_PLAY"
       TYPE: "PAPER"
       VERSION: "26.2"
       PAPER_BUILD: "97"
@@ -170,3 +178,65 @@ templates:
         Meteoriix
         OloWak
         Flashoune
+
+  sheepwars-ranked-4v4:
+    enabled: true
+    name: "Sheepwars Ranked 4v4"
+    image: "tropicube-sheepwars:latest"
+    type: "SHEEPWARS"
+    port-min: 25640
+    port-max: 25649
+    max-players: 8
+    spectator-slots: 4
+    ram-min: 1024
+    ram-max: 2048
+    auto-start: false
+    auto-stop: true
+    auto-stop-delay: 300
+    min-instances: 0
+    max-instances: 3
+    environment:
+      GAME_MODE: "RANKED_4V4"
+      TYPE: "PAPER"
+      VERSION: "26.2"
+      PAPER_BUILD: "97"
+      DIFFICULTY: "peaceful"
+      SPAWN_PROTECTION: "0"
+      ONLINE_MODE: "false"
+      OVERRIDE_SERVER_PROPERTIES: "true"
+      USE_AIKAR_FLAGS: "true"
+      VIEW_DISTANCE: "8"
+      SIMULATION_DISTANCE: "5"
+      SYNC_CHUNK_WRITES: "false"
+      TZ: "Europe/Paris"
+
+  sheepwars-ranked-8v8:
+    enabled: true
+    name: "Sheepwars Ranked 8v8"
+    image: "tropicube-sheepwars:latest"
+    type: "SHEEPWARS"
+    port-min: 25650
+    port-max: 25659
+    max-players: 16
+    spectator-slots: 8
+    ram-min: 1024
+    ram-max: 2048
+    auto-start: false
+    auto-stop: true
+    auto-stop-delay: 300
+    min-instances: 0
+    max-instances: 3
+    environment:
+      GAME_MODE: "RANKED_8V8"
+      TYPE: "PAPER"
+      VERSION: "26.2"
+      PAPER_BUILD: "97"
+      DIFFICULTY: "peaceful"
+      SPAWN_PROTECTION: "0"
+      ONLINE_MODE: "false"
+      OVERRIDE_SERVER_PROPERTIES: "true"
+      USE_AIKAR_FLAGS: "true"
+      VIEW_DISTANCE: "8"
+      SIMULATION_DISTANCE: "5"
+      SYNC_CHUNK_WRITES: "false"
+      TZ: "Europe/Paris"

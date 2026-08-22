@@ -10,6 +10,7 @@ import fr.tropicube.lobby.commands.PlayNextCommand;
 import fr.tropicube.lobby.commands.ReplayConfirmCommand;
 import fr.tropicube.lobby.commands.ServersCommand;
 import fr.tropicube.lobby.commands.SheepwarsRejoinCommand;
+import fr.tropicube.lobby.commands.SheepWarsQueueCommand;
 import fr.tropicube.lobby.commands.VipCommand;
 import fr.tropicube.lobby.gui.GuiManager;
 import fr.tropicube.lobby.listeners.GuiClickListener;
@@ -40,6 +41,7 @@ public class TropicubeLobby extends JavaPlugin {
     private PlayerLobbyListener playerLobbyListener;
     private LobbyScoreboardManager scoreboardManager;
     private LobbyVisibilityManager visibilityManager;
+    private TropicubeCore core;
 
     @Override
     public void onEnable() {
@@ -70,11 +72,12 @@ public class TropicubeLobby extends JavaPlugin {
         lobbyServerManager = new LobbyServerManager(this, redisManager);
         guiManager = new GuiManager(this);
         scoreboardManager = new LobbyScoreboardManager(this);
-        if (!(Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core)) {
+        if (!(Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore loadedCore)) {
             getLogger().severe("TropicubeCore est requis pour les préférences du lobby.");
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
+        core = loadedCore;
         visibilityManager = new LobbyVisibilityManager(this, core);
 
         // Listeners
@@ -207,6 +210,9 @@ public class TropicubeLobby extends JavaPlugin {
                 .setExecutor(new ReplayConfirmCommand(this));
         var rejoinCommand = new SheepwarsRejoinCommand(this);
         Objects.requireNonNull(getCommand("rejoin"), "Commande rejoin absente de plugin.yml").setExecutor(rejoinCommand);
+        var queueCommand = new SheepWarsQueueCommand(this);
+        Objects.requireNonNull(getCommand("quickplay"), "Commande quickplay absente de plugin.yml").setExecutor(queueCommand);
+        Objects.requireNonNull(getCommand("competitive"), "Commande competitive absente de plugin.yml").setExecutor(queueCommand);
     }
 
     public static TropicubeLobby getInstance() { return instance; }
@@ -220,6 +226,7 @@ public class TropicubeLobby extends JavaPlugin {
     public PlayerLobbyListener getPlayerLobbyListener() { return playerLobbyListener; }
     public LobbyScoreboardManager getScoreboardManager() { return scoreboardManager; }
     public LobbyVisibilityManager getVisibilityManager() { return visibilityManager; }
+    public TropicubeCore getCore() { return core; }
     public int getAutoReplayBatchSize() {
         return Math.max(1, Math.min(100, getConfig().getInt("auto-replay.batch-size", 5)));
     }

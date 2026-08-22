@@ -41,6 +41,18 @@ final class MatchmakingWaitlist {
         return players != null && !players.isEmpty();
     }
 
+    synchronized List<UUID> snapshot(String templateId) {
+        LinkedHashSet<UUID> players = playersByTemplate.get(templateId);
+        return players == null ? List.of() : List.copyOf(players);
+    }
+
+    synchronized void remove(String templateId, List<UUID> playerIds) {
+        LinkedHashSet<UUID> players = playersByTemplate.get(templateId);
+        if (players == null) return;
+        players.removeAll(playerIds);
+        if (players.isEmpty()) playersByTemplate.remove(templateId);
+    }
+
     synchronized void remove(UUID playerId) {
         playersByTemplate.entrySet().removeIf(entry -> {
             entry.getValue().remove(playerId);

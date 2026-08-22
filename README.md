@@ -27,7 +27,7 @@ Tropicube est une infrastructure Minecraft multi-serveurs pour **Minecraft 26.2*
 | `tropicube-velocity` | Velocity | Routage, files d'attente, création/arrêt des instances et commandes proxy |
 | `tropicube-core` | Paper | Joueurs, économie, grades, permissions, langues, modération, amis et parties |
 | `tropicube-lobby` | Paper | Accueil, menus, sélection de serveur, menu Social, double-saut et boutique VIP |
-| `tropicube-sheepwars` | Paper | Mini-jeu SheepWars, cartes, équipes, kits, classes et moutons spéciaux |
+| `tropicube-sheepwars` | Paper | SheepWars Quick/classé 4v4-8v8, saisons, cote, progression de kits, cartes, équipes et moutons spéciaux |
 | `tropicube-fallenkingdoms` | Non déployé | Squelette Maven réservé au futur mini-jeu Fallen Kingdoms |
 
 ## Démarrage rapide

@@ -7,12 +7,15 @@ import fr.tropicube.core.util.ConfigUpdater;
 import fr.tropicube.docker.client.RedisManager;
 import fr.tropicube.sheepwars.game.GameManager;
 import fr.tropicube.sheepwars.config.GameplayBalance;
+import fr.tropicube.sheepwars.competitive.SheepWarsProgressionService;
+import fr.tropicube.sheepwars.command.SheepWarsCommand;
 import fr.tropicube.sheepwars.listener.PlayerListener;
 import fr.tropicube.sheepwars.listener.ProtectionListener;
 import fr.tropicube.sheepwars.listener.SheepListener;
 import fr.tropicube.sheepwars.menu.ClassKitSelectionMenu;
 import fr.tropicube.sheepwars.menu.GameSettingsMenu;
 import fr.tropicube.sheepwars.menu.MapSelectionMenu;
+import fr.tropicube.sheepwars.menu.KitMasteryMenu;
 import fr.tropicube.sheepwars.menu.TeamSelectionMenu;
 import fr.tropicube.sheepwars.menu.WhitelistMenu;
 import fr.tropicube.sheepwars.player.PlayerDataManager;
@@ -42,6 +45,8 @@ public final class TropicubeSheepwars extends JavaPlugin {
     private GameSettingsMenu gameSettingsMenu;
     private WhitelistMenu whitelistMenu;
     private GameplayBalance gameplayBalance;
+    private SheepWarsProgressionService progressionService;
+    private KitMasteryMenu kitMasteryMenu;
 
     @Override
     public void onEnable() {
@@ -88,6 +93,7 @@ public final class TropicubeSheepwars extends JavaPlugin {
         this.gameManager = new GameManager(this);
 
         this.playerDataManager = new PlayerDataManager(this, databaseManager);
+        this.progressionService = new SheepWarsProgressionService(databaseManager, core);
 
         this.sheepManager = new SheepManager(this);
 
@@ -98,6 +104,7 @@ public final class TropicubeSheepwars extends JavaPlugin {
         this.mapSelectionMenu = new MapSelectionMenu(this);
         this.gameSettingsMenu = new GameSettingsMenu(this);
         this.whitelistMenu = new WhitelistMenu(this);
+        this.kitMasteryMenu = new KitMasteryMenu(this);
         this.sheepManager.buildWeightCache();
 
         redisManager.subscribeToPlayerEvents(this::handlePlayerIdentityEvent);
@@ -111,6 +118,9 @@ public final class TropicubeSheepwars extends JavaPlugin {
         getServer().getPluginManager().registerEvents(classKitMenu, this);
         getServer().getPluginManager().registerEvents(gameSettingsMenu, this);
         getServer().getPluginManager().registerEvents(whitelistMenu, this);
+        getServer().getPluginManager().registerEvents(kitMasteryMenu, this);
+        java.util.Objects.requireNonNull(getCommand("sheepwars"), "Commande sheepwars absente de plugin.yml")
+                .setExecutor(new SheepWarsCommand(this));
 
         gameManager.loadGame();
     }
@@ -149,4 +159,6 @@ public final class TropicubeSheepwars extends JavaPlugin {
     public MapSelectionMenu getMapVoteMenu() { return mapSelectionMenu; }
     public WhitelistMenu getWhitelistMenu() { return whitelistMenu; }
     public GameplayBalance getGameplayBalance() { return gameplayBalance; }
+    public SheepWarsProgressionService getProgressionService() { return progressionService; }
+    public KitMasteryMenu getKitMasteryMenu() { return kitMasteryMenu; }
 }

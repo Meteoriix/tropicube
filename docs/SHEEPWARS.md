@@ -14,6 +14,15 @@ La présente implémentation est une adaptation propre à Tropicube. Elle conser
 
 Sources historiques : [présentation d'Epicube et origine du nom](https://www.minecraft-france.fr/epicube/), [carte communautaire SheepWars de 2015](https://www.minecraft-france.fr/map-sheepwars-vanilla-1-8-3/).
 
+## Découpage architectural de l'extension
+
+| Catégorie | Décision |
+|---|---|
+| Réutilisable tel quel | Les profils, niveaux réseau, missions, guildes, parties Redis, instances Docker et préférences de langue restent fournis par Core, Docker API et Velocity. |
+| À généraliser | Le mode fonctionnel d'une instance et les événements réseau sont des contrats partagés ; aucune règle de cote ou de kit SheepWars n'est déplacée dans Core. |
+| Propre aux jeux existants | Les moutons, cartes, équipes, classes, kits et la machine à états demeurent strictement dans `tropicube-sheepwars`. FallenKingdoms reste un module vide et n'est pas une dépendance. |
+| Nouveau | Quick Play, files classées 4v4/8v8, cote et incertitude, saisons, sanctions d'abandon, maîtrise des kits, scrutin court et résumés de partie. |
+
 ## Boucle de jeu
 
 1. L'instance attend les joueurs et charge leur profil, leur langue, leur classe et leur kit.
@@ -45,6 +54,8 @@ Les classes organisent les kits par rôle. La classe elle-même sert de catégor
 | Support | Acrobate | Saut amélioré II permanent |
 
 L'hôte peut désactiver des classes ou des kits. Le mode « kits aléatoires » ignore les choix individuels et attribue un kit actif au lancement.
+
+En Quick Play, chaque kit reçoit sa propre expérience. `/sheepwars mastery` présente les deux branches côte à côte ; le joueur peut aussi utiliser `/sheepwars mastery a|b` et revenir sur son choix. Les branches sont persistées, mais leurs bonus ne sont volontairement pas actifs : leur catalogue YAML et leur équilibrage devront faire l'objet d'une validation de game design dédiée. Une partie personnalisée ne produit aucune progression et le classé utilise uniquement les effets de base des kits.
 
 ## Moutons spéciaux
 
@@ -84,13 +95,26 @@ Les explosions de moutons utilisent un calcul linéaire propre à SheepWars pour
 
 Chaque mouton lancé mémorise l'UUID de son lanceur. Lorsqu'un autre joueur détruit un mouton destructible, il récupère un exemplaire du même type si son stock n'a pas atteint la limite. Le lanceur ne récupère jamais son propre mouton, notamment quand l'explosion qui lui est attribuée provoque elle-même la mort de l'entité.
 
+## Modes publics et compétition
+
+- `/quickplay` remplit en priorité une instance existante jusqu'à 8v8 ; son minimum configurable permet un départ adaptatif.
+- `/competitive 4v4` attend exactement huit joueurs et `/competitive 8v8` exactement seize. Les deux files utilisent la même cote.
+- Une party ne peut dépasser la moitié d'une équipe : deux joueurs en 4v4, quatre en 8v8 et quatre en Quick Play. Seuls les membres ayant activé le suivi automatique sont comptés et transférés.
+- La file classée part d'une fenêtre de ±75 points, élargie de 25 points toutes les 15 secondes jusqu'à ±500. Elle ne crée l'instance que lorsqu'un groupe compatible atteint la capacité exacte.
+- Le résultat d'équipe détermine toujours le sens de variation de la cote. L'incertitude individuelle module son amplitude puis diminue au fil des parties.
+- Une saison dure trois mois calendaires. L'ancienne saison est archivée ; la nouvelle applique un reset souple à mi-distance de 1500 et cinq placements.
+- Les paliers localisés reprennent les noms Iron, Bronze, Silver, Gold, Platinum, Diamond, Ascendant, Immortal et Radiant. `/sheepwars rank` affiche cote, incertitude et placements restants.
+- Les compositions classées sont bornées par rôle. Par défaut, le 4v4 autorise 2 DPS, 1 Tank et 1 Support par équipe ; le 8v8 double ces limites.
+
+Une déconnexion en vie pendant une partie classée élimine le joueur, conserve `/rejoin` en spectateur et applique une interdiction de file graduée de 1, 5, 15 puis 60 minutes. Les récidives sont remises à zéro après sept jours sans abandon. Aucune intégration anti-triche externe n'est ajoutée.
+
 ## Cartes et équipes
 
 Une carte jouable contient un monde, une limite de vide et jusqu'à huit spawns rouges et huit spawns bleus. Le nombre maximal effectif de joueurs est donc limité à 16. Les spawns sont mélangés au début de chaque manche afin d'éviter une attribution prévisible.
 
 Les blocs peuvent être détruits pendant la manche sans produire d'objets récupérables. Cette règle couvre aussi les quatre variantes de rails qui se détachent par mise à jour physique lorsque leur bloc de support disparaît.
 
-Lorsque `map-vote-enabled` vaut `true`, chaque joueur vote et une carte est tirée au hasard parmi celles arrivées en tête. Sinon, l'hôte choisit directement la carte ; son choix est aussitôt affiché dans le scoreboard d'attente de tous les joueurs. Une partie ne démarre pas si la carte sélectionnée est incomplète ou désactivée.
+Lorsque `map-vote-enabled` vaut `true`, trois cartes au maximum sont tirées pour un scrutin court. Chaque joueur vote et une carte est tirée au hasard parmi celles arrivées en tête. La permission `sheepwars.mapvote.weight.2` donne un poids de deux, sans permettre de voter plusieurs fois. Sinon, l'hôte choisit directement la carte ; son choix est aussitôt affiché dans le scoreboard d'attente de tous les joueurs. Une partie ne démarre pas si la carte sélectionnée est incomplète ou désactivée.
 
 Les joueurs peuvent demander une équipe dans le menu d'attente. Le gestionnaire conserve des équipes équilibrées et attribue automatiquement une équipe lorsque nécessaire. Une sélection acceptée actualise immédiatement la tablist de tous les joueurs, y compris les pseudonymes `/nick`, afin que la couleur corresponde à la nouvelle équipe. Les coéquipiers bénéficient d'un contour coloré visible uniquement par leur équipe. Les équipes scoreboard utilisent le nom de profil réellement envoyé au client pour préserver le contour avec `/nick`. La tablist SheepWars masque toujours le grade réseau ou fictif : elle affiche uniquement le pseudonyme dans la couleur de l'équipe, ou en gris pour un spectateur, sans icône devant le nom. Ce rendu est réappliqué après chaque événement de nick ou de grade afin que Core ne puisse pas le remplacer par le format du lobby. Le chat utilise le même nom d'affichage synchronisé afin que `/nick off` restaure immédiatement le pseudonyme réel.
 
@@ -114,7 +138,7 @@ Le lobby permet d'arrêter le serveur tant que la manche n'a pas commencé. Apr�
 
 ## Interface, langues et commandes
 
-Le backend SheepWars n'enregistre aucune commande Minecraft propre dans son `plugin.yml`. Toutes les actions pendant la partie passent par les objets de la hotbar et les inventaires : équipe, carte, classe/kit, réglages de l'hôte et retour au lobby.
+Les actions de partie passent par les objets de hotbar et les inventaires. La commande `/sheepwars` est limitée au profil compétitif, au choix réversible de branche et à la visibilité `public|team|private` des détails de résumé.
 
 Le scoreboard affiche sous le titre tropical `🐑 SHEEPWARS` des sections aérées par de courts séparateurs. Pendant l'attente, il indique l'effectif actuel et maximal, le minimum requis, la carte, l'équipe et la classe du joueur. En partie, il présente le temps restant, la carte, les survivants par équipe, l'équipe ou le statut spectateur, la classe, les éliminations et les moutons lancés. La tablist reprend les identités `🐑 SHEEPWARS` et `🌴 TROPICUBE` sur deux lignes, puis adapte son pied à l'attente, au lancement, au jeu ou à la fin de partie. Les textes proviennent de TropicubeCore et sont disponibles en français, anglais, espagnol et allemand.
 
@@ -139,5 +163,7 @@ Lors de l'arrivée d'un joueur en salle d'attente, SheepWars tente de reprendre 
 En déploiement Docker, `INSTANCE_ID`, `SERVER_NAME`, `IS_HOST`, `HOST_UUID` et l'indicateur interne `CUSTOM_GAME_PRIVATE` relient le plugin à Velocity. L'état de l'instance passe successivement par attente, démarrage, jeu, fin et arrêt. Redis porte les marqueurs de partie commencée, de reconnexion, de revanche, de propriété du serveur et les UUID admis aux parties privées.
 
 Après l'écran de fin, SheepWars publie `PROXY:FINISH_GAME:<instanceId>`. Velocity transfère tous les joueurs vers le meilleur lobby disponible, réessaie chaque seconde en cas d'échec, puis tue et supprime immédiatement le conteneur ainsi que son état Redis. La disparition du backend n'est donc plus différée par l'auto-stop générique.
+
+Chaque résultat est enregistré avec mode, carte, équipes, kit, éliminations, morts, moutons lancés et cote avant/après. L'écran final affiche le résultat personnel et les distinctions « éliminations » et « moutons ». Le profil agrégé réutilise ces données sans créer de nouvelle file de guilde. `/sheepwars summary public|team|private` conserve le niveau de détail souhaité pour les présentations publiques futures.
 
 Pour l'installation complète, la création des images et la configuration des cartes, consulter [Déploiement](DEPLOYMENT.md) et [Configuration](CONFIGURATION.md).

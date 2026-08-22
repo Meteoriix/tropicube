@@ -66,6 +66,7 @@ public class TropiServerManager {
         ensureMinInstances();
         startAutoScaler();
         startHealthChecker();
+        scheduler.scheduleAtFixedRate(this::processRankedQueues, 5, 5, TimeUnit.SECONDS);
         subscribeToProxyCommands();
         publishTemplates();
         logger.info(MessageStyle.log("PROXY", "<gray>TropiServerManager initialisé avec {} templates."), templates.size());
@@ -435,9 +436,95 @@ public class TropiServerManager {
      */
     private void queueForMatchmaking(String templateId, UUID playerId) {
         matchmakingWaitlist.add(templateId, playerId);
+        if (isRankedTemplate(templateId)) {
+            processRankedQueue(templateId);
+            return;
+        }
         findJoinableMatchmakingInstance(templateId, playerId).ifPresentOrElse(
                 instance -> dispatchMatchmakingPlayers(templateId, instance),
                 () -> ensureMatchmakingCreation(templateId));
+    }
+
+    private void processRankedQueues() {
+        templates.keySet().stream().filter(this::isRankedTemplate).forEach(this::processRankedQueue);
+    }
+
+    /** Forms exact-capacity ranked batches with a rating window that widens while players wait. */
+    private void processRankedQueue(String templateId) {
+        ServerTemplate template = templates.get(templateId);
+        if (template == null || !template.isEnabled()) return;
+        List<UUID> candidates = matchmakingWaitlist.snapshot(templateId).stream()
+                .filter(playerId -> proxy.getPlayer(playerId).isPresent()).toList();
+        if (candidates.isEmpty()) return;
+
+        UUID anchor = candidates.getFirst();
+        double anchorRating = queueDouble(anchor, "sw:queue-rating:", 1500);
+        long now = System.currentTimeMillis();
+        int anchorRange = ratingRange(now - queueLong(anchor, "sw:queue-since:", now));
+        int capacity = template.getMaxPlayers();
+        int maximumParty = Math.max(1, capacity / 4);
+        int occupied = 0;
+        List<UUID> selected = new ArrayList<>();
+        for (UUID candidate : candidates) {
+            int partySize = (int) queueLong(candidate, "sw:queue-size:", 1);
+            if (partySize < 1 || partySize > maximumParty) {
+                matchmakingWaitlist.remove(templateId, List.of(candidate));
+                redisManager.publishCommand("LOBBY", "GAME_START_FAILED:" + candidate);
+                continue;
+            }
+            double rating = queueDouble(candidate, "sw:queue-rating:", 1500);
+            int candidateRange = ratingRange(now - queueLong(candidate, "sw:queue-since:", now));
+            if (Math.abs(rating - anchorRating) > Math.max(anchorRange, candidateRange)) continue;
+            if (occupied + partySize > capacity) continue;
+            selected.add(candidate);
+            occupied += partySize;
+            if (occupied == capacity) break;
+        }
+        if (occupied != capacity) return;
+        matchmakingWaitlist.remove(templateId, selected);
+        CompletableFuture<ServerInstance> creation = matchmakingCreations.getOrCreate(
+                templateId, () -> createServer(templateId, null, false, Collections.emptyMap()));
+        creation.whenComplete((instance, error) -> {
+            matchmakingCreations.remove(templateId, creation);
+            if (error != null) {
+                selected.forEach(playerId -> redisManager.publishCommand("LOBBY", "GAME_START_FAILED:" + playerId));
+                return;
+            }
+            selected.forEach(playerId -> {
+                redisManager.delete("sw:queue-rating:" + playerId);
+                redisManager.delete("sw:queue-size:" + playerId);
+                redisManager.delete("sw:queue-since:" + playerId);
+                redisManager.publishCommand("PROXY", "CONNECT:" + playerId + ":" + instance.getServerName());
+            });
+        });
+    }
+
+    private boolean isRankedTemplate(String templateId) {
+        ServerTemplate template = templates.get(templateId);
+        if (template == null) return false;
+        return template.getEnvironmentVariables().getOrDefault("GAME_MODE", "").startsWith("RANKED_");
+    }
+
+    private int ratingRange(long waitingMillis) {
+        int initial = Math.max(0, config.node("matchmaking", "ranked", "initial-rating-range").getInt(75));
+        int growth = Math.max(0, config.node("matchmaking", "ranked", "growth-per-step").getInt(25));
+        int step = Math.max(1, config.node("matchmaking", "ranked", "step-seconds").getInt(15));
+        int maximum = Math.max(initial, config.node("matchmaking", "ranked", "maximum-rating-range").getInt(500));
+        return (int) Math.min(maximum, initial + Math.max(0, waitingMillis / 1000 / step) * growth);
+    }
+
+    private long queueLong(UUID playerId, String prefix, long fallback) {
+        try {
+            String value = redisManager.get(prefix + playerId);
+            return value == null ? fallback : Long.parseLong(value);
+        } catch (NumberFormatException ignored) { return fallback; }
+    }
+
+    private double queueDouble(UUID playerId, String prefix, double fallback) {
+        try {
+            String value = redisManager.get(prefix + playerId);
+            return value == null ? fallback : Double.parseDouble(value);
+        } catch (NumberFormatException ignored) { return fallback; }
     }
 
     /** Removes a player disconnected from any expectation of classic creation. */
@@ -452,7 +539,7 @@ public class TropiServerManager {
                 .filter(instance -> instance.getStatus() == ServerInstance.Status.GAME_WAITING
                         || instance.getStatus() == ServerInstance.Status.GAME_STARTING)
                 .filter(instance -> instance.isJoinable(playerId))
-                .min(Comparator.comparingInt(ServerInstance::getOnlinePlayers));
+                .max(Comparator.comparingInt(ServerInstance::getOnlinePlayers));
     }
 
     /** Returns the only classic creation in progress for this template, or starts one. */

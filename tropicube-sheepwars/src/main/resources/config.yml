@@ -41,6 +41,23 @@ default-settings:
 custom-game-default-settings:
   # A custom game waits by default for its host to manually launch
   auto-start: false
+
+# Public queue rules. A ranked match only starts at its exact capacity.
+competitive:
+  matchmaking:
+    initial-rating-range: 75
+    growth-per-step: 25
+    step-seconds: 15
+    maximum-rating-range: 500
+  role-limits:
+    4v4:
+      dps: 2
+      tank: 1
+      support: 1
+    8v8:
+      dps: 4
+      tank: 2
+      support: 2
 # Validated gameplay tuning. Durations are expressed in seconds and damage/health in HP.
 gameplay-balance:
   pvp:

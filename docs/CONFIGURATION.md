@@ -87,6 +87,8 @@ Chaque entrée de `templates` décrit :
 
 Les templates Paper fournis fixent `VERSION: "26.2"` et `PAPER_BUILD: "97"`. Ce build explicite garantit que le runtime sélectionné au démarrage correspond aux artefacts préchauffés dans `Dockerfile.lobby` et `Dockerfile.sheepwars`. Toute mise à jour doit modifier ensemble ces valeurs, les arguments par défaut des deux Dockerfiles et la dépendance Paper du POM parent, puis reconstruire les images.
 
+SheepWars utilise trois recettes : `sheepwars` (`GAME_MODE=QUICK_PLAY`, ports 25625–25639), `sheepwars-ranked-4v4` (25640–25649) et `sheepwars-ranked-8v8` (25650–25659). Les deux templates classés sont créés seulement lorsqu'un groupe compatible atteint respectivement 8 ou 16 joueurs. `matchmaking.ranked.initial-rating-range`, `growth-per-step`, `step-seconds` et `maximum-rating-range` règlent l'élargissement progressif de leur fenêtre de cote.
+
 Les fichiers `dockerfiles/configs/bukkit.yml` et `dockerfiles/configs/paper-world-defaults.yml` sont embarqués dans chaque image de backend. Le second fixe seulement la version du schéma et laisse Paper appliquer ses valeurs par défaut aux options absentes. Ils évitent les téléchargements de configurations réalisés par l'entrypoint sur chaque volume neuf ; leur version doit donc être vérifiée lors d'une migration Paper.
 
 Le lobby est une dépendance de routage essentielle et reste activé. Pour ajouter un mode de jeu, fournir une image, un plugin capable de publier son état, une plage de ports et une entrée correspondante dans `server-types` du lobby.
@@ -183,6 +185,8 @@ Fichier : `dockerfiles/configs/TropicubeSheepwars/config.yml`.
 - `default-settings.min-players` et `max-players` sont bornés entre 2 et 16. L'hôte ne peut pas réduire le maximum sous l'effectif déjà présent, et chaque modification du maximum est propagée à l'instance Redis afin que Velocity applique immédiatement la capacité ;
 - `default-settings.auto-start` vaut `true` par défaut pour les parties classiques et lance le compte à rebours dès que `min-players` est atteint ;
 - `custom-game-default-settings.auto-start` vaut `false` par défaut et remplace cette valeur à l'initialisation d'une instance possédant un `HOST_UUID` ; l'hôte peut ensuite la modifier pour la partie courante ;
+- `competitive.matchmaking` documente les mêmes valeurs de fenêtre que Velocity pour l'affichage et la validation métier ; les valeurs livrées sont 75, 25, 15 secondes et 500 ;
+- `competitive.role-limits.4v4|8v8.dps|tank|support` limite chaque rôle par équipe ; les sommes par défaut valent exactement quatre ou huit ;
 - `CUSTOM_GAME_PRIVATE`, injecté automatiquement par Velocity avec `HOST_UUID`, indique au backend si l'item de whitelist doit être remis à l'hôte ; cette variable interne ne doit pas être configurée manuellement dans le template ;
 - `sheep-probabilities` contient des poids relatifs, pas nécessairement un total de 100 ; les valeurs par défaut totalisent 100 et privilégient TNT/Soin à 10 %, Force à 9 %, Abordage/Feu/Foudre à 8 %, Recherche/Échange à 7 %, Ténèbres/Poison/Fragmentation à 6 %, Gravité à 5 %, Météore à 4 % et Distorsion/Mécha à 3 % ;
 - `gameplay-balance.global` configure le stock maximal, la compensation de sous-effectif, le délai d'armement et les PV des moutons destructibles ;

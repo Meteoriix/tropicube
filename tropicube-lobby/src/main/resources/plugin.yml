@@ -40,6 +40,12 @@ commands:
   rejoin:
     description: "Rejoint une partie SheepWars quittée mais toujours active"
     usage: /rejoin
+  quickplay:
+    description: "Rejoint le SheepWars Quick Play"
+    usage: /quickplay
+  competitive:
+    description: "Rejoint une file SheepWars classée"
+    usage: /competitive <4v4|8v8>
 
 permissions:
   tropicube.lobby.build:

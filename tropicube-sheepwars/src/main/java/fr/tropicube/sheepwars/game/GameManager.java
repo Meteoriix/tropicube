@@ -3,6 +3,9 @@ package fr.tropicube.sheepwars.game;
 import fr.skytasul.glowingentities.GlowingEntities;
 import fr.tropicube.docker.model.ServerInstance;
 import fr.tropicube.sheepwars.TropicubeSheepwars;
+import fr.tropicube.sheepwars.competitive.RoleLimitPolicy;
+import fr.tropicube.sheepwars.competitive.SheepWarsMode;
+import fr.tropicube.sheepwars.competitive.SheepWarsProgressionService;
 import fr.tropicube.sheepwars.player.GamePlayer;
 import fr.tropicube.sheepwars.player.PlayerClass;
 import fr.tropicube.sheepwars.player.PlayerKit;
@@ -55,6 +58,7 @@ public class GameManager {
     private static final UUID NO_HOST = new UUID(0, 0);
     private final UUID hostUuid;
     private final boolean privateCustomGame;
+    private final SheepWarsMode mode;
     private final String instanceId = System.getenv("INSTANCE_ID");
     private GameMap selectedMap;
 
@@ -65,6 +69,7 @@ public class GameManager {
     private SheepDeliverySchedule sheepDeliverySchedule;
     private int countdown;
     private int gameTime;
+    private long gameStartedAt;
     private final GlowingEntities glowingEntities;
 
     public GameManager(TropicubeSheepwars plugin) {
@@ -74,6 +79,7 @@ public class GameManager {
         this.leaveItemKey = new NamespacedKey(plugin, "leave_game_item");
         this.hostUuid = parseHostUuid(System.getenv("HOST_UUID"));
         this.privateCustomGame = Boolean.parseBoolean(System.getenv("CUSTOM_GAME_PRIVATE"));
+        this.mode = SheepWarsMode.fromEnvironment(System.getenv("GAME_MODE"), !hostUuid.equals(NO_HOST));
         boolean initialAutoStart = AutoStartPolicy.initialValue(
                 !hostUuid.equals(NO_HOST),
                 plugin.getConfig().getBoolean("default-settings.auto-start", true),
@@ -135,6 +141,8 @@ public class GameManager {
 
     public GameMap getSelectedMap() { return selectedMap; }
 
+    public SheepWarsMode getMode() { return mode; }
+
     public void setSelectedMap(GameMap map) { this.selectedMap = map; }
 
     // ============================================================
@@ -170,7 +178,8 @@ public class GameManager {
         PlayerKit kit = plugin.getPlayerDataManager().getKit(player.getUniqueId());
         PlayerClass playerClass = kit.getPlayerClass();
 
-        if (plugin.getGameSettingsMenu().isClassEnabled(playerClass) && plugin.getGameSettingsMenu().isKitEnabled(kit)) {
+        if (plugin.getGameSettingsMenu().isClassEnabled(playerClass)
+                && plugin.getGameSettingsMenu().isKitEnabled(kit) && canSelectRole(gp, playerClass)) {
             gp.setKit(kit);
             gp.setPlayerClass(playerClass);
         } else {
@@ -273,7 +282,8 @@ public class GameManager {
                         long blue = players.values().stream().filter(p -> p.getTeam() == GameTeam.BLUE).count();
                         if (joining.getTeam() == GameTeam.RED) red--; else blue--;
                         if (partyTeam == GameTeam.RED) red++; else blue++;
-                        if (Math.abs(red - blue) <= 1) {
+                        if (Math.abs(red - blue) <= 1
+                                && canSelectRole(joining, joining.getPlayerClass(), partyTeam)) {
                             joining.setTeam(partyTeam);
                             plugin.getScoreboardManager().updateAll();
                         }
@@ -417,6 +427,7 @@ public class GameManager {
             currentTask = null;
         }
         state = GameState.PLAYING;
+        gameStartedAt = System.currentTimeMillis();
         updateInstanceStatus(ServerInstance.Status.GAME_PLAYING);
         if (instanceId != null) {
             plugin.getRedisManager().set("sw:game-started:" + instanceId, "1", 7200);
@@ -714,6 +725,20 @@ public class GameManager {
         if (currentTask != null) currentTask.cancel();
         sheepDeliverySchedule = null;
 
+        List<SheepWarsProgressionService.Participant> resultSnapshot = players.values().stream()
+                .filter(player -> player.getTeam() != null)
+                .map(player -> new SheepWarsProgressionService.Participant(player.getUuid(), player.getTeam().name(),
+                        player.getKit(), player.getKills(), player.getSheepThrown(), player.isAlive()))
+                .toList();
+        String mapName = selectedMap == null || selectedMap.getName() == null ? "unknown" : selectedMap.getName();
+        plugin.getProgressionService().complete(instanceId, mode, mapName,
+                        winner == null ? null : winner.name(), gameStartedAt, resultSnapshot)
+                .exceptionally(error -> {
+                    plugin.getLogger().log(java.util.logging.Level.SEVERE,
+                            MessageStyle.log("sw", "DATA", "<red>Échec de persistance du résultat de partie"), error);
+                    return null;
+                });
+
         Component endPrefix = MessageStyle.component("<sw>");
         for (GamePlayer gp : players.values()) {
             Player p = gp.getBukkitPlayer();
@@ -729,6 +754,15 @@ public class GameManager {
             ));
             p.playSound(p.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0F, 1.0F);
             p.sendMessage(endPrefix.append(locTitle));
+            GamePlayer topKills = visibleSummaryPlayers(gp).stream()
+                    .max(Comparator.comparingInt(GamePlayer::getKills)).orElse(gp);
+            GamePlayer topSheep = visibleSummaryPlayers(gp).stream()
+                    .max(Comparator.comparingInt(GamePlayer::getSheepThrown)).orElse(gp);
+            p.sendMessage(LangHelper.component(p, "sw.summary-mode", mode.name()));
+            p.sendMessage(LangHelper.component(p, "sw.summary-personal", gp.getKills(), gp.getSheepThrown(),
+                    gp.isAlive() ? LangHelper.get(p, "sw.summary-survived") : LangHelper.get(p, "sw.summary-eliminated")));
+            p.sendMessage(LangHelper.component(p, "sw.summary-distinctions",
+                    displayName(topKills), topKills.getKills(), displayName(topSheep), topSheep.getSheepThrown()));
         }
 
         removeGameArrows();
@@ -821,12 +855,14 @@ public class GameManager {
 
     /** Returns the validated player capacity used by admission and the HUD. */
     public int getMaxPlayers() {
+        if (mode != SheepWarsMode.CUSTOM) return mode.maximumPlayers();
         // MapsUtil loads a maximum of eight spawns per team.
         return PlayerLimitPolicy.maximum(plugin.getConfig().getInt("default-settings.max-players", 16));
     }
 
     /** Returns the validated minimum player count required to start. */
     public int getMinPlayers() {
+        if (mode.ranked()) return mode.minimumPlayers();
         return PlayerLimitPolicy.minimum(plugin.getConfig().getInt("default-settings.min-players", 2),
                 getMaxPlayers());
     }
@@ -883,6 +919,34 @@ public class GameManager {
     /** Returns the Redis identifier of the current instance, or {@code null} outside orchestration. */
     public String getInstanceId() {
         return instanceId;
+    }
+
+    /** Enforces the configured per-team role composition in ranked games. */
+    public boolean canSelectRole(GamePlayer player, PlayerClass role) {
+        return canSelectRole(player, role, player == null ? null : player.getTeam());
+    }
+
+    /** Checks a role against an explicit destination team before a team switch. */
+    public boolean canSelectRole(GamePlayer player, PlayerClass role, GameTeam destinationTeam) {
+        if (!mode.ranked() || role == PlayerClass.NONE || player == null || destinationTeam == null) return true;
+        String size = mode == SheepWarsMode.RANKED_4V4 ? "4v4" : "8v8";
+        RoleLimitPolicy policy = new RoleLimitPolicy(Map.of(
+                PlayerClass.DPS, Math.max(1, plugin.getConfig().getInt("competitive.role-limits." + size + ".dps")),
+                PlayerClass.TANK, Math.max(1, plugin.getConfig().getInt("competitive.role-limits." + size + ".tank")),
+                PlayerClass.SUPPORT, Math.max(1, plugin.getConfig().getInt("competitive.role-limits." + size + ".support"))));
+        long current = players.values().stream().filter(other -> other != player)
+                .filter(other -> other.getTeam() == destinationTeam && other.getPlayerClass() == role).count();
+        return policy.accepts(role, current);
+    }
+
+    private String displayName(GamePlayer player) {
+        Player bukkit = player.getBukkitPlayer();
+        return bukkit == null ? player.getUuid().toString().substring(0, 8) : PlayerDisplayName.resolve(bukkit);
+    }
+
+    private List<GamePlayer> visibleSummaryPlayers(GamePlayer viewer) {
+        return players.values().stream().filter(subject -> plugin.getProgressionService().canPublishDetails(
+                subject.getUuid(), viewer.getUuid(), subject.getTeam() == viewer.getTeam())).toList();
     }
 
     public void enableTeamGlowing() {

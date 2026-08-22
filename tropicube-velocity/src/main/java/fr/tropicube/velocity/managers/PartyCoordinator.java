@@ -8,6 +8,7 @@ import fr.tropicube.docker.model.PartyDisconnectResult;
 import fr.tropicube.docker.model.PartyMember;
 import fr.tropicube.docker.model.PartySnapshot;
 import fr.tropicube.docker.model.ServerInstance;
+import fr.tropicube.docker.model.InstanceMode;
 import fr.tropicube.velocity.TropicubeVelocity;
 import org.slf4j.Logger;
 
@@ -192,6 +193,15 @@ public final class PartyCoordinator {
             proxy.getPlayer(member.playerId()).filter(player -> !isOnInstance(player, instanceId)).ifPresent(followers::add);
         }
         if (followers.isEmpty()) return;
+        int maximumPartySize = switch (instance.getMode()) {
+            case QUICK_PLAY, RANKED_8V8 -> 4;
+            case RANKED_4V4 -> 2;
+            default -> Integer.MAX_VALUE;
+        };
+        if (followers.size() + 1 > maximumPartySize) {
+            message(leader, "social.party-warp-full");
+            return;
+        }
         if (!canJoin(instance, followers.stream().map(Player::getUniqueId).toList(), followers.size())) {
             message(leader, "social.party-warp-full");
             return;

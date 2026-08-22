@@ -97,7 +97,8 @@ public class LobbyServerManager {
     public List<ServerInfo> getServersByType(String type, UUID playerId) {
         List<ServerInfo> result = new ArrayList<>();
         for (ServerInfo info : cacheRef.get().values()) {
-            if (info.type().equalsIgnoreCase(type) && info.isVisibleTo(playerId)) result.add(info);
+            if (info.type().equalsIgnoreCase(type) && info.isVisibleTo(playerId)
+                    && !info.templateName().toLowerCase(Locale.ROOT).contains("ranked")) result.add(info);
         }
         result.sort(Comparator.comparing(ServerInfo::id));
         return result;
@@ -167,12 +168,24 @@ public class LobbyServerManager {
         );
     }
 
+    /** Requests one exact queue template, avoiding ambiguity between SheepWars modes. */
+    public void requestStartTemplate(org.bukkit.entity.Player player, String templateId) {
+        boolean available = templateCacheRef.get().stream().anyMatch(template -> template.id().equals(templateId));
+        if (!available) {
+            player.sendMessage(LangHelper.component(player, "lobby.no-template-for-type", templateId));
+            return;
+        }
+        redisManager.publishCommand("PROXY", "START_GAME:" + templateId + ":" + player.getUniqueId());
+    }
+
     /**
      * Reads the list of templates published by Velocity from Redis.
      * Returns an empty list if no template is available.
      */
     public List<TemplateInfo> getCustomGameTemplates() {
-        return templateCacheRef.get();
+        return templateCacheRef.get().stream()
+                .filter(template -> !template.id().toLowerCase(Locale.ROOT).contains("ranked"))
+                .toList();
     }
 
     /**

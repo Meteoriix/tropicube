@@ -10,4 +10,13 @@ depend:
 
 softdepend: []
 
-commands: {}
+commands:
+  sheepwars:
+    description: "Affiche la cote et règle la progression SheepWars"
+    usage: "/sheepwars [rank|mastery [a|b]|summary <public|team|private>]"
+    aliases: [ swprofile ]
+
+permissions:
+  sheepwars.mapvote.weight.2:
+    description: "Double le poids du vote de carte dans le scrutin court"
+    default: false

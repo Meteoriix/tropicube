@@ -86,6 +86,8 @@ Attention : les permissions de grade présentes dans `TropicubeCore/config.yml` 
 | `/replay` | `/playnext`, `/playagain`, `/rejouer` | aucune | Rejoint la partie suivante ou attend sa création avec connexion automatique |
 | `/replayconfirm` | — | aucune | Confirme une nouvelle série de cinq replays automatiques |
 | `/rejoin` | — | aucune | Rejoint une partie SheepWars quittée volontairement si elle est encore active ; aucun argument n'est accepté |
+| `/quickplay` | — | aucune | Rejoint la file SheepWars Quick Play, avec suivi de party activé |
+| `/competitive <4v4\|8v8>` | — | aucune | Rejoint l'une des deux files classées partageant la même cote |
 
 Permissions fonctionnelles du lobby :
 
@@ -104,6 +106,14 @@ Les grades Core accordent déjà les permissions adaptées : VIP obtient un saut
 Après la saisie de `/`, le client reçoit uniquement les commandes et alias fournis par l'infrastructure Tropicube. Les commandes externes et leurs espaces de noms restent masqués ; `/?`, les espaces de noms `bukkit:` et `minecraft:` ainsi que les commandes vanilla sont refusés sur l'ensemble du réseau.
 
 ## TropicubeSheepwars — Paper
+
+| Commande | Permission | Effet |
+|---|---|---|
+| `/sheepwars rank` | aucune | Affiche le rang localisé, la cote partagée, l'incertitude et les placements |
+| `/sheepwars mastery [a|b]` | aucune | Ouvre les deux branches horizontales ou sélectionne directement la branche exclusive du kit courant |
+| `/sheepwars summary <public|team|private>` | aucune | Règle le détail public des résumés |
+
+`sheepwars.mapvote.weight.2` porte le poids d'un vote de carte à deux.
 
 Le plugin ne déclare aucune commande textuelle. La configuration de partie, la sélection de carte, d'équipe, de classe et de kit passent par les inventaires graphiques. Les commandes Core restent disponibles puisque `TropicubeCore` est chargé sur l'instance.
 

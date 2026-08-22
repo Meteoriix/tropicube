@@ -111,12 +111,18 @@ Une vue d'instance privée contient son indicateur de confidentialité et les UU
 
 Le matchmaking classique est coordonné par Velocity par template. Tant qu'une création est en cours, les clics du menu et les demandes `/playnext` réutilisent la même `CompletableFuture` au lieu de créer un conteneur supplémentaire. Les UUID sont conservés dans une file FIFO dédupliquée en mémoire, puis transférés automatiquement quand l'instance est enregistrée. Si sa capacité ne suffit pas, les joueurs restants déclenchent une unique instance suivante. Ce mécanisme ne s'applique ni aux parties personnalisées ni aux créations administratives.
 
+Le classé suit un chemin distinct. Le lobby publie temporairement cote, heure d'entrée et taille réellement transférée de la party. Velocity revalide la taille, forme un lot exact 4v4 ou 8v8, élargit la tolérance de cote avec le temps puis crée l'instance correspondante. Le chef est transféré et `PartyCoordinator` déplace uniquement les membres ayant `/party follow on`. Quick Play conserve la sélection « fill first » afin de remplir une partie jusqu'au 8v8 avant d'en ouvrir une autre.
+
 HeadDatabase est optionnel au moment précis du rendu : une icône Material ou une tête générique est utilisée tant que sa base n'est pas chargée.
 
 ### `tropicube-sheepwars`
 
 Une instance SheepWars suit les phases attente, sélection, compte à rebours, jeu et fin. Le module gère :
 
+- un mode immuable `QUICK_PLAY`, `RANKED_4V4`, `RANKED_8V8` ou `CUSTOM` injecté par Docker ;
+- la cote partagée des deux files, l'incertitude, les placements et les saisons trimestrielles archivées ;
+- l'expérience propre à chaque kit Quick Play et une branche exclusive réversible sans effet de gameplay tant que son catalogue n'est pas approuvé ;
+- l'enregistrement asynchrone des matchs et l'alimentation des missions, niveaux réseau et scores agrégés de guilde ;
 - les cartes et points d'apparition rouges/bleus ;
 - le choix ou vote de carte ;
 - la sélection des équipes, classes et kits ;
@@ -148,6 +154,10 @@ Ce module est pour l'instant un squelette Maven sans classe, ressource, dépenda
 | canal `players` | Velocity | Intégrations | Changements de serveur d'un joueur |
 | `party:member:<uuid>` | Core | Core/Velocity/Lobby | Index vers la party du joueur, TTL 24 h |
 | `party:<id>:leader` / `party:<id>:members` | Core | Core/Velocity/Lobby | Chef et hash `uuid -> follow`, mis à jour atomiquement par scripts Lua, TTL 24 h |
+| `sw:queue-rating:<uuid>` | Lobby | Velocity | Cote de file classée, TTL 30 min |
+| `sw:queue-size:<uuid>` | Lobby | Velocity | Nombre de membres effectivement transférés, TTL 30 min |
+| `sw:queue-since:<uuid>` | Lobby | Velocity | Début d'attente en millisecondes, TTL 30 min |
+| `sw:ranked-penalty:<uuid>` | SheepWars | Lobby | Échéance d'interdiction temporaire de file ; TTL égal à la sanction |
 | `party:offline:<uuid>` | Velocity | Velocity | Instant de déconnexion persistant, TTL 24 h, supprimé à la reconnexion ou après réconciliation |
 | `party:invites:<uuid>` | Core | Core/Lobby | Invitations indexées par UUID du chef, TTL configurable |
 | canal `commands` (`PROXY:FRIEND_JOIN`, `PROXY:PARTY_WARP`) | Core | Velocity | Demandes de transfert social revalidées par le proxy |
@@ -201,7 +211,11 @@ Le profil agrège identité, niveau, solde, relations, guilde et statistiques Sh
 - `tropicube_sanctions` : mutes, avertissements et expulsions ;
 - `tropicube_grades` : définition des grades ;
 - `tropicube_permissions` : permissions individuelles temporaires ou permanentes ;
-- `tropicube_sheepwars` : statistiques du mini-jeu.
+- `tropicube_sheepwars` : choix de kit historique ;
+- `tropicube_sheepwars_matches` et `tropicube_sheepwars_match_players` : historique détaillé et cotes avant/après ;
+- `tropicube_sheepwars_ratings` : cote unique 4v4/8v8, incertitude, placements et saison ;
+- `tropicube_sheepwars_kit_mastery` : XP par kit et branche exclusive ;
+- `tropicube_sheepwars_abandons` et `tropicube_sheepwars_preferences` : sanctions graduées et visibilité des détails ;
 - `tropicube_friendships` : paire canonique de joueurs, demandeur, état `PENDING`/`ACCEPTED` et dates ; index par membre, état et ancienneté.
 
 Les grades déclarés dans la configuration Core sont resynchronisés au démarrage. Une modification manuelle en base ou via la sous-commande de définition de grade peut donc être écrasée par la configuration au prochain redémarrage.
