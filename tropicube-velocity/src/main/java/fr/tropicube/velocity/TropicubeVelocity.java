@@ -15,6 +15,10 @@ import fr.tropicube.velocity.listeners.NickListener;
 import fr.tropicube.velocity.listeners.CommandVisibilityListener;
 import fr.tropicube.velocity.listeners.PlayerConnectionListener;
 import fr.tropicube.velocity.listeners.ServerSwitchListener;
+import fr.tropicube.velocity.listeners.OperationsListener;
+import fr.tropicube.velocity.managers.AnnouncementManager;
+import fr.tropicube.velocity.managers.ConnectionRateLimiter;
+import fr.tropicube.velocity.managers.MaintenanceManager;
 import fr.tropicube.velocity.managers.NickManager;
 import fr.tropicube.velocity.managers.PartyCoordinator;
 import fr.tropicube.velocity.managers.TropiServerManager;
@@ -30,6 +34,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.time.Clock;
+import java.util.concurrent.TimeUnit;
+import com.velocitypowered.api.scheduler.ScheduledTask;
 
 @Plugin(
         id = "tropicube-velocity",
@@ -56,6 +63,11 @@ public class TropicubeVelocity {
     private QueueManager queueManager;
     private PartyCoordinator partyCoordinator;
     private NickManager nickManager;
+    private MaintenanceManager maintenanceManager;
+    private ConnectionRateLimiter connectionRateLimiter;
+    private AnnouncementManager announcementManager;
+    private ScheduledTask maintenanceTask;
+    private ScheduledTask announcementTask;
     private final AtomicBoolean shuttingDown = new AtomicBoolean();
 
     @Inject
@@ -75,6 +87,7 @@ public class TropicubeVelocity {
             initLanguageManager();
             initDocker();
             initManagers();
+            initOperations();
             initNickManager();
             registerCommands();
             registerListeners();
@@ -98,6 +111,8 @@ public class TropicubeVelocity {
         if (partyCoordinator != null) {
             partyCoordinator.close();
         }
+        if (announcementTask != null) announcementTask.cancel();
+        if (maintenanceTask != null) maintenanceTask.cancel();
         if (queueManager != null) {
             queueManager.shutdown();
         }
@@ -188,6 +203,32 @@ public class TropicubeVelocity {
                 partyDisconnectGraceSeconds);
     }
 
+    private void initOperations() {
+        int addressLimit = positiveInt("connection-protection.address-limit", 8);
+        int globalLimit = positiveInt("connection-protection.global-limit", 120);
+        int windowSeconds = positiveInt("connection-protection.window-seconds", 10);
+        int quarantineSeconds = positiveInt("connection-protection.quarantine-seconds", 30);
+        if (globalLimit < addressLimit) {
+            throw new IllegalArgumentException("connection-protection.global-limit doit être >= address-limit");
+        }
+        connectionRateLimiter = new ConnectionRateLimiter(Clock.systemUTC(), addressLimit, globalLimit,
+                TimeUnit.SECONDS.toMillis(windowSeconds), TimeUnit.SECONDS.toMillis(quarantineSeconds));
+        maintenanceManager = new MaintenanceManager(server, tropiServerManager, redisManager, logger, Clock.systemUTC());
+        announcementManager = new AnnouncementManager(server, tropiServerManager, languageManager, config);
+        maintenanceTask = server.getScheduler().buildTask(this, maintenanceManager::enforceDeadlines)
+                .repeat(10, TimeUnit.SECONDS).schedule();
+        int announcementSeconds = positiveInt("announcements.interval-seconds", 300);
+        announcementTask = server.getScheduler().buildTask(this, announcementManager::broadcastNext)
+                .delay(announcementSeconds, TimeUnit.SECONDS)
+                .repeat(announcementSeconds, TimeUnit.SECONDS).schedule();
+    }
+
+    private int positiveInt(String path, int defaultValue) {
+        int value = config.node((Object[]) path.split("\\.")).getInt(defaultValue);
+        if (value <= 0) throw new IllegalArgumentException(path + " doit être strictement positif");
+        return value;
+    }
+
     static int partyDisconnectGraceSeconds(ConfigurationNode config) {
         int value = config.node("party", "disconnect-grace-seconds").getInt(60);
         if (value <= 0) {
@@ -248,6 +289,19 @@ public class TropicubeVelocity {
                 server.getCommandManager().metaBuilder("whitelist").build(),
                 new WhitelistCommand(this, tropiServerManager, languageManager)
         );
+        server.getCommandManager().register(
+                server.getCommandManager().metaBuilder("maintenance").build(),
+                new MaintenanceCommand(maintenanceManager, tropiServerManager)
+        );
+        server.getCommandManager().register(
+                server.getCommandManager().metaBuilder("networkdiag").aliases("netdiag").build(),
+                new NetworkDiagnosticCommand(server, tropiServerManager, redisManager,
+                        maintenanceManager, connectionRateLimiter)
+        );
+        server.getCommandManager().register(
+                server.getCommandManager().metaBuilder("announce").build(),
+                new AnnounceCommand(announcementManager)
+        );
         logger.info(MessageStyle.log("PROXY", "<gray>Commandes enregistrées."));
     }
 
@@ -256,6 +310,8 @@ public class TropicubeVelocity {
         server.getEventManager().register(this, new ServerSwitchListener(this, redisManager, nickManager, partyCoordinator, logger));
         server.getEventManager().register(this, new NickListener(nickManager, logger));
         server.getEventManager().register(this, new CommandVisibilityListener());
+        server.getEventManager().register(this, new OperationsListener(server, tropiServerManager,
+                maintenanceManager, connectionRateLimiter, config));
         logger.info(MessageStyle.log("PROXY", "<gray>Listeners enregistrés."));
     }
 
@@ -271,5 +327,6 @@ public class TropicubeVelocity {
     public QueueManager getQueueManager() { return queueManager; }
     public PartyCoordinator getPartyCoordinator() { return partyCoordinator; }
     public NickManager getNickManager() { return nickManager; }
+    public MaintenanceManager getMaintenanceManager() { return maintenanceManager; }
     public Path getDataDirectory() { return dataDirectory; }
 }

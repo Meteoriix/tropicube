@@ -26,6 +26,13 @@ Source: `tropicube-velocity/src/main/resources/config.yml`; deployment copy: `do
 
 Core publishes `player:grade:<uuid>` with a 24-hour TTL and refreshes it on load and grade changes. An active nick is stored under `nick:<uuid>` with nickname, signed skin, and fake display grade. Legacy payloads without a grade default to `PREMIUM`. The full identity gets a fresh 24-hour TTL on disconnect and reconnect; there is no separate 30-second reconnect limit.
 
+Velocity also accepts the following operational settings:
+
+- `connection-protection.address-limit`, `global-limit`, `window-seconds`, and `quarantine-seconds` control adaptive limits before authentication. No address history is persisted.
+- `motd.line-1`, `line-2`, and `maintenance-line` describe only the public Velocity endpoint. `{online}` is replaced with the current player count.
+- `announcements.interval-seconds` and `announcements.entries[].message-key/target` define the localized rotation. A target is `network`, a type, a template, or an instance.
+- `/maintenance` persists a drain in Redis for at most seven days. Its deadline ranges from 1 to 1,440 minutes.
+
 ## Core
 
 Source: `tropicube-core/src/main/resources/config.yml`; deployment copy: `dockerfiles/configs/TropicubeCore/config.yml`.

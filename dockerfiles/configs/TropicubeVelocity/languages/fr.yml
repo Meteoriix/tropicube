@@ -131,6 +131,7 @@ proxy:
   nick-skin-error: "<tc><red>Impossible de récupérer un skin pour le moment. Réessayez."
   nick-already-fetching: "<tc><yellow>Un nick est déjà en cours de génération."
   nick-usage: "<tc><yellow>Utilisation : <white>/nick <gray>ou <white>/nick off"
+  announcement-welcome: "<tc><aqua>Bienvenue sur Tropicube ! <gray>Utilisez <white>/play</white> pour rejoindre une partie."
 
 social:
   friend-join-unavailable: "<tc><red>La partie de cet ami n'est plus accessible."

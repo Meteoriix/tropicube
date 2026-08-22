@@ -103,6 +103,9 @@ Le module est actuellement vide et n'ajoute donc aucune commande ni permission.
 | `/send <joueur|*> <serveur>` | — | `tropicube.admin.send` | Transfère un joueur ou tous les joueurs |
 | `/pull <joueur>` | — | `tropicube.admin.pull` | Fait venir un joueur sur le serveur actuel, si celui-ci est joignable |
 | `/tropicube ...` | `/tropi`, `/cm` | `tropicube.admin` | Administration des instances |
+| `/maintenance <network\|type> <on\|off\|status> [minutes] [motif]` | — | `tropicube.admin.maintenance` | Active un drain réseau ou par type avec échéance |
+| `/announce <network\|type\|instance> <clé.langue>` | — | `tropicube.admin.announce` | Diffuse une annonce localisée configurée |
+| `/networkdiag` | `/netdiag` | `tropicube.admin.diagnostic` | Affiche l'état Redis, les instances et la protection des connexions |
 
 Les grades autorisés à activer `/nick` sont configurés dans `nick.allowed-grades`; les grades staff sont destinés à y figurer explicitement. `/nick off` reste toujours accessible, annule aussi une génération encore en attente et peut être rejoué si un backend n'a pas encore restauré le profil. Le changement est propagé aux backends par Redis sans déconnexion volontaire du joueur ; l'identité et le profil original restent disponibles jusqu'à la restauration effective afin qu'une perte d'événement ne bloque jamais le joueur. Deux générations simultanées pour le même joueur sont refusées. L'identité Redis conserve également le grade d'affichage factice `PREMIUM` pendant 24 heures après une déconnexion et le restaure dans la tablist à la reconnexion, sans modifier les permissions réelles.
 

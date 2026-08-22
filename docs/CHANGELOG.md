@@ -6,6 +6,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Ajouté
 
+- Socle d'exploitation Velocity : migrations SQL versionnées, modes d'instance typés, événements Redis versionnés, maintenance avec drain, MOTD bilingue, annonces ciblées, diagnostic réseau et protection adaptative des connexions.
+
 - Menu Paramètres du lobby avec choix de langue et rejeu automatique par séries confirmées de cinq parties.
 - Système social réseau complet : amis persistants, parties Redis, chat de groupe, suivi individuel du chef, rassemblement `/party warp`, `/friend join` avec arrivée en spectateur et menu Social dans la hotbar du lobby.
 - Commandes réseau `/pull <joueur>` et aide localisée `/help`, avec autocomplétion proxy étendue pour `/send`.

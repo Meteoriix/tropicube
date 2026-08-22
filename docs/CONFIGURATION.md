@@ -103,6 +103,13 @@ Core publie le grade courant sous `player:grade:<uuid>` avec une durée de vie d
 
 Une identité active est enregistrée sous `nick:<uuid>` avec le pseudonyme, le skin signé et le grade d'affichage factice. Les anciens payloads sans grade restent compatibles et utilisent `PREMIUM`. La durée de vie de 24 heures est renouvelée à la déconnexion puis à la reconnexion ; le nick complet reste donc disponible pendant cette fenêtre, sans limite spéciale de 30 secondes.
 
+### Exploitation réseau
+
+- `connection-protection.address-limit`, `global-limit`, `window-seconds` et `quarantine-seconds` contrôlent les limites adaptatives avant authentification. Aucun historique d'adresse n'est persisté.
+- `motd.line-1`, `line-2` et `maintenance-line` décrivent uniquement l'entrée publique Velocity. `{online}` est remplacé par l'effectif courant.
+- `announcements.interval-seconds` et `announcements.entries[].message-key/target` définissent la rotation localisée. Une cible vaut `network`, un type, un template ou une instance.
+- `/maintenance` persiste un drain dans Redis pendant sept jours au plus. L'échéance vaut de 1 à 1 440 minutes.
+
 ## Velocity natif
 
 Fichiers : `dockerfiles/configs/Velocity/velocity.toml` et `forwarding.secret`.

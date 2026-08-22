@@ -6,6 +6,8 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Added
 
+- Velocity operations foundation: versioned SQL migrations, typed instance modes, versioned Redis events, draining maintenance, bilingual MOTD, targeted announcements, network diagnostics, and adaptive connection protection.
+
 - Lobby Settings menu with language selection and confirmed five-game automatic replay batches.
 - Complete network social system: durable friends, Redis parties, party chat, individual leader following, `/party warp`, spectator-capable `/friend join`, and the lobby Social hotbar menu.
 - Complete private custom-game access control: proxy `/whitelist`, SheepWars host item and anvil input, removal menu, Redis persistence, and per-player lobby filtering.

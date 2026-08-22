@@ -114,6 +114,7 @@ proxy:
   nick-skin-error: "<tc><red>Skin konnte gerade nicht abgerufen werden. Bitte versuche es erneut."
   nick-already-fetching: "<tc><yellow>Ein Nick wird bereits generiert."
   nick-usage: "<tc><yellow>Verwendung: <white>/nick <gray>oder <white>/nick off"
+  announcement-welcome: "<tc><aqua>Willkommen bei Tropicube! <gray>Nutze <white>/play</white>, um einem Spiel beizutreten."
 
 social:
   friend-join-unavailable: "<tc><red>Das Spiel dieses Freundes ist nicht mehr verfügbar."

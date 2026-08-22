@@ -12,6 +12,7 @@ import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 import fr.tropicube.docker.model.ServerInstance;
+import fr.tropicube.docker.model.InstanceMode;
 import fr.tropicube.docker.model.ServerTemplate;
 
 import java.io.Closeable;
@@ -383,6 +384,19 @@ public class DockerManager implements Closeable {
         instance.setMaxPlayers(template.getMaxPlayers());
         instance.setSpectatorSlots(template.getSpectatorSlots());
         instance.setServerType(template.getServerType());
+        boolean customGame = Boolean.parseBoolean(effectiveExtraEnv.getOrDefault("IS_HOST", "false"));
+        String configuredMode = effectiveExtraEnv.get("GAME_MODE");
+        if (configuredMode == null || configuredMode.isBlank()) {
+            instance.setMode(InstanceMode.infer(template.getId(), customGame));
+        } else {
+            try {
+                instance.setMode(InstanceMode.valueOf(configuredMode.trim().toUpperCase(Locale.ROOT)));
+            } catch (IllegalArgumentException error) {
+                releasePort(port);
+                if (rconPort != 0) releaseRconPort(rconPort);
+                throw new IllegalArgumentException("GAME_MODE inconnu: " + configuredMode, error);
+            }
+        }
         instance.setStatus(ServerInstance.Status.CREATING);
         if (rconEnabled) instance.setRconPort(rconPort);
 

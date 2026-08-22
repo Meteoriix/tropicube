@@ -46,6 +46,8 @@
 Paper containers -&gt; MySQL</code></pre></div>
 <p>Velocity forwards authenticated profiles to Paper using modern forwarding. Dynamic Paper ports remain private. Docker access is restricted through a socket proxy, and secrets come from the environment.</p>
 <h2 id="server-lifecycle">Server lifecycle<a class="heading-anchor" href="#server-lifecycle" aria-label="Link to this section">#</a></h2>
+<p>Every instance carries a backward-compatible functional mode: <code>LOBBY</code>, <code>QUICK_PLAY</code>, <code>RANKED_4V4</code>, <code>RANKED_8V8</code>, or <code>CUSTOM</code>. New network events use a versioned JSON envelope with a unique identifier, source, and timestamp so consumers can deduplicate them.</p>
+<p>Velocity orchestrates network-wide and game-type maintenance. It blocks new entries and creations, lets active games finish until the deadline, then transfers players to a lobby or disconnects them cleanly. Short-lived state is shared through Redis; connection limits keep only in-memory counters and temporary quarantines.</p>
 <p><code>ServerInstance.Status</code> describes infrastructure and game availability:</p>
 <div class="code-block"><span class="code-language">text</span><pre class=""><code>CREATING -&gt; STARTING -&gt; GAME_WAITING -&gt; GAME_STARTING
                                       -&gt; GAME_PLAYING -&gt; GAME_ENDING

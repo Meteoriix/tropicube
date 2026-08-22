@@ -15,6 +15,29 @@ party:
   # A party with no online member is deleted immediately.
   disconnect-grace-seconds: 60
 
+# Adaptive protection applied before authentication. It stores only short-lived
+# counters and quarantines; no address/account history is persisted.
+connection-protection:
+  address-limit: 8
+  global-limit: 120
+  window-seconds: 10
+  quarantine-seconds: 30
+
+maintenance:
+  default-deadline-minutes: 30
+
+# Public proxy entry shown in the multiplayer server list. Backends remain hidden.
+motd:
+  line-1: "<gold><bold>Tropicube</bold></gold> <gray>•</gray> <aqua>FR / EN</aqua>"
+  line-2: "<green>{online} joueurs en ligne</green> <gray>•</gray> <yellow>SheepWars</yellow>"
+  maintenance-line: "<red>Maintenance en cours / Maintenance in progress</red>"
+
+announcements:
+  interval-seconds: 300
+  entries:
+    - message-key: "proxy.announcement-welcome"
+      target: "network"
+
 # Deletes dynamic servers and their managed ephemeral data volumes when the proxy is stopped.
 # Set to false only to preserve games during a Velocity redeploy.
 shutdown:

@@ -15,6 +15,9 @@
 | `/send <player|*> <server>` | — | `tropicube.admin.send` | Transfers one or all players |
 | `/pull <player>` | — | `tropicube.admin.pull` | Brings a player to the sender's joinable server |
 | `/tropicube ...` | `/tropi`, `/cm` | `tropicube.admin` | Administers dynamic instances |
+| `/maintenance <network\|type> <on\|off\|status> [minutes] [reason]` | — | `tropicube.admin.maintenance` | Starts a network or game-type drain with a deadline |
+| `/announce <network\|type\|instance> <language.key>` | — | `tropicube.admin.announce` | Broadcasts a configured localized announcement |
+| `/networkdiag` | `/netdiag` | `tropicube.admin.diagnostic` | Displays Redis, instance, and connection-protection health |
 
 `nick.allowed-grades` controls who may enable a nick. Disabling is always allowed, cancels an outstanding skin request, and can be retried while a backend has not restored the profile. The nick and original-profile Redis entries remain available until restoration succeeds, so a lost event cannot lock the player into the visual identity. The Redis identity keeps the fake `PREMIUM` display grade for 24 hours after disconnecting and restores it in the tablist after reconnecting, without changing real permissions. Concurrent generations for the same player are rejected.
 

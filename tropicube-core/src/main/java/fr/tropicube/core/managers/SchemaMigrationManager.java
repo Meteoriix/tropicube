@@ -1,0 +1,120 @@
+package fr.tropicube.core.managers;
+
+import fr.tropicube.core.TropicubeCore;
+import fr.tropicube.core.util.MessageStyle;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+/** Applies ordered, immutable SQL resources and records every successful version. */
+final class SchemaMigrationManager {
+    private static final String INDEX_RESOURCE = "/db/migration/index.txt";
+
+    private final TropicubeCore plugin;
+
+    SchemaMigrationManager(TropicubeCore plugin) {
+        this.plugin = plugin;
+    }
+
+    void migrate(Connection connection) throws SQLException {
+        createHistoryTable(connection);
+        for (String resource : migrationResources()) {
+            String version = resource.substring(0, resource.indexOf("__"));
+            if (isApplied(connection, version)) continue;
+            apply(connection, version, resource);
+        }
+    }
+
+    private void createHistoryTable(Connection connection) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("""
+                    CREATE TABLE IF NOT EXISTS tropicube_schema_migrations (
+                        version VARCHAR(32) PRIMARY KEY,
+                        resource_name VARCHAR(191) NOT NULL,
+                        applied_at BIGINT NOT NULL
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                    """);
+        }
+    }
+
+    private List<String> migrationResources() throws SQLException {
+        InputStream input = SchemaMigrationManager.class.getResourceAsStream(INDEX_RESOURCE);
+        if (input == null) throw new SQLException("Index de migrations introuvable: " + INDEX_RESOURCE);
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+            return reader.lines().map(String::trim)
+                    .filter(line -> !line.isEmpty() && !line.startsWith("#"))
+                    .toList();
+        } catch (IOException error) {
+            throw new SQLException("Impossible de lire l'index de migrations", error);
+        }
+    }
+
+    private boolean isApplied(Connection connection, String version) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT 1 FROM tropicube_schema_migrations WHERE version = ?")) {
+            statement.setString(1, version);
+            try (ResultSet result = statement.executeQuery()) {
+                return result.next();
+            }
+        }
+    }
+
+    private void apply(Connection connection, String version, String resource) throws SQLException {
+        String sql = readResource("/db/migration/" + resource);
+        List<String> statements = splitStatements(sql);
+        try {
+            for (String statementSql : statements) {
+                try (Statement statement = connection.createStatement()) {
+                    statement.execute(statementSql);
+                }
+            }
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "INSERT INTO tropicube_schema_migrations(version, resource_name, applied_at) VALUES (?, ?, ?)")) {
+                statement.setString(1, version);
+                statement.setString(2, resource);
+                statement.setLong(3, System.currentTimeMillis());
+                statement.executeUpdate();
+            }
+            plugin.getLogger().info(MessageStyle.log("tc", "DB", "<gray>Migration appliquée: " + resource));
+        } catch (SQLException error) {
+            throw new SQLException("Échec de la migration " + resource, error);
+        }
+    }
+
+    private String readResource(String resource) throws SQLException {
+        InputStream input = SchemaMigrationManager.class.getResourceAsStream(resource);
+        if (input == null) throw new SQLException("Migration introuvable: " + resource);
+        try (input) {
+            return new String(input.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException error) {
+            throw new SQLException("Impossible de lire " + resource, error);
+        }
+    }
+
+    static List<String> splitStatements(String script) {
+        List<String> statements = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        for (String rawLine : script.replace("\r", "").split("\n")) {
+            String line = rawLine.strip();
+            if (line.isEmpty() || line.startsWith("--")) continue;
+            current.append(rawLine).append('\n');
+            if (line.endsWith(";")) {
+                String value = current.toString().strip();
+                statements.add(value.substring(0, value.length() - 1));
+                current.setLength(0);
+            }
+        }
+        if (!current.toString().isBlank()) statements.add(current.toString().strip());
+        return List.copyOf(statements);
+    }
+}

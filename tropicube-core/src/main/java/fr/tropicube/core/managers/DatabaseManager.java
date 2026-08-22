@@ -189,6 +189,7 @@ public class DatabaseManager {
             }
             migrateLegacySchema(conn);
             migrateEconomyAmounts(conn);
+            new SchemaMigrationManager(plugin).migrate(conn);
             syncGradesFromConfig(conn);
             plugin.getLogger().info(MessageStyle.log("tc", "DB", "<gray>Tables créées/vérifiées."));
         }

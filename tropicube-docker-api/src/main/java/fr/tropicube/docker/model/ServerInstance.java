@@ -142,6 +142,9 @@ public class ServerInstance {
      */
     private String serverType;
 
+    /** Functional matchmaking mode; absent in legacy Redis payloads. */
+    private InstanceMode mode;
+
     /**
      * Main constructor to create a new instance from a template.
      *
@@ -382,6 +385,14 @@ public class ServerInstance {
         this.serverType = requireNonBlank(serverType, "serverType");
     }
 
+    public InstanceMode getMode() {
+        return mode == null ? InstanceMode.infer(templateId, whitelisted) : mode;
+    }
+
+    public void setMode(InstanceMode mode) {
+        this.mode = Objects.requireNonNull(mode, "mode");
+    }
+
     private void validateDeserializedState() {
         requireNonBlank(instanceId, "instanceId");
         requireNonBlank(templateId, "templateId");
@@ -389,6 +400,7 @@ public class ServerInstance {
         requirePort(port, "port");
         Objects.requireNonNull(status, "status");
         requireNonBlank(serverType, "serverType");
+        if (mode == null) mode = InstanceMode.infer(templateId, whitelisted);
         if (onlinePlayers < 0) throw new IllegalArgumentException("onlinePlayers ne peut pas être négatif");
         if (maxPlayers <= 0) throw new IllegalArgumentException("maxPlayers doit être strictement positif");
         if (spectatorSlots < 0) throw new IllegalArgumentException("spectatorSlots ne peut pas être négatif");
