@@ -114,8 +114,7 @@ La valeur `false` conserve les backends et leurs volumes afin qu'un redémarrage
 
 ### Nick et administration
 
-- `admin-uuids` donne `tropicube.admin`, `tropicube.admin.find`,
-  `tropicube.admin.send` et `tropicube.bypass.whitelist` aux UUID approuvés ;
+- `admin-uuids` donne `tropicube.admin`, `tropicube.admin.find`, `tropicube.admin.send`, `tropicube.admin.pull`, `tropicube.admin.maintenance`, `tropicube.admin.announce`, `tropicube.admin.diagnostic` et `tropicube.bypass.whitelist` aux UUID approuvés ;
 - `nick.allowed-grades` contrôle les grades pouvant activer `/nick` ; la désactivation reste accessible à tous ;
 - `nick.skin-uuids` complète le pool de profils Mojang utilisés comme skins.
 

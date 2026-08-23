@@ -41,6 +41,8 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Fixed
 
+- Velocity administrator UUIDs now receive the missing operations permissions; `/netdiag`, `/maintenance`, and `/announce` work after reconnecting.
+
 - Command help and usage parameters in angle brackets now render literally in all four languages, including 2FA and SheepWars; the remaining `§` color codes were replaced with MiniMessage, and tests now validate palettes, tags, placeholders, Velocity parity, and Docker copies.
 
 - Staff 2FA now reports enrollment/session state, completes subcommands, provides copyable enrollment data, uses consistent four-language colors, and consumes codes transactionally to prevent concurrent replay.

@@ -32,6 +32,9 @@ public class PlayerConnectionListener {
             "tropicube.admin.find",
             "tropicube.admin.send",
             "tropicube.admin.pull",
+            "tropicube.admin.maintenance",
+            "tropicube.admin.announce",
+            "tropicube.admin.diagnostic",
             "tropicube.bypass.whitelist"
     );
 
@@ -59,13 +62,17 @@ public class PlayerConnectionListener {
                     .filter(Objects::nonNull)
                     .anyMatch(player.getUniqueId()::equals);
             if (isAdmin) {
-                event.setProvider(_ -> permission -> ADMIN_PERMISSIONS.contains(permission)
+                event.setProvider(_ -> permission -> isAdminPermission(permission)
                         ? Tristate.TRUE
                         : Tristate.UNDEFINED);
             }
         } catch (Exception e) {
             logger.warn(MessageStyle.log("PROXY", "<yellow>Erreur lecture liste admins"), e);
         }
+    }
+
+    static boolean isAdminPermission(String permission) {
+        return ADMIN_PERMISSIONS.contains(permission);
     }
 
     private static UUID parseUuid(String value) {

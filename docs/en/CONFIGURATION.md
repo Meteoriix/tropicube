@@ -23,7 +23,7 @@ The implementation minimizes captured context and enforces retention, but code a
 
 Source: `tropicube-velocity/src/main/resources/config.yml`; deployment copy: `dockerfiles/configs/TropicubeVelocity/config.yml`.
 
-- `admin-uuids` grants proxy administration permissions to approved UUIDs;
+- `admin-uuids` grants `tropicube.admin`, the `find`, `send`, `pull`, `maintenance`, `announce` and `diagnostic` proxy administration permissions, and `tropicube.bypass.whitelist` to approved UUIDs;
 - `party.disconnect-grace-seconds` defaults to `60`, removes members who remain offline after that grace period and transfers leadership to an online member; fully offline parties are deleted immediately;
 - `remove-dynamic-servers-on-shutdown` controls cleanup during a normal proxy shutdown;
 - health-check values define probe frequency, timeout, and failed-start cleanup;
