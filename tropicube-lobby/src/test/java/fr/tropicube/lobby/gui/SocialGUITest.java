@@ -14,8 +14,8 @@ class SocialGUITest {
 
     @Test
     void socialTabsUseTheConfiguredSlotsAndHeadDatabaseIcons() {
-        assertEquals(4, SocialGUI.FRIENDS_TAB_SLOT);
-        assertEquals(6, SocialGUI.PARTY_TAB_SLOT);
+        assertEquals(3, SocialGUI.FRIENDS_TAB_SLOT);
+        assertEquals(5, SocialGUI.PARTY_TAB_SLOT);
         assertEquals("117085", SocialGUI.FRIENDS_HEAD_ID);
         assertEquals("117095", SocialGUI.PARTY_HEAD_ID);
     }

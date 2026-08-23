@@ -27,8 +27,8 @@ public final class SocialGUI {
     static final String FRIENDS_HEAD_ID = "117085";
     static final String PARTY_HEAD_ID = "117095";
     public static final int SIZE = 54;
-    public static final int FRIENDS_TAB_SLOT = 4;
-    public static final int PARTY_TAB_SLOT = 6;
+    public static final int FRIENDS_TAB_SLOT = 3;
+    public static final int PARTY_TAB_SLOT = 5;
     public static final int REQUESTS_SLOT = 49;
     public static final int CLOSE_SLOT = 53;
     private static final int[] ENTRY_SLOTS = {
