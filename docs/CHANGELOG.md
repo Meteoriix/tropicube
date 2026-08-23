@@ -42,6 +42,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Modifié
 
+- Le catalogue `/help` affiche désormais une commande principale par ligne, conserve uniquement ses véritables alias sur cette ligne et détaille les arguments et sous-commandes dans les quatre langues.
+
 - `/help` couvre désormais toutes les commandes et fonctionnalités réseau dans cinq rubriques localisées, dont une rubrique sociale dédiée et une rubrique staff masquée sans permission.
 - Le MOTD public affiche désormais une phrase d'accroche et la liste dédupliquée des jeux activés, sans indicateur FR/EN ni compteur de joueurs.
 - Les membres déconnectés sont retirés de leur party après une minute ; le rôle de chef passe alors à un membre en ligne et une party entièrement hors ligne est supprimée immédiatement. Le menu Social affiche désormais la tête de profil de chaque ami.

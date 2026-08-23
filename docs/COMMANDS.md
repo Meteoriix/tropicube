@@ -65,7 +65,7 @@ Durées acceptées : une valeur comprise par `DurationParser`, par exemple `30s`
 
 Les amis sont persistants en MySQL. Une party est temporaire dans Redis, limitée par la configuration Core et créée lors de la première invitation. Accepter une invitation depuis une autre party retire atomiquement le joueur de l'ancienne ; s'il en était chef, un autre membre est promu, ou la party vide est dissoute. Le suivi est activé par défaut à l'entrée, puis reste un choix individuel. Les transferts sociaux respectent la whitelist et la capacité de l'instance cible.
 
-L'aide en jeu regroupe la navigation et le chat dans `general`, les files et la progression SheepWars dans `games`, les amis/parties/guildes dans `social`, la progression réseau et les préférences dans `profile`, puis les outils sécurisés de modération et d'exploitation dans `staff`. L'autocomplétion masque cette dernière catégorie aux joueurs non habilités.
+L'aide en jeu regroupe la navigation et le chat dans `general`, les files et la progression SheepWars dans `games`, les amis/parties/guildes dans `social`, la progression réseau et les préférences dans `profile`, puis les outils sécurisés de modération et d'exploitation dans `staff`. Chaque commande principale occupe exactement une ligne avec sa syntaxe complète ; seuls ses véritables alias restent entre parenthèses sur cette ligne. L'autocomplétion masque la catégorie `staff` aux joueurs non habilités.
 
 ### Gestion détaillée des permissions
 

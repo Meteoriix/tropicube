@@ -66,6 +66,8 @@ Velocity validates `/whitelist`: the sender must own an active private custom ga
 | `/fly` | Toggles authorized lobby flight |
 | `/vip` | Opens the VIP presentation interface |
 
+The in-game `/help` catalog uses one line per primary command and shows its complete syntax. Only actual aliases remain grouped in parentheses on the same line. Commands are split between `general`, `games`, `social`, `profile`, and the permission-protected `staff` category.
+
 ## SheepWars controls
 
 Team, class, kit, map, host settings, start/cancel, and return-to-lobby actions use hotbar items and inventory menus. Waiting players also receive the shared player-center item in slot 7; it is removed before combat. Late arrivals and reconnecting players enter spectator mode when the game is already in progress.

@@ -338,6 +338,64 @@ class YamlResourcesTest {
         }
     }
 
+    @Test
+    void localizedHelpUsesOneDetailedLinePerPrimaryCommand() {
+        Map<String, List<String>> commandsByCategory = Map.of(
+                "general", List.of("help", "lobby", "spawn", "lang", "languages", "money", "vip",
+                        "msg", "reply", "ignore", "globalchat", "report"),
+                "games", List.of("play", "quickplay", "competitive", "server", "queue", "replay",
+                        "replayconfirm", "rejoin", "whitelist", "sheepwars"),
+                "social", List.of("friend", "party", "pc", "guild"),
+                "profile", List.of("profile", "center", "missions", "notifications", "settings", "nick", "fly"),
+                "staff", List.of("2fa", "staff", "staffchat", "reports", "kick", "mute", "unmute",
+                        "warn", "history", "ban", "tempban", "unban", "privacy", "find", "send", "pull",
+                        "maintenance", "announce", "networkdiag", "eco", "rank", "permissions", "tropicube",
+                        "coreadmin")
+        );
+        Map<String, List<String>> aliases = Map.ofEntries(
+                Map.entry("lobby", List.of("hub")), Map.entry("lang", List.of("language", "langue")),
+                Map.entry("money", List.of("balance")), Map.entry("vip", List.of("boutique", "shop")),
+                Map.entry("msg", List.of("tell", "w")), Map.entry("reply", List.of("r")),
+                Map.entry("globalchat", List.of("g")), Map.entry("play", List.of("servers", "sv")),
+                Map.entry("queue", List.of("file")),
+                Map.entry("replay", List.of("playnext", "playagain", "rejouer")),
+                Map.entry("sheepwars", List.of("swprofile")),
+                Map.entry("friend", List.of("friends", "ami", "amis")),
+                Map.entry("party", List.of("groupe")), Map.entry("guild", List.of("guilde")),
+                Map.entry("profile", List.of("profil")), Map.entry("center", List.of("centre")),
+                Map.entry("notifications", List.of("inbox")),
+                Map.entry("settings", List.of("preferences", "parametres")),
+                Map.entry("fly", List.of("flymode", "fm")), Map.entry("staffchat", List.of("sc")),
+                Map.entry("networkdiag", List.of("netdiag")), Map.entry("rank", List.of("grade")),
+                Map.entry("permissions", List.of("tropiperm")),
+                Map.entry("tropicube", List.of("tropi", "cm")),
+                Map.entry("coreadmin", List.of("tropiadmin", "ca"))
+        );
+
+        for (String language : LANGUAGES) {
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(
+                    Path.of("src/main/resources/languages", language + ".yml").toFile());
+            for (Map.Entry<String, List<String>> category : commandsByCategory.entrySet()) {
+                List<String> lines = config.getStringList("help." + category.getKey());
+                assertEquals(category.getValue().size(), lines.size(),
+                        () -> "Nombre de lignes d'aide incorrect pour " + language + "/" + category.getKey());
+                for (String command : category.getValue()) {
+                    Pattern primary = Pattern.compile("<(?:aqua|gold)>/" + Pattern.quote(command) + "(?:\\s|<)");
+                    List<String> matching = lines.stream().filter(line -> primary.matcher(line).find()).toList();
+                    assertEquals(1, matching.size(),
+                            () -> "La commande /" + command + " doit avoir exactement une ligne en " + language);
+                    String line = matching.getFirst();
+                    assertTrue(line.contains(" <dark_gray>") && line.contains("— <gray>"),
+                            () -> "Utilisation ou description incomplète pour /" + command + " en " + language);
+                    for (String alias : aliases.getOrDefault(command, List.of())) {
+                        assertTrue(line.contains("/" + alias),
+                                () -> "Alias /" + alias + " absent de la ligne /" + command + " en " + language);
+                    }
+                }
+            }
+        }
+    }
+
     private static void assertLanguageKeysMatch(Path bundled, Path deployed) {
         for (String language : List.of("fr", "en", "es", "de")) {
             Path bundledFile = bundled.resolve(language + ".yml");
