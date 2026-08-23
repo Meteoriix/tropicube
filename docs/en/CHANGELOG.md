@@ -39,6 +39,8 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Fixed
 
+- Command help and usage parameters in angle brackets now render literally in all four languages, including 2FA and SheepWars; the remaining `§` color codes were replaced with MiniMessage, and tests now validate palettes, tags, placeholders, Velocity parity, and Docker copies.
+
 - Staff 2FA now reports enrollment/session state, completes subcommands, provides copyable enrollment data, uses consistent four-language colors, and consumes codes transactionally to prevent concurrent replay.
 
 - Social-menu heads now start dynamic resolution with the UUID alone and embed the server-resolved texture; incomplete static profiles no longer produce an incorrect default skin, and friends do not need to reconnect recently.

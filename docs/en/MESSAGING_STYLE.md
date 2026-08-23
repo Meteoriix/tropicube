@@ -33,3 +33,5 @@ Dynamic values must not expose secrets or sensitive data. New contexts stay shor
 ## Locales and validation
 
 Every key exists in `fr`, `en`, `de`, and `es` with identical positional placeholders. Bundled resources and Docker copies remain identical. Tests validate YAML, key and placeholder parity, MiniMessage syntax, and the absence of legacy decorative prefixes.
+
+Angle brackets that describe command arguments are not tags: inside a double-quoted YAML string, write `\\<player>` to render `<player>`. Legacy `§` color codes are forbidden; all colors and decorations must use MiniMessage.

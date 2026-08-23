@@ -77,6 +77,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Corrigé
 
+- Les paramètres entre chevrons des aides et usages de commandes s'affichent désormais littéralement dans les quatre langues, y compris pour la 2FA et SheepWars ; les derniers codes couleur `§` ont été remplacés par MiniMessage et les tests vérifient désormais palettes, balises, placeholders, parité Velocity et copies Docker.
+
 - Le parcours 2FA staff distingue inscription, session inactive et session active, propose ses sous-commandes, rend les secrets copiables et harmonise les couleurs dans les quatre langues ; la consommation des codes est désormais transactionnelle contre les validations concurrentes.
 
 - Les migrations V002 et V004 ajoutent désormais leurs colonnes de façon idempotente avec une syntaxe compatible MySQL ; Core, Lobby et SheepWars ne se désactivent plus en cascade au démarrage.

@@ -391,13 +391,13 @@ public class EconomyManager {
 
         public String getMessage() {
             return switch (this) {
-                case SUCCESS -> "§aTransfert effectué avec succès.";
-                case INSUFFICIENT_FUNDS -> "§cFonds insuffisants.";
-                case SAME_PLAYER -> "§cVous ne pouvez pas vous envoyer de l'argent.";
-                case INVALID_AMOUNT -> "§cMontant invalide (doit être positif).";
-                case TOO_LOW -> "§cMontant trop faible.";
-                case TOO_HIGH -> "§cMontant trop élevé.";
-                case ACCOUNT_NOT_FOUND -> "§cCompte économique introuvable.";
+                case SUCCESS -> "<green>Transfert effectué avec succès.";
+                case INSUFFICIENT_FUNDS -> "<red>Fonds insuffisants.";
+                case SAME_PLAYER -> "<red>Vous ne pouvez pas vous envoyer de l'argent.";
+                case INVALID_AMOUNT -> "<red>Montant invalide (doit être positif).";
+                case TOO_LOW -> "<red>Montant trop faible.";
+                case TOO_HIGH -> "<red>Montant trop élevé.";
+                case ACCOUNT_NOT_FOUND -> "<red>Compte économique introuvable.";
             };
         }
     }

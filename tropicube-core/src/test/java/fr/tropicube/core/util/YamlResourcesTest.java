@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -22,6 +23,16 @@ import java.util.logging.Logger;
 import static org.junit.jupiter.api.Assertions.*;
 
 class YamlResourcesTest {
+    private static final List<String> LANGUAGES = List.of("fr", "en", "es", "de");
+    private static final Set<String> ALLOWED_MINI_MESSAGE_TAGS = Set.of(
+            "aqua", "b", "blue", "bold", "click", "dark_aqua", "dark_blue", "dark_gray",
+            "dark_green", "dark_purple", "dark_red", "gold", "gray", "green", "italic",
+            "light_purple", "obfuscated", "red", "reset", "strikethrough", "sw", "tc",
+            "u", "underlined", "white", "yellow"
+    );
+    private static final Pattern MINI_MESSAGE_TAG = Pattern.compile("(?<!\\\\)<([^<>]+)>");
+    private static final Pattern POSITIONAL_PLACEHOLDER = Pattern.compile("\\{\\d+}");
+
     @TempDir
     Path temporaryDirectory;
 
@@ -55,11 +66,15 @@ class YamlResourcesTest {
 
     @Test
     void bundledLanguagesExposeTheSameLeafKeys() {
-        Path languageDirectory = Path.of("src/main/resources/languages");
-        Set<String> expected = leafKeys(languageDirectory.resolve("fr.yml"));
-        for (String language : List.of("en", "es", "de"))
-            assertEquals(expected, leafKeys(languageDirectory.resolve(language + ".yml")),
-                    "Clés de traduction différentes pour " + language);
+        for (Path languageDirectory : List.of(
+                Path.of("src/main/resources/languages"),
+                Path.of("../tropicube-velocity/src/main/resources/languages"))) {
+            Set<String> expected = leafKeys(languageDirectory.resolve("fr.yml"));
+            for (String language : List.of("en", "es", "de")) {
+                assertEquals(expected, leafKeys(languageDirectory.resolve(language + ".yml")),
+                        "Clés de traduction différentes pour " + languageDirectory + "/" + language);
+            }
+        }
     }
 
     @Test
@@ -69,11 +84,34 @@ class YamlResourcesTest {
     }
 
     @Test
+    void translationsKeepTheSameMiniMessagePalette() {
+        List<String> differences = new ArrayList<>();
+        for (Path directory : List.of(
+                Path.of("src/main/resources/languages"),
+                Path.of("../tropicube-velocity/src/main/resources/languages"))) {
+            Map<String, Object> french = leafValues(directory.resolve("fr.yml"));
+            for (String language : List.of("en", "es", "de")) {
+                Map<String, Object> translated = leafValues(directory.resolve(language + ".yml"));
+                for (String key : french.keySet()) {
+                    Set<String> expected = new HashSet<>(formattingTags(french.get(key)));
+                    Set<String> actual = new HashSet<>(formattingTags(translated.get(key)));
+                    if (!expected.equals(actual)) {
+                        differences.add(directory + "/" + language + ": " + key
+                                + " attendu=" + expected + " reçu=" + actual);
+                    }
+                }
+            }
+        }
+        assertTrue(differences.isEmpty(), () -> "Palette MiniMessage différente :\n"
+                + String.join("\n", differences));
+    }
+
+    @Test
     void everyTranslationIsValidMiniMessage() {
         for (Path directory : List.of(
                 Path.of("src/main/resources/languages"),
                 Path.of("../tropicube-velocity/src/main/resources/languages"))) {
-            for (String language : List.of("fr", "en", "es", "de")) {
+            for (String language : LANGUAGES) {
                 Map<String, Object> values = leafValues(directory.resolve(language + ".yml"));
                 values.forEach((key, value) -> {
                     List<?> messages = value instanceof List<?> list ? list : List.of(value);
@@ -83,6 +121,50 @@ class YamlResourcesTest {
                                 () -> "MiniMessage invalide pour " + language + ": " + key);
                     }
                 });
+            }
+        }
+    }
+
+    @Test
+    void translationsOnlyContainKnownUnescapedMiniMessageTags() {
+        for (Path directory : List.of(
+                Path.of("src/main/resources/languages"),
+                Path.of("../tropicube-velocity/src/main/resources/languages"))) {
+            for (String language : LANGUAGES) {
+                leafValues(directory.resolve(language + ".yml")).forEach((key, value) -> {
+                    var matcher = MINI_MESSAGE_TAG.matcher(String.valueOf(value));
+                    while (matcher.find()) {
+                        String token = matcher.group(1);
+                        String name = token.startsWith("/") ? token.substring(1) : token;
+                        int argumentSeparator = name.indexOf(':');
+                        if (argumentSeparator >= 0) name = name.substring(0, argumentSeparator);
+                        assertTrue(name.matches("#[0-9a-fA-F]{6}")
+                                        || ALLOWED_MINI_MESSAGE_TAGS.contains(name.toLowerCase(Locale.ROOT)),
+                                () -> "Balise MiniMessage inconnue ou littéral non échappé pour "
+                                        + language + ": " + key + " (<" + token + ">)");
+                    }
+                });
+            }
+        }
+    }
+
+    @Test
+    void playerFacingSourcesDoNotUseLegacySectionColors() throws Exception {
+        for (Path root : List.of(
+                Path.of("src/main"),
+                Path.of("../tropicube-lobby/src/main"),
+                Path.of("../tropicube-sheepwars/src/main"),
+                Path.of("../tropicube-velocity/src/main"),
+                Path.of("../dockerfiles/configs"))) {
+            try (var paths = Files.walk(root)) {
+                for (Path file : paths.filter(Files::isRegularFile)
+                        .filter(path -> path.toString().endsWith(".java")
+                                || path.toString().endsWith(".yml")
+                                || path.toString().endsWith(".yaml"))
+                        .toList()) {
+                    assertFalse(Files.readString(file).contains("§"),
+                            () -> "Code couleur hérité dans " + file);
+                }
             }
         }
     }
@@ -282,10 +364,17 @@ class YamlResourcesTest {
         }
     }
 
-    private static Set<String> placeholders(Object value) {
-        var matcher = Pattern.compile("\\{\\d+}").matcher(String.valueOf(value));
-        Set<String> result = new HashSet<>();
+    private static List<String> placeholders(Object value) {
+        var matcher = POSITIONAL_PLACEHOLDER.matcher(String.valueOf(value));
+        List<String> result = new ArrayList<>();
         while (matcher.find()) result.add(matcher.group());
+        return result;
+    }
+
+    private static List<String> formattingTags(Object value) {
+        var matcher = MINI_MESSAGE_TAG.matcher(String.valueOf(value));
+        List<String> result = new ArrayList<>();
+        while (matcher.find()) result.add(matcher.group(1).toLowerCase(Locale.ROOT));
         return result;
     }
 

@@ -37,6 +37,12 @@ class MessageStyleTest {
         assertFalse(rendered.contains("[Tropicube]"));
     }
 
+    @Test
+    void rendersEscapedCommandParametersLiterally() {
+        assertEquals("Usage : /msg <joueur> <message>",
+                MessageStyle.plain("<red>Usage : /msg \\<joueur> \\<message>"));
+    }
+
     private static void assertBoldState(Component component, String content, TextDecoration.State expected) {
         TextDecoration.State state = findEffectiveBoldState(component, content, TextDecoration.State.NOT_SET);
         assertNotNull(state, () -> "Texte introuvable : " + content);
