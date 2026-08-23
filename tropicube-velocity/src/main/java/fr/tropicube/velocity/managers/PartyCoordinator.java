@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class PartyCoordinator {
     private static final String FRIEND_JOIN = "PROXY:FRIEND_JOIN:";
     private static final String PARTY_WARP = "PROXY:PARTY_WARP:";
+    private static final String PARTY_WARP_MEMBER = "PROXY:PARTY_WARP_MEMBER:";
 
     private final TropicubeVelocity plugin;
     private final ProxyServer proxy;
@@ -61,6 +62,9 @@ public final class PartyCoordinator {
         if (message.startsWith(FRIEND_JOIN)) {
             String[] parts = message.substring(FRIEND_JOIN.length()).split(":", 3);
             if (parts.length == 3) runAsync(() -> friendJoin(parts));
+        } else if (message.startsWith(PARTY_WARP_MEMBER)) {
+            WarpMemberRequest request = parseWarpMemberRequest(message.substring(PARTY_WARP_MEMBER.length()));
+            if (request != null) runAsync(() -> warpMember(request));
         } else if (message.startsWith(PARTY_WARP)) {
             String rawLeader = message.substring(PARTY_WARP.length());
             runAsync(() -> parseUuid(rawLeader, this::warpFollowers));
@@ -182,6 +186,35 @@ public final class PartyCoordinator {
         }
     }
 
+    private void warpMember(WarpMemberRequest request) {
+        UUID leaderId = request.leaderId();
+        UUID targetId = request.targetId();
+        Player leader = proxy.getPlayer(leaderId).orElse(null);
+        Player target = proxy.getPlayer(targetId).orElse(null);
+        PartySnapshot party = redis.getParty(leaderId);
+        String instanceId = redis.getPlayerServer(leaderId.toString());
+        boolean member = party != null && party.members().stream()
+                .anyMatch(entry -> entry.playerId().equals(targetId));
+        if (leader == null || target == null || party == null || !party.isLeader(leaderId)
+                || !member || instanceId == null) {
+            message(leader, "social.party-warp-member-unavailable");
+            return;
+        }
+        if (isOnInstance(target, instanceId)) {
+            message(leader, "social.party-warp-member-already", target.getUsername());
+            return;
+        }
+        ServerInstance instance = servers.getInstanceById(instanceId).orElse(null);
+        if (!canJoin(instance, targetId, 1)) {
+            message(leader, "social.party-warp-full");
+            return;
+        }
+        if (connect(target, instance)) {
+            message(target, "social.party-following", leader.getUsername());
+            message(leader, "social.party-warp-member-success", target.getUsername());
+        }
+    }
+
     private void warpFollowers(UUID leaderId, String instanceId, PartySnapshot party) {
         ServerInstance instance = servers.getInstanceById(instanceId).orElse(null);
         Player leader = proxy.getPlayer(leaderId).orElse(null);
@@ -263,6 +296,17 @@ public final class PartyCoordinator {
         try { return UUID.fromString(raw); }
         catch (IllegalArgumentException exception) { return null; }
     }
+
+    static WarpMemberRequest parseWarpMemberRequest(String raw) {
+        String[] parts = raw.split(":", 2);
+        if (parts.length != 2) return null;
+        UUID leaderId = parseUuid(parts[0]);
+        UUID targetId = parseUuid(parts[1]);
+        if (leaderId == null || targetId == null || leaderId.equals(targetId)) return null;
+        return new WarpMemberRequest(leaderId, targetId);
+    }
+
+    record WarpMemberRequest(UUID leaderId, UUID targetId) { }
 
     private static long nowEpochSecond() {
         return System.currentTimeMillis() / 1000;

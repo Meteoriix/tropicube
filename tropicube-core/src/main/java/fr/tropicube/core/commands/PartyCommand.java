@@ -65,7 +65,7 @@ public final class PartyCommand implements CommandExecutor, TabCompleter {
             case "leave" -> leave(actor);
             case "disband" -> disband(actor);
             case "follow" -> follow(actor, args);
-            case "warp", "tp" -> warp(actor);
+            case "warp", "tp" -> warp(actor, args);
             case "chat" -> chat(actor, Arrays.copyOfRange(args, 1, args.length));
             default -> message(actor.id(), "social.party-help");
         }
@@ -155,10 +155,19 @@ public final class PartyCommand implements CommandExecutor, TabCompleter {
                 ? (enabled ? "social.party-follow-on" : "social.party-follow-off") : "social.party-none");
     }
 
-    private void warp(Actor actor) {
+    private void warp(Actor actor, String[] args) {
         PartySnapshot party = social.party(actor.id());
         if (party == null) { message(actor.id(), "social.party-none"); return; }
         if (!party.isLeader(actor.id())) { message(actor.id(), "social.party-not-leader"); return; }
+        if (args.length == 2) {
+            UUID target = partyMember(actor.id(), args[1]);
+            if (target == null) return;
+            if (target.equals(actor.id())) { message(actor.id(), "social.self-target"); return; }
+            social.requestPartyWarp(actor.id(), target);
+            message(actor.id(), "social.party-warp-member-requested", args[1]);
+            return;
+        }
+        if (args.length != 1) { message(actor.id(), "social.party-help"); return; }
         social.requestPartyWarp(actor.id());
         message(actor.id(), "social.party-warp-requested");
     }

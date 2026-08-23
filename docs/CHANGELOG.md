@@ -8,6 +8,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 #### Ajouté
 
+- Navigation Social en deux onglets Amis/Party, gestion visuelle des membres et invitations de party, et transfert ciblé avec `/party warp <joueur>`.
 - Sous-menu Social paginé pour les demandes d'amis reçues et envoyées : têtes de profil, acceptation au clic gauche, refus ou annulation au clic droit.
 - Expérience lobby immersive et persistante : accueil adaptatif selon l'origine de connexion, préférence d'effets, scoreboard orienté profil/action et état de file publié en temps réel.
 - Sélecteur de jeux à trois actions : clic gauche Quick Play, clic droit choix Ranked 4v4/8v8, `Maj + clic gauche` navigateur unifié filtrable des instances Quick Play et personnalisées publiques.

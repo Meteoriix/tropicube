@@ -8,6 +8,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 #### Added
 
+- Two-tab Friends/Party Social navigation, visual party-member and invitation management, and targeted `/party warp <player>` transfers.
 - Paginated Social submenu for incoming and sent friend requests, with profile heads, left-click acceptance, and right-click denial or cancellation.
 - Persistent immersive lobby experience with origin-aware welcome effects, a profile/action sidebar, and reliable live queue state.
 - Three game-selector actions: left click for Quick Play, right click for Ranked 4v4/8v8, and `Shift + left click` for the filtered unified public-instance browser.

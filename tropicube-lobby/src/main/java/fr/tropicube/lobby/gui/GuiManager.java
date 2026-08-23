@@ -10,7 +10,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -42,6 +41,7 @@ public class GuiManager {
         SETTINGS,
         SOCIAL,
         FRIEND_REQUESTS,
+        PARTY_INVITES,
         RANKED_SELECTOR
     }
 
@@ -151,6 +151,11 @@ public class GuiManager {
 
     /** Loads SQL and Redis social data asynchronously, then opens one coherent snapshot. */
     public void openSocial(Player player) {
+        openSocial(player, SocialGUI.View.FRIENDS);
+    }
+
+    /** Opens one of the two Social views from the same asynchronously loaded snapshot. */
+    public void openSocial(Player player, SocialGUI.View view) {
         var corePlugin = Bukkit.getPluginManager().getPlugin("TropicubeCore");
         if (!(corePlugin instanceof TropicubeCore core)) {
             player.sendMessage(LangHelper.component(player, "general.operation-failed"));
@@ -166,13 +171,19 @@ public class GuiManager {
                     .toList();
             var party = social.party(playerId);
             var invites = social.partyInvites(playerId);
-            Map<UUID, String> names = new HashMap<>();
-            if (party != null) party.members().forEach(member -> names.put(member.playerId(), social.displayName(member.playerId())));
-            invites.keySet().forEach(id -> names.put(id, social.displayName(id)));
-            return CompletableFuture.allOf(entryFutures.toArray(CompletableFuture[]::new))
+            List<CompletableFuture<SocialGUI.PartyEntry>> partyEntryFutures = party == null ? List.of()
+                    : party.members().stream().map(member -> playerHeadProfiles.resolve(member.playerId())
+                            .thenApply(profile -> new SocialGUI.PartyEntry(member.playerId(),
+                                    social.displayName(member.playerId()), social.isOnline(member.playerId()),
+                                    member.playerId().equals(party.leaderId()), profile)))
+                    .toList();
+            CompletableFuture<?>[] profiles = java.util.stream.Stream.concat(
+                    entryFutures.stream(), partyEntryFutures.stream()).toArray(CompletableFuture[]::new);
+            return CompletableFuture.allOf(profiles)
                     .thenApply(ignored -> new SocialSnapshot(
                             entryFutures.stream().map(CompletableFuture::join).toList(),
-                            requests, party, invites, names));
+                            partyEntryFutures.stream().map(CompletableFuture::join).toList(),
+                            requests.size(), invites.size(), party));
         }).thenCompose(snapshot -> snapshot)
                 .whenComplete((snapshot, error) -> Bukkit.getScheduler().runTask(plugin, () -> {
             Player online = Bukkit.getPlayer(playerId);
@@ -183,8 +194,8 @@ public class GuiManager {
                 return;
             }
             try {
-                Inventory inventory = SocialGUI.build(online, snapshot.friends(), snapshot.requests(), snapshot.party(),
-                        snapshot.invites(), snapshot.names());
+                Inventory inventory = SocialGUI.build(online, view, snapshot.friends(), snapshot.partyMembers(),
+                        snapshot.friendRequestCount(), snapshot.partyInviteCount(), snapshot.party());
                 openGuis.put(playerId, GuiType.SOCIAL);
                 online.openInventory(inventory);
                 showHint(online, "SOCIAL", "lobby.hint-social");
@@ -234,6 +245,41 @@ public class GuiManager {
                     online.openInventory(FriendRequestsGUI.build(
                             online, snapshot.incoming(), snapshot.sent(), page));
                 }));
+    }
+
+    /** Loads received party invitations and resolves their leader heads asynchronously. */
+    public void openPartyInvites(Player player) {
+        openPartyInvites(player, 0);
+    }
+
+    /** Loads one page of received party invitations and resolves their leader heads asynchronously. */
+    public void openPartyInvites(Player player, int page) {
+        if (!(Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core)) {
+            player.sendMessage(LangHelper.component(player, "general.operation-failed"));
+            return;
+        }
+        UUID playerId = player.getUniqueId();
+        var social = core.getSocialService();
+        CompletableFuture.supplyAsync(() -> social.partyInvites(playerId)).thenCompose(invites -> {
+            List<CompletableFuture<PartyInvitesGUI.InviteEntry>> entries = invites.keySet().stream()
+                    .map(leaderId -> playerHeadProfiles.resolve(leaderId)
+                            .thenApply(profile -> new PartyInvitesGUI.InviteEntry(
+                                    leaderId, social.displayName(leaderId), profile)))
+                    .toList();
+            return CompletableFuture.allOf(entries.toArray(CompletableFuture[]::new))
+                    .thenApply(ignored -> entries.stream().map(CompletableFuture::join).toList());
+        }).whenComplete((entries, error) -> Bukkit.getScheduler().runTask(plugin, () -> {
+            Player online = Bukkit.getPlayer(playerId);
+            if (online == null) return;
+            if (error != null) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING,
+                        "Impossible de charger les invitations de party", error);
+                online.sendMessage(LangHelper.component(online, "general.operation-failed"));
+                return;
+            }
+            openGuis.put(playerId, GuiType.PARTY_INVITES);
+            online.openInventory(PartyInvitesGUI.build(online, entries, page));
+        }));
     }
 
     public void showHint(Player player, String hintId, String messageKey) {
@@ -292,9 +338,9 @@ public class GuiManager {
     }
 
     private record SocialSnapshot(List<SocialGUI.FriendEntry> friends,
-                                  List<fr.tropicube.core.social.FriendshipRepository.PendingRequest> requests,
-                                  fr.tropicube.docker.model.PartySnapshot party,
-                                  Map<UUID, String> invites, Map<UUID, String> names) { }
+                                  List<SocialGUI.PartyEntry> partyMembers,
+                                  int friendRequestCount, int partyInviteCount,
+                                  fr.tropicube.docker.model.PartySnapshot party) { }
 
     private record FriendRequestSnapshot(List<FriendRequestsGUI.RequestEntry> incoming,
                                          List<FriendRequestsGUI.RequestEntry> sent) { }

@@ -115,6 +115,10 @@ public final class SocialService {
         plugin.getRedisManager().publishCommand("PROXY", "PARTY_WARP:" + leader);
     }
 
+    public void requestPartyWarp(UUID leader, UUID target) {
+        plugin.getRedisManager().publishCommand("PROXY", "PARTY_WARP_MEMBER:" + leader + ":" + target);
+    }
+
     public void notifyPlayer(UUID target, String key, Object... arguments) {
         String rawArguments = String.join("\t", java.util.Arrays.stream(arguments).map(String::valueOf).toList());
         String encoded = Base64.getUrlEncoder().withoutPadding()

@@ -22,7 +22,7 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 | `/party invite|accept|deny <joueur>` | — | aucune | Crée ou rejoint une party réseau |
 | `/party list|leave|kick|promote|disband` | — | aucune | Consulte ou administre la party ; certaines actions sont réservées au chef |
 | `/party follow on|off` | — | aucune | Active ou désactive le suivi personnel du chef |
-| `/party warp` | `/party tp` | aucune | Le chef transfère vers son serveur tous les membres dont le suivi est actif |
+| `/party warp [joueur]` | `/party tp` | chef de party | Sans joueur, transfère les membres dont le suivi est actif ; avec un joueur, déplace uniquement ce membre vers le serveur du chef |
 | `/party chat <message>` | `/pc <message>` | aucune | Envoie un message à la party |
 | `/mute <joueur> <durée> [raison]` | — | `tropicube.mute` | Met un joueur en sourdine |
 | `/unmute <joueur>` | — | `tropicube.mute` | Lève la sourdine |

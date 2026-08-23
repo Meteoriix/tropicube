@@ -123,3 +123,6 @@ social:
   transfer-unavailable: "<tc><red>Der Zielserver ist nicht mehr verfügbar."
   party-warp-full: "<tc><red>Es gibt nicht genügend Plätze für die ganze Party."
   party-following: "<tc><gray>Du folgst dem Anführer <white>{0}</white>."
+  party-warp-member-unavailable: "<tc><red>Dieses Mitglied kann derzeit nicht verschoben werden."
+  party-warp-member-already: "<tc><yellow>{0} ist bereits auf deinem Server."
+  party-warp-member-success: "<tc><green>{0} wurde auf deinen Server verschoben."

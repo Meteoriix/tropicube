@@ -71,6 +71,8 @@ public class GuiClickListener implements Listener {
             case SocialGUI.Holder socialHolder -> handleSocial(player, slot, socialHolder, e.getClick());
             case FriendRequestsGUI.Holder requestsHolder ->
                     handleFriendRequests(player, slot, requestsHolder, e.getClick());
+            case PartyInvitesGUI.Holder invitesHolder ->
+                    handlePartyInvites(player, slot, invitesHolder, e.getClick());
             default -> {
             }
         }
@@ -110,6 +112,7 @@ public class GuiClickListener implements Listener {
             || holder instanceof CustomGameTypeGUI.Holder
             || holder instanceof SocialGUI.Holder
             || holder instanceof FriendRequestsGUI.Holder
+            || holder instanceof PartyInvitesGUI.Holder
             || holder instanceof RankedSelectorGUI.Holder;
     }
 
@@ -419,21 +422,61 @@ public class GuiClickListener implements Listener {
         SocialGUI.Action action = holder.action(slot, click);
         if (action == null) return;
         switch (action.type()) {
+            case OPEN_FRIENDS -> plugin.getGuiManager().openSocial(player, SocialGUI.View.FRIENDS);
+            case OPEN_PARTY -> plugin.getGuiManager().openSocial(player, SocialGUI.View.PARTY);
             case FRIEND_JOIN -> player.performCommand("friend join " + action.argument());
             case PARTY_INVITE -> player.performCommand("party invite " + action.argument());
             case OPEN_FRIEND_REQUESTS -> plugin.getGuiManager().openFriendRequests(player, 0);
-            case PARTY_ACCEPT -> player.performCommand("party accept " + action.argument());
+            case OPEN_PARTY_REQUESTS -> plugin.getGuiManager().openPartyInvites(player);
             case FOLLOW_TOGGLE -> player.performCommand("party follow " + action.argument());
             case PARTY_WARP -> player.performCommand("party warp");
+            case PARTY_WARP_MEMBER -> player.performCommand("party warp " + action.argument());
+            case PARTY_KICK -> player.performCommand("party kick " + action.argument());
         }
-        if (action.type() == SocialGUI.ActionType.OPEN_FRIEND_REQUESTS) {
+        if (action.type() == SocialGUI.ActionType.OPEN_FRIENDS
+                || action.type() == SocialGUI.ActionType.OPEN_PARTY
+                || action.type() == SocialGUI.ActionType.OPEN_FRIEND_REQUESTS
+                || action.type() == SocialGUI.ActionType.OPEN_PARTY_REQUESTS) {
             return;
         }
         if (action.type() == SocialGUI.ActionType.FRIEND_JOIN || action.type() == SocialGUI.ActionType.PARTY_WARP) {
             player.closeInventory();
         } else {
-            Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.getGuiManager().openSocial(player), 5L);
+            Bukkit.getScheduler().runTaskLater(plugin,
+                    () -> plugin.getGuiManager().openSocial(player, holder.view()), 5L);
         }
+    }
+
+    private void handlePartyInvites(Player player, int slot, PartyInvitesGUI.Holder holder, ClickType click) {
+        if (slot == PartyInvitesGUI.CLOSE_SLOT) {
+            player.closeInventory();
+            return;
+        }
+        if (slot == PartyInvitesGUI.BACK_SLOT) {
+            plugin.getGuiManager().openSocial(player, SocialGUI.View.PARTY);
+            return;
+        }
+        if (slot == PartyInvitesGUI.PREVIOUS_SLOT && holder.hasPrevious()) {
+            plugin.getGuiManager().openPartyInvites(player, holder.page() - 1);
+            return;
+        }
+        if (slot == PartyInvitesGUI.NEXT_SLOT && holder.hasNext()) {
+            plugin.getGuiManager().openPartyInvites(player, holder.page() + 1);
+            return;
+        }
+        PartyInvitesGUI.Action action = holder.action(slot, click);
+        if (action == null) return;
+        switch (action.type()) {
+            case ACCEPT -> player.performCommand("party accept " + action.username());
+            case DENY -> player.performCommand("party deny " + action.username());
+        }
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (action.type() == PartyInvitesGUI.ActionType.ACCEPT) {
+                plugin.getGuiManager().openSocial(player, SocialGUI.View.PARTY);
+            } else {
+                plugin.getGuiManager().openPartyInvites(player, holder.page());
+            }
+        }, 5L);
     }
 
     private void handleFriendRequests(Player player, int slot, FriendRequestsGUI.Holder holder, ClickType click) {
