@@ -28,6 +28,8 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Changed
 
+- The Social menu now uses left click to join a friend's server and right click to invite them to the party; incoming friend and party invitations can be accepted directly from chat.
+
 - The lobby hotbar is now `Games 0`, `Social 2`, `Profile 4`, and `Shop 8`; custom-game creation moved into the game selector and visibly explains its VIP+ requirement.
 - Tropicube Center is now Profile, uses the player's head, embeds Settings, and shares one visual inventory style across Core and Lobby.
 - Each player has at most one matchmaking queue; choosing another format replaces it and the Ranked menu exposes an explicit leave action.

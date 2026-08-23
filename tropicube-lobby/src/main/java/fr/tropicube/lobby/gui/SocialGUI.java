@@ -11,6 +11,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +37,8 @@ public final class SocialGUI {
                                   PartySnapshot party, Map<UUID, String> partyInvites,
                                   Map<UUID, String> names) {
         Map<Integer, Action> actions = new LinkedHashMap<>();
-        Holder holder = new Holder(actions);
+        Map<Integer, Action> rightClickActions = new LinkedHashMap<>();
+        Holder holder = new Holder(actions, rightClickActions);
         Inventory inventory = Bukkit.createInventory(holder, SIZE,
                 LangHelper.component(player, "social.menu-title"));
         holder.inventory = inventory;
@@ -51,9 +53,15 @@ public final class SocialGUI {
             inventory.setItem(slot, new ItemBuilder(Material.PLAYER_HEAD)
                     .skullProfile(friend.profile())
                     .name(LangHelper.get(player, friend.online() ? "social.friend-list-online" : "social.friend-list-offline", friend.username()))
-                    .lore(friend.online() ? "<gray>/friend join " + friend.username() : "<dark_gray>Hors ligne")
+                    .lore(friend.online()
+                            ? List.of(LangHelper.get(player, "social.menu-friend-left-click"),
+                                    LangHelper.get(player, "social.menu-friend-right-click"))
+                            : List.of(LangHelper.get(player, "social.menu-friend-offline")))
                     .build());
-            if (friend.online()) actions.put(slot, new Action(ActionType.FRIEND_JOIN, friend.username()));
+            if (friend.online()) {
+                actions.put(slot, new Action(ActionType.FRIEND_JOIN, friend.username()));
+                rightClickActions.put(slot, new Action(ActionType.PARTY_INVITE, friend.username()));
+            }
         }
 
         inventory.setItem(36, new ItemBuilder(Material.WRITABLE_BOOK)
@@ -112,14 +120,25 @@ public final class SocialGUI {
         }
     }
     public record Action(ActionType type, String argument) { }
-    public enum ActionType { FRIEND_JOIN, FRIEND_ACCEPT, PARTY_ACCEPT, FOLLOW_TOGGLE, PARTY_WARP }
+    public enum ActionType { FRIEND_JOIN, PARTY_INVITE, FRIEND_ACCEPT, PARTY_ACCEPT, FOLLOW_TOGGLE, PARTY_WARP }
+
+    static Action actionForClick(Action primary, Action rightClick, ClickType click) {
+        return click.isRightClick() && rightClick != null ? rightClick : primary;
+    }
 
     public static final class Holder implements InventoryHolder {
         private final Map<Integer, Action> actions;
+        private final Map<Integer, Action> rightClickActions;
         private Inventory inventory;
 
-        private Holder(Map<Integer, Action> actions) { this.actions = actions; }
-        public Action action(int slot) { return actions.get(slot); }
+        private Holder(Map<Integer, Action> actions, Map<Integer, Action> rightClickActions) {
+            this.actions = actions;
+            this.rightClickActions = rightClickActions;
+        }
+
+        public Action action(int slot, ClickType click) {
+            return actionForClick(actions.get(slot), rightClickActions.get(slot), click);
+        }
         @Override public @NotNull Inventory getInventory() { return inventory; }
     }
 }

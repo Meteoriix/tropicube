@@ -68,7 +68,7 @@ public class GuiClickListener implements Listener {
             case VipShopGUI.Holder shopHolder -> handleVipShop(player, slot, shopHolder);
             case CustomGameGUI.Holder customHolder -> handleCustomGame(player, slot, customHolder);
             case CustomGameTypeGUI.Holder customTypeHolder -> handleCustomGameType(player, slot, customTypeHolder);
-            case SocialGUI.Holder socialHolder -> handleSocial(player, slot, socialHolder);
+            case SocialGUI.Holder socialHolder -> handleSocial(player, slot, socialHolder, e.getClick());
             default -> {
             }
         }
@@ -408,15 +408,16 @@ public class GuiClickListener implements Listener {
 
     }
 
-    private void handleSocial(Player player, int slot, SocialGUI.Holder holder) {
+    private void handleSocial(Player player, int slot, SocialGUI.Holder holder, ClickType click) {
         if (slot == SocialGUI.CLOSE_SLOT) {
             player.closeInventory();
             return;
         }
-        SocialGUI.Action action = holder.action(slot);
+        SocialGUI.Action action = holder.action(slot, click);
         if (action == null) return;
         switch (action.type()) {
             case FRIEND_JOIN -> player.performCommand("friend join " + action.argument());
+            case PARTY_INVITE -> player.performCommand("party invite " + action.argument());
             case FRIEND_ACCEPT -> player.performCommand("friend accept " + action.argument());
             case PARTY_ACCEPT -> player.performCommand("party accept " + action.argument());
             case FOLLOW_TOGGLE -> player.performCommand("party follow " + action.argument());

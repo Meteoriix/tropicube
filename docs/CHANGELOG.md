@@ -46,6 +46,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Modifié
 
+- Le menu Social distingue désormais le clic gauche pour rejoindre le serveur d'un ami et le clic droit pour l'inviter dans la party ; les invitations d'ami et de party reçues peuvent être acceptées directement depuis le chat.
+
 - La hotbar du lobby est désormais `Jeux 0`, `Social 2`, `Profil 4` et `Boutique 8`. Les parties personnalisées quittent la hotbar et restent visibles, avec explication du grade VIP+ requis, dans le sélecteur de jeux.
 - Le Centre Tropicube devient Profil, utilise la tête du joueur et intègre Paramètres. Les inventaires Core et Lobby partagent désormais le même cadrage, la même palette et les mêmes contrôles.
 - Une seule file de matchmaking peut être active par joueur : rejoindre un autre format remplace la précédente et le menu Ranked permet de la quitter explicitement.

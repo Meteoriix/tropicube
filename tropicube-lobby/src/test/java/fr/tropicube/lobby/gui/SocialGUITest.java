@@ -1,6 +1,7 @@
 package fr.tropicube.lobby.gui;
 
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
+import org.bukkit.event.inventory.ClickType;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Proxy;
@@ -23,5 +24,16 @@ class SocialGUITest {
         assertEquals(playerId, entry.playerId());
         assertEquals("Ami", entry.username());
         assertSame(profile, entry.profile());
+    }
+
+    @Test
+    void friendClicksSelectJoinOrPartyInvitation() {
+        SocialGUI.Action join = new SocialGUI.Action(SocialGUI.ActionType.FRIEND_JOIN, "Ami");
+        SocialGUI.Action invite = new SocialGUI.Action(SocialGUI.ActionType.PARTY_INVITE, "Ami");
+
+        assertSame(join, SocialGUI.actionForClick(join, invite, ClickType.LEFT));
+        assertSame(invite, SocialGUI.actionForClick(join, invite, ClickType.RIGHT));
+        assertSame(invite, SocialGUI.actionForClick(join, invite, ClickType.SHIFT_RIGHT));
+        assertSame(join, SocialGUI.actionForClick(join, null, ClickType.RIGHT));
     }
 }

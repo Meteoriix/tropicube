@@ -2,6 +2,9 @@ package fr.tropicube.core.social;
 
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.docker.model.PartySnapshot;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.Bukkit;
 
 import java.nio.charset.StandardCharsets;
@@ -14,10 +17,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Pattern;
 
 /** Network social facade used by commands and the lobby UI. */
 public final class SocialService {
     private static final String EVENT_PREFIX = "SOCIAL_MESSAGE:";
+    private static final Pattern MINECRAFT_USERNAME = Pattern.compile("[A-Za-z0-9_]{1,16}");
 
     private final TropicubeCore plugin;
     private final FriendshipRepository friendships;
@@ -124,12 +129,41 @@ public final class SocialService {
             Object[] arguments = decoded.isEmpty() ? new Object[0] : decoded.split("\\t", -1);
             Bukkit.getScheduler().runTask(plugin, () -> {
                 var player = Bukkit.getPlayer(target);
-                if (player != null) player.sendMessage(plugin.getLanguageManager().getComponent(target, parts[1], arguments));
+                if (player != null) player.sendMessage(notificationComponent(target, parts[1], arguments));
             });
         } catch (IllegalArgumentException ignored) {
             // Ignore malformed internal messages rather than exposing them to players.
         }
     }
+
+    private Component notificationComponent(UUID target, String key, Object[] arguments) {
+        Component message = plugin.getLanguageManager().getComponent(target, key, arguments);
+        InvitationAction action = invitationAction(key, arguments);
+        if (action == null) return message;
+        Component hover = plugin.getLanguageManager().getComponent(target, action.hoverKey());
+        return clickableInvitation(message, hover, action);
+    }
+
+    static Component clickableInvitation(Component message, Component hover, InvitationAction action) {
+        return message.clickEvent(ClickEvent.runCommand(action.command()))
+                .hoverEvent(HoverEvent.showText(hover));
+    }
+
+    /** Builds only allow-listed invitation commands from a valid Minecraft username. */
+    static InvitationAction invitationAction(String key, Object[] arguments) {
+        if (arguments.length == 0) return null;
+        String username = String.valueOf(arguments[0]);
+        if (!MINECRAFT_USERNAME.matcher(username).matches()) return null;
+        return switch (key) {
+            case "social.friend-request-received" -> new InvitationAction(
+                    "/friend accept " + username, "social.friend-request-accept-hover");
+            case "social.party-invite-received" -> new InvitationAction(
+                    "/party accept " + username, "social.party-invite-accept-hover");
+            default -> null;
+        };
+    }
+
+    record InvitationAction(String command, String hoverKey) { }
 
     public void expireRequests(int expiryDays) {
         plugin.getDatabaseManager().supplyAsync(() -> { friendships.expireRequests(expiryDays); return null; });
