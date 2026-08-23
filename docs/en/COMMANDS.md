@@ -47,8 +47,8 @@ Velocity validates `/whitelist`: the sender must own an active private custom ga
 | `/msg`, `/reply`, `/ignore`, `/globalchat` | none | Cross-server communication and persistent ignores |
 | `/2fa issue|enroll|confirm|verify|status ...` | staff/enrollment permissions | Enrolls TOTP, reports enrollment/session state, and validates a fifteen-minute staff session |
 | `/staff`, `/staffchat <message>` | staff + TOTP session | Invisible controlled spectator mode and cross-server staff chat |
-| `/profile [player]` | none | Displays the network profile according to its visibility |
-| `/settings profile|messages|global|entities|hints <value>` | none | Updates persistent preferences |
+| `/profile [player]` | none | Opens Profile without arguments or displays a visible player profile |
+| `/settings profile|messages|global|entities|hints|effects <value>` | none | Updates persistent preferences, including immersive lobby effects |
 | `/missions [reroll|claim] ...` | none | Displays and manages personal daily/weekly missions |
 | `/notifications [read <id>]` | none | Reads the complete notification center |
 | `/guild info|create|invite|accept|leave|kick|promote|demote|transfer ...` | role-dependent | Manages a persistent 50-member guild |
@@ -58,13 +58,15 @@ Velocity validates `/whitelist`: the sender must own an active private custom ga
 
 | Command | Purpose |
 |---|---|
-| `/play` | Opens the server selector (`/servers` remains an alias) |
+| `/play` | Opens the selector: left Quick Play, right Ranked, middle public instances (`/servers` remains an alias) |
 | `/rejoin` | Rejoins the remembered active SheepWars instance as a spectator; no arguments are accepted |
 | `/replay` | Joins or waits for the suggested replay instance (`/playnext` remains an alias) |
 | `/replayconfirm` | Confirms a fresh batch of five automatic replays |
+| `/quickplay` | Joins the SheepWars Quick Play queue and replaces any active queue |
+| `/competitive <4v4|8v8>` | Joins a shared-rating Ranked format and replaces any active queue |
 | `/lang` | Opens or updates language selection |
 | `/fly` | Toggles authorized lobby flight |
-| `/vip` | Opens the VIP presentation interface |
+| `/vip` | Opens the Shop home and its Grades tab |
 
 The in-game `/help` catalog uses one line per primary command and shows its complete syntax. Only actual aliases remain grouped in parentheses on the same line. Commands are split between `general`, `games`, `social`, `profile`, and the permission-protected `staff` category.
 
@@ -72,7 +74,7 @@ The in-game `/help` catalog uses one line per primary command and shows its comp
 
 Team, class, kit, map, host settings, start/cancel, and return-to-lobby actions use hotbar items and inventory menus. Waiting players also receive the shared player-center item in slot 7; it is removed before combat. Late arrivals and reconnecting players enter spectator mode when the game is already in progress.
 
-The lobby hotbar keeps stable positions: games in slot 0, custom games in slot 1 for eligible grades, social in slot 2, the Tropicube center in slot 4, quick settings in slot 6, and the store in slot 8.
+The lobby hotbar keeps stable positions: Games in slot 0, Social in slot 2, the player's Profile head in slot 4, and Shop in slot 8. Custom-game creation and Settings live in the game selector and Profile respectively.
 
 ## Administration principles
 

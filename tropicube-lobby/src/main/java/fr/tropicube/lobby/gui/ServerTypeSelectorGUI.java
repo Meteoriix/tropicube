@@ -1,6 +1,7 @@
 package fr.tropicube.lobby.gui;
 
 import fr.tropicube.core.TropicubeCore;
+import fr.tropicube.core.menu.NetworkMenuStyle;
 import fr.tropicube.lobby.TropicubeLobby;
 import fr.tropicube.lobby.managers.LobbyServerManager;
 import fr.tropicube.lobby.utils.ItemBuilder;
@@ -25,8 +26,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ServerTypeSelectorGUI {
 
-    private static final int SIZE = 27;
-    private static final int CLOSE_SLOT = 26;
+    private static final int SIZE = 36;
+    private static final int CUSTOM_GAME_SLOT = 31;
+    private static final int CLOSE_SLOT = 35;
 
     /** Centered positions for one to nine types; the following types are not displayed. */
     private static final int[][] LAYOUTS = {
@@ -47,14 +49,18 @@ public class ServerTypeSelectorGUI {
 
     public static final class Holder implements InventoryHolder {
         private final Map<Integer, String> slotToType;
+        private final boolean customGameAllowed;
         private Inventory inventory;
 
-        private Holder(Map<Integer, String> slotToType) {
+        private Holder(Map<Integer, String> slotToType, boolean customGameAllowed) {
             this.slotToType = Collections.unmodifiableMap(slotToType);
+            this.customGameAllowed = customGameAllowed;
         }
 
         public String getTypeForSlot(int slot) { return slotToType.get(slot); }
         public boolean isCloseSlot(int slot)   { return slot == CLOSE_SLOT; }
+        public boolean isCustomGameSlot(int slot) { return slot == CUSTOM_GAME_SLOT; }
+        public boolean isCustomGameAllowed() { return customGameAllowed; }
 
         @Override public @NonNull Inventory getInventory() { return inventory; }
         private void setInventory(Inventory inventory)     { this.inventory = inventory; }
@@ -71,16 +77,25 @@ public class ServerTypeSelectorGUI {
         Map<Integer, String> slotToType = new LinkedHashMap<>();
         for (int i = 0; i < n; i++) slotToType.put(slots[i], sortedTypes.get(i));
 
-        Holder holder = new Holder(slotToType);
+        boolean customGameAllowed = customGameAllowed(player);
+        Holder holder = new Holder(slotToType, customGameAllowed);
         Inventory inv = Bukkit.createInventory(holder, SIZE, LangHelper.component(player, "lobby.type-selector-title"));
         holder.setInventory(inv);
 
-        ItemBuilder filler = new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).name(" ");
-        for (int i = 0; i < SIZE; i++) inv.setItem(i, filler.build());
+        NetworkMenuStyle.frame(inv);
 
         for (Map.Entry<Integer, String> e : slotToType.entrySet()) {
             inv.setItem(e.getKey(), buildTypeItem(plugin, player, e.getValue()));
         }
+
+        inv.setItem(CUSTOM_GAME_SLOT, customGameAllowed
+                ? new ItemBuilder(Material.COMMAND_BLOCK)
+                        .name(LangHelper.get(player, "lobby.selector-custom-name"))
+                        .lore(LangHelper.get(player, "lobby.selector-custom-lore"), "",
+                                LangHelper.get(player, "lobby.selector-custom-click")).glow().build()
+                : new ItemBuilder(Material.IRON_DOOR)
+                        .name(LangHelper.get(player, "lobby.selector-custom-locked-name"))
+                        .lore(LangHelper.get(player, "lobby.selector-custom-locked-lore")).build());
 
         inv.setItem(CLOSE_SLOT, ItemBuilder.closeButton(player));
         return inv;
@@ -112,7 +127,8 @@ public class ServerTypeSelectorGUI {
                         LangHelper.get(player, "lobby.type-lore-players", totalPlayers),
                         "",
                         LangHelper.get(player, "lobby.type-lore-left-click"),
-                        LangHelper.get(player, "lobby.type-lore-right-click")
+                        LangHelper.get(player, "lobby.type-lore-right-click"),
+                        LangHelper.get(player, "lobby.type-lore-middle-click")
                 );
         if (onlineServers > 0) ib.glow();
         return ib.build();
@@ -159,5 +175,10 @@ public class ServerTypeSelectorGUI {
     private static String capitalize(String s) {
         if (s == null || s.isEmpty()) return s;
         return s.substring(0, 1).toUpperCase(Locale.ROOT) + s.substring(1).toLowerCase(Locale.ROOT);
+    }
+
+    private static boolean customGameAllowed(Player player) {
+        return Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core
+                && core.getPermissionManager().getPriority(player.getUniqueId()) >= 20;
     }
 }

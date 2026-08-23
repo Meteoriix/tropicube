@@ -40,13 +40,18 @@ public class GuiManager {
         CUSTOM_GAME,
         CUSTOM_GAME_TYPE_SELECTOR,
         SETTINGS,
-        SOCIAL
+        SOCIAL,
+        RANKED_SELECTOR
     }
 
     // ── Opening menus ───────────────────────── ─────────────────────────
 
     public void openServerSelector(Player player, String type, int page) {
-        Inventory inv = ServerSelectorGUI.build(plugin, player, type, page);
+        openServerSelector(player, type, page, ServerSelectorGUI.Filter.ALL);
+    }
+
+    public void openServerSelector(Player player, String type, int page, ServerSelectorGUI.Filter filter) {
+        Inventory inv = ServerSelectorGUI.build(plugin, player, type, page, filter);
         openGuis.put(player.getUniqueId(), GuiType.SERVER_SELECTOR);
         player.openInventory(inv);
     }
@@ -56,6 +61,19 @@ public class GuiManager {
         openGuis.put(player.getUniqueId(), GuiType.SERVER_TYPE_SELECTOR);
         player.openInventory(inv);
         showHint(player, "GAME_SELECTOR", "lobby.hint-game-selector");
+    }
+
+    public void openRankedSelector(Player player, String type) {
+        UUID playerId = player.getUniqueId();
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            plugin.getLobbyServerManager().refreshPlayerMatchmaking(playerId);
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                Player online = Bukkit.getPlayer(playerId);
+                if (online == null) return;
+                openGuis.put(playerId, GuiType.RANKED_SELECTOR);
+                online.openInventory(RankedSelectorGUI.build(plugin, online, type));
+            });
+        });
     }
 
     public void openLanguageSelector(Player player) {
@@ -89,6 +107,14 @@ public class GuiManager {
                                     fr.tropicube.core.network.PlayerPreferenceService.Preferences preferences) {}
 
     public void openVipShop(Player player) {
+        openVipShop(player, false);
+    }
+
+    public void openVipGrades(Player player) {
+        openVipShop(player, true);
+    }
+
+    private void openVipShop(Player player, boolean grades) {
         var corePlugin = Bukkit.getPluginManager().getPlugin("TropicubeCore");
         if (!(corePlugin instanceof TropicubeCore core)) {
             player.sendMessage(LangHelper.component(player, "general.operation-failed"));
@@ -103,7 +129,9 @@ public class GuiManager {
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     Player onlinePlayer = Bukkit.getPlayer(playerId);
                     if (onlinePlayer == null) return;
-                    Inventory inventory = VipShopGUI.build(onlinePlayer, balance, grade);
+                    Inventory inventory = grades
+                            ? VipShopGUI.buildGrades(onlinePlayer, balance, grade)
+                            : VipShopGUI.build(onlinePlayer, balance, grade);
                     openGuis.put(playerId, GuiType.VIP_SHOP);
                     onlinePlayer.openInventory(inventory);
                 });
@@ -238,6 +266,7 @@ public class GuiManager {
             switch (entry.getValue()) {
                 case SERVER_TYPE_SELECTOR -> ServerTypeSelectorGUI.refresh(plugin, p);
                 case SERVER_SELECTOR      -> ServerSelectorGUI.refresh(plugin, p);
+                case RANKED_SELECTOR      -> RankedSelectorGUI.refresh(plugin, p);
                 default -> {}
             }
         }

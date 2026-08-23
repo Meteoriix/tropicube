@@ -177,13 +177,14 @@ Les noms de grades sont utilisés comme identifiants stables dans la boutique, l
 Fichier : `dockerfiles/configs/TropicubeLobby/config.yml`.
 
 - `lobby.spawn` définit monde, coordonnées et orientation ;
+- `lobby.welcome.enabled` active globalement les titres, sons et particules de l'accueil adaptatif ; chaque joueur peut les désactiver durablement depuis Profil > Paramètres ;
 - `lobby.double-jump` active globalement les sauts aériens ;
 - `auto-replay.batch-size` fixe le nombre de parties automatiques avant une nouvelle confirmation (`5`, borné entre 1 et 100) ;
 - `server-types` définit les icônes Material ou HeadDatabase ;
-- `vip-shop.entries` associe grade, icône, nom et prix ;
+- `vip-shop.entries` associe grade, icône, nom et prix catalogue croissant ; le prix d'une montée en grade est la différence entre le grade ciblé et le grade déjà acheté ;
 - `lang-selector.languages` configure codes, têtes et textes de présentation.
 
-Le `grade-key` d'une entrée VIP doit exister dans Core. Le prix doit être positif et son avantage traduit sous la clé `lobby.vip-perks-<grade>` dans les quatre langues.
+Le `grade-key` d'une entrée doit exister dans Core et ne peut apparaître qu'une fois. Les prix doivent être strictement croissants. L'onglet Grades sépare les permissions réellement actives (`lobby.shop-active-<grade>`) des promesses non implémentées (`lobby.shop-soon-<grade>`) dans les quatre langues ; une fonctionnalité ne doit passer dans la première section qu'après validation de son comportement effectif.
 
 ## TropicubeSheepwars
 

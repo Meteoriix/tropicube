@@ -12,6 +12,9 @@ auto-replay:
   batch-size: 5
 
 lobby:
+  welcome:
+    # Master switch. Players can additionally disable these effects in Profile > Settings.
+    enabled: true
   # Spawn position in lobby world
   spawn:
     world: "world"

@@ -278,6 +278,19 @@ public class PermissionManager {
         });
     }
 
+    /** Refreshes local and Redis state after another service committed a permanent grade change. */
+    public void applyCommittedGrade(UUID uuid, String gradeName) {
+        if (!gradeRegistry.containsKey(gradeName)) return;
+        playerGrades.put(uuid, gradeName);
+        playerGradeExpiries.put(uuid, -1L);
+        plugin.getRedisManager().set(PlayerGradeCache.key(uuid), gradeName, PlayerGradeCache.TTL_SECONDS);
+        plugin.getRedisManager().publishPlayerEvent("GRADE_CHANGED", uuid.toString());
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            Player player = plugin.getServer().getPlayer(uuid);
+            if (player != null) applyPermissions(player);
+        });
+    }
+
     public boolean hasPermission(UUID uuid, String permission) {
         Player player = plugin.getServer().getPlayer(uuid);
         if (player != null) return player.hasPermission(permission);

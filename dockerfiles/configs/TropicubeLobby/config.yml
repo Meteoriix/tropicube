@@ -12,6 +12,9 @@ auto-replay:
   batch-size: 5
 
 lobby:
+  welcome:
+    # Global switch; each player can disable effects in Profile > Settings.
+    enabled: true
   spawn:
     world: "world"
     x: 100

@@ -60,6 +60,13 @@ final class MatchmakingWaitlist {
         });
     }
 
+    synchronized String templateOf(UUID playerId) {
+        return playersByTemplate.entrySet().stream()
+                .filter(entry -> entry.getValue().contains(playerId))
+                .map(Map.Entry::getKey)
+                .findFirst().orElse(null);
+    }
+
     synchronized void clear() {
         playersByTemplate.clear();
     }

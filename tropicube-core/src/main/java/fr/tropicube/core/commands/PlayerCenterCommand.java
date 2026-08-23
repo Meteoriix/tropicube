@@ -39,7 +39,7 @@ public final class PlayerCenterCommand implements CommandExecutor {
                             ? "center.profile-title-selected" : "center.profile-title-unavailable"));
             return true;
         }
-        if (args.length == 0) { showProfile(player, player.getUniqueId()); return true; }
+        if (args.length == 0) { plugin.getPlayerCenterMenu().openHome(player); return true; }
         String language = plugin.getLanguageManager().getPlayerLanguage(player.getUniqueId());
         CommandAsync.run(plugin, player, language,
                 () -> plugin.getPlayerDataManager().getUuidByName(args[0]).orElse(null), target -> {
@@ -83,7 +83,7 @@ public final class PlayerCenterCommand implements CommandExecutor {
             plugin.getPlayerPreferenceService().load(player.getUniqueId()).thenAccept(value ->
                     plugin.getServer().getScheduler().runTask(plugin, () -> send(player, "center.settings-status",
                             value.profileVisibility(), value.messagePrivacy(), value.globalChatEnabled(),
-                            value.lobbyVisibility(), value.contextualHelp())));
+                            value.lobbyVisibility(), value.contextualHelp(), value.lobbyEffectsEnabled())));
             return true;
         }
         plugin.getPlayerPreferenceService().load(player.getUniqueId()).thenCompose(current -> {
@@ -109,17 +109,20 @@ public final class PlayerCenterCommand implements CommandExecutor {
             return switch (args[0].toLowerCase(Locale.ROOT)) {
                 case "profile" -> new PlayerPreferenceService.Preferences(
                         PlayerPreferenceService.ProfileVisibility.valueOf(args[1].toUpperCase(Locale.ROOT)),
-                        value.messagePrivacy(), value.globalChatEnabled(), value.lobbyVisibility(), value.contextualHelp());
+                        value.messagePrivacy(), value.globalChatEnabled(), value.lobbyVisibility(), value.contextualHelp(),
+                        value.lobbyEffectsEnabled());
                 case "messages" -> new PlayerPreferenceService.Preferences(value.profileVisibility(),
                         PlayerPreferenceService.MessagePrivacy.valueOf(args[1].toUpperCase(Locale.ROOT)),
-                        value.globalChatEnabled(), value.lobbyVisibility(), value.contextualHelp());
+                        value.globalChatEnabled(), value.lobbyVisibility(), value.contextualHelp(), value.lobbyEffectsEnabled());
                 case "global" -> new PlayerPreferenceService.Preferences(value.profileVisibility(), value.messagePrivacy(),
-                        parseBoolean(args[1]), value.lobbyVisibility(), value.contextualHelp());
+                        parseBoolean(args[1]), value.lobbyVisibility(), value.contextualHelp(), value.lobbyEffectsEnabled());
                 case "entities" -> new PlayerPreferenceService.Preferences(value.profileVisibility(), value.messagePrivacy(),
                         value.globalChatEnabled(), PlayerPreferenceService.LobbyVisibility.valueOf(
-                                args[1].toUpperCase(Locale.ROOT)), value.contextualHelp());
+                                args[1].toUpperCase(Locale.ROOT)), value.contextualHelp(), value.lobbyEffectsEnabled());
                 case "hints" -> new PlayerPreferenceService.Preferences(value.profileVisibility(), value.messagePrivacy(),
-                        value.globalChatEnabled(), value.lobbyVisibility(), parseBoolean(args[1]));
+                        value.globalChatEnabled(), value.lobbyVisibility(), parseBoolean(args[1]), value.lobbyEffectsEnabled());
+                case "effects" -> new PlayerPreferenceService.Preferences(value.profileVisibility(), value.messagePrivacy(),
+                        value.globalChatEnabled(), value.lobbyVisibility(), value.contextualHelp(), parseBoolean(args[1]));
                 default -> null;
             };
         } catch (IllegalArgumentException error) { return null; }

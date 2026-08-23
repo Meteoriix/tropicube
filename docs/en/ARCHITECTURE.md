@@ -69,6 +69,8 @@ Sheep distribution uses an immutable effective-weight table followed by an indep
 | `sw:next-game:<id>` | Velocity | SheepWars | Pre-created replay instance |
 | `post-game:<uuid>` | SheepWars | Lobby | Replay suggestion, 120-second TTL |
 | `settings:auto-replay:<uuid>` | Lobby | Lobby | Persistent `OFF`, remaining count, or `0` awaiting confirmation |
+| `matchmaking:player:<uuid>` | Velocity | Lobby | The player's only active queue, 30-minute TTL; removed on cancellation, transfer, or disconnect |
+| `matchmaking:ranked:stats:<template>` | Velocity | Lobby | Versioned UUID-free live groups, reserved players, capacity, oldest wait, and update time; refreshed every 5 seconds with a 15-second TTL |
 | `host-creation:<uuid>` | Velocity | Velocity / Lobby | Atomic custom-server creation lock |
 | `host:<uuid>` | Velocity | Velocity, Lobby, SheepWars | Host ownership of one custom instance |
 | `player:uuid:<name>` / `player:name:<uuid>` | Velocity | Velocity, SheepWars | Previously seen player-name resolution; refreshed 30-day TTL |
@@ -93,7 +95,11 @@ Global chat and private messages use Redis. Public messages receive a random twe
 
 MySQL is authoritative for bans, while `ban:<uuid>` lets Velocity reject the login before a Paper transfer and a command event disconnects active sessions. Sensitive staff actions additionally require the fifteen-minute `staff-session:<uuid>` created by a non-replayable TOTP or one-time recovery code. Code consumption locks the MySQL row inside one transaction before the Redis session opens, preventing concurrent reuse. TOTP secrets use AES-256-GCM under an environment-only key; no device or extra address data is collected.
 
-Core owns the localized persistent-data player-center hotbar item. Lobby places it at the middle of its unified navigation bar, and SheepWars places it in slot 7 only while waiting; Core handles both clicks without introducing a game-to-game dependency.
+Core owns the localized persistent-data Profile head. Lobby places it in slot 4 and SheepWars in slot 7 only while waiting; Core handles both clicks and exposes a bounded bridge to Lobby Settings. Core and Lobby inventories reuse `NetworkMenuStyle` for the same frame, palette, and controls without introducing a game-to-game dependency.
+
+The game selector routes clicks without blocking Paper: left to Quick Play, right to Ranked 4v4/8v8, and middle to the filtered public-instance browser. Velocity publishes an explicit `InstanceMode` for templates and instances, so Lobby never infers Quick Play, Ranked, or Custom behavior from display names. Private custom instances remain whitelist-filtered and creation is visibly locked below VIP+.
+
+Grade purchases lock the profile and economy rows in one MySQL transaction, revalidate the expected grade, charge only the catalog-price difference, record the transaction, and promote before commit. Economy and permission caches are refreshed only after success.
 
 ## Persistence
 

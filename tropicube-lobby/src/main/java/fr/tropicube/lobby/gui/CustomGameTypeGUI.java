@@ -1,6 +1,7 @@
 package fr.tropicube.lobby.gui;
 
 import fr.tropicube.lobby.utils.ItemBuilder;
+import fr.tropicube.core.menu.NetworkMenuStyle;
 import fr.tropicube.lobby.utils.LangHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -38,8 +39,7 @@ public class CustomGameTypeGUI {
         Inventory inv = Bukkit.createInventory(holder, SIZE, LangHelper.component(player, "lobby.custom-game-title"));
         holder.setInventory(inv);
 
-        ItemStack filler = ItemBuilder.filler(Material.GRAY_STAINED_GLASS_PANE);
-        for (int i = 0; i < SIZE; i++) inv.setItem(i, filler);
+        NetworkMenuStyle.frame(inv);
 
         inv.setItem(PUBLIC_GAME_SLOT, buildPublicGameItem(player));
         inv.setItem(PRIVATE_GAME_SLOT, buildPrivateGameItem(player));

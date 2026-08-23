@@ -9,6 +9,7 @@ import com.velocitypowered.api.proxy.server.ServerInfo;
 import fr.tropicube.docker.client.DockerManager;
 import fr.tropicube.docker.client.RedisManager;
 import fr.tropicube.docker.model.ServerInstance;
+import fr.tropicube.docker.model.InstanceMode;
 import fr.tropicube.docker.model.ServerTemplate;
 import fr.tropicube.docker.model.WhitelistUpdateProtocol;
 import org.slf4j.Logger;
@@ -66,7 +67,10 @@ public class TropiServerManager {
         ensureMinInstances();
         startAutoScaler();
         startHealthChecker();
-        scheduler.scheduleAtFixedRate(this::processRankedQueues, 5, 5, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(() -> {
+            processRankedQueues();
+            publishRankedStats();
+        }, 5, 5, TimeUnit.SECONDS);
         subscribeToProxyCommands();
         publishTemplates();
         logger.info(MessageStyle.log("PROXY", "<gray>TropiServerManager initialisé avec {} templates."), templates.size());
@@ -197,6 +201,13 @@ public class TropiServerManager {
                     logger.warn(MessageStyle.log("PROXY", "<yellow>UUID invalide dans START_GAME : {}"), uuidStr);
                     redisManager.publishCommand("LOBBY", "GAME_START_FAILED:" + uuidStr);
                 }
+                return;
+            }
+
+            if (message.startsWith("PROXY:CANCEL_MATCHMAKING:")) {
+                try {
+                    cancelMatchmaking(UUID.fromString(message.substring("PROXY:CANCEL_MATCHMAKING:".length())));
+                } catch (IllegalArgumentException ignored) { }
                 return;
             }
 
@@ -401,6 +412,7 @@ public class TropiServerManager {
                 dockerManager.pullImageIfAbsent(template.getDockerImage());
                 instance = dockerManager.createServer(template, instanceId, serverName, whitelisted, extraEnv);
                 instance.setServerType(template.getServerType());
+                instance.setMode(resolveInstanceMode(template, extraEnv));
 
                 activeInstances.put(instanceId, instance);
                 redisManager.saveInstance(instance);
@@ -435,7 +447,11 @@ public class TropiServerManager {
      * otherwise all players share the same creation in progress and will be transferred when it is ready.
      */
     private void queueForMatchmaking(String templateId, UUID playerId) {
+        String previousTemplate = matchmakingWaitlist.templateOf(playerId);
+        matchmakingWaitlist.remove(playerId);
+        if (previousTemplate != null && !previousTemplate.equals(templateId)) publishRankedStats(previousTemplate);
         matchmakingWaitlist.add(templateId, playerId);
+        redisManager.set("matchmaking:player:" + playerId, templateId, 1800);
         if (isRankedTemplate(templateId)) {
             processRankedQueue(templateId);
             return;
@@ -469,6 +485,7 @@ public class TropiServerManager {
             int partySize = (int) queueLong(candidate, "sw:queue-size:", 1);
             if (partySize < 1 || partySize > maximumParty) {
                 matchmakingWaitlist.remove(templateId, List.of(candidate));
+                clearMatchmakingPlayer(candidate);
                 redisManager.publishCommand("LOBBY", "GAME_START_FAILED:" + candidate);
                 continue;
             }
@@ -487,10 +504,12 @@ public class TropiServerManager {
         creation.whenComplete((instance, error) -> {
             matchmakingCreations.remove(templateId, creation);
             if (error != null) {
+                selected.forEach(this::clearMatchmakingPlayer);
                 selected.forEach(playerId -> redisManager.publishCommand("LOBBY", "GAME_START_FAILED:" + playerId));
                 return;
             }
             selected.forEach(playerId -> {
+                clearMatchmakingPlayer(playerId);
                 redisManager.delete("sw:queue-rating:" + playerId);
                 redisManager.delete("sw:queue-size:" + playerId);
                 redisManager.delete("sw:queue-since:" + playerId);
@@ -530,6 +549,21 @@ public class TropiServerManager {
     /** Removes a player disconnected from any expectation of classic creation. */
     public void removeFromMatchmaking(UUID playerId) {
         matchmakingWaitlist.remove(playerId);
+        clearMatchmakingPlayer(playerId);
+    }
+
+    private void cancelMatchmaking(UUID playerId) {
+        String templateId = matchmakingWaitlist.templateOf(playerId);
+        matchmakingWaitlist.remove(playerId);
+        clearMatchmakingPlayer(playerId);
+        if (templateId != null) publishRankedStats(templateId);
+    }
+
+    private void clearMatchmakingPlayer(UUID playerId) {
+        redisManager.delete("matchmaking:player:" + playerId);
+        redisManager.delete("sw:queue-rating:" + playerId);
+        redisManager.delete("sw:queue-size:" + playerId);
+        redisManager.delete("sw:queue-since:" + playerId);
     }
 
     private Optional<ServerInstance> findJoinableMatchmakingInstance(String templateId, UUID playerId) {
@@ -550,6 +584,7 @@ public class TropiServerManager {
             if (matchmakingCreations.remove(templateId, creation)) {
                 if (error != null) {
                     List<UUID> failedPlayers = matchmakingWaitlist.removeAll(templateId);
+                    failedPlayers.forEach(this::clearMatchmakingPlayer);
                     failedPlayers.forEach(playerId -> redisManager.publishCommand(
                             "LOBBY", "GAME_START_FAILED:" + playerId));
                     logger.warn(MessageStyle.log("PROXY", "<yellow>Échec de la création matchmaking {} pour {} joueur(s)"),
@@ -569,8 +604,12 @@ public class TropiServerManager {
         int availableSlots = Math.max(0, instance.getMaxPlayers() - instance.getOnlinePlayers());
         int transferredPlayers = 0;
         for (UUID playerId : waitingPlayers) {
-            if (proxy.getPlayer(playerId).isEmpty()) continue;
+            if (proxy.getPlayer(playerId).isEmpty()) {
+                clearMatchmakingPlayer(playerId);
+                continue;
+            }
             if (transferredPlayers < availableSlots) {
+                clearMatchmakingPlayer(playerId);
                 redisManager.publishCommand(
                         "PROXY", "CONNECT:" + playerId + ":" + instance.getServerName());
                 transferredPlayers++;
@@ -596,6 +635,7 @@ public class TropiServerManager {
               .append(",\"name\":\"").append(escape(t.getName())).append("\"")
               .append(",\"type\":\"").append(escape(t.getServerType())).append("\"")
               .append(",\"maxPlayers\":").append(t.getMaxPlayers())
+              .append(",\"mode\":\"").append(resolveInstanceMode(t, Collections.emptyMap()).name()).append("\"")
               .append("}");
         }
         sb.append("]");
@@ -603,8 +643,42 @@ public class TropiServerManager {
         logger.info(MessageStyle.log("PROXY", "<gray>Templates publiés dans Redis ({} templates)."), templates.size());
     }
 
+    private void publishRankedStats() {
+        templates.keySet().stream().filter(this::isRankedTemplate).forEach(this::publishRankedStats);
+    }
+
+    private void publishRankedStats(String templateId) {
+        ServerTemplate template = templates.get(templateId);
+        if (template == null || !isRankedTemplate(templateId)) return;
+        List<UUID> online = matchmakingWaitlist.snapshot(templateId).stream()
+                .filter(playerId -> proxy.getPlayer(playerId).isPresent()).toList();
+        long now = System.currentTimeMillis();
+        int reservedPlayers = online.stream().mapToInt(playerId ->
+                (int) queueLong(playerId, "sw:queue-size:", 1)).sum();
+        long oldestSince = online.stream().mapToLong(playerId ->
+                queueLong(playerId, "sw:queue-since:", now)).min().orElse(now);
+        long oldestWaitSeconds = online.isEmpty() ? 0 : Math.max(0, (now - oldestSince) / 1000);
+        String json = "{\"version\":1,\"templateId\":\"" + escape(templateId)
+                + "\",\"groups\":" + online.size()
+                + ",\"reservedPlayers\":" + reservedPlayers
+                + ",\"capacity\":" + template.getMaxPlayers()
+                + ",\"oldestWaitSeconds\":" + oldestWaitSeconds
+                + ",\"updatedAt\":" + now + "}";
+        redisManager.set("matchmaking:ranked:stats:" + templateId, json, 15);
+    }
+
     private static String escape(String s) {
         return s == null ? "" : s.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+
+    private static InstanceMode resolveInstanceMode(ServerTemplate template, Map<String, String> extraEnv) {
+        if (Boolean.parseBoolean(extraEnv.getOrDefault("IS_HOST", "false"))) return InstanceMode.CUSTOM;
+        String configured = template.getEnvironmentVariables().getOrDefault("GAME_MODE", "QUICK_PLAY");
+        try {
+            return InstanceMode.valueOf(configured.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ignored) {
+            return "LOBBY".equalsIgnoreCase(template.getServerType()) ? InstanceMode.LOBBY : InstanceMode.QUICK_PLAY;
+        }
     }
 
     /**

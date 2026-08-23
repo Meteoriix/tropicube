@@ -2,6 +2,7 @@ package fr.tropicube.lobby.gui;
 
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.core.network.PlayerPreferenceService;
+import fr.tropicube.core.menu.NetworkMenuStyle;
 import fr.tropicube.lobby.utils.ItemBuilder;
 import fr.tropicube.lobby.utils.LangHelper;
 import me.arcaniax.hdb.api.HeadDatabaseAPI;
@@ -17,10 +18,14 @@ import org.jetbrains.annotations.NotNull;
 public final class SettingsGUI {
     private static final String LANGUAGE_HEAD_ID = "71786";
 
-    public static final int LANGUAGE_SLOT = 11;
-    public static final int VISIBILITY_SLOT = 13;
+    public static final int LANGUAGE_SLOT = 10;
+    public static final int PROFILE_VISIBILITY_SLOT = 11;
+    public static final int MESSAGE_PRIVACY_SLOT = 12;
+    public static final int GLOBAL_CHAT_SLOT = 13;
+    public static final int VISIBILITY_SLOT = 14;
     public static final int AUTO_REPLAY_SLOT = 15;
-    public static final int HINTS_SLOT = 22;
+    public static final int HINTS_SLOT = 16;
+    public static final int EFFECTS_SLOT = 22;
     public static final int CLOSE_SLOT = 26;
 
     private SettingsGUI() { }
@@ -31,9 +36,20 @@ public final class SettingsGUI {
         Inventory inventory = Bukkit.createInventory(holder, 27,
                 LangHelper.component(player, "lobby.settings-title"));
         holder.inventory = inventory;
+        NetworkMenuStyle.frame(inventory);
         inventory.setItem(LANGUAGE_SLOT, new ItemBuilder(languageIcon())
                 .name(LangHelper.get(player, "lobby.settings-language-name"))
                 .lore(LangHelper.get(player, "lobby.settings-language-lore")).build());
+        inventory.setItem(PROFILE_VISIBILITY_SLOT, new ItemBuilder(Material.NAME_TAG)
+                .name(LangHelper.get(player, "lobby.settings-profile-name"))
+                .lore(LangHelper.get(player, "lobby.settings-profile-lore", preferences.profileVisibility().name())).build());
+        inventory.setItem(MESSAGE_PRIVACY_SLOT, new ItemBuilder(Material.WRITABLE_BOOK)
+                .name(LangHelper.get(player, "lobby.settings-messages-name"))
+                .lore(LangHelper.get(player, "lobby.settings-messages-lore", preferences.messagePrivacy().name())).build());
+        inventory.setItem(GLOBAL_CHAT_SLOT, new ItemBuilder(preferences.globalChatEnabled() ? Material.LIME_DYE : Material.GRAY_DYE)
+                .name(LangHelper.get(player, "lobby.settings-global-chat-name"))
+                .lore(LangHelper.get(player, preferences.globalChatEnabled()
+                        ? "lobby.settings-global-chat-on" : "lobby.settings-global-chat-off")).build());
         boolean enabled = autoReplayRemaining >= 0;
         String stateKey = !enabled ? "lobby.settings-auto-replay-off"
                 : autoReplayRemaining == 0 ? "lobby.settings-auto-replay-confirm"
@@ -49,6 +65,10 @@ public final class SettingsGUI {
                 .name(LangHelper.get(player, "lobby.settings-hints-name"))
                 .lore(LangHelper.get(player, preferences.contextualHelp()
                         ? "lobby.settings-hints-on" : "lobby.settings-hints-off")).build());
+        inventory.setItem(EFFECTS_SLOT, new ItemBuilder(preferences.lobbyEffectsEnabled() ? Material.FIREWORK_ROCKET : Material.GRAY_DYE)
+                .name(LangHelper.get(player, "lobby.settings-effects-name"))
+                .lore(LangHelper.get(player, preferences.lobbyEffectsEnabled()
+                        ? "lobby.settings-effects-on" : "lobby.settings-effects-off")).build());
         inventory.setItem(CLOSE_SLOT, ItemBuilder.closeButton(player));
         return inventory;
     }

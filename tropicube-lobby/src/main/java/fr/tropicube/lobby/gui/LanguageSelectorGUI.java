@@ -1,6 +1,7 @@
 package fr.tropicube.lobby.gui;
 
 import fr.tropicube.core.TropicubeCore;
+import fr.tropicube.core.menu.NetworkMenuStyle;
 import fr.tropicube.lobby.TropicubeLobby;
 import fr.tropicube.lobby.utils.ItemBuilder;
 import fr.tropicube.lobby.utils.LangHelper;
@@ -82,9 +83,7 @@ public class LanguageSelectorGUI {
         Inventory inv = Bukkit.createInventory(holder, SIZE, LangHelper.component(player, "lobby.lang-selector-title"));
         holder.setInventory(inv);
 
-        // Decorative background
-        for (int i = 0; i < SIZE; i++)
-            inv.setItem(i, new ItemBuilder(Material.LIGHT_BLUE_STAINED_GLASS_PANE).name(" ").build());
+        NetworkMenuStyle.frame(inv);
 
         // Language icons
         List<LanguageEntry> langs = getLanguages();

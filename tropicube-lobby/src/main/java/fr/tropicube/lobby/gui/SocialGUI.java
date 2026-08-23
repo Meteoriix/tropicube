@@ -1,6 +1,7 @@
 package fr.tropicube.lobby.gui;
 
 import fr.tropicube.core.social.FriendshipRepository;
+import fr.tropicube.core.menu.NetworkMenuStyle;
 import fr.tropicube.docker.model.PartyMember;
 import fr.tropicube.docker.model.PartySnapshot;
 import fr.tropicube.lobby.utils.ItemBuilder;
@@ -39,6 +40,7 @@ public final class SocialGUI {
         Inventory inventory = Bukkit.createInventory(holder, SIZE,
                 LangHelper.component(player, "social.menu-title"));
         holder.inventory = inventory;
+        NetworkMenuStyle.frame(inventory);
 
         inventory.setItem(4, new ItemBuilder(Material.PLAYER_HEAD)
                 .name(LangHelper.get(player, "social.menu-friends"))

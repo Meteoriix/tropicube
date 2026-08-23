@@ -159,6 +159,8 @@ Ce module est pour l'instant un squelette Maven sans classe, ressource, dépenda
 | `sw:queue-rating:<uuid>` | Lobby | Velocity | Cote de file classée, TTL 30 min |
 | `sw:queue-size:<uuid>` | Lobby | Velocity | Nombre de membres effectivement transférés, TTL 30 min |
 | `sw:queue-since:<uuid>` | Lobby | Velocity | Début d'attente en millisecondes, TTL 30 min |
+| `matchmaking:player:<uuid>` | Velocity | Lobby | Identifiant de l'unique file active, TTL 30 min ; remplacé atomiquement du point de vue du gestionnaire de file et supprimé à l'annulation, au transfert ou à la déconnexion |
+| `matchmaking:ranked:stats:<template>` | Velocity | Lobby | Télémétrie JSON versionnée sans UUID : groupes, joueurs réservés, capacité, attente la plus longue et date de mise à jour ; TTL 15 s renouvelé toutes les 5 s |
 | `sw:ranked-penalty:<uuid>` | SheepWars | Lobby | Échéance d'interdiction temporaire de file ; TTL égal à la sanction |
 | `sw:left-game:<uuid>` | SheepWars | Lobby/Velocity | Instance classée à rejoindre pendant la grâce de 180 secondes |
 | `contextual-hint-session:<uuid>` | Core | Core/Lobby | Verrou `SET NX EX` limitant l'aide à un message par session de douze heures |
@@ -200,7 +202,11 @@ La purge d'une instance supprime atomiquement son document et ses index principa
 
 Un changement de langue publie `LANG_CHANGED:<uuid>:<langue>` sur le canal joueurs. Le lobby reconstruit alors, sur le thread Paper, la hotbar, le scoreboard personnel et la tablist. Le scoreboard du lobby est donc entièrement localisé et reste cohérent que la langue soit changée depuis le menu ou avec `/lang`.
 
-Le centre joueur appartient à Core et fournit un objet de hotbar localisé marqué par données persistantes. Lobby le place au centre de sa barre et SheepWars au slot 7 uniquement durant l'attente ; Core reste l'unique gestionnaire du clic et ouvre ainsi la même interface dans les deux contextes sans dépendance métier entre jeux.
+Le tableau de bord Profil appartient à Core et fournit une tête de joueur localisée marquée par données persistantes. Lobby la place au slot 4 et SheepWars au slot 7 uniquement durant l'attente ; Core reste l'unique gestionnaire du clic. Lobby enregistre une passerelle bornée pour ouvrir ses Paramètres depuis ce tableau de bord. Tous les inventaires Core et Lobby réutilisent `NetworkMenuStyle` afin de conserver cadrage, palette et contrôles sans dépendance métier entre jeux.
+
+Le sélecteur de jeux route les clics sans accès bloquant : gauche vers Quick Play, droite vers le choix Ranked 4v4/8v8 et molette vers une liste filtrée des instances publiques. Velocity publie pour chaque template et instance un `InstanceMode` (`QUICK_PLAY`, `RANKED_4V4`, `RANKED_8V8` ou `CUSTOM`) ; Lobby ne déduit donc pas la nature d'une partie à partir de son nom. Les parties personnalisées privées restent invisibles hors whitelist et leur création visible dans le sélecteur est verrouillée sous la priorité de grade VIP+.
+
+L'achat d'un grade verrouille dans une même transaction MySQL la ligne du joueur et son compte économie, revalide le grade attendu, débite la différence de prix, écrit la transaction et élève le grade avant commit. Les caches économie et permissions ne sont invalidés qu'après succès, ce qui évite un débit sans grade ou une compensation concurrente fragile.
 
 ## Persistance MySQL
 

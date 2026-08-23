@@ -1,6 +1,7 @@
 package fr.tropicube.lobby.gui;
 
 import fr.tropicube.core.TropicubeCore;
+import fr.tropicube.core.menu.NetworkMenuStyle;
 import fr.tropicube.lobby.TropicubeLobby;
 import fr.tropicube.lobby.managers.LobbyServerManager.TemplateInfo;
 import fr.tropicube.lobby.utils.ItemBuilder;
@@ -75,8 +76,7 @@ public class CustomGameGUI {
         Inventory inv = Bukkit.createInventory(holder, SIZE, LangHelper.component(player, "lobby.custom-game-title"));
         holder.setInventory(inv);
 
-        ItemStack filler = ItemBuilder.filler(Material.GRAY_STAINED_GLASS_PANE);
-        for (int i = 0; i < SIZE; i++) inv.setItem(i, filler);
+        NetworkMenuStyle.frame(inv);
 
         if (creationPending) {
             inv.setItem(13, new ItemBuilder(Material.CLOCK)

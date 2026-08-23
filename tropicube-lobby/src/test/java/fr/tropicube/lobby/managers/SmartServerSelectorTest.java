@@ -1,5 +1,6 @@
 package fr.tropicube.lobby.managers;
 
+import fr.tropicube.docker.model.InstanceMode;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,6 +16,6 @@ class SmartServerSelectorTest {
 
     private static LobbyServerManager.ServerInfo server(String id, int players, int maximum, String status) {
         return new LobbyServerManager.ServerInfo(id, "SHEEPWARS", "host", 25565, players, maximum,
-                status, "sheepwars", false, List.of());
+                status, "sheepwars", InstanceMode.QUICK_PLAY, false, List.of());
     }
 }

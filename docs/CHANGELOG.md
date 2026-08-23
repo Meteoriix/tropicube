@@ -6,6 +6,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### Ajouté
 
+- Expérience lobby immersive et persistante : accueil adaptatif selon l'origine de connexion, préférence d'effets, scoreboard orienté profil/action et état de file publié en temps réel.
+- Sélecteur de jeux à trois actions : clic gauche Quick Play, clic droit choix Ranked 4v4/8v8, clic molette navigateur unifié filtrable des instances Quick Play et personnalisées publiques.
+- Boutique restructurée avec accueil puis onglet Grades, distinction fiable entre avantages actifs et « Bientôt », déduction du prix des grades déjà achetés et achat transactionnel économie/grade.
+
 - Toutes les commandes Tropicube enregistrées par le proxy et les backends sont désormais proposées après `/`, en respectant les permissions ; les hotbars Lobby et SheepWars partagent un accès localisé au centre joueur.
 
 - Chaîne de migrations renforcée : V003 est désormais indexée et un test interdit toute ressource SQL oubliée ; V004 prépare les archives, récompenses de profil, aides contextuelles et demandes de confidentialité.
@@ -41,6 +45,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 - Spécification technique de Fallen Kingdoms : périmètre V1, machine à états, configurations, protections, persistance réseau et critères d'acceptation.
 
 ### Modifié
+
+- La hotbar du lobby est désormais `Jeux 0`, `Social 2`, `Profil 4` et `Boutique 8`. Les parties personnalisées quittent la hotbar et restent visibles, avec explication du grade VIP+ requis, dans le sélecteur de jeux.
+- Le Centre Tropicube devient Profil, utilise la tête du joueur et intègre Paramètres. Les inventaires Core et Lobby partagent désormais le même cadrage, la même palette et les mêmes contrôles.
+- Une seule file de matchmaking peut être active par joueur : rejoindre un autre format remplace la précédente et le menu Ranked permet de la quitter explicitement.
 
 - Le catalogue `/help` affiche désormais une commande principale par ligne, conserve uniquement ses véritables alias sur cette ligne et détaille les arguments et sous-commandes dans les quatre langues.
 

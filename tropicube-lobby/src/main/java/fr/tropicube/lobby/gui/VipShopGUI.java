@@ -1,6 +1,7 @@
 package fr.tropicube.lobby.gui;
 
 import fr.tropicube.lobby.TropicubeLobby;
+import fr.tropicube.core.menu.NetworkMenuStyle;
 import fr.tropicube.lobby.utils.ItemBuilder;
 import fr.tropicube.lobby.utils.LangHelper;
 import org.bukkit.Bukkit;
@@ -14,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * VIP shop menu.
@@ -25,25 +28,45 @@ import java.util.Map;
  */
 public class VipShopGUI {
 
-    public static final int CLOSE_SLOT = 40;
-
-    private static final int[] GRADE_SLOTS = {11, 22, 33};
-    private static final int[] INFO_SLOTS  = {12, 23, 34};
+    public static final int HOME_GRADES_SLOT = 13;
+    public static final int HOME_CLOSE_SLOT = 26;
+    public static final int GRADES_BACK_SLOT = 45;
+    public static final int GRADES_CLOSE_SLOT = 53;
+    private static final int[] GRADE_SLOTS = {11, 13, 15};
+    private static final int[] ACTIVE_SLOTS  = {20, 22, 24};
+    private static final int[] SOON_SLOTS  = {29, 31, 33};
 
     public static final class Holder implements InventoryHolder {
+        private final View view;
         private Inventory inventory;
+        private Holder(View view) { this.view = view; }
+        public View view() { return view; }
         @Override public @NonNull Inventory getInventory() { return inventory; }
         private void setInventory(Inventory inventory)     { this.inventory = inventory; }
     }
 
     public static Inventory build(Player player, double balance, String currentGrade) {
-        int size = 45;
-        Holder holder = new Holder();
+        Holder holder = new Holder(View.HOME);
+        Inventory inv = Bukkit.createInventory(holder, 27, LangHelper.component(player, "lobby.shop-title"));
+        holder.setInventory(inv);
+        NetworkMenuStyle.frame(inv);
+        inv.setItem(4, new ItemBuilder(Material.GOLD_INGOT)
+                .name(LangHelper.get(player, "lobby.shop-home-name"))
+                .lore(LangHelper.get(player, "lobby.vip-banner-balance", formatCoins((int) balance))).glow().build());
+        inv.setItem(HOME_GRADES_SLOT, new ItemBuilder(Material.NAME_TAG)
+                .name(LangHelper.get(player, "lobby.shop-grades-tab"))
+                .lore(LangHelper.get(player, "lobby.shop-grades-tab-lore")).build());
+        inv.setItem(HOME_CLOSE_SLOT, ItemBuilder.closeButton(player));
+        return inv;
+    }
+
+    public static Inventory buildGrades(Player player, double balance, String currentGrade) {
+        int size = 54;
+        Holder holder = new Holder(View.GRADES);
         Inventory inv = Bukkit.createInventory(holder, size, LangHelper.component(player, "lobby.vip-shop-title"));
         holder.setInventory(inv);
 
-        for (int i = 0; i < size; i++)
-            inv.setItem(i, new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).name(" ").build());
+        NetworkMenuStyle.frame(inv);
 
         inv.setItem(4, new ItemBuilder(Material.GOLD_INGOT)
                 .name(LangHelper.get(player, "lobby.vip-banner-name"))
@@ -59,32 +82,32 @@ public class VipShopGUI {
             ShopEntry entry = entries.get(i);
             boolean owned = isGradeOwned(currentGrade, entry.gradeKey());
 
+            int upgradePrice = getUpgradePrice(currentGrade, entry.gradeKey());
             String actionLore = owned
                     ? LangHelper.get(player, "lobby.vip-grade-owned")
-                    : (balance >= entry.price()
+                    : (balance >= upgradePrice
                             ? LangHelper.get(player, "lobby.vip-grade-buy")
                             : LangHelper.get(player, "lobby.vip-grade-no-funds"));
 
             ItemBuilder ib = new ItemBuilder(entry.material())
-                    .name(entry.displayName() + " <gray>- <yellow>" + formatCoins(entry.price()) + " <gold>⬡")
+                    .name(entry.displayName() + " <gray>- <yellow>" + formatCoins(upgradePrice) + " <gold>⬡")
                     .lore(actionLore);
             if (owned) ib.glow();
             inv.setItem(GRADE_SLOTS[i], ib.build());
 
-            inv.setItem(INFO_SLOTS[i], new ItemBuilder(Material.PAPER)
-                    .name(LangHelper.get(player, "lobby.vip-advantages-name", entry.displayName()))
-                    .lore(entry.advantages())
+            String normalized = entry.gradeKey().toLowerCase().replace('_', '-');
+            inv.setItem(ACTIVE_SLOTS[i], new ItemBuilder(Material.LIME_DYE)
+                    .name(LangHelper.get(player, "lobby.shop-active-name"))
+                    .lore(LangHelper.getList(player, "lobby.shop-active-" + normalized))
+                    .build());
+            inv.setItem(SOON_SLOTS[i], new ItemBuilder(Material.CLOCK)
+                    .name(LangHelper.get(player, "lobby.shop-soon-name"))
+                    .lore(LangHelper.getList(player, "lobby.shop-soon-" + normalized))
                     .build());
         }
 
-        inv.setItem(CLOSE_SLOT, ItemBuilder.closeButton(player));
-
-        inv.setItem(39, new ItemBuilder(Material.MAP)
-                .name(LangHelper.get(player, "lobby.vip-online-shop-name"))
-                .lore(LangHelper.get(player, "lobby.vip-online-shop-lore1"),
-                      LangHelper.get(player, "lobby.vip-online-shop-lore2"),
-                      LangHelper.get(player, "lobby.vip-online-shop-lore3"))
-                .build());
+        inv.setItem(GRADES_BACK_SLOT, ItemBuilder.backButton(player));
+        inv.setItem(GRADES_CLOSE_SLOT, ItemBuilder.closeButton(player));
 
         return inv;
     }
@@ -125,6 +148,10 @@ public class VipShopGUI {
             }
         }
         return -1;
+    }
+
+    public static int getUpgradePrice(String currentGrade, String targetGrade) {
+        return GradeUpgradePricing.difference(getPriceForGrade(currentGrade), getPriceForGrade(targetGrade));
     }
 
     // ── Internal helpers ─────────────────────────────────────────────────────
@@ -181,12 +208,32 @@ public class VipShopGUI {
         // Fallback used if the Lobby instance is not available, especially during tests.
         return switch (slot) {
             case 11 -> "VIP";
-            case 22 -> "VIP_PLUS";
-            case 33 -> "PREMIUM";
+            case 13 -> "VIP_PLUS";
+            case 15 -> "PREMIUM";
             default -> null;
         };
     }
 
     public record ShopEntry(String gradeKey, Material material, String displayName,
                             int price, List<String> advantages) {}
+    public enum View { HOME, GRADES }
+
+    public static void validateConfiguration(TropicubeLobby lobby) {
+        Set<String> keys = new HashSet<>();
+        int previousPrice = -1;
+        for (Map<?, ?> raw : lobby.getConfig().getMapList("vip-shop.entries")) {
+            Object keyValue = raw.get("grade-key");
+            Object priceValue = raw.get("price");
+            if (!(keyValue instanceof String key) || key.isBlank() || !(priceValue instanceof Number number)) {
+                throw new IllegalArgumentException("vip-shop.entries exige grade-key et price");
+            }
+            int price = number.intValue();
+            if (!keys.add(key.toUpperCase())) throw new IllegalArgumentException("Grade boutique dupliqué : " + key);
+            if (price <= previousPrice) throw new IllegalArgumentException("Les prix de grades doivent être strictement croissants");
+            if (!lobby.getCore().getPermissionManager().getAllGrades().containsKey(key.toUpperCase())) {
+                throw new IllegalArgumentException("Grade boutique inconnu dans Core : " + key);
+            }
+            previousPrice = price;
+        }
+    }
 }

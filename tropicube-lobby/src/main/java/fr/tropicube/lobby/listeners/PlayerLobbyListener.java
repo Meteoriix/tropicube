@@ -15,6 +15,9 @@ import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.components.CustomModelDataComponent;
 import org.bukkit.scheduler.BukkitRunnable;
+import net.kyori.adventure.title.Title;
+
+import java.time.Duration;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,14 +46,9 @@ public class PlayerLobbyListener implements Listener {
 
     // Lobby hotbar items
     private static final int SLOT_SERVERS     = 0;
-    private static final int SLOT_CUSTOM_GAME = 1;
     private static final int SLOT_SOCIAL      = 2;
-    private static final int SLOT_CENTER      = 4;
-    private static final int SLOT_SETTINGS    = 6;
+    private static final int SLOT_PROFILE     = 4;
     private static final int SLOT_VIP         = 8;
-
-    /** Minimum priority of rank allowed to host a custom game. */
-    private static final int VIP_PLUS_MIN_PRIORITY = 20;
 
     public PlayerLobbyListener(TropicubeLobby plugin) {
         this.plugin = plugin;
@@ -101,6 +99,7 @@ public class PlayerLobbyListener implements Listener {
                 plugin.getScoreboardManager().setup(player);
                 plugin.getScoreboardManager().updateAll();
                 plugin.getVisibilityManager().refreshAll();
+                playAdaptiveWelcome(player, isTransfer);
 
                 // Offer to rejoin the still active part.
                 if (hasRejoinFlag) {
@@ -181,9 +180,7 @@ public class PlayerLobbyListener implements Listener {
         if (customModelDataComponent.getFloats().isEmpty()) return;
         switch (customModelDataComponent.getFloats().getFirst().intValue()) {
             case 1001 -> { e.setCancelled(true); plugin.getGuiManager().openServerTypeSelector(player); }
-            case 1002 -> { e.setCancelled(true); plugin.getGuiManager().openSettings(player); }
             case 1003 -> { e.setCancelled(true); plugin.getGuiManager().openVipShop(player); }
-            case 1004 -> { e.setCancelled(true); plugin.getGuiManager().openCustomGameTypeMenu(player); }
             case 1005 -> { e.setCancelled(true); plugin.getGuiManager().openSocial(player); }
         }
     }
@@ -289,8 +286,6 @@ public class PlayerLobbyListener implements Listener {
         player.getInventory().clear();
 
         ItemStack serversIcon = new ItemStack(Material.COMPASS);
-        ItemStack settingsIcon = new ItemStack(Material.PLAYER_HEAD);
-        ItemStack customGameIcon = new ItemStack(Material.COMMAND_BLOCK);
         ItemStack socialIcon = new ItemStack(Material.PLAYER_HEAD);
         ItemStack vipIcon = new ItemStack(Material.GOLD_INGOT);
         try {
@@ -298,13 +293,9 @@ public class PlayerLobbyListener implements Listener {
                 HeadDatabaseAPI hdbapi = core.getHeadDatabaseManager().getHeadDatabaseAPI();
                 if (hdbapi != null) {
                     ItemStack loadedServersIcon = hdbapi.getItemHead("52706");
-                    ItemStack loadedSettingsIcon = hdbapi.getItemHead("89489");
-                    ItemStack loadedCustomGameIcon = hdbapi.getItemHead("35309");
                     ItemStack loadedSocialIcon = hdbapi.getItemHead("78804");
                     ItemStack loadedVipIcon = hdbapi.getItemHead("66671");
                     if (loadedServersIcon != null) serversIcon = loadedServersIcon;
-                    if (loadedSettingsIcon != null) settingsIcon = loadedSettingsIcon;
-                    if (loadedCustomGameIcon != null) customGameIcon = loadedCustomGameIcon;
                     if (loadedSocialIcon != null) socialIcon = loadedSocialIcon;
                     if (loadedVipIcon != null) vipIcon = loadedVipIcon;
                 }
@@ -321,24 +312,6 @@ public class PlayerLobbyListener implements Listener {
                                 LangHelper.get(player, "lobby.hotbar-servers-lore2"))
                         .customModelData(1001)
                         .glow().build());
-
-        if (hasMinGradePriority(player)) {
-            player.getInventory().setItem(SLOT_CUSTOM_GAME,
-                    new ItemBuilder(customGameIcon)
-                            .name(LangHelper.get(player, "lobby.hotbar-custom-game-name"))
-                            .lore(LangHelper.get(player, "lobby.hotbar-custom-game-lore1"), "",
-                                    LangHelper.get(player, "lobby.hotbar-custom-game-lore2"))
-                            .customModelData(1004).glow().build());
-        }
-
-        player.getInventory().setItem(SLOT_SETTINGS,
-                new ItemBuilder(settingsIcon)
-                        .name(LangHelper.get(player, "lobby.hotbar-settings-name"))
-                        .lore(LangHelper.get(player, "lobby.hotbar-settings-lore1"),
-                                 "",
-                                LangHelper.get(player, "lobby.hotbar-settings-lore2"))
-                        .customModelData(1002)
-                        .build());
 
         player.getInventory().setItem(SLOT_VIP,
                 new ItemBuilder(vipIcon)
@@ -358,14 +331,31 @@ public class PlayerLobbyListener implements Listener {
                         .glow().build());
 
         if (Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core) {
-            player.getInventory().setItem(SLOT_CENTER,
+            player.getInventory().setItem(SLOT_PROFILE,
                     core.getPlayerCenterMenu().createHotbarItem(player));
         }
     }
 
-    private boolean hasMinGradePriority(Player player) {
-        if (!(Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core)) return false;
-        return core.getPermissionManager().getPriority(player.getUniqueId()) >= VIP_PLUS_MIN_PRIORITY;
+    private void playAdaptiveWelcome(Player player, boolean transfer) {
+        if (!plugin.getConfig().getBoolean("lobby.welcome.enabled", true)) return;
+        plugin.getCore().getPlayerPreferenceService().load(player.getUniqueId()).thenAccept(preferences -> {
+            if (!preferences.lobbyEffectsEnabled()) return;
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if (!player.isOnline()) return;
+                if (transfer) {
+                    player.sendActionBar(LangHelper.component(player, "lobby.welcome-return"));
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.4f, 1.4f);
+                    return;
+                }
+                player.showTitle(Title.title(
+                        LangHelper.component(player, "lobby.welcome-title"),
+                        LangHelper.component(player, "lobby.welcome-subtitle"),
+                        Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(2500), Duration.ofMillis(750))));
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 0.7f, 1.2f);
+                player.getWorld().spawnParticle(Particle.HAPPY_VILLAGER,
+                        player.getLocation().add(0, 1, 0), 16, 0.7, 0.8, 0.7, 0.05);
+            });
+        });
     }
 
     public boolean teleportToSpawn(Player player) {

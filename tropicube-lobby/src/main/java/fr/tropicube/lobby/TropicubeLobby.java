@@ -78,6 +78,14 @@ public class TropicubeLobby extends JavaPlugin {
             return;
         }
         core = loadedCore;
+        try {
+            fr.tropicube.lobby.gui.VipShopGUI.validateConfiguration(this);
+        } catch (IllegalArgumentException exception) {
+            getLogger().severe("Configuration Boutique invalide : " + exception.getMessage());
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
+        core.getPlayerCenterMenu().setSettingsOpener(guiManager::openSettings);
         visibilityManager = new LobbyVisibilityManager(this, core);
 
         // Listeners
@@ -179,6 +187,7 @@ public class TropicubeLobby extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (core != null) core.getPlayerCenterMenu().clearSettingsOpener();
         if (scoreboardManager != null) scoreboardManager.clearAll();
         if (guiManager != null) guiManager.clearAll();
         if (redisManager != null) redisManager.close();

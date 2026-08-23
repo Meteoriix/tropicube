@@ -21,6 +21,8 @@ public class LobbyScoreboardManager {
     private final Map<UUID, Scoreboard> boards = new HashMap<>();
     private final Map<UUID, String> balances = new ConcurrentHashMap<>();
     private final Set<UUID> balanceRefreshes = ConcurrentHashMap.newKeySet();
+    private final Map<UUID, QueueSnapshot> queueSnapshots = new ConcurrentHashMap<>();
+    private final Set<UUID> queueRefreshes = ConcurrentHashMap.newKeySet();
 
     public LobbyScoreboardManager(TropicubeLobby plugin) {
         this.plugin = plugin;
@@ -56,6 +58,15 @@ public class LobbyScoreboardManager {
         setLine(obj, line--, LangHelper.component(player, "lobby.sb-balance", balance));
         setLine(obj, line--, LangHelper.component(player, "lobby.sb-network-online", networkPlayers));
         setLine(obj, line--, LangHelper.component(player, "lobby.sb-games", visibleGames));
+        QueueSnapshot queue = queueSnapshots.get(playerId);
+        if (queue == null || queue.templateId() == null) {
+            setLine(obj, line--, LangHelper.component(player, "lobby.sb-action-play"));
+        } else {
+            setLine(obj, line--, LangHelper.component(player, "lobby.sb-queue",
+                    LangHelper.get(player, queue.labelKey())));
+            setLine(obj, line--, LangHelper.component(player, "lobby.sb-queue-state",
+                    queue.reservedPlayers(), queue.capacity(), queue.waitSeconds()));
+        }
         setLine(obj, line--, Component.empty());
         setLine(obj, line--, LangHelper.component(player, "lobby.sb-server-label"));
         setLine(obj, line--, LangHelper.component(player, "lobby.sb-server-value"));
@@ -66,6 +77,7 @@ public class LobbyScoreboardManager {
         // Tablist
         updateTablist(player);
         if (!balances.containsKey(playerId)) refreshBalance(playerId);
+        if (!queueSnapshots.containsKey(playerId)) refreshQueue(playerId);
     }
 
     public void updateTablist(Player player) {
@@ -87,6 +99,7 @@ public class LobbyScoreboardManager {
     public void refreshAll() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             refreshBalance(player.getUniqueId());
+            refreshQueue(player.getUniqueId());
         }
         updateAll();
     }
@@ -96,6 +109,8 @@ public class LobbyScoreboardManager {
         boards.remove(playerId);
         balances.remove(playerId);
         balanceRefreshes.remove(playerId);
+        queueSnapshots.remove(playerId);
+        queueRefreshes.remove(playerId);
         player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
         player.sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
     }
@@ -125,5 +140,41 @@ public class LobbyScoreboardManager {
                 if (player != null) setup(player);
             });
         });
+    }
+
+    private void refreshQueue(UUID playerId) {
+        if (!queueRefreshes.add(playerId)) return;
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                plugin.getLobbyServerManager().refreshPlayerMatchmaking(playerId);
+                String templateId = plugin.getLobbyServerManager().getActiveMatchmaking(playerId).orElse(null);
+                if (templateId == null) {
+                    queueSnapshots.put(playerId, QueueSnapshot.none());
+                    return;
+                }
+                var stats = plugin.getLobbyServerManager().getRankedStats(templateId).orElse(null);
+                long since = plugin.getLobbyServerManager().getMatchmakingSince(playerId);
+                long wait = since <= 0 ? 0 : Math.max(0, (System.currentTimeMillis() - since) / 1000);
+                queueSnapshots.put(playerId, new QueueSnapshot(templateId, queueLabelKey(templateId),
+                        stats == null ? 0 : stats.reservedPlayers(), stats == null ? 0 : stats.capacity(), wait));
+            } finally {
+                queueRefreshes.remove(playerId);
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    Player online = Bukkit.getPlayer(playerId);
+                    if (online != null) setup(online);
+                });
+            }
+        });
+    }
+
+    private static String queueLabelKey(String templateId) {
+        String normalized = templateId.toLowerCase(java.util.Locale.ROOT);
+        if (normalized.contains("4v4")) return "lobby.sb-queue-label-ranked-4v4";
+        if (normalized.contains("8v8")) return "lobby.sb-queue-label-ranked-8v8";
+        return "lobby.sb-queue-label-quick-play";
+    }
+
+    private record QueueSnapshot(String templateId, String labelKey, int reservedPlayers, int capacity, long waitSeconds) {
+        private static QueueSnapshot none() { return new QueueSnapshot(null, "", 0, 0, 0); }
     }
 }

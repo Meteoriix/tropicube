@@ -52,11 +52,12 @@ public class GuiClickListener implements Listener {
         int slot = e.getRawSlot();
 
         switch (holder) {
-            case ServerTypeSelectorGUI.Holder typeHolder -> handleTypeSelector(player, slot, typeHolder, e.getClick().isLeftClick());
+            case ServerTypeSelectorGUI.Holder typeHolder -> handleTypeSelector(player, slot, typeHolder, e.getClick());
             case ServerSelectorGUI.Holder serverHolder -> handleServerSelector(player, slot, serverHolder);
+            case RankedSelectorGUI.Holder rankedHolder -> handleRankedSelector(player, slot, rankedHolder);
             case LanguageSelectorGUI.Holder _ -> handleLanguageSelector(player, slot);
             case SettingsGUI.Holder _ -> handleSettings(player, slot);
-            case VipShopGUI.Holder _ -> handleVipShop(player, slot);
+            case VipShopGUI.Holder shopHolder -> handleVipShop(player, slot, shopHolder);
             case CustomGameGUI.Holder customHolder -> handleCustomGame(player, slot, customHolder);
             case CustomGameTypeGUI.Holder customTypeHolder -> handleCustomGameType(player, slot, customTypeHolder);
             case SocialGUI.Holder socialHolder -> handleSocial(player, slot, socialHolder);
@@ -97,36 +98,52 @@ public class GuiClickListener implements Listener {
             || holder instanceof VipShopGUI.Holder
             || holder instanceof CustomGameGUI.Holder
             || holder instanceof CustomGameTypeGUI.Holder
-            || holder instanceof SocialGUI.Holder;
+            || holder instanceof SocialGUI.Holder
+            || holder instanceof RankedSelectorGUI.Holder;
     }
 
     // ── Handlers ────────────────────────────────────────────────────────────
 
-    private void handleTypeSelector(Player player, int slot, ServerTypeSelectorGUI.Holder typeHolder, boolean leftClick) {
+    private void handleTypeSelector(Player player, int slot, ServerTypeSelectorGUI.Holder typeHolder,
+                                    org.bukkit.event.inventory.ClickType click) {
         if (typeHolder.isCloseSlot(slot)) {
             player.closeInventory();
+            return;
+        }
+
+        if (typeHolder.isCustomGameSlot(slot)) {
+            if (typeHolder.isCustomGameAllowed()) plugin.getGuiManager().openCustomGameTypeMenu(player);
+            else player.sendMessage(LangHelper.component(player, "lobby.selector-custom-locked-message"));
             return;
         }
 
         String type = typeHolder.getTypeForSlot(slot);
         if (type == null) return;
 
-        if (leftClick) {
-            plugin.getLobbyServerManager().getBestServer(type, player.getUniqueId()).ifPresentOrElse(
-                    s -> {
-                        player.closeInventory();
-                        player.sendMessage(LangHelper.component(player, "lobby.connect", s.id()));
-                        plugin.getLobbyServerManager().connectToServer(player, s.id());
-                    },
-                    () -> {
-                        player.closeInventory();
-                        player.sendMessage(LangHelper.component(player, "lobby.game-queued"));
-                        plugin.getLobbyServerManager().requestStartGame(player, type);
-                    }
-            );
-        } else {
+        if (click.isLeftClick()) {
+            player.closeInventory();
+            if ("sheepwars".equalsIgnoreCase(type)) player.performCommand("quickplay");
+            else plugin.getLobbyServerManager().requestStartGame(player, type);
+        } else if (click.isRightClick()) {
+            plugin.getGuiManager().openRankedSelector(player, type);
+        } else if (click == org.bukkit.event.inventory.ClickType.MIDDLE) {
             plugin.getGuiManager().openServerSelector(player, type, 0);
         }
+    }
+
+    private void handleRankedSelector(Player player, int slot, RankedSelectorGUI.Holder holder) {
+        if (slot == RankedSelectorGUI.CLOSE_SLOT) { player.closeInventory(); return; }
+        if (slot == RankedSelectorGUI.BACK_SLOT) { plugin.getGuiManager().openServerTypeSelector(player); return; }
+        if (slot == RankedSelectorGUI.CANCEL_SLOT) {
+            plugin.getLobbyServerManager().cancelMatchmaking(player);
+            player.sendMessage(LangHelper.component(player, "lobby.ranked-cancelled"));
+            Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.getGuiManager().openRankedSelector(player, "SHEEPWARS"), 2L);
+            return;
+        }
+        String template = holder.templateAt(slot);
+        if (template == null) return;
+        player.closeInventory();
+        player.performCommand("competitive " + (template.contains("4v4") ? "4v4" : "8v8"));
     }
 
     private void handleServerSelector(Player player, int slot, ServerSelectorGUI.Holder serverHolder) {
@@ -140,7 +157,8 @@ public class GuiClickListener implements Listener {
                 return;
             }
             case ServerSelectorGUI.SLOT_BEST -> {
-                plugin.getLobbyServerManager().getBestServer(
+                if (serverHolder.getFilter() == ServerSelectorGUI.Filter.CUSTOM) return;
+                plugin.getLobbyServerManager().getBestQuickPlayServer(
                         serverHolder.getType(), player.getUniqueId()).ifPresentOrElse(
                         s -> {
                             player.closeInventory();
@@ -151,17 +169,23 @@ public class GuiClickListener implements Listener {
                 );
                 return;
             }
+            case ServerSelectorGUI.SLOT_FILTER -> {
+                serverHolder.nextFilter();
+                plugin.getGuiManager().openServerSelector(
+                        player, serverHolder.getType(), 0, serverHolder.getFilter());
+                return;
+            }
             case ServerSelectorGUI.SLOT_PREV -> {
                 if (serverHolder.hasPrevPage()) {
                     plugin.getGuiManager().openServerSelector(
-                            player, serverHolder.getType(), serverHolder.getPage() - 1);
+                            player, serverHolder.getType(), serverHolder.getPage() - 1, serverHolder.getFilter());
                 }
                 return;
             }
             case ServerSelectorGUI.SLOT_NEXT -> {
                 if (serverHolder.hasNextPage()) {
                     plugin.getGuiManager().openServerSelector(
-                            player, serverHolder.getType(), serverHolder.getPage() + 1);
+                            player, serverHolder.getType(), serverHolder.getPage() + 1, serverHolder.getFilter());
                 }
                 return;
             }
@@ -224,7 +248,9 @@ public class GuiClickListener implements Listener {
             plugin.getGuiManager().openLanguageSelector(player);
             return;
         }
-        if (slot == SettingsGUI.VISIBILITY_SLOT || slot == SettingsGUI.HINTS_SLOT) {
+        if (slot == SettingsGUI.VISIBILITY_SLOT || slot == SettingsGUI.HINTS_SLOT
+                || slot == SettingsGUI.PROFILE_VISIBILITY_SLOT || slot == SettingsGUI.MESSAGE_PRIVACY_SLOT
+                || slot == SettingsGUI.GLOBAL_CHAT_SLOT || slot == SettingsGUI.EFFECTS_SLOT) {
             if (!(Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core)) return;
             UUID playerId = player.getUniqueId();
             core.getPlayerPreferenceService().load(playerId).thenCompose(current -> {
@@ -233,9 +259,21 @@ public class GuiClickListener implements Listener {
                     var values = fr.tropicube.core.network.PlayerPreferenceService.LobbyVisibility.values();
                     visibility = values[(visibility.ordinal() + 1) % values.length];
                 }
+                var profileVisibility = current.profileVisibility();
+                if (slot == SettingsGUI.PROFILE_VISIBILITY_SLOT) {
+                    var values = fr.tropicube.core.network.PlayerPreferenceService.ProfileVisibility.values();
+                    profileVisibility = values[(profileVisibility.ordinal() + 1) % values.length];
+                }
+                var messagePrivacy = current.messagePrivacy();
+                if (slot == SettingsGUI.MESSAGE_PRIVACY_SLOT) {
+                    var values = fr.tropicube.core.network.PlayerPreferenceService.MessagePrivacy.values();
+                    messagePrivacy = values[(messagePrivacy.ordinal() + 1) % values.length];
+                }
                 var updated = new fr.tropicube.core.network.PlayerPreferenceService.Preferences(
-                        current.profileVisibility(), current.messagePrivacy(), current.globalChatEnabled(),
-                        visibility, slot == SettingsGUI.HINTS_SLOT ? !current.contextualHelp() : current.contextualHelp());
+                        profileVisibility, messagePrivacy,
+                        slot == SettingsGUI.GLOBAL_CHAT_SLOT ? !current.globalChatEnabled() : current.globalChatEnabled(),
+                        visibility, slot == SettingsGUI.HINTS_SLOT ? !current.contextualHelp() : current.contextualHelp(),
+                        slot == SettingsGUI.EFFECTS_SLOT ? !current.lobbyEffectsEnabled() : current.lobbyEffectsEnabled());
                 return core.getPlayerPreferenceService().save(playerId, updated);
             }).thenRun(() -> {
                 core.getRedisManager().publishPlayerEvent("PREFERENCES_CHANGED", playerId.toString());
@@ -258,23 +296,32 @@ public class GuiClickListener implements Listener {
         });
     }
 
-    private void handleVipShop(Player player, int slot) {
-        if (slot == VipShopGUI.CLOSE_SLOT) {
+    private void handleVipShop(Player player, int slot, VipShopGUI.Holder holder) {
+        if (holder.view() == VipShopGUI.View.HOME) {
+            if (slot == VipShopGUI.HOME_CLOSE_SLOT) player.closeInventory();
+            else if (slot == VipShopGUI.HOME_GRADES_SLOT) plugin.getGuiManager().openVipGrades(player);
+            return;
+        }
+        if (slot == VipShopGUI.GRADES_CLOSE_SLOT) {
             player.closeInventory();
+            return;
+        }
+        if (slot == VipShopGUI.GRADES_BACK_SLOT) {
+            plugin.getGuiManager().openVipShop(player);
             return;
         }
 
         String gradeKey = VipShopGUI.getEntryForSlot(slot);
         if (gradeKey == null) return;
 
-        int price = VipShopGUI.getPriceForGrade(gradeKey);
-        if (price < 0) return;
-
         var playerId = player.getUniqueId();
         player.closeInventory();
         player.sendMessage(LangHelper.component(player, "lobby.vip-processing"));
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            PurchaseResult result = purchaseGrade(playerId, gradeKey, price);
+            String currentGrade = coreGrade(playerId);
+            int price = VipShopGUI.getUpgradePrice(currentGrade, gradeKey);
+            var result = new fr.tropicube.core.network.GradePurchaseService(getCore())
+                    .purchase(playerId, currentGrade, gradeKey, price).join();
             Bukkit.getScheduler().runTask(plugin, () -> {
                 Player onlinePlayer = Bukkit.getPlayer(playerId);
                 if (onlinePlayer == null) return;
@@ -284,10 +331,10 @@ public class GuiClickListener implements Listener {
                     case INSUFFICIENT_FUNDS -> onlinePlayer.sendMessage(LangHelper.component(onlinePlayer,
                             "lobby.vip-no-funds", VipShopGUI.formatCoins(price)));
                     case ALREADY_OWNED -> { }
-                    case FAILED -> onlinePlayer.sendMessage(LangHelper.component(onlinePlayer,
+                    case STALE_GRADE, INVALID -> onlinePlayer.sendMessage(LangHelper.component(onlinePlayer,
                             "general.operation-failed"));
                 }
-                plugin.getGuiManager().openVipShop(onlinePlayer);
+                plugin.getGuiManager().openVipGrades(onlinePlayer);
             });
         });
     }
@@ -357,8 +404,6 @@ public class GuiClickListener implements Listener {
         }
     }
 
-    // Atomic purchase: verification, debit, allocation, then compensation if necessary.
-
     /** @return true if the language has been changed. */
     private boolean setPlayerLanguage(Player player, String lang) {
         TropicubeCore core = getCore();
@@ -372,40 +417,9 @@ public class GuiClickListener implements Listener {
         }
     }
 
-    private PurchaseResult purchaseGrade(java.util.UUID playerId, String gradeKey, int price) {
+    private String coreGrade(UUID playerId) {
         TropicubeCore core = getCore();
-        if (core == null) return PurchaseResult.FAILED;
-        var economyManager = core.getEconomyManager();
-        boolean withdrawn = false;
-        try {
-            String currentGrade = core.getPermissionManager().getGrade(playerId);
-            if (VipShopGUI.isGradeOwned(currentGrade, gradeKey)) return PurchaseResult.ALREADY_OWNED;
-            double balance = economyManager.getBalance(playerId);
-            if (balance < price) return PurchaseResult.INSUFFICIENT_FUNDS;
-            withdrawn = economyManager.withdraw(playerId, price, "Achat grade " + gradeKey);
-            if (!withdrawn) return PurchaseResult.INSUFFICIENT_FUNDS;
-            core.getPermissionManager().setGrade(playerId, gradeKey, 0L);
-            return PurchaseResult.PURCHASED;
-        } catch (RuntimeException ex) {
-            plugin.getLogger().warning(MessageStyle.log("tc", "GUI_CLICK", "<yellow>Erreur achat grade : " + ex.getMessage()));
-            if (withdrawn) {
-                try {
-                    economyManager.deposit(playerId, price,
-                            "Remboursement achat grade " + gradeKey);
-                } catch (RuntimeException rollbackError) {
-                    plugin.getLogger().log(java.util.logging.Level.SEVERE,
-                            MessageStyle.log("tc", "GUI_CLICK", "<red>Échec du remboursement après l'achat du grade " + gradeKey), rollbackError);
-                }
-            }
-            return PurchaseResult.FAILED;
-        }
-    }
-
-    private enum PurchaseResult {
-        PURCHASED,
-        ALREADY_OWNED,
-        INSUFFICIENT_FUNDS,
-        FAILED
+        return core == null ? "JOUEUR" : core.getPermissionManager().getGrade(playerId);
     }
 
     private TropicubeCore getCore() {

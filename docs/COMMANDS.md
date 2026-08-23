@@ -38,9 +38,9 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 | `/reply <message>` | `/r` | aucune | Répond au dernier interlocuteur |
 | `/ignore <joueur>` | — | aucune | Active ou désactive l'ignorance persistante |
 | `/globalchat <message>` | `/g` | aucune | Envoie explicitement un message global |
-| `/profile [joueur]` | `/profil` | aucune | Affiche le profil réseau selon la visibilité choisie |
+| `/profile [joueur]` | `/profil` | aucune | Sans argument, ouvre l'accueil Profil ; avec un joueur, affiche son profil selon sa visibilité |
 | `/profile title <id>` | `/profil` | aucune | Sélectionne un titre saisonnier débloqué ; le centre joueur permet aussi de cliquer dessus |
-| `/settings profile\|messages\|global\|entities\|hints <valeur>` | `/preferences` | aucune | Modifie les préférences persistantes |
+| `/settings profile\|messages\|global\|entities\|hints\|effects <valeur>` | `/preferences` | aucune | Modifie les préférences persistantes, dont l'accueil immersif du lobby |
 | `/missions` | — | aucune | Affiche les 5 missions quotidiennes et 3 hebdomadaires personnelles |
 | `/missions reroll <1..5>` | — | aucune | Remplace une mission quotidienne (2/jour, 4 avec la permission bonus) |
 | `/missions claim <daily\|weekly> <slot>` | — | aucune | Réclame monnaie et XP réseau d'une mission terminée |
@@ -87,15 +87,15 @@ Attention : les permissions de grade présentes dans `TropicubeCore/config.yml` 
 | Commande | Alias | Permission | Description |
 |---|---|---|---|
 | `/spawn` | — | aucune | Téléporte au spawn configuré du lobby |
-| `/play` | `/servers`, `/sv` | aucune | Ouvre le sélecteur de modes et serveurs |
+| `/play` | `/servers`, `/sv` | aucune | Ouvre le sélecteur : gauche Quick Play, droite Ranked, molette instances publiques |
 | `/languages` | — | aucune | Ouvre le sélecteur de langue |
-| `/vip` | `/boutique`, `/shop` | aucune | Ouvre la boutique de grades VIP |
+| `/vip` | `/boutique`, `/shop` | aucune | Ouvre l'accueil Boutique puis son onglet Grades |
 | `/fly` | `/flymode`, `/fm` | `tropicube.lobby.fly` | Bascule entre vol permanent et sauts aériens |
 | `/replay` | `/playnext`, `/playagain`, `/rejouer` | aucune | Rejoint la partie suivante ou attend sa création avec connexion automatique |
 | `/replayconfirm` | — | aucune | Confirme une nouvelle série de cinq replays automatiques |
 | `/rejoin` | — | aucune | Rejoint une partie SheepWars quittée volontairement si elle est encore active ; aucun argument n'est accepté |
 | `/quickplay` | — | aucune | Rejoint la file SheepWars Quick Play, avec suivi de party activé |
-| `/competitive <4v4\|8v8>` | — | aucune | Rejoint l'une des deux files classées partageant la même cote |
+| `/competitive <4v4\|8v8>` | — | aucune | Rejoint l'une des deux files classées à cote partagée et remplace toute file active |
 
 Permissions fonctionnelles du lobby :
 

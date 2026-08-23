@@ -1,5 +1,6 @@
 package fr.tropicube.lobby.managers;
 
+import fr.tropicube.docker.model.InstanceMode;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -36,7 +37,7 @@ class LobbyServerManagerTest {
         UUID member = UUID.randomUUID();
         LobbyServerManager.ServerInfo privateServer = new LobbyServerManager.ServerInfo(
                 "Sheepwars-private", "SHEEPWARS", "127.0.0.1", 25_625,
-                0, 16, "GAME_WAITING", "sheepwars", true, List.of(member));
+                0, 16, "GAME_WAITING", "sheepwars", InstanceMode.CUSTOM, true, List.of(member));
 
         assertTrue(privateServer.isVisibleTo(member));
         assertFalse(privateServer.isVisibleTo(UUID.randomUUID()));
@@ -46,6 +47,6 @@ class LobbyServerManagerTest {
     private static LobbyServerManager.ServerInfo server(String status) {
         return new LobbyServerManager.ServerInfo(
                 "Sheepwars-test", "SHEEPWARS", "127.0.0.1", 25_625,
-                0, 16, status, "sheepwars", false, List.of());
+                0, 16, status, "sheepwars", InstanceMode.QUICK_PLAY, false, List.of());
     }
 }

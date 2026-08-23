@@ -6,6 +6,10 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### Added
 
+- Persistent immersive lobby experience with origin-aware welcome effects, a profile/action sidebar, and reliable live queue state.
+- Three game-selector actions: left click for Quick Play, right click for Ranked 4v4/8v8, and middle click for the filtered unified public-instance browser.
+- Shop home and Grades tab with honest “Available now”/“Coming soon” sections, previous-grade price deduction, and transactional grade purchases.
+
 - Registered Tropicube commands and aliases are now all suggested after `/`, subject to permissions; Lobby and SheepWars share a localized player-center hotbar item.
 
 - Velocity operations foundation: versioned SQL migrations, typed instance modes, versioned Redis events, draining maintenance, bilingual MOTD, targeted announcements, network diagnostics, and adaptive connection protection.
@@ -23,6 +27,10 @@ This document records functional, technical, and operational changes. Entries ar
 - Late-join SheepWars spectator mode: no team assignment and no effect on victory conditions.
 
 ### Changed
+
+- The lobby hotbar is now `Games 0`, `Social 2`, `Profile 4`, and `Shop 8`; custom-game creation moved into the game selector and visibly explains its VIP+ requirement.
+- Tropicube Center is now Profile, uses the player's head, embeds Settings, and shares one visual inventory style across Core and Lobby.
+- Each player has at most one matchmaking queue; choosing another format replaces it and the Ranked menu exposes an explicit leave action.
 
 - The `/help` catalog now displays one primary command per line, keeps only its actual aliases on that line, and details arguments and subcommands in all four languages.
 

@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import fr.tropicube.docker.client.RedisManager;
 import fr.tropicube.docker.model.ServerInstance;
+import fr.tropicube.docker.model.InstanceMode;
 import fr.tropicube.lobby.TropicubeLobby;
 import fr.tropicube.lobby.utils.LangHelper;
 
@@ -26,6 +27,9 @@ public class LobbyServerManager {
             new AtomicReference<>(Collections.emptyMap());
     private final AtomicReference<List<TemplateInfo>> templateCacheRef =
             new AtomicReference<>(List.of());
+    private final AtomicReference<Map<String, RankedQueueStats>> rankedStatsCacheRef =
+            new AtomicReference<>(Map.of());
+    private final Map<UUID, String> activeMatchmakingCache = new java.util.concurrent.ConcurrentHashMap<>();
 
     public LobbyServerManager(TropicubeLobby plugin, RedisManager redisManager) {
         this.plugin = plugin;
@@ -49,6 +53,7 @@ public class LobbyServerManager {
                         instance.getMaxPlayers(),
                         instance.getStatus() != null ? instance.getStatus().name() : "UNKNOWN",
                         instance.getTemplateId() != null ? instance.getTemplateId() : "",
+                        instance.getMode() == null ? InstanceMode.QUICK_PLAY : instance.getMode(),
                         instance.isWhitelisted(),
                         instance.getWhitelistedPlayers()
                 );
@@ -80,9 +85,11 @@ public class LobbyServerManager {
                     .filter(t -> t.id() != null && !t.id().isBlank())
                     .filter(t -> t.name() != null && !t.name().isBlank())
                     .filter(t -> t.type() != null && !t.type().isBlank())
-                    .map(t -> new TemplateInfo(t.id(), t.name(), t.type(), Math.max(1, t.maxPlayers())))
+                    .map(t -> new TemplateInfo(t.id(), t.name(), t.type(), Math.max(1, t.maxPlayers()),
+                            t.mode() == null ? InstanceMode.QUICK_PLAY : t.mode()))
                     .toList();
             templateCacheRef.set(templates);
+            refreshRankedStats(templates);
         } catch (JsonParseException | IllegalStateException e) {
             plugin.getLogger().warning(MessageStyle.log("tc", "LOBBY_SERVER", "<yellow>Erreur lecture templates : " + e.getMessage()));
         }
@@ -98,7 +105,7 @@ public class LobbyServerManager {
         List<ServerInfo> result = new ArrayList<>();
         for (ServerInfo info : cacheRef.get().values()) {
             if (info.type().equalsIgnoreCase(type) && info.isVisibleTo(playerId)
-                    && !info.templateName().toLowerCase(Locale.ROOT).contains("ranked")) result.add(info);
+                    && !info.mode().isRanked()) result.add(info);
         }
         result.sort(Comparator.comparing(ServerInfo::id));
         return result;
@@ -140,6 +147,11 @@ public class LobbyServerManager {
         return SmartServerSelector.select(getServersByType(type, playerId), groupSize);
     }
 
+    public Optional<ServerInfo> getBestQuickPlayServer(String type, UUID playerId) {
+        return SmartServerSelector.select(getServersByType(type, playerId).stream()
+                .filter(server -> server.mode() == InstanceMode.QUICK_PLAY).toList(), 1);
+    }
+
     public int getTotalPlayers() {
         return cacheRef.get().values().stream().mapToInt(ServerInfo::playerCount).sum();
     }
@@ -155,6 +167,62 @@ public class LobbyServerManager {
                 .filter(t -> type.equalsIgnoreCase(t.type()))
                 .map(TemplateInfo::id)
                 .findFirst();
+    }
+
+    public List<TemplateInfo> getRankedTemplatesForType(String type) {
+        return templateCacheRef.get().stream()
+                .filter(template -> type.equalsIgnoreCase(template.type()))
+                .filter(template -> template.mode().isRanked())
+                .sorted(Comparator.comparing(TemplateInfo::mode))
+                .toList();
+    }
+
+    public Optional<RankedQueueStats> getRankedStats(String templateId) {
+        RankedQueueStats stats = rankedStatsCacheRef.get().get(templateId);
+        return stats == null || stats.updatedAt() < System.currentTimeMillis() - 15_000L
+                ? Optional.empty() : Optional.of(stats);
+    }
+
+    public Optional<String> getActiveMatchmaking(UUID playerId) {
+        return Optional.ofNullable(activeMatchmakingCache.get(playerId));
+    }
+
+    /** Refreshes one player's queue cache. Must be called away from the Paper thread. */
+    public void refreshPlayerMatchmaking(UUID playerId) {
+        try {
+            String template = redisManager.get("matchmaking:player:" + playerId);
+            if (template == null) activeMatchmakingCache.remove(playerId);
+            else activeMatchmakingCache.put(playerId, template);
+        } catch (RuntimeException error) {
+            activeMatchmakingCache.remove(playerId);
+        }
+    }
+
+    public long getMatchmakingSince(UUID playerId) {
+        try {
+            String raw = redisManager.get("sw:queue-since:" + playerId);
+            return raw == null ? 0L : Long.parseLong(raw);
+        } catch (RuntimeException ignored) {
+            return 0L;
+        }
+    }
+
+    public void cancelMatchmaking(org.bukkit.entity.Player player) {
+        activeMatchmakingCache.remove(player.getUniqueId());
+        redisManager.publishCommand("PROXY", "CANCEL_MATCHMAKING:" + player.getUniqueId());
+    }
+
+    private void refreshRankedStats(List<TemplateInfo> templates) {
+        Map<String, RankedQueueStats> fresh = new HashMap<>();
+        for (TemplateInfo template : templates) {
+            if (!template.mode().isRanked()) continue;
+            try {
+                String raw = redisManager.get("matchmaking:ranked:stats:" + template.id());
+                RankedQueueStats stats = raw == null ? null : gson.fromJson(raw, RankedQueueStats.class);
+                if (stats != null && stats.version() == 1) fresh.put(template.id(), stats);
+            } catch (RuntimeException ignored) { }
+        }
+        rankedStatsCacheRef.set(Map.copyOf(fresh));
     }
 
     /**
@@ -184,14 +252,16 @@ public class LobbyServerManager {
      */
     public List<TemplateInfo> getCustomGameTemplates() {
         return templateCacheRef.get().stream()
-                .filter(template -> !template.id().toLowerCase(Locale.ROOT).contains("ranked"))
+                .filter(template -> !template.mode().isRanked())
                 .toList();
     }
 
     /**
      * Immutable data from a server template (published by Velocity).
      */
-    public record TemplateInfo(String id, String name, String type, int maxPlayers) {}
+    public record TemplateInfo(String id, String name, String type, int maxPlayers, InstanceMode mode) {}
+    public record RankedQueueStats(int version, String templateId, int groups, int reservedPlayers,
+                                   int capacity, long oldestWaitSeconds, long updatedAt) {}
 
     /**
      * Immutable data from a server (Redis snapshot).
@@ -205,6 +275,7 @@ public class LobbyServerManager {
             int maxPlayers,
             String status,
             String templateName,
+            InstanceMode mode,
             boolean privateGame,
             List<UUID> whitelistedPlayers
     ) {

@@ -100,6 +100,16 @@ Tout type public, API partagée et comportement non évident doit avoir une Java
 
 ## Langues et cohérence visuelle
 
+### Convention durable des interfaces Core et Lobby
+
+- Avant d'ajouter ou de modifier une hotbar, un inventaire ou un écran joueur, examiner les menus voisins et réutiliser `NetworkMenuStyle`, `ItemBuilder`, leurs boutons communs et la palette existante.
+- Tous les menus Core et Lobby suivent la même structure : fond gris neutre, accent aqua sur la ligne supérieure, actions principales au centre, retour à gauche et fermeture à droite sur la dernière ligne.
+- Une même action conserve son matériau, sa couleur, son icône, son vocabulaire et sa position logique d'un menu à l'autre. Les états actif, verrouillé, indisponible, chargement et « bientôt » doivent être visuellement explicites.
+- Ne jamais coder un titre, un lore, une explication de verrouillage ou une donnée joueur directement en Java : utiliser les langues et, pour les données variables, des placeholders identiques dans les quatre langues.
+- Toute nouvelle interface doit rester cohérente après `/lang` sans reconnexion et doit distinguer clairement les informations fiables en temps réel des fonctionnalités non encore implémentées.
+- La hotbar du lobby réserve durablement les emplacements `0 Jeux`, `2 Social`, `4 Profil` (tête du joueur) et `8 Boutique`. Une évolution de cette navigation doit être traitée comme un changement d'expérience structurant, documenté et testé.
+- Une revue d'interface doit vérifier au minimum le titre, le cadrage, les boutons retour/fermeture, les clics gauche/droit/molette, les états vide/chargement/erreur/verrouillé, les quatre langues et le rafraîchissement des données mises en cache.
+
 Les langues supportées sont `fr`, `en`, `de` et `es`, dans :
 
 - `tropicube-core/src/main/resources/languages/` ;
