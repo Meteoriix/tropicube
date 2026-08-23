@@ -4,39 +4,67 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
-### Added
+### 2026-08-23
 
+#### Added
+
+- Paginated Social submenu for incoming and sent friend requests, with profile heads, left-click acceptance, and right-click denial or cancellation.
 - Persistent immersive lobby experience with origin-aware welcome effects, a profile/action sidebar, and reliable live queue state.
 - Three game-selector actions: left click for Quick Play, right click for Ranked 4v4/8v8, and `Shift + left click` for the filtered unified public-instance browser.
 - Shop home and Grades tab with honest “Available now”/“Coming soon” sections, previous-grade price deduction, and transactional grade purchases.
+- TOTP-protected staff tools: network-connection-scoped sessions, recovery codes, cross-server staff chat, and controlled invisible spectator mode.
+
+#### Changed
+
+- Staff 2FA remains active for the whole network connection and Velocity revokes it on the actual disconnect.
+- Unreleased changelog entries are now dated and sorted from newest to oldest.
+- The Social menu now uses left click to join a friend's server and right click to invite them to the party; incoming friend and party invitations can be accepted directly from chat.
+- The lobby hotbar is now `Games 0`, `Social 2`, `Profile 4`, and `Shop 8`; custom-game creation moved into the game selector and visibly explains its VIP+ requirement.
+- Tropicube Center is now Profile, uses the player's head, embeds Settings, and shares one visual inventory style across Core and Lobby.
+- Each player has at most one matchmaking queue; choosing another format replaces it and the Ranked menu exposes an explicit leave action.
+- The `/help` catalog now displays one primary command per line, keeps only its actual aliases on that line, and details arguments and subcommands in all four languages.
+
+#### Fixed
+
+- The Profile hotbar item now retains its localized label instead of showing Minecraft's generated English head name.
+- The public-instance browser now opens with `Shift + left click` in the game selector, an interaction available in Adventure mode unlike middle click.
+- Velocity administrator UUIDs now receive the missing operations permissions; `/netdiag`, `/maintenance`, and `/announce` work after reconnecting.
+- Command help and usage parameters in angle brackets now render literally in all four languages, including 2FA and SheepWars; the remaining `§` color codes were replaced with MiniMessage, and tests now validate palettes, tags, placeholders, Velocity parity, and Docker copies.
+
+### 2026-08-22
+
+#### Added
 
 - Registered Tropicube commands and aliases are now all suggested after `/`, subject to permissions; Lobby and SheepWars share a localized player-center hotbar item.
-
 - Velocity operations foundation: versioned SQL migrations, typed instance modes, versioned Redis events, draining maintenance, bilingual MOTD, targeted announcements, network diagnostics, and adaptive connection protection.
 - Network communication and moderation: global chat, offline private messages, ignores, proxy-enforced bans, reports, and 90-day chat evidence.
-- TOTP-protected staff tools: fifteen-minute sessions, recovery codes, cross-server staff chat, and controlled invisible spectator mode.
 - Visibility-aware network profiles, network levels, a versioned mission catalog, personal 5-daily/3-weekly rotations, rerolls, and atomic rewards.
 - Lobby contextual help, persistent entity visibility, and fill-oriented smart match selection.
 - Complete persistent guilds with 50-member capacity, bounded roles, invites, audit, capped contributions, weekly challenges, aggregate competitive ranking, and inactive-owner succession.
 
-- Lobby Settings menu with language selection and confirmed five-game automatic replay batches.
-- Complete network social system: durable friends, Redis parties, party chat, individual leader following, `/party warp`, spectator-capable `/friend join`, and the lobby Social hotbar menu.
-- Complete private custom-game access control: proxy `/whitelist`, SheepWars host item and anvil input, removal menu, Redis persistence, and per-player lobby filtering.
-- Bilingual French/English Markdown documentation and static site, with a page-preserving language switch.
-- Blue `PLAYING` server presentation for active SheepWars matches.
-- Late-join SheepWars spectator mode: no team assignment and no effect on victory conditions.
+#### Fixed
 
-### Changed
+- Staff 2FA now reports enrollment/session state, completes subcommands, provides copyable enrollment data, uses consistent four-language colors, and consumes codes transactionally to prevent concurrent replay.
 
-- The Social menu now uses left click to join a friend's server and right click to invite them to the party; incoming friend and party invitations can be accepted directly from chat.
+### 2026-08-21
 
-- The lobby hotbar is now `Games 0`, `Social 2`, `Profile 4`, and `Shop 8`; custom-game creation moved into the game selector and visibly explains its VIP+ requirement.
-- Tropicube Center is now Profile, uses the player's head, embeds Settings, and shares one visual inventory style across Core and Lobby.
-- Each player has at most one matchmaking queue; choosing another format replaces it and the Ranked menu exposes an explicit leave action.
-
-- The `/help` catalog now displays one primary command per line, keeps only its actual aliases on that line, and details arguments and subcommands in all four languages.
+#### Changed
 
 - Party members are removed after one offline minute; leadership then moves to an online member and fully offline parties are deleted immediately. The Social menu now displays every friend's profile head.
+
+#### Fixed
+
+- Social-menu heads now start dynamic resolution with the UUID alone and embed the server-resolved texture; incomplete static profiles no longer produce an incorrect default skin, and friends do not need to reconnect recently.
+
+### 2026-08-15
+
+#### Added
+
+- Lobby Settings menu with language selection and confirmed five-game automatic replay batches.
+- Complete network social system: durable friends, Redis parties, party chat, individual leader following, `/party warp`, spectator-capable `/friend join`, and the lobby Social hotbar menu.
+
+#### Changed
+
 - The game selector uses HeadDatabase head 52706, the language setting is now labelled “Langues / Language”, and new profiles inherit the Minecraft client language with an English fallback.
 - The Settings menu Language button now reuses HeadDatabase head 71786, the hotbar Settings button uses head 89489, and slash completion publishes only Tropicube commands.
 - Non-Tropicube command discovery and Bukkit/vanilla commands are blocked network-wide; protected container interfaces are disabled and `/money` is personal-only.
@@ -46,20 +74,9 @@ This document records functional, technical, and operational changes. Entries ar
 - Lobby and SheepWars tab lists and sidebars now use a clearer tropical identity, localized titles, and structured game states; connection and game join/leave events are narrative and unprefixed.
 - Messages and locales now share one identity: bracket-free `TROPICUBE >` and `SHEEPWARS >` branding, modernized grades, prefixes limited to commands and notifications, and MiniMessage technical logs rendered to ANSI with a plain-text fallback.
 - SheepWars uses a twenty-second default delivery interval and direct independent weighted draws, preserving the configured probability on short and long matches.
-- SheepWars scoreboard teams now use the profile name actually visible to the client, including active nicknames.
-- Team entries are installed before glow metadata, and tablist names are colored explicitly for participants and spectators.
 
-### Fixed
+#### Fixed
 
-- The public-instance browser now opens with `Shift + left click` in the game selector, an interaction available in Adventure mode unlike middle click.
-
-- Velocity administrator UUIDs now receive the missing operations permissions; `/netdiag`, `/maintenance`, and `/announce` work after reconnecting.
-
-- Command help and usage parameters in angle brackets now render literally in all four languages, including 2FA and SheepWars; the remaining `§` color codes were replaced with MiniMessage, and tests now validate palettes, tags, placeholders, Velocity parity, and Docker copies.
-
-- Staff 2FA now reports enrollment/session state, completes subcommands, provides copyable enrollment data, uses consistent four-language colors, and consumes codes transactionally to prevent concurrent replay.
-
-- Social-menu heads now start dynamic resolution with the UUID alone and embed the server-resolved texture; incomplete static profiles no longer produce an incorrect default skin, and friends do not need to reconnect recently.
 - The Social menu no longer raises a `LinkageError`: Core is now the sole Paper provider of `tropicube-docker-api` models, which are no longer duplicated in Lobby and SheepWars JARs.
 - The Social menu no longer renders `<tc>`, reports construction failures safely, and follows the common hotbar style.
 - The `<tc>` and `<sw>` MiniMessage prefixes no longer leak bold styling into message bodies; only branding and explicitly tagged segments remain bold.
@@ -73,11 +90,33 @@ This document records functional, technical, and operational changes. Entries ar
 - Deferred lobby tablist refreshes now retain the `/nick` name together with its fake grade instead of restoring the real profile name.
 - `/lobby` now reports that the player is already there; outside an active `/nick` identity, the lobby tablist and join announcements retain the real grade.
 - The fake `/nick` display grade now survives reconnects: disconnecting no longer shortens its TTL to 30 seconds, and the lobby tablist uses that grade without changing real permissions. Legacy Redis payloads remain compatible and default to `PREMIUM`.
+
+### 2026-08-14
+
+#### Added
+
+- Complete private custom-game access control: proxy `/whitelist`, SheepWars host item and anvil input, removal menu, Redis persistence, and per-player lobby filtering.
+
+### 2026-08-12
+
+#### Added
+
+- Bilingual French/English Markdown documentation and static site, with a page-preserving language switch.
+- Blue `PLAYING` server presentation for active SheepWars matches.
+- Late-join SheepWars spectator mode: no team assignment and no effect on victory conditions.
+
+#### Changed
+
+- SheepWars scoreboard teams now use the profile name actually visible to the client, including active nicknames.
+- Team entries are installed before glow metadata, and tablist names are colored explicitly for participants and spectators.
+
+#### Fixed
+
 - Nickname profile changes no longer leave SheepWars tablist entries under the historical Bukkit name, which could produce white glowing and incorrect team colors.
 - Lobby recognition now matches the published `GAME_PLAYING` status instead of checking only the unused `PLAYING` spelling.
 - `/nick` grade cache, concurrent requests, invalid arguments, `/nick off`, and multi-backend cleanup remain protected by the previous fixes.
 - SheepWars distribution, lobby instance visibility, orchestration stop handling, anonymous-volume cleanup, and documentation cache invalidation include their previously released regressions fixes.
 
-### Documentation
+#### Documentation
 
 - Architecture, commands, configuration, deployment, game design, development, Git/CI, and changelog are available in both languages.

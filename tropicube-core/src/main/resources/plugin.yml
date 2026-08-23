@@ -134,7 +134,7 @@ commands:
     usage: /help [general|games|social|profile|staff]
   friend:
     description: "Gérer ses amis Tropicube"
-    usage: /friend <add|accept|deny|remove|list|requests|join> ...
+    usage: /friend <add|accept|deny|cancel|remove|list|requests|join> ...
     aliases: [ friends, ami, amis ]
   party:
     description: "Gérer son groupe Tropicube"

@@ -41,6 +41,7 @@ public class GuiManager {
         CUSTOM_GAME_TYPE_SELECTOR,
         SETTINGS,
         SOCIAL,
+        FRIEND_REQUESTS,
         RANKED_SELECTOR
     }
 
@@ -195,6 +196,46 @@ public class GuiManager {
         }));
     }
 
+    /** Loads both directions of pending friend requests without blocking the Paper thread. */
+    public void openFriendRequests(Player player, int page) {
+        if (!(Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core)) {
+            player.sendMessage(LangHelper.component(player, "general.operation-failed"));
+            return;
+        }
+        UUID playerId = player.getUniqueId();
+        var social = core.getSocialService();
+        social.requests(playerId).thenCombine(social.sentRequests(playerId), (incoming, sent) -> {
+            List<CompletableFuture<FriendRequestsGUI.RequestEntry>> incomingEntries = incoming.stream()
+                    .map(request -> playerHeadProfiles.resolve(request.requesterId())
+                            .thenApply(profile -> new FriendRequestsGUI.RequestEntry(
+                                    request.requesterId(), request.username(), profile)))
+                    .toList();
+            List<CompletableFuture<FriendRequestsGUI.RequestEntry>> sentEntries = sent.stream()
+                    .map(request -> playerHeadProfiles.resolve(request.targetId())
+                            .thenApply(profile -> new FriendRequestsGUI.RequestEntry(
+                                    request.targetId(), request.username(), profile)))
+                    .toList();
+            CompletableFuture<?>[] profiles = java.util.stream.Stream.concat(
+                    incomingEntries.stream(), sentEntries.stream()).toArray(CompletableFuture[]::new);
+            return CompletableFuture.allOf(profiles).thenApply(ignored -> new FriendRequestSnapshot(
+                    incomingEntries.stream().map(CompletableFuture::join).toList(),
+                    sentEntries.stream().map(CompletableFuture::join).toList()));
+        }).thenCompose(snapshot -> snapshot)
+                .whenComplete((snapshot, error) -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    Player online = Bukkit.getPlayer(playerId);
+                    if (online == null) return;
+                    if (error != null) {
+                        plugin.getLogger().log(java.util.logging.Level.WARNING,
+                                "Impossible de charger les demandes d'amis", error);
+                        online.sendMessage(LangHelper.component(online, "general.operation-failed"));
+                        return;
+                    }
+                    openGuis.put(playerId, GuiType.FRIEND_REQUESTS);
+                    online.openInventory(FriendRequestsGUI.build(
+                            online, snapshot.incoming(), snapshot.sent(), page));
+                }));
+    }
+
     public void showHint(Player player, String hintId, String messageKey) {
         if (!(Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core)) return;
         core.getContextualHelpService().claim(player.getUniqueId(), hintId).thenAccept(show -> {
@@ -254,6 +295,9 @@ public class GuiManager {
                                   List<fr.tropicube.core.social.FriendshipRepository.PendingRequest> requests,
                                   fr.tropicube.docker.model.PartySnapshot party,
                                   Map<UUID, String> invites, Map<UUID, String> names) { }
+
+    private record FriendRequestSnapshot(List<FriendRequestsGUI.RequestEntry> incoming,
+                                         List<FriendRequestsGUI.RequestEntry> sent) { }
 
     /**
      * Refreshes all open server menus in place, without reopening them.

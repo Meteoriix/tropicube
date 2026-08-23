@@ -10,6 +10,7 @@ import com.velocitypowered.api.event.player.ServerPreConnectEvent;
 import com.velocitypowered.api.permission.Tristate;
 import com.velocitypowered.api.proxy.Player;
 import fr.tropicube.docker.client.RedisManager;
+import fr.tropicube.docker.model.SecuritySessionKeys;
 import fr.tropicube.docker.model.ServerInstance;
 import fr.tropicube.velocity.TropicubeVelocity;
 import fr.tropicube.velocity.managers.TropiServerManager;
@@ -113,6 +114,8 @@ public class PlayerConnectionListener {
 
         lm.loadPlayerLanguage(player.getUniqueId());
 
+        // A previous proxy crash may have prevented disconnect cleanup.
+        redisManager.delete(SecuritySessionKeys.staff(player.getUniqueId()));
         redisManager.set("player:online:" + player.getUniqueId(), player.getUsername(), 86400);
         redisManager.set("player:uuid:" + player.getUsername().toLowerCase(java.util.Locale.ROOT),
                 player.getUniqueId().toString(), 2_592_000);
@@ -132,6 +135,7 @@ public class PlayerConnectionListener {
         String instanceId = redisManager.getPlayerServer(player.getUniqueId().toString());
 
         redisManager.delete("player:online:" + player.getUniqueId());
+        redisManager.delete(SecuritySessionKeys.staff(player.getUniqueId()));
         redisManager.removePlayerServer(player.getUniqueId().toString());
         plugin.getQueueManager().removeFromQueue(player.getUniqueId());
         serverManager.removeFromMatchmaking(player.getUniqueId());

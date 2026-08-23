@@ -18,6 +18,7 @@ public final class FriendshipRepository {
     public enum RequestResult { CREATED, ALREADY_FRIENDS, ALREADY_PENDING, LIMIT_REACHED }
     public record FriendView(UUID playerId, String username, long lastJoin) { }
     public record PendingRequest(UUID requesterId, String username, long createdAt) { }
+    public record SentRequest(UUID targetId, String username, long createdAt) { }
 
     private final DatabaseManager database;
 
@@ -94,6 +95,10 @@ public final class FriendshipRepository {
         return delete(pair, "requester_uuid = ? AND status = 'PENDING'", requester);
     }
 
+    public boolean cancel(UUID requester, UUID target) throws SQLException {
+        return delete(Pair.of(requester, target), "requester_uuid = ? AND status = 'PENDING'", requester);
+    }
+
     public boolean remove(UUID player, UUID friend) throws SQLException {
         return delete(Pair.of(player, friend), "status = 'ACCEPTED'", null);
     }
@@ -156,6 +161,27 @@ public final class FriendshipRepository {
             statement.setString(3, value);
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) requests.add(new PendingRequest(UUID.fromString(result.getString(1)),
+                        result.getString(2), result.getLong(3)));
+            }
+        }
+        return List.copyOf(requests);
+    }
+
+    public List<SentRequest> sentRequests(UUID requester) throws SQLException {
+        List<SentRequest> requests = new ArrayList<>();
+        try (Connection connection = database.getConnection();
+             PreparedStatement statement = connection.prepareStatement("""
+                     SELECT p.uuid, p.username, f.created_at
+                     FROM tropicube_friendships f
+                     JOIN tropicube_players p ON p.uuid = IF(f.player_a = ?, f.player_b, f.player_a)
+                     WHERE f.requester_uuid = ? AND f.status = 'PENDING'
+                     ORDER BY f.created_at DESC
+                     """)) {
+            String value = requester.toString();
+            statement.setString(1, value);
+            statement.setString(2, value);
+            try (ResultSet result = statement.executeQuery()) {
+                while (result.next()) requests.add(new SentRequest(UUID.fromString(result.getString(1)),
                         result.getString(2), result.getLong(3)));
             }
         }

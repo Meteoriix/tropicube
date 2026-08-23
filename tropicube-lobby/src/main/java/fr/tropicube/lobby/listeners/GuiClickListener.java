@@ -69,6 +69,8 @@ public class GuiClickListener implements Listener {
             case CustomGameGUI.Holder customHolder -> handleCustomGame(player, slot, customHolder);
             case CustomGameTypeGUI.Holder customTypeHolder -> handleCustomGameType(player, slot, customTypeHolder);
             case SocialGUI.Holder socialHolder -> handleSocial(player, slot, socialHolder, e.getClick());
+            case FriendRequestsGUI.Holder requestsHolder ->
+                    handleFriendRequests(player, slot, requestsHolder, e.getClick());
             default -> {
             }
         }
@@ -107,6 +109,7 @@ public class GuiClickListener implements Listener {
             || holder instanceof CustomGameGUI.Holder
             || holder instanceof CustomGameTypeGUI.Holder
             || holder instanceof SocialGUI.Holder
+            || holder instanceof FriendRequestsGUI.Holder
             || holder instanceof RankedSelectorGUI.Holder;
     }
 
@@ -418,16 +421,47 @@ public class GuiClickListener implements Listener {
         switch (action.type()) {
             case FRIEND_JOIN -> player.performCommand("friend join " + action.argument());
             case PARTY_INVITE -> player.performCommand("party invite " + action.argument());
-            case FRIEND_ACCEPT -> player.performCommand("friend accept " + action.argument());
+            case OPEN_FRIEND_REQUESTS -> plugin.getGuiManager().openFriendRequests(player, 0);
             case PARTY_ACCEPT -> player.performCommand("party accept " + action.argument());
             case FOLLOW_TOGGLE -> player.performCommand("party follow " + action.argument());
             case PARTY_WARP -> player.performCommand("party warp");
+        }
+        if (action.type() == SocialGUI.ActionType.OPEN_FRIEND_REQUESTS) {
+            return;
         }
         if (action.type() == SocialGUI.ActionType.FRIEND_JOIN || action.type() == SocialGUI.ActionType.PARTY_WARP) {
             player.closeInventory();
         } else {
             Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.getGuiManager().openSocial(player), 5L);
         }
+    }
+
+    private void handleFriendRequests(Player player, int slot, FriendRequestsGUI.Holder holder, ClickType click) {
+        if (slot == FriendRequestsGUI.CLOSE_SLOT) {
+            player.closeInventory();
+            return;
+        }
+        if (slot == FriendRequestsGUI.BACK_SLOT) {
+            plugin.getGuiManager().openSocial(player);
+            return;
+        }
+        if (slot == FriendRequestsGUI.PREVIOUS_SLOT && holder.hasPrevious()) {
+            plugin.getGuiManager().openFriendRequests(player, holder.page() - 1);
+            return;
+        }
+        if (slot == FriendRequestsGUI.NEXT_SLOT && holder.hasNext()) {
+            plugin.getGuiManager().openFriendRequests(player, holder.page() + 1);
+            return;
+        }
+        FriendRequestsGUI.Action action = holder.action(slot, click);
+        if (action == null) return;
+        switch (action.type()) {
+            case ACCEPT -> player.performCommand("friend accept " + action.username());
+            case DENY -> player.performCommand("friend deny " + action.username());
+            case CANCEL -> player.performCommand("friend cancel " + action.username());
+        }
+        Bukkit.getScheduler().runTaskLater(plugin,
+                () -> plugin.getGuiManager().openFriendRequests(player, holder.page()), 5L);
     }
 
     /** @return true if the language has been changed. */

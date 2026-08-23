@@ -52,6 +52,10 @@ public final class SocialService {
         return plugin.getDatabaseManager().supplyAsync(() -> friendships.deny(target, requester));
     }
 
+    public CompletableFuture<Boolean> cancelFriend(UUID requester, UUID target) {
+        return plugin.getDatabaseManager().supplyAsync(() -> friendships.cancel(requester, target));
+    }
+
     public CompletableFuture<Boolean> removeFriend(UUID player, UUID friend) {
         return plugin.getDatabaseManager().supplyAsync(() -> friendships.remove(player, friend));
     }
@@ -66,6 +70,10 @@ public final class SocialService {
 
     public CompletableFuture<List<FriendshipRepository.PendingRequest>> requests(UUID player) {
         return plugin.getDatabaseManager().supplyAsync(() -> friendships.requests(player));
+    }
+
+    public CompletableFuture<List<FriendshipRepository.SentRequest>> sentRequests(UUID player) {
+        return plugin.getDatabaseManager().supplyAsync(() -> friendships.sentRequests(player));
     }
 
     public CompletableFuture<Optional<UUID>> resolvePlayer(String username) {

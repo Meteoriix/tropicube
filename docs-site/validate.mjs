@@ -34,6 +34,41 @@ for (const page of pages) {
   }
 }
 
+validateDatedChangelog(join(siteDirectory, "..", "docs", "CHANGELOG.md"), "CHANGELOG.md");
+validateDatedChangelog(join(siteDirectory, "..", "docs", "en", "CHANGELOG.md"), "en/CHANGELOG.md");
+
+function validateDatedChangelog(path, label) {
+  const lines = readFileSync(path, "utf8").replace(/\r\n/g, "\n").split("\n");
+  const unreleased = lines.findIndex(line => /^## (Non publié|Unreleased)$/.test(line));
+  if (unreleased < 0) {
+    errors.push(`${label}: missing Unreleased section`);
+    return;
+  }
+  let activeDate;
+  let previousDate;
+  for (const line of lines.slice(unreleased + 1)) {
+    if (line.startsWith("## ")) break;
+    const heading = line.match(/^### (.+)$/);
+    if (heading) {
+      const parsedDate = new Date(`${heading[1]}T00:00:00Z`);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(heading[1])
+          || Number.isNaN(parsedDate.valueOf())
+          || parsedDate.toISOString().slice(0, 10) !== heading[1]) {
+        errors.push(`${label}: invalid date heading ${heading[1]}`);
+        activeDate = undefined;
+        continue;
+      }
+      activeDate = heading[1];
+      if (previousDate && activeDate >= previousDate) {
+        errors.push(`${label}: dates are not strictly descending (${previousDate}, ${activeDate})`);
+      }
+      previousDate = activeDate;
+    } else if (line.startsWith("- ") && !activeDate) {
+      errors.push(`${label}: undated entry ${line}`);
+    }
+  }
+}
+
 if (errors.length) {
   console.error(errors.join("\n"));
   process.exitCode = 1;

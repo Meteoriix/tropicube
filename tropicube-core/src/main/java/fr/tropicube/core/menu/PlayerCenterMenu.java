@@ -50,7 +50,7 @@ public final class PlayerCenterMenu implements Listener {
         ItemStack item = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta skullMeta = (SkullMeta) item.getItemMeta();
         skullMeta.setPlayerProfile(player.getPlayerProfile());
-        skullMeta.itemName(message(player, "center.profile-hotbar-name"));
+        skullMeta.displayName(message(player, "center.profile-hotbar-name"));
         skullMeta.lore(List.of(message(player, "center.profile-hotbar-lore")));
         skullMeta.getPersistentDataContainer().set(hotbarKey, PersistentDataType.BYTE, (byte) 1);
         item.setItemMeta(skullMeta);

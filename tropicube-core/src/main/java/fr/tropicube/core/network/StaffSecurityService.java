@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import fr.tropicube.core.managers.DatabaseManager;
 import fr.tropicube.docker.client.RedisManager;
+import fr.tropicube.docker.model.SecuritySessionKeys;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
@@ -23,10 +24,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-/** Encrypted TOTP enrollment and short-lived secondary staff sessions. */
+/** Encrypted TOTP enrollment and network-connection-scoped secondary staff sessions. */
 public final class StaffSecurityService {
     public static final int ENROLLMENT_SECONDS = 10 * 60;
-    public static final int SESSION_SECONDS = 15 * 60;
     private static final Gson GSON = new Gson();
     private final DatabaseManager database;
     private final RedisManager redis;
@@ -47,7 +47,7 @@ public final class StaffSecurityService {
     }
 
     public boolean available() { return masterKey != null; }
-    public boolean hasSession(UUID playerId) { return redis.exists("staff-session:" + playerId); }
+    public boolean hasSession(UUID playerId) { return redis.exists(SecuritySessionKeys.staff(playerId)); }
 
     public String issueEnrollment(UUID playerId) {
         requireAvailable();
@@ -161,7 +161,7 @@ public final class StaffSecurityService {
     }
 
     private void openSession(UUID playerId) {
-        redis.set("staff-session:" + playerId, "verified", SESSION_SECONDS);
+        redis.setPersistent(SecuritySessionKeys.staff(playerId), "verified");
     }
 
     private String encrypt(String value) {

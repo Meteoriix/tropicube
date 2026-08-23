@@ -33,7 +33,7 @@ Velocity validates `/whitelist`: the sender must own an active private custom ga
 | `/tropiperm ...` | permission administration | Manages individual and grade permissions |
 | `/lang [fr|en|de|es]` | none | Reads or changes the persistent language |
 | `/help [general|games|profile|staff]` | none; staff section is restricted | Summarizes available commands by category |
-| `/friend add|accept|deny|remove <player>` | none | Manages persistent friendships |
+| `/friend add|accept|deny|cancel|remove <player>` | none | Manages persistent friendships and cancels sent requests |
 | `/friend list|requests|join <player>` | none | Lists social state or joins a friend's current game, as spectator after start |
 | `/party invite|accept|deny <player>` | none | Creates or joins a network party |
 | `/party list|leave|kick|promote|disband` | none | Reads or administers party membership |
@@ -45,7 +45,7 @@ Velocity validates `/whitelist`: the sender must own an active private custom ga
 | `/report <player> <category> [#message] [details]` | none | Creates a report and optionally captures available chat evidence |
 | `/reports list|claim|resolve ...` | report management + TOTP session | Processes the staff report queue |
 | `/msg`, `/reply`, `/ignore`, `/globalchat` | none | Cross-server communication and persistent ignores |
-| `/2fa issue|enroll|confirm|verify|status ...` | staff/enrollment permissions | Enrolls TOTP, reports enrollment/session state, and validates a fifteen-minute staff session |
+| `/2fa issue|enroll|confirm|verify|status ...` | staff/enrollment permissions | Enrolls TOTP, reports enrollment/session state, and validates the staff session until network disconnect |
 | `/staff`, `/staffchat <message>` | staff + TOTP session | Invisible controlled spectator mode and cross-server staff chat |
 | `/profile [player]` | none | Opens Profile without arguments or displays a visible player profile |
 | `/settings profile|messages|global|entities|hints|effects <value>` | none | Updates persistent preferences, including immersive lobby effects |

@@ -28,7 +28,6 @@ public final class SocialGUI {
     public static final int SIZE = 54;
     public static final int CLOSE_SLOT = 53;
     private static final int[] FRIEND_SLOTS = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34};
-    private static final int[] REQUEST_SLOTS = {37, 38, 39, 40, 41, 42, 43};
 
     private SocialGUI() { }
 
@@ -66,14 +65,9 @@ public final class SocialGUI {
 
         inventory.setItem(36, new ItemBuilder(Material.WRITABLE_BOOK)
                 .name(LangHelper.get(player, "social.menu-requests"))
-                .lore("<gray>" + requests.size()).build());
-        for (int index = 0; index < Math.min(requests.size(), REQUEST_SLOTS.length); index++) {
-            FriendshipRepository.PendingRequest request = requests.get(index);
-            int slot = REQUEST_SLOTS[index];
-            inventory.setItem(slot, new ItemBuilder(Material.PAPER).name("<yellow>" + request.username())
-                    .lore("<gray>/friend accept " + request.username()).build());
-            actions.put(slot, new Action(ActionType.FRIEND_ACCEPT, request.username()));
-        }
+                .lore(LangHelper.get(player, "social.menu-requests-count", requests.size()),
+                        LangHelper.get(player, "social.menu-requests-action")).build());
+        actions.put(36, new Action(ActionType.OPEN_FRIEND_REQUESTS, ""));
 
         List<String> partyLore = new ArrayList<>();
         if (party != null) {
@@ -120,7 +114,7 @@ public final class SocialGUI {
         }
     }
     public record Action(ActionType type, String argument) { }
-    public enum ActionType { FRIEND_JOIN, PARTY_INVITE, FRIEND_ACCEPT, PARTY_ACCEPT, FOLLOW_TOGGLE, PARTY_WARP }
+    public enum ActionType { FRIEND_JOIN, PARTY_INVITE, OPEN_FRIEND_REQUESTS, PARTY_ACCEPT, FOLLOW_TOGGLE, PARTY_WARP }
 
     static Action actionForClick(Action primary, Action rightClick, ClickType click) {
         return click.isRightClick() && rightClick != null ? rightClick : primary;

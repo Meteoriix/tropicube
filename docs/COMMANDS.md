@@ -16,7 +16,7 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 | `/rank set <joueur> <grade>` | `/grade` | `tropicube.grade.admin` | Attribue un grade existant |
 | `/lang [fr|en|es|de]` | `/language`, `/langue` | aucune | Affiche ou change la langue |
 | `/help [general|games|social|profile|staff]` | — | aucune ; catégorie staff réservée au personnel | Présente toutes les commandes et fonctionnalités disponibles par catégorie |
-| `/friend add|accept|deny|remove <joueur>` | — | aucune | Gère les relations d'amitié persistantes |
+| `/friend add|accept|deny|cancel|remove <joueur>` | — | aucune | Gère les relations d'amitié persistantes et permet d'annuler une demande envoyée |
 | `/friend list|requests` | — | aucune | Liste les amis ou les demandes reçues |
 | `/friend join <joueur>` | — | aucune | Rejoint l'instance d'un ami ; devient spectateur si la partie a commencé |
 | `/party invite|accept|deny <joueur>` | — | aucune | Crée ou rejoint une party réseau |
@@ -55,7 +55,7 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 | `/privacy cancel <id>` | — | `tropicube.privacy.manage` + session TOTP | Annule une demande en attente ou placée sous gel légal |
 | `/2fa issue <joueur>` | — | `tropicube.2fa.issue` | Émet un jeton d'inscription TOTP à usage court |
 | `/2fa status` | — | `tropicube.staff` | Distingue compte non inscrit, compte inscrit et session active |
-| `/2fa enroll\|confirm\|verify ...` | — | `tropicube.staff` | Inscrit l'application TOTP ou valide une session de quinze minutes ; liens et codes de secours sont copiables |
+| `/2fa enroll\|confirm\|verify ...` | — | `tropicube.staff` | Inscrit l'application TOTP ou valide la session jusqu'à la déconnexion du réseau ; liens et codes de secours sont copiables |
 | `/staff` | — | `tropicube.staff` + session TOTP | Active le spectateur invisible sans interaction |
 | `/staffchat <message>` | `/sc` | `tropicube.staff` + session TOTP | Chat staff interserveurs |
 | `/coreadmin reload` | `/tropiadmin`, `/ca` | `tropicube.admin` | Recharge la configuration Core et les langues |

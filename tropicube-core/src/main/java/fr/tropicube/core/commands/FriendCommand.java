@@ -16,7 +16,8 @@ import java.util.function.Consumer;
 
 /** Player-facing persistent friendship command. */
 public final class FriendCommand implements CommandExecutor, TabCompleter {
-    private static final List<String> SUBCOMMANDS = List.of("add", "accept", "deny", "remove", "list", "requests", "join", "help");
+    private static final List<String> SUBCOMMANDS = List.of(
+            "add", "accept", "deny", "cancel", "remove", "list", "requests", "join", "help");
     private final TropicubeCore plugin;
     private final SocialService social;
 
@@ -60,6 +61,7 @@ public final class FriendCommand implements CommandExecutor, TabCompleter {
                 case "add" -> add(playerId, playerName, target, args[1]);
                 case "accept" -> accept(playerId, playerName, target, args[1]);
                 case "deny" -> deny(playerId, target, args[1]);
+                case "cancel" -> cancel(playerId, target, args[1]);
                 case "remove" -> remove(playerId, target, args[1]);
                 case "join" -> join(playerId, target, args[1]);
                 default -> message(playerId, "social.friend-help");
@@ -111,6 +113,12 @@ public final class FriendCommand implements CommandExecutor, TabCompleter {
     private void deny(UUID playerId, UUID requester, String requesterName) {
         try { message(playerId, social.denyFriend(playerId, requester).join()
                 ? "social.friend-denied" : "social.friend-request-missing", requesterName); }
+        catch (RuntimeException exception) { failure(playerId); }
+    }
+
+    private void cancel(UUID playerId, UUID target, String targetName) {
+        try { message(playerId, social.cancelFriend(playerId, target).join()
+                ? "social.friend-cancelled" : "social.friend-cancel-missing", targetName); }
         catch (RuntimeException exception) { failure(playerId); }
     }
 
