@@ -560,7 +560,7 @@ lobby:
   type-lore-click: "<gray>Haz clic para ver los servidores disponibles."
   type-lore-left-click: "<green>▶ Clic izquierdo: cola Quick Play."
   type-lore-right-click: "<yellow>▶ Clic derecho: cola Ranked."
-  type-lore-middle-click: "<aqua>▶ Clic central: instancias públicas."
+  type-lore-shift-left-click: "<aqua>▶ Mayús + clic izquierdo: instancias públicas."
   selector-custom-name: "<gold>✦ Crear una partida personalizada"
   selector-custom-lore: "<gray>Configura una instancia pública o privada."
   selector-custom-click: "<green>▶ Haz clic para elegir el juego"

@@ -570,7 +570,7 @@ lobby:
   type-lore-click: "<gray>Click to view available servers."
   type-lore-left-click: "<green>▶ Left click: Quick Play queue."
   type-lore-right-click: "<yellow>▶ Right click: Ranked queue."
-  type-lore-middle-click: "<aqua>▶ Middle click: public instances."
+  type-lore-shift-left-click: "<aqua>▶ Shift + left click: public instances."
   selector-custom-name: "<gold>✦ Create a custom game"
   selector-custom-lore: "<gray>Configure a public or private instance."
   selector-custom-click: "<green>▶ Click to choose the game"

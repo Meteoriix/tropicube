@@ -579,7 +579,7 @@ lobby:
   type-lore-click: "<gray>Clique pour voir les serveurs disponibles."
   type-lore-left-click: "<green>▶ Clic gauche : file Quick Play."
   type-lore-right-click: "<yellow>▶ Clic droit : file Ranked."
-  type-lore-middle-click: "<aqua>▶ Clic molette : instances publiques."
+  type-lore-shift-left-click: "<aqua>▶ Maj + clic gauche : instances publiques."
   selector-custom-name: "<gold>✦ Créer une partie personnalisée"
   selector-custom-lore: "<gray>Configure une instance publique ou privée."
   selector-custom-click: "<green>▶ Cliquer pour choisir le jeu"

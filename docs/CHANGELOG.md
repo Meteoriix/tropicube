@@ -7,7 +7,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 ### Ajouté
 
 - Expérience lobby immersive et persistante : accueil adaptatif selon l'origine de connexion, préférence d'effets, scoreboard orienté profil/action et état de file publié en temps réel.
-- Sélecteur de jeux à trois actions : clic gauche Quick Play, clic droit choix Ranked 4v4/8v8, clic molette navigateur unifié filtrable des instances Quick Play et personnalisées publiques.
+- Sélecteur de jeux à trois actions : clic gauche Quick Play, clic droit choix Ranked 4v4/8v8, `Maj + clic gauche` navigateur unifié filtrable des instances Quick Play et personnalisées publiques.
 - Boutique restructurée avec accueil puis onglet Grades, distinction fiable entre avantages actifs et « Bientôt », déduction du prix des grades déjà achetés et achat transactionnel économie/grade.
 
 - Toutes les commandes Tropicube enregistrées par le proxy et les backends sont désormais proposées après `/`, en respectant les permissions ; les hotbars Lobby et SheepWars partagent un accès localisé au centre joueur.
@@ -86,6 +86,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 - Fin des parties SheepWars : transfert confirmé de tous les joueurs au lobby, puis destruction immédiate du conteneur et purge de son état Redis.
 
 ### Corrigé
+
+- Le navigateur des instances publiques s'ouvre désormais avec `Maj + clic gauche` dans le sélecteur de jeux, une interaction disponible en mode Aventure contrairement au clic molette.
 
 - Les UUID administrateurs Velocity reçoivent désormais les permissions d'exploitation manquantes ; `/netdiag`, `/maintenance` et `/announce` sont utilisables après reconnexion.
 

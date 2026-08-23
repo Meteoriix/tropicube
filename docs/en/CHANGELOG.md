@@ -7,7 +7,7 @@ This document records functional, technical, and operational changes. Entries ar
 ### Added
 
 - Persistent immersive lobby experience with origin-aware welcome effects, a profile/action sidebar, and reliable live queue state.
-- Three game-selector actions: left click for Quick Play, right click for Ranked 4v4/8v8, and middle click for the filtered unified public-instance browser.
+- Three game-selector actions: left click for Quick Play, right click for Ranked 4v4/8v8, and `Shift + left click` for the filtered unified public-instance browser.
 - Shop home and Grades tab with honest “Available now”/“Coming soon” sections, previous-grade price deduction, and transactional grade purchases.
 
 - Registered Tropicube commands and aliases are now all suggested after `/`, subject to permissions; Lobby and SheepWars share a localized player-center hotbar item.
@@ -48,6 +48,8 @@ This document records functional, technical, and operational changes. Entries ar
 - Team entries are installed before glow metadata, and tablist names are colored explicitly for participants and spectators.
 
 ### Fixed
+
+- The public-instance browser now opens with `Shift + left click` in the game selector, an interaction available in Adventure mode unlike middle click.
 
 - Velocity administrator UUIDs now receive the missing operations permissions; `/netdiag`, `/maintenance`, and `/announce` work after reconnecting.
 

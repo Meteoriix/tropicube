@@ -560,7 +560,7 @@ lobby:
   type-lore-click: "<gray>Klicke, um verfügbare Server zu sehen."
   type-lore-left-click: "<green>▶ Linksklick: Quick-Play-Warteschlange."
   type-lore-right-click: "<yellow>▶ Rechtsklick: Ranked-Warteschlange."
-  type-lore-middle-click: "<aqua>▶ Mittelklick: öffentliche Instanzen."
+  type-lore-shift-left-click: "<aqua>▶ Umschalt + Linksklick: öffentliche Instanzen."
   selector-custom-name: "<gold>✦ Eigenes Spiel erstellen"
   selector-custom-lore: "<gray>Konfiguriere eine öffentliche oder private Instanz."
   selector-custom-click: "<green>▶ Klicken, um das Spiel zu wählen"

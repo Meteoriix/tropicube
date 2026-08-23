@@ -128,7 +128,7 @@ public class ServerTypeSelectorGUI {
                         "",
                         LangHelper.get(player, "lobby.type-lore-left-click"),
                         LangHelper.get(player, "lobby.type-lore-right-click"),
-                        LangHelper.get(player, "lobby.type-lore-middle-click")
+                        LangHelper.get(player, "lobby.type-lore-shift-left-click")
                 );
         if (onlineServers > 0) ib.glow();
         return ib.build();

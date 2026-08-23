@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
@@ -24,6 +25,13 @@ import java.util.UUID;
  * always canceled as soon as one of our inventories is visible, even if the map would be out of sync.
  */
 public class GuiClickListener implements Listener {
+
+    enum TypeSelectorAction {
+        QUICK_PLAY,
+        RANKED,
+        PUBLIC_INSTANCES,
+        NONE
+    }
 
     private final TropicubeLobby plugin;
 
@@ -105,7 +113,7 @@ public class GuiClickListener implements Listener {
     // ── Handlers ────────────────────────────────────────────────────────────
 
     private void handleTypeSelector(Player player, int slot, ServerTypeSelectorGUI.Holder typeHolder,
-                                    org.bukkit.event.inventory.ClickType click) {
+                                    ClickType click) {
         if (typeHolder.isCloseSlot(slot)) {
             player.closeInventory();
             return;
@@ -120,15 +128,32 @@ public class GuiClickListener implements Listener {
         String type = typeHolder.getTypeForSlot(slot);
         if (type == null) return;
 
-        if (click.isLeftClick()) {
-            player.closeInventory();
-            if ("sheepwars".equalsIgnoreCase(type)) player.performCommand("quickplay");
-            else plugin.getLobbyServerManager().requestStartGame(player, type);
-        } else if (click.isRightClick()) {
-            plugin.getGuiManager().openRankedSelector(player, type);
-        } else if (click == org.bukkit.event.inventory.ClickType.MIDDLE) {
-            plugin.getGuiManager().openServerSelector(player, type, 0);
+        switch (typeSelectorAction(click)) {
+            case QUICK_PLAY -> {
+                player.closeInventory();
+                if ("sheepwars".equalsIgnoreCase(type)) player.performCommand("quickplay");
+                else plugin.getLobbyServerManager().requestStartGame(player, type);
+            }
+            case RANKED -> plugin.getGuiManager().openRankedSelector(player, type);
+            case PUBLIC_INSTANCES -> plugin.getGuiManager().openServerSelector(player, type, 0);
+            case NONE -> {
+            }
         }
+    }
+
+    /**
+     * Resolves the game-menu action without depending on a live Paper inventory.
+     * Shift-left must be checked before {@link ClickType#isLeftClick()} because Paper
+     * includes it in left clicks. Middle click remains as a defensive compatibility path,
+     * although the vanilla client only sends that action in creative mode.
+     */
+    static TypeSelectorAction typeSelectorAction(ClickType click) {
+        if (click == ClickType.SHIFT_LEFT || click == ClickType.MIDDLE) {
+            return TypeSelectorAction.PUBLIC_INSTANCES;
+        }
+        if (click.isLeftClick()) return TypeSelectorAction.QUICK_PLAY;
+        if (click.isRightClick()) return TypeSelectorAction.RANKED;
+        return TypeSelectorAction.NONE;
     }
 
     private void handleRankedSelector(Player player, int slot, RankedSelectorGUI.Holder holder) {
