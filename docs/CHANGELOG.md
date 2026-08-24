@@ -4,6 +4,12 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-08-24
+
+#### Corrigé
+
+- Le grand titre « Bienvenue sur Tropicube » est désormais réservé à l'arrivée initiale au lobby après connexion au proxy ; les retours depuis un mini-jeu conservent uniquement l'actionbar discrète.
+
 ### 2026-08-23
 
 #### Ajouté

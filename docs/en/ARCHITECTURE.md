@@ -74,6 +74,7 @@ Sheep distribution uses an immutable effective-weight table followed by an indep
 | `host-creation:<uuid>` | Velocity | Velocity / Lobby | Atomic custom-server creation lock |
 | `host:<uuid>` | Velocity | Velocity, Lobby, SheepWars | Host ownership of one custom instance |
 | `player:uuid:<name>` / `player:name:<uuid>` | Velocity | Velocity, SheepWars | Previously seen player-name resolution; refreshed 30-day TTL |
+| `session:initial-lobby-welcome:<uuid>` | Velocity | Lobby | One-shot 60-second marker created only when the first server selected after proxy login is a lobby; authorizes the full welcome title and is then deleted immediately |
 
 On `NICK_APPLY`, Core copies the `/nick` name and fake grade into a backend-local visual cache used by the tablist and lobby join announcements, while chat reads the same Redis identity. None of these display paths replaces the real grade used for permissions. For `NICK_CLEAR`, Velocity retains `nick:<uuid>` and `nick:original:<uuid>` until the backend currently owning the player restores the profile; that backend then deletes both keys. The request therefore remains retryable if a Pub/Sub message is lost or the player changes servers. The cache is cleared when the nick is disabled or the player is unloaded, then restored from `nick:<uuid>` after reconnecting. Lobby resolves the visible name from `Player#displayName`, which Core updates immediately on both activation and removal, because the Paper profile name may remain temporarily stale after `setPlayerProfile`.
 

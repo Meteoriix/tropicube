@@ -4,6 +4,12 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+### 2026-08-24
+
+#### Fixed
+
+- The full “Welcome to Tropicube” title is now reserved for the initial lobby arrival after proxy login; returns from a mini-game keep only the discreet action bar.
+
 ### 2026-08-23
 
 #### Added

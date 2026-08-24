@@ -10,6 +10,7 @@ import com.velocitypowered.api.event.player.ServerPreConnectEvent;
 import com.velocitypowered.api.permission.Tristate;
 import com.velocitypowered.api.proxy.Player;
 import fr.tropicube.docker.client.RedisManager;
+import fr.tropicube.docker.model.PlayerSessionKeys;
 import fr.tropicube.docker.model.SecuritySessionKeys;
 import fr.tropicube.docker.model.ServerInstance;
 import fr.tropicube.velocity.TropicubeVelocity;
@@ -27,6 +28,8 @@ import java.util.concurrent.TimeUnit;
  * Manages player logins/disconnects on the Velocity proxy.
  */
 public class PlayerConnectionListener {
+
+    private static final int INITIAL_LOBBY_WELCOME_TTL_SECONDS = 60;
 
     private static final Set<String> ADMIN_PERMISSIONS = Set.of(
             "tropicube.admin",
@@ -101,10 +104,12 @@ public class PlayerConnectionListener {
             if (event.getInitialServer().isPresent()) return;
         }
 
-        serverManager.getBestLobby().ifPresentOrElse(
-                event::setInitialServer,
-                () -> logger.warn(MessageStyle.log("PROXY", "<yellow>Aucun lobby disponible pour {}"), event.getPlayer().getUsername())
-        );
+        serverManager.getBestLobby().ifPresentOrElse(lobby -> {
+            event.setInitialServer(lobby);
+            redisManager.set(PlayerSessionKeys.initialLobbyWelcome(player.getUniqueId()), "1",
+                    INITIAL_LOBBY_WELCOME_TTL_SECONDS);
+        }, () -> logger.warn(MessageStyle.log("PROXY", "<yellow>Aucun lobby disponible pour {}"),
+                event.getPlayer().getUsername()));
     }
 
     @Subscribe
@@ -135,6 +140,7 @@ public class PlayerConnectionListener {
         String instanceId = redisManager.getPlayerServer(player.getUniqueId().toString());
 
         redisManager.delete("player:online:" + player.getUniqueId());
+        redisManager.delete(PlayerSessionKeys.initialLobbyWelcome(player.getUniqueId()));
         redisManager.delete(SecuritySessionKeys.staff(player.getUniqueId()));
         redisManager.removePlayerServer(player.getUniqueId().toString());
         plugin.getQueueManager().removeFromQueue(player.getUniqueId());

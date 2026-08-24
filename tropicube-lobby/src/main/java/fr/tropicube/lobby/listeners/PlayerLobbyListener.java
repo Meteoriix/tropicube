@@ -1,6 +1,7 @@
 package fr.tropicube.lobby.listeners;
 
 import fr.tropicube.core.TropicubeCore;
+import fr.tropicube.docker.model.PlayerSessionKeys;
 import fr.tropicube.lobby.TropicubeLobby;
 import fr.tropicube.lobby.utils.ItemBuilder;
 import fr.tropicube.lobby.utils.LangHelper;
@@ -68,6 +69,7 @@ public class PlayerLobbyListener implements Listener {
 
         // Captures the marker before Core's asynchronous loading deletes it.
         boolean isTransfer = plugin.getRedisManager().exists("transfer:" + uuid);
+        boolean initialLobbyArrival = consumeInitialLobbyWelcome(uuid);
 
         // Search for a SheepWars game that has been left voluntarily but is still active.
         String rejoinInstanceId = plugin.getRedisManager().get("sw:left-game:" + uuid);
@@ -99,7 +101,7 @@ public class PlayerLobbyListener implements Listener {
                 plugin.getScoreboardManager().setup(player);
                 plugin.getScoreboardManager().updateAll();
                 plugin.getVisibilityManager().refreshAll();
-                playAdaptiveWelcome(player, isTransfer);
+                playAdaptiveWelcome(player, initialLobbyArrival);
 
                 // Offer to rejoin the still active part.
                 if (hasRejoinFlag) {
@@ -336,13 +338,20 @@ public class PlayerLobbyListener implements Listener {
         }
     }
 
-    private void playAdaptiveWelcome(Player player, boolean transfer) {
+    private boolean consumeInitialLobbyWelcome(UUID playerId) {
+        String key = PlayerSessionKeys.initialLobbyWelcome(playerId);
+        boolean initialArrival = plugin.getRedisManager().exists(key);
+        if (initialArrival) plugin.getRedisManager().delete(key);
+        return initialArrival;
+    }
+
+    private void playAdaptiveWelcome(Player player, boolean initialLobbyArrival) {
         if (!plugin.getConfig().getBoolean("lobby.welcome.enabled", true)) return;
         plugin.getCore().getPlayerPreferenceService().load(player.getUniqueId()).thenAccept(preferences -> {
             if (!preferences.lobbyEffectsEnabled()) return;
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if (!player.isOnline()) return;
-                if (transfer) {
+                if (!shouldShowWelcomeTitle(initialLobbyArrival)) {
                     player.sendActionBar(LangHelper.component(player, "lobby.welcome-return"));
                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.4f, 1.4f);
                     return;
@@ -356,6 +365,10 @@ public class PlayerLobbyListener implements Listener {
                         player.getLocation().add(0, 1, 0), 16, 0.7, 0.8, 0.7, 0.05);
             });
         });
+    }
+
+    static boolean shouldShowWelcomeTitle(boolean initialLobbyArrival) {
+        return initialLobbyArrival;
     }
 
     public boolean teleportToSpawn(Player player) {

@@ -169,6 +169,7 @@ Ce module est pour l'instant un squelette Maven sans classe, ressource, dépenda
 | `party:invites:<uuid>` | Core | Core/Lobby | Invitations indexées par UUID du chef, TTL configurable |
 | canal `commands` (`PROXY:FRIEND_JOIN`, `PROXY:PARTY_WARP`) | Core | Velocity | Demandes de transfert social revalidées par le proxy |
 | `transfer:<uuid>` | Velocity | Core/Lobby | Marqueur court évitant de traiter un transfert comme une première arrivée |
+| `session:initial-lobby-welcome:<uuid>` | Velocity | Lobby | Marqueur à usage unique, TTL 60 s, créé seulement lorsque le premier serveur choisi après connexion au proxy est un lobby ; autorise le grand titre d'accueil puis est immédiatement supprimé |
 | `host:<uuid>` | Velocity | Lobby/SheepWars | Partie personnalisée administrée par le joueur |
 | `host-creation:<uuid>` | Velocity | Lobby/Velocity | Verrou atomique et temporaire empêchant deux créations personnalisées simultanées |
 | `player:uuid:<pseudo>` / `player:name:<uuid>` | Velocity | Velocity/SheepWars | Résolution des membres de whitelist déjà vus ; TTL 30 jours renouvelé à la connexion |

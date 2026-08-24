@@ -177,7 +177,7 @@ Les noms de grades sont utilisés comme identifiants stables dans la boutique, l
 Fichier : `dockerfiles/configs/TropicubeLobby/config.yml`.
 
 - `lobby.spawn` définit monde, coordonnées et orientation ;
-- `lobby.welcome.enabled` active globalement les titres, sons et particules de l'accueil adaptatif ; chaque joueur peut les désactiver durablement depuis Profil > Paramètres ;
+- `lobby.welcome.enabled` active globalement l'accueil immersif : le titre, le son et les particules ne sont joués qu'à l'arrivée initiale au lobby après connexion au proxy, tandis qu'un retour ultérieur affiche seulement l'actionbar discrète ; chaque joueur peut désactiver durablement ces effets depuis Profil > Paramètres ;
 - `lobby.double-jump` active globalement les sauts aériens ;
 - `auto-replay.batch-size` fixe le nombre de parties automatiques avant une nouvelle confirmation (`5`, borné entre 1 et 100) ;
 - `server-types` définit les icônes Material ou HeadDatabase ;
