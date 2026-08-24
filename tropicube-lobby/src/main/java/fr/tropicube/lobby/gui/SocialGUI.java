@@ -40,8 +40,9 @@ public final class SocialGUI {
     private SocialGUI() { }
 
     public static Inventory build(Player player, View view, List<FriendEntry> friends,
-                                  List<PartyEntry> partyMembers, int friendRequestCount,
-                                  int partyInviteCount, PartySnapshot party) {
+                                   List<PartyEntry> partyMembers, int friendRequestCount,
+                                   int receivedPartyInviteCount, int sentPartyInviteCount,
+                                   PartySnapshot party) {
         Map<Integer, Action> actions = new LinkedHashMap<>();
         Map<Integer, Action> rightClickActions = new LinkedHashMap<>();
         Holder holder = new Holder(view, actions, rightClickActions);
@@ -67,9 +68,10 @@ public final class SocialGUI {
             actions.put(REQUESTS_SLOT, new Action(ActionType.OPEN_FRIEND_REQUESTS, ""));
         } else {
             drawParty(player, inventory, partyMembers, party, actions, rightClickActions);
-            inventory.setItem(REQUESTS_SLOT, new ItemBuilder(Material.ENCHANTED_BOOK)
+            inventory.setItem(REQUESTS_SLOT, new ItemBuilder(Material.WRITABLE_BOOK)
                     .name(LangHelper.get(player, "social.menu-party-requests"))
-                    .lore(LangHelper.get(player, "social.menu-party-requests-count", partyInviteCount),
+                    .lore(LangHelper.get(player, "social.menu-party-requests-count", receivedPartyInviteCount),
+                            LangHelper.get(player, "social.menu-party-requests-sent-count", sentPartyInviteCount),
                             LangHelper.get(player, "social.menu-party-requests-action")).build());
             actions.put(REQUESTS_SLOT, new Action(ActionType.OPEN_PARTY_REQUESTS, ""));
             drawPartyControls(player, inventory, party, actions);

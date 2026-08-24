@@ -9,11 +9,14 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 #### Modifié
 
 - Les menus Core, Lobby et SheepWars partagent désormais le même cadrage ; Profil utilise la tête du joueur, les missions et paramètres expliquent leur contenu, et les actions ainsi que valeurs métier sont localisées sans identifiants techniques.
+- Profil adopte désormais la grille de 54 cases et les indications de clic explicites des sélecteurs ; Social affiche « Social • Amis » et les demandes de party reprennent les colonnes reçues/envoyées du menu Amis, avec annulation au clic droit.
+- La sélection du type de partie personnalisée indique désormais « Clic gauche : sélectionner ce type et choisir un jeu ».
 - Le niveau réseau et la progression vers le niveau suivant sont désormais affichés dans la barre d'expérience et actualisés après chaque gain d'XP.
 
 #### Corrigé
 
 - Le grand titre « Bienvenue sur Tropicube » est désormais réservé à l'arrivée initiale au lobby après connexion au proxy ; les retours depuis un mini-jeu conservent uniquement l'actionbar discrète.
+- Les têtes Profil de la hotbar et du menu complet conservent désormais systématiquement leur libellé localisé au lieu de reprendre « Player's Head ».
 
 ### 2026-08-23
 

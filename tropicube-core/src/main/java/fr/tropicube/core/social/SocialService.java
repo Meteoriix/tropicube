@@ -94,6 +94,10 @@ public final class SocialService {
 
     public PartySnapshot party(UUID playerId) { return plugin.getRedisManager().getParty(playerId); }
     public Map<UUID, String> partyInvites(UUID playerId) { return plugin.getRedisManager().getPartyInvites(playerId); }
+    /** Returns invitations created by this leader, indexed by their target player. */
+    public Map<UUID, String> sentPartyInvites(UUID leaderId) {
+        return plugin.getRedisManager().getSentPartyInvites(leaderId);
+    }
     public String inviteParty(UUID leader, UUID target) {
         return plugin.getRedisManager().inviteToParty(leader, target, maximumPartySize, invitationSeconds);
     }
@@ -101,6 +105,10 @@ public final class SocialService {
         return plugin.getRedisManager().acceptPartyInvite(target, leader, maximumPartySize);
     }
     public void denyParty(UUID target, UUID leader) { plugin.getRedisManager().denyPartyInvite(target, leader); }
+    /** Cancels one outgoing invitation and removes it from both Redis indexes. */
+    public void cancelPartyInvite(UUID leader, UUID target) {
+        plugin.getRedisManager().denyPartyInvite(target, leader);
+    }
     public boolean setFollow(UUID player, boolean enabled) { return plugin.getRedisManager().setPartyFollow(player, enabled); }
     public String leaveParty(UUID player) { return plugin.getRedisManager().leaveParty(player); }
     public String kickParty(UUID leader, UUID target) { return plugin.getRedisManager().kickPartyMember(leader, target); }

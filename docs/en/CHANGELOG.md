@@ -9,11 +9,14 @@ This document records functional, technical, and operational changes. Entries ar
 #### Changed
 
 - Core, Lobby, and SheepWars menus now share one frame; Profile uses the player's head, missions and settings explain their contents, and actions and domain values are localized without technical identifiers.
+- Profile now uses the selectors' 54-slot grid and explicit click guidance; Social displays “Social • Friends”, while party requests mirror the Friends incoming/sent columns and allow right-click cancellation.
+- Custom-game type selection now says “Left click: select this type and choose a game”.
 - The experience bar now displays the network level and progress toward the next level, refreshing after each XP gain.
 
 #### Fixed
 
 - The full “Welcome to Tropicube” title is now reserved for the initial lobby arrival after proxy login; returns from a mini-game keep only the discreet action bar.
+- Profile heads in the hotbar and full Profile menu now consistently retain their localized labels instead of reverting to “Player's Head”.
 
 ### 2026-08-23
 

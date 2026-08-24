@@ -31,6 +31,7 @@ import java.util.function.Consumer;
 /** Localized network center and paginated seven-day notification inbox. */
 public final class PlayerCenterMenu implements Listener {
     private static final int PAGE_SIZE = 36;
+    private static final int[] MISSION_SLOTS = {10, 11, 12, 13, 14, 15, 16, 19};
     private static final List<String> FILTERS = List.of("ALL", "GUILD", "SOCIAL", "SYSTEM", "MISSION", "MODERATION");
     private final TropicubeCore plugin;
     private final NamespacedKey actionKey;
@@ -48,10 +49,9 @@ public final class PlayerCenterMenu implements Listener {
 
     /** Builds the same localized player-center entry point for every game waiting area. */
     public ItemStack createHotbarItem(Player player) {
-        ItemStack item = NetworkMenuStyle.item(Material.PLAYER_HEAD,
+        ItemStack item = NetworkMenuStyle.playerHead(player,
                 message(player, "center.profile-hotbar-name"), message(player, "center.profile-hotbar-lore"));
         SkullMeta skullMeta = (SkullMeta) item.getItemMeta();
-        skullMeta.setPlayerProfile(player.getPlayerProfile());
         skullMeta.getPersistentDataContainer().set(hotbarKey, PersistentDataType.BYTE, (byte) 1);
         item.setItemMeta(skullMeta);
         return item;
@@ -69,18 +69,20 @@ public final class PlayerCenterMenu implements Listener {
     }
 
     public void openHome(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 27, message(player, "center.title"));
+        Inventory inventory = Bukkit.createInventory(null, 54, message(player, "center.title"));
         NetworkMenuStyle.frame(inventory);
-        inventory.setItem(10, playerHead(player, "center.profile", "center.profile-lore", "PROFILE"));
-        inventory.setItem(12, navigationItem(player, Material.WRITABLE_BOOK,
-                "center.missions", "center.missions-lore", "MISSIONS"));
-        inventory.setItem(14, navigationItem(player, Material.BELL,
-                "center.notifications", "center.notifications-lore", "NOTIFICATIONS"));
-        inventory.setItem(16, navigationItem(player, Material.SHIELD,
-                "center.guilds", "center.guilds-lore", "GUILDS"));
-        inventory.setItem(22, navigationItem(player, Material.COMPARATOR,
-                "center.privacy", "center.privacy-lore", "SETTINGS"));
-        inventory.setItem(26, item(player, Material.BARRIER, "lobby.close-button", "CLOSE"));
+        inventory.setItem(13, playerHead(player, "center.profile", "center.profile-lore",
+                "center.profile-action", "PROFILE"));
+        inventory.setItem(20, navigationItem(player, Material.WRITABLE_BOOK,
+                "center.missions", "center.missions-lore", "center.missions-action", "MISSIONS"));
+        inventory.setItem(22, navigationItem(player, Material.BELL,
+                "center.notifications", "center.notifications-lore", "center.notifications-action", "NOTIFICATIONS"));
+        inventory.setItem(24, navigationItem(player, Material.SHIELD,
+                "center.guilds", "center.guilds-lore", "center.guilds-action", "GUILDS"));
+        inventory.setItem(31, navigationItem(player, Material.COMPARATOR,
+                "center.privacy", "center.privacy-lore", "center.privacy-action", "SETTINGS"));
+        inventory.setItem(53, navigationItem(player, Material.BARRIER,
+                "lobby.close-button", "lobby.close-button-lore", "CLOSE"));
         player.openInventory(inventory);
         states.put(player.getUniqueId(), new State(View.HOME, 0, "ALL"));
     }
@@ -123,15 +125,23 @@ public final class PlayerCenterMenu implements Listener {
                         entry.setItemMeta(meta);
                         inventory.setItem(9 + slot, entry);
                     }
-                    inventory.setItem(45, item(online, Material.ARROW, "center.previous", "PREVIOUS"));
-                    inventory.setItem(47, item(online, Material.HOPPER, "center.filter", "FILTER",
-                            localizedValue(online, "center.notification-category-value-", filter)));
-                    inventory.setItem(49, item(online, Material.BARRIER, "center.back", "BACK"));
-                    inventory.setItem(50, item(online, Material.LIME_DYE, "center.mark-all-read", "READ_ALL"));
-                    inventory.setItem(51, item(online, Material.LAVA_BUCKET, "center.delete-read", "DELETE_READ"));
-                    inventory.setItem(52, item(online, result.hasNext() ? Material.ARROW : Material.GRAY_DYE,
-                            "center.next", result.hasNext() ? "NEXT" : "NONE"));
-                    inventory.setItem(53, item(online, Material.BARRIER, "lobby.close-button", "CLOSE"));
+                    inventory.setItem(45, actionItem(online, Material.ARROW,
+                            "center.previous", "center.previous-action", "PREVIOUS"));
+                    inventory.setItem(47, actionItem(online, Material.HOPPER,
+                            "center.filter", "center.filter-action", "FILTER",
+                            messageText(online, "center.notification-category-value-"
+                                    + filter.toLowerCase(Locale.ROOT).replace('_', '-'))));
+                    inventory.setItem(49, navigationItem(online, Material.ARROW,
+                            "center.back", "lobby.back-button-lore", "BACK"));
+                    inventory.setItem(50, actionItem(online, Material.LIME_DYE,
+                            "center.mark-all-read", "center.mark-all-read-action", "READ_ALL"));
+                    inventory.setItem(51, actionItem(online, Material.LAVA_BUCKET,
+                            "center.delete-read", "center.delete-read-action", "DELETE_READ"));
+                    inventory.setItem(52, result.hasNext()
+                            ? actionItem(online, Material.ARROW, "center.next", "center.next-action", "NEXT")
+                            : item(online, Material.GRAY_DYE, "center.next", "NONE"));
+                    inventory.setItem(53, navigationItem(online, Material.BARRIER,
+                            "lobby.close-button", "lobby.close-button-lore", "CLOSE"));
                     online.openInventory(inventory);
                     states.put(playerId, new State(View.NOTIFICATIONS, result.page(), filter));
                 }));
@@ -145,7 +155,7 @@ public final class PlayerCenterMenu implements Listener {
                     if (online == null) return;
                     if (error != null || profile == null) { online.sendMessage(message(online, "general.operation-failed")); return; }
                     Inventory inventory = Bukkit.createInventory(null, 54,
-                            message(online, "center.profile-header", profile.username()));
+                            message(online, "center.profile-menu-title", profile.username()));
                     NetworkMenuStyle.frame(inventory);
                     inventory.setItem(4, playerHead(online, "center.profile-identity",
                             "center.profile-identity-lore", "NONE", profile.username()));
@@ -166,7 +176,8 @@ public final class PlayerCenterMenu implements Listener {
                     int titleSlot = 18;
                     for (var title : profile.titles()) if (titleSlot < 27) {
                         ItemStack titleItem = display(Material.NAME_TAG, message(online, "center.profile-title",
-                                plugin.getLanguageManager().get(playerId, title.displayKey())));
+                                        plugin.getLanguageManager().get(playerId, title.displayKey())),
+                                message(online, "center.profile-title-action"));
                         titleItem.editMeta(meta -> meta.getPersistentDataContainer().set(actionKey,
                                 PersistentDataType.STRING, "TITLE:" + title.id()));
                         inventory.setItem(titleSlot++, titleItem);
@@ -180,8 +191,10 @@ public final class PlayerCenterMenu implements Listener {
                             Material.CLOCK, message(online, "center.profile-season", archive.seasonKey(),
                                     messageText(online, "center.rank-" + archive.tier().toLowerCase(Locale.ROOT)),
                                     Math.round(archive.rating()), archive.rankedMatches())));
-                    inventory.setItem(45, item(online, Material.ARROW, "center.back", "BACK"));
-                    inventory.setItem(53, item(online, Material.BARRIER, "lobby.close-button", "CLOSE"));
+                    inventory.setItem(45, navigationItem(online, Material.ARROW,
+                            "center.back", "lobby.back-button-lore", "BACK"));
+                    inventory.setItem(53, navigationItem(online, Material.BARRIER,
+                            "lobby.close-button", "lobby.close-button-lore", "CLOSE"));
                     online.openInventory(inventory);
                     states.put(playerId, new State(View.PROFILE, 0, "ALL"));
                 }));
@@ -194,7 +207,7 @@ public final class PlayerCenterMenu implements Listener {
                     Player online = Bukkit.getPlayer(playerId);
                     if (online == null) return;
                     if (error != null) { online.sendMessage(message(online, "general.operation-failed")); return; }
-                    Inventory inventory = Bukkit.createInventory(null, 27, message(online, "center.missions-header"));
+                    Inventory inventory = Bukkit.createInventory(null, 54, message(online, "center.missions-title"));
                     NetworkMenuStyle.frame(inventory);
                     for (int index = 0; index < missions.size(); index++) {
                         MissionService.Assignment assignment = missions.get(index);
@@ -226,10 +239,12 @@ public final class PlayerCenterMenu implements Listener {
                                 message(online, actionLoreKey));
                         entry.editMeta(meta -> meta.getPersistentDataContainer().set(actionKey, PersistentDataType.STRING,
                                 "MISSION:" + assignment.rotation().name() + ":" + assignment.slot()));
-                        inventory.setItem(10 + index, entry);
+                        if (index < MISSION_SLOTS.length) inventory.setItem(MISSION_SLOTS[index], entry);
                     }
-                    inventory.setItem(18, item(online, Material.ARROW, "center.back", "BACK"));
-                    inventory.setItem(26, item(online, Material.BARRIER, "lobby.close-button", "CLOSE"));
+                    inventory.setItem(45, navigationItem(online, Material.ARROW,
+                            "center.back", "lobby.back-button-lore", "BACK"));
+                    inventory.setItem(53, navigationItem(online, Material.BARRIER,
+                            "lobby.close-button", "lobby.close-button-lore", "CLOSE"));
                     online.openInventory(inventory);
                     states.put(playerId, new State(View.MISSIONS, 0, "ALL"));
                 }));
@@ -243,7 +258,7 @@ public final class PlayerCenterMenu implements Listener {
                     Player online = Bukkit.getPlayer(playerId);
                     if (online == null) return;
                     if (error != null) { online.sendMessage(message(online, "general.operation-failed")); return; }
-                    Inventory inventory = Bukkit.createInventory(null, 54, message(online, "guild.ranking-header"));
+                    Inventory inventory = Bukkit.createInventory(null, 54, message(online, "center.guilds-title"));
                     NetworkMenuStyle.frame(inventory);
                     for (int index = 0; index < Math.min(20, page.ranking().size()); index++) {
                         var value = page.ranking().get(index);
@@ -253,8 +268,10 @@ public final class PlayerCenterMenu implements Listener {
                     if (page.guild() != null) inventory.setItem(40, display(Material.GOLDEN_HELMET,
                             message(online, "guild.info", page.guild().tag(), page.guild().name(),
                                     page.guild().level(), page.guild().experience())));
-                    inventory.setItem(45, item(online, Material.ARROW, "center.back", "BACK"));
-                    inventory.setItem(53, item(online, Material.BARRIER, "lobby.close-button", "CLOSE"));
+                    inventory.setItem(45, navigationItem(online, Material.ARROW,
+                            "center.back", "lobby.back-button-lore", "BACK"));
+                    inventory.setItem(53, navigationItem(online, Material.BARRIER,
+                            "lobby.close-button", "lobby.close-button-lore", "CLOSE"));
                     online.openInventory(inventory);
                     states.put(playerId, new State(View.GUILDS, 0, "ALL"));
                 }));
@@ -270,10 +287,10 @@ public final class PlayerCenterMenu implements Listener {
         if (clicked == null || !clicked.hasItemMeta()) return;
         Long notificationId = clicked.getItemMeta().getPersistentDataContainer().get(idKey, PersistentDataType.LONG);
         if (notificationId != null && state.view() == View.NOTIFICATIONS) {
-            if (event.getClick() == ClickType.RIGHT) {
+            if (event.getClick().isRightClick()) {
                 plugin.getNotificationService().delete(player.getUniqueId(), notificationId)
                         .thenRun(() -> openNotifications(player, state.page(), state.filter()));
-            } else {
+            } else if (event.getClick().isLeftClick()) {
                 plugin.getNotificationService().inbox(player.getUniqueId(), 100).thenAccept(values -> values.stream()
                         .filter(value -> value.id() == notificationId).findFirst().ifPresent(value -> {
                             if (value.action().type() == NotificationService.ActionType.SUGGEST_COMMAND) {
@@ -289,6 +306,8 @@ public final class PlayerCenterMenu implements Listener {
         }
         String action = clicked.getItemMeta().getPersistentDataContainer().get(actionKey, PersistentDataType.STRING);
         if (action == null || action.equals("NONE")) return;
+        boolean missionAction = action.startsWith("MISSION:");
+        if (!event.getClick().isLeftClick() && !(missionAction && event.getClick().isRightClick())) return;
         switch (action) {
             case "PROFILE" -> openProfile(player);
             case "MISSIONS" -> openMissions(player);
@@ -327,17 +346,42 @@ public final class PlayerCenterMenu implements Listener {
         return item;
     }
 
-    private ItemStack navigationItem(Player player, Material material, String nameKey, String loreKey, String action) {
-        ItemStack item = NetworkMenuStyle.item(material, message(player, nameKey), message(player, loreKey));
+    private ItemStack actionItem(Player player, Material material, String nameKey,
+                                 String loreKey, String action, Object... nameArgs) {
+        ItemStack item = NetworkMenuStyle.item(material,
+                message(player, nameKey, nameArgs), message(player, loreKey));
         item.editMeta(meta -> meta.getPersistentDataContainer().set(actionKey, PersistentDataType.STRING, action));
         return item;
     }
 
+    private ItemStack navigationItem(Player player, Material material, String nameKey,
+                                     String descriptionKey, String actionKey, String action) {
+        ItemStack item = NetworkMenuStyle.item(material, message(player, nameKey),
+                message(player, descriptionKey), Component.empty(), message(player, actionKey));
+        item.editMeta(meta -> meta.getPersistentDataContainer().set(this.actionKey, PersistentDataType.STRING, action));
+        return item;
+    }
+
+    private ItemStack navigationItem(Player player, Material material, String nameKey, String loreKey, String action) {
+        ItemStack item = NetworkMenuStyle.item(material, message(player, nameKey), message(player, loreKey));
+        item.editMeta(meta -> meta.getPersistentDataContainer().set(this.actionKey, PersistentDataType.STRING, action));
+        return item;
+    }
+
+    private ItemStack playerHead(Player player, String nameKey, String descriptionKey,
+                                 String actionLoreKey, String action, Object... nameArgs) {
+        ItemStack item = NetworkMenuStyle.playerHead(player, message(player, nameKey, nameArgs),
+                message(player, descriptionKey), Component.empty(), message(player, actionLoreKey));
+        SkullMeta meta = (SkullMeta) item.getItemMeta();
+        meta.getPersistentDataContainer().set(actionKey, PersistentDataType.STRING, action);
+        item.setItemMeta(meta);
+        return item;
+    }
+
     private ItemStack playerHead(Player player, String nameKey, String loreKey, String action, Object... nameArgs) {
-        ItemStack item = NetworkMenuStyle.item(Material.PLAYER_HEAD,
+        ItemStack item = NetworkMenuStyle.playerHead(player,
                 message(player, nameKey, nameArgs), message(player, loreKey));
         SkullMeta meta = (SkullMeta) item.getItemMeta();
-        meta.setPlayerProfile(player.getPlayerProfile());
         meta.getPersistentDataContainer().set(actionKey, PersistentDataType.STRING, action);
         item.setItemMeta(meta);
         return item;
@@ -357,7 +401,7 @@ public final class PlayerCenterMenu implements Listener {
                 int allowance = player.hasPermission("tropicube.missions.reroll.bonus") ? 4 : 2;
                 plugin.getMissionService().rerollDaily(player.getUniqueId(), slot, allowance)
                         .thenRun(() -> openMissions(player));
-            } else {
+            } else if (click.isLeftClick()) {
                 plugin.getMissionService().claim(player.getUniqueId(), rotation, slot)
                         .thenRun(() -> openMissions(player));
             }

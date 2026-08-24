@@ -11,10 +11,11 @@ class PartyInvitesGUITest {
 
     @Test
     void invitationClicksSelectAcceptOrDeny() {
+        var playerId = java.util.UUID.randomUUID();
         PartyInvitesGUI.Action accept = new PartyInvitesGUI.Action(
-                PartyInvitesGUI.ActionType.ACCEPT, "Chef");
+                PartyInvitesGUI.ActionType.ACCEPT, playerId, "Chef");
         PartyInvitesGUI.Action deny = new PartyInvitesGUI.Action(
-                PartyInvitesGUI.ActionType.DENY, "Chef");
+                PartyInvitesGUI.ActionType.DENY, playerId, "Chef");
 
         assertSame(accept, PartyInvitesGUI.actionForClick(accept, deny, ClickType.LEFT));
         assertSame(deny, PartyInvitesGUI.actionForClick(accept, deny, ClickType.RIGHT));
@@ -23,9 +24,18 @@ class PartyInvitesGUITest {
     }
 
     @Test
-    void pageIsClampedToTheInvitationCount() {
-        assertEquals(0, PartyInvitesGUI.normalizedPage(-1, 0));
-        assertEquals(0, PartyInvitesGUI.normalizedPage(4, 28));
-        assertEquals(1, PartyInvitesGUI.normalizedPage(4, 29));
+    void pageIsClampedToTheLargestInvitationColumn() {
+        assertEquals(0, PartyInvitesGUI.normalizedPage(-1, 0, 0));
+        assertEquals(0, PartyInvitesGUI.normalizedPage(4, 12, 2));
+        assertEquals(1, PartyInvitesGUI.normalizedPage(4, 3, 13));
+    }
+
+    @Test
+    void sentInvitationUsesRightClickCancellation() {
+        var cancel = new PartyInvitesGUI.Action(PartyInvitesGUI.ActionType.CANCEL,
+                java.util.UUID.randomUUID(), "Cible");
+
+        assertSame(cancel, PartyInvitesGUI.actionForClick(null, cancel, ClickType.RIGHT));
+        assertNull(PartyInvitesGUI.actionForClick(null, cancel, ClickType.LEFT));
     }
 }

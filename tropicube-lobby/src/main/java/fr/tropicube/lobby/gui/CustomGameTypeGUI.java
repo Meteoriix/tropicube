@@ -54,7 +54,7 @@ public class CustomGameTypeGUI {
                 .lore(
                         LangHelper.get(player, "lobby.custom-game-public"),
                         "",
-                        LangHelper.get(player, "lobby.custom-game-click")
+                        LangHelper.get(player, "lobby.custom-game-type-click")
                 )
                 .glow()
                 .build();
@@ -66,7 +66,7 @@ public class CustomGameTypeGUI {
                 .lore(
                         LangHelper.get(player, "lobby.custom-game-private"),
                         "",
-                        LangHelper.get(player, "lobby.custom-game-click")
+                        LangHelper.get(player, "lobby.custom-game-type-click")
                 )
                 .glow()
                 .build();

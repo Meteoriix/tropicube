@@ -72,4 +72,13 @@ class RedisManagerTest {
         assertThrows(IllegalStateException.class,
                 () -> RedisManager.parsePartyDisconnectResult("UNKNOWN"));
     }
+
+    @Test
+    void partyInvitationIndexesKeepReceivedAndSentDirectionsDistinct() {
+        UUID playerId = UUID.randomUUID();
+
+        assertEquals("tropicube:party:invites:" + playerId, RedisManager.partyInvitesKey(playerId));
+        assertEquals("tropicube:party:invites:sent:" + playerId,
+                RedisManager.partySentInvitesKey(playerId));
+    }
 }

@@ -16,6 +16,7 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.InventoryHolder;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Handles all clicks in Tropicube Lobby GUIs.
@@ -466,9 +467,31 @@ public class GuiClickListener implements Listener {
         }
         PartyInvitesGUI.Action action = holder.action(slot, click);
         if (action == null) return;
+        if (action.type() == PartyInvitesGUI.ActionType.CANCEL) {
+            TropicubeCore core = getCore();
+            if (core == null) {
+                player.sendMessage(LangHelper.component(player, "general.operation-failed"));
+                return;
+            }
+            CompletableFuture.runAsync(() -> core.getSocialService().cancelPartyInvite(
+                            player.getUniqueId(), action.playerId()))
+                    .whenComplete((ignored, error) -> Bukkit.getScheduler().runTask(plugin, () -> {
+                        Player online = Bukkit.getPlayer(player.getUniqueId());
+                        if (online == null) return;
+                        if (error != null) {
+                            plugin.getLogger().log(java.util.logging.Level.WARNING,
+                                    "Impossible d'annuler l'invitation de party", error);
+                            online.sendMessage(LangHelper.component(online, "general.operation-failed"));
+                            return;
+                        }
+                        plugin.getGuiManager().openPartyInvites(online, holder.page());
+                    }));
+            return;
+        }
         switch (action.type()) {
             case ACCEPT -> player.performCommand("party accept " + action.username());
             case DENY -> player.performCommand("party deny " + action.username());
+            case CANCEL -> { }
         }
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (action.type() == PartyInvitesGUI.ActionType.ACCEPT) {

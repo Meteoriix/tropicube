@@ -123,7 +123,7 @@ public class CustomGameGUI {
                                 ServerTypeSelectorGUI.displayType(player, tpl.type())),
                         LangHelper.get(player, "lobby.custom-game-max-players", tpl.maxPlayers()),
                         "",
-                        LangHelper.get(player, "lobby.custom-game-click")
+                        LangHelper.get(player, "lobby.custom-game-create-click")
                 )
                 .glow()
                 .build();

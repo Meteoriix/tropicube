@@ -231,6 +231,37 @@ class YamlResourcesTest {
     }
 
     @Test
+    void profileAndSocialMenusExposeExplicitLocalizedActions() {
+        List<String> keys = List.of(
+                "center.profile-action", "center.missions-action", "center.notifications-action",
+                "center.guilds-action", "center.privacy-action", "center.profile-title-action",
+                "social.party-request-left-click", "social.party-request-right-click",
+                "social.party-request-sent-right-click", "lobby.custom-game-type-click");
+        for (String language : LANGUAGES) {
+            Map<String, Object> values = leafValues(
+                    Path.of("src/main/resources/languages", language + ".yml"));
+            for (String key : keys) {
+                assertTrue(values.containsKey(key), () -> key + " manquant en " + language);
+                assertTrue(String.valueOf(values.get(key)).contains(":"),
+                        () -> "Action de clic imprécise dans " + key + " en " + language);
+            }
+        }
+        Map<String, Object> french = leafValues(Path.of("src/main/resources/languages/fr.yml"));
+        assertEquals("<green>▶ Clic gauche : sélectionner ce type et choisir un jeu",
+                french.get("lobby.custom-game-type-click"));
+        assertEquals("<dark_aqua>Social <dark_gray>• Amis", french.get("social.menu-title"));
+    }
+
+    @Test
+    void sharedPlayerHeadsUseAnExplicitDisplayName() throws Exception {
+        String source = Files.readString(Path.of(
+                "src/main/java/fr/tropicube/core/menu/NetworkMenuStyle.java"));
+        assertTrue(source.contains("meta.displayName(clean(name))"));
+        assertFalse(source.contains("meta.itemName(clean(name))"));
+        assertTrue(source.contains("playerHead(Player player, Component name"));
+    }
+
+    @Test
     void menuDomainValuesHaveLocalizedLabelsInEveryLocale() {
         List<String> keys = List.of(
                 "lobby.settings-value-summary", "lobby.settings-value-friends",

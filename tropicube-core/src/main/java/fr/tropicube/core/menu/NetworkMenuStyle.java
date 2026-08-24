@@ -3,9 +3,11 @@ package fr.tropicube.core.menu;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.List;
 
@@ -31,10 +33,22 @@ public final class NetworkMenuStyle {
     public static ItemStack item(Material material, Component name, Component... lore) {
         ItemStack item = new ItemStack(material);
         item.editMeta(meta -> {
-            meta.itemName(clean(name));
+            meta.displayName(clean(name));
             if (lore.length > 0) meta.lore(List.of(lore).stream().map(NetworkMenuStyle::clean).toList());
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         });
+        return item;
+    }
+
+    /** Builds a player head whose explicit menu label overrides Minecraft's generated head name. */
+    public static ItemStack playerHead(Player player, Component name, Component... lore) {
+        ItemStack item = new ItemStack(Material.PLAYER_HEAD);
+        SkullMeta meta = (SkullMeta) item.getItemMeta();
+        meta.setPlayerProfile(player.getPlayerProfile());
+        meta.displayName(clean(name));
+        if (lore.length > 0) meta.lore(List.of(lore).stream().map(NetworkMenuStyle::clean).toList());
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+        item.setItemMeta(meta);
         return item;
     }
 

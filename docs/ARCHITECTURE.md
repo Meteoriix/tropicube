@@ -109,6 +109,8 @@ Le lobby prépare le joueur, fournit son inventaire de navigation et rafraîchit
 - utiliser un, deux ou une infinité de doubles-sauts selon les permissions ;
 - rejoindre la prochaine partie proposée après un match.
 
+Les écrans Profil utilisent le même inventaire de 54 cases, le même cadrage et les mêmes contrôles que le sélecteur de serveurs et Social. Chaque action annonce explicitement son clic. Les têtes de joueur reçoivent leur profil puis un libellé `displayName` localisé explicite afin que le nom généré par Minecraft ne remplace jamais « Profil » ou « Profil complet ». Social titre sa vue principale « Social • Amis » et présente les demandes d'amis et de party selon la même grille reçues/envoyées ; une invitation de party envoyée peut être annulée au clic droit.
+
 Une vue d'instance privée contient son indicateur de confidentialité et les UUID admis. Le lobby filtre cette vue avant les compteurs, la pagination, le meilleur serveur et le clic final : une partie privée n'est donc jamais rendue pour un joueur non admis. Velocity répète néanmoins le contrôle dans `ServerPreConnectEvent`, qui constitue la frontière de sécurité.
 
 Le matchmaking classique est coordonné par Velocity par template. Tant qu'une création est en cours, les clics du menu et les demandes `/playnext` réutilisent la même `CompletableFuture` au lieu de créer un conteneur supplémentaire. Les UUID sont conservés dans une file FIFO dédupliquée en mémoire, puis transférés automatiquement quand l'instance est enregistrée. Si sa capacité ne suffit pas, les joueurs restants déclenchent une unique instance suivante. Ce mécanisme ne s'applique ni aux parties personnalisées ni aux créations administratives.
@@ -166,7 +168,7 @@ Ce module est pour l'instant un squelette Maven sans classe, ressource, dépenda
 | `contextual-hint-session:<uuid>` | Core | Core/Lobby | Verrou `SET NX EX` limitant l'aide à un message par session de douze heures |
 | `staff-mode:<uuid>` / `staff-previous-mode:<uuid>` | Core | Core | Mode spectateur staff et mode de jeu à restaurer, TTL huit heures |
 | `party:offline:<uuid>` | Velocity | Velocity | Instant de déconnexion persistant, TTL 24 h, supprimé à la reconnexion ou après réconciliation |
-| `party:invites:<uuid>` | Core | Core/Lobby | Invitations indexées par UUID du chef, TTL configurable |
+| `party:invites:<cible>` / `party:invites:sent:<chef>` | Core | Core/Lobby | Index reçus (`chef -> party`) et envoyés (`cible -> party`) d'une même invitation, avec le TTL configurable des invitations ; création, acceptation, refus et annulation mettent à jour les deux index atomiquement par scripts Lua. L'index envoyé est renseigné pour les invitations nouvelles ou renouvelées |
 | canal `commands` (`PROXY:FRIEND_JOIN`, `PROXY:PARTY_WARP`) | Core | Velocity | Demandes de transfert social revalidées par le proxy |
 | `transfer:<uuid>` | Velocity | Core/Lobby | Marqueur court évitant de traiter un transfert comme une première arrivée |
 | `session:initial-lobby-welcome:<uuid>` | Velocity | Lobby | Marqueur à usage unique, TTL 60 s, créé seulement lorsque le premier serveur choisi après connexion au proxy est un lobby ; autorise le grand titre d'accueil puis est immédiatement supprimé |
