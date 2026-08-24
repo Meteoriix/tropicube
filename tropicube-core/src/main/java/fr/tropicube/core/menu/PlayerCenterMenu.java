@@ -22,6 +22,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,11 +48,10 @@ public final class PlayerCenterMenu implements Listener {
 
     /** Builds the same localized player-center entry point for every game waiting area. */
     public ItemStack createHotbarItem(Player player) {
-        ItemStack item = new ItemStack(Material.PLAYER_HEAD);
+        ItemStack item = NetworkMenuStyle.item(Material.PLAYER_HEAD,
+                message(player, "center.profile-hotbar-name"), message(player, "center.profile-hotbar-lore"));
         SkullMeta skullMeta = (SkullMeta) item.getItemMeta();
         skullMeta.setPlayerProfile(player.getPlayerProfile());
-        skullMeta.displayName(message(player, "center.profile-hotbar-name"));
-        skullMeta.lore(List.of(message(player, "center.profile-hotbar-lore")));
         skullMeta.getPersistentDataContainer().set(hotbarKey, PersistentDataType.BYTE, (byte) 1);
         item.setItemMeta(skullMeta);
         return item;
@@ -71,11 +71,15 @@ public final class PlayerCenterMenu implements Listener {
     public void openHome(Player player) {
         Inventory inventory = Bukkit.createInventory(null, 27, message(player, "center.title"));
         NetworkMenuStyle.frame(inventory);
-        inventory.setItem(10, item(player, Material.PLAYER_HEAD, "center.profile", "PROFILE"));
-        inventory.setItem(12, item(player, Material.WRITABLE_BOOK, "center.missions", "MISSIONS"));
-        inventory.setItem(14, item(player, Material.BELL, "center.notifications", "NOTIFICATIONS"));
-        inventory.setItem(16, item(player, Material.SHIELD, "center.guilds", "GUILDS"));
-        inventory.setItem(22, item(player, Material.COMPARATOR, "center.privacy", "SETTINGS"));
+        inventory.setItem(10, playerHead(player, "center.profile", "center.profile-lore", "PROFILE"));
+        inventory.setItem(12, navigationItem(player, Material.WRITABLE_BOOK,
+                "center.missions", "center.missions-lore", "MISSIONS"));
+        inventory.setItem(14, navigationItem(player, Material.BELL,
+                "center.notifications", "center.notifications-lore", "NOTIFICATIONS"));
+        inventory.setItem(16, navigationItem(player, Material.SHIELD,
+                "center.guilds", "center.guilds-lore", "GUILDS"));
+        inventory.setItem(22, navigationItem(player, Material.COMPARATOR,
+                "center.privacy", "center.privacy-lore", "SETTINGS"));
         inventory.setItem(26, item(player, Material.BARRIER, "lobby.close-button", "CLOSE"));
         player.openInventory(inventory);
         states.put(player.getUniqueId(), new State(View.HOME, 0, "ALL"));
@@ -109,7 +113,9 @@ public final class PlayerCenterMenu implements Listener {
                         ItemStack entry = new ItemStack(material);
                         var meta = entry.getItemMeta();
                         meta.itemName(message(online, notification.messageKey(), notification.arguments().toArray()));
-                        meta.lore(List.of(message(online, "center.notification-category", notification.category()),
+                        meta.lore(List.of(message(online, "center.notification-category",
+                                        localizedValue(online, "center.notification-category-value-",
+                                                notification.category())),
                                 message(online, notification.action().type() == NotificationService.ActionType.NONE
                                         ? "center.notification-read" : "center.notification-action"),
                                 message(online, "center.notification-delete")));
@@ -118,7 +124,8 @@ public final class PlayerCenterMenu implements Listener {
                         inventory.setItem(9 + slot, entry);
                     }
                     inventory.setItem(45, item(online, Material.ARROW, "center.previous", "PREVIOUS"));
-                    inventory.setItem(47, item(online, Material.HOPPER, "center.filter", "FILTER", result.page()));
+                    inventory.setItem(47, item(online, Material.HOPPER, "center.filter", "FILTER",
+                            localizedValue(online, "center.notification-category-value-", filter)));
                     inventory.setItem(49, item(online, Material.BARRIER, "center.back", "BACK"));
                     inventory.setItem(50, item(online, Material.LIME_DYE, "center.mark-all-read", "READ_ALL"));
                     inventory.setItem(51, item(online, Material.LAVA_BUCKET, "center.delete-read", "DELETE_READ"));
@@ -140,9 +147,13 @@ public final class PlayerCenterMenu implements Listener {
                     Inventory inventory = Bukkit.createInventory(null, 54,
                             message(online, "center.profile-header", profile.username()));
                     NetworkMenuStyle.frame(inventory);
+                    inventory.setItem(4, playerHead(online, "center.profile-identity",
+                            "center.profile-identity-lore", "NONE", profile.username()));
+                    var grade = plugin.getPermissionManager().getAllGrades().get(profile.grade());
+                    String gradeName = grade == null ? humanize(profile.grade()) : grade.displayName();
                     inventory.setItem(10, display(Material.EXPERIENCE_BOTTLE,
                             message(online, "center.profile-network", profile.networkLevel(),
-                                    profile.networkExperience(), profile.grade())));
+                                    profile.networkExperience(), gradeName)));
                     inventory.setItem(12, display(Material.WHITE_WOOL,
                             message(online, "center.profile-sheepwars", profile.matches(), profile.wins(), profile.kills())));
                     inventory.setItem(14, display(Material.GOLD_INGOT,
@@ -167,7 +178,8 @@ public final class PlayerCenterMenu implements Listener {
                     slot = 36;
                     for (var archive : profile.seasonArchives()) if (slot < 45) inventory.setItem(slot++, display(
                             Material.CLOCK, message(online, "center.profile-season", archive.seasonKey(),
-                                    archive.tier(), Math.round(archive.rating()), archive.rankedMatches())));
+                                    messageText(online, "center.rank-" + archive.tier().toLowerCase(Locale.ROOT)),
+                                    Math.round(archive.rating()), archive.rankedMatches())));
                     inventory.setItem(45, item(online, Material.ARROW, "center.back", "BACK"));
                     inventory.setItem(53, item(online, Material.BARRIER, "lobby.close-button", "CLOSE"));
                     online.openInventory(inventory);
@@ -186,11 +198,32 @@ public final class PlayerCenterMenu implements Listener {
                     NetworkMenuStyle.frame(inventory);
                     for (int index = 0; index < missions.size(); index++) {
                         MissionService.Assignment assignment = missions.get(index);
+                        String rotation = messageText(online, "center.mission-rotation-"
+                                + assignment.rotation().name().toLowerCase(Locale.ROOT));
+                        String eventKey = "center.mission-event-" + assignment.mission().event()
+                                .toLowerCase(Locale.ROOT).replace('_', '-');
+                        Component rewards = assignment.mission().rerollTokens() > 0
+                                ? message(online, "center.mission-rewards-with-token",
+                                        assignment.mission().experience(),
+                                        plugin.getEconomyManager().format(assignment.mission().currency()),
+                                        assignment.mission().rerollTokens())
+                                : message(online, "center.mission-rewards",
+                                        assignment.mission().experience(),
+                                        plugin.getEconomyManager().format(assignment.mission().currency()));
+                        String statusKey = assignment.rewarded() ? "center.mission-status-claimed"
+                                : assignment.completed() ? "center.mission-status-ready"
+                                : "center.mission-status-active";
+                        String actionLoreKey = assignment.rewarded() ? "center.mission-actions-none"
+                                : assignment.rotation() == MissionService.Rotation.DAILY
+                                ? "center.mission-actions-daily" : "center.mission-actions-weekly";
                         ItemStack entry = display(assignment.completed() ? Material.LIME_DYE : Material.WRITABLE_BOOK,
-                                message(online, "center.missions-entry", assignment.rotation(), assignment.slot() + 1,
-                                        assignment.mission().id(), assignment.progress(), assignment.mission().target(),
-                                        assignment.rewarded() ? "✓" : ""),
-                                message(online, "center.mission-actions"));
+                                message(online, "center.mission-title", rotation, assignment.slot() + 1),
+                                message(online, eventKey, assignment.mission().target()),
+                                message(online, "center.mission-progress", assignment.progress(),
+                                        assignment.mission().target()),
+                                rewards,
+                                message(online, statusKey),
+                                message(online, actionLoreKey));
                         entry.editMeta(meta -> meta.getPersistentDataContainer().set(actionKey, PersistentDataType.STRING,
                                 "MISSION:" + assignment.rotation().name() + ":" + assignment.slot()));
                         inventory.setItem(10 + index, entry);
@@ -294,6 +327,22 @@ public final class PlayerCenterMenu implements Listener {
         return item;
     }
 
+    private ItemStack navigationItem(Player player, Material material, String nameKey, String loreKey, String action) {
+        ItemStack item = NetworkMenuStyle.item(material, message(player, nameKey), message(player, loreKey));
+        item.editMeta(meta -> meta.getPersistentDataContainer().set(actionKey, PersistentDataType.STRING, action));
+        return item;
+    }
+
+    private ItemStack playerHead(Player player, String nameKey, String loreKey, String action, Object... nameArgs) {
+        ItemStack item = NetworkMenuStyle.item(Material.PLAYER_HEAD,
+                message(player, nameKey, nameArgs), message(player, loreKey));
+        SkullMeta meta = (SkullMeta) item.getItemMeta();
+        meta.setPlayerProfile(player.getPlayerProfile());
+        meta.getPersistentDataContainer().set(actionKey, PersistentDataType.STRING, action);
+        item.setItemMeta(meta);
+        return item;
+    }
+
     private ItemStack display(Material material, Component name, Component... lore) {
         return NetworkMenuStyle.item(material, name, lore);
     }
@@ -317,6 +366,17 @@ public final class PlayerCenterMenu implements Listener {
 
     private Component message(Player player, String key, Object... args) {
         return plugin.getLanguageManager().getComponent(player.getUniqueId(), key, args);
+    }
+    private String messageText(Player player, String key, Object... args) {
+        return plugin.getLanguageManager().get(player.getUniqueId(), key, args);
+    }
+    private Component localizedValue(Player player, String keyPrefix, String raw) {
+        return message(player, keyPrefix + raw.toLowerCase(Locale.ROOT).replace('_', '-'));
+    }
+    private static String humanize(String raw) {
+        if (raw == null || raw.isBlank()) return "—";
+        String spaced = raw.toLowerCase(Locale.ROOT).replace('_', ' ').replace('-', ' ');
+        return Character.toUpperCase(spaced.charAt(0)) + spaced.substring(1);
     }
     private void dispatch(Player player, String command) { player.closeInventory(); Bukkit.dispatchCommand(player, command); }
     private String nextFilter(String current) {

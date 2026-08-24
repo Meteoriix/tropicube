@@ -4,6 +4,7 @@ import fr.tropicube.docker.model.ServerInstance;
 import fr.tropicube.docker.model.WhitelistUpdateProtocol;
 import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.sheepwars.TropicubeSheepwars;
+import fr.tropicube.core.menu.NetworkMenuStyle;
 import fr.tropicube.sheepwars.util.ItemBuilder;
 import fr.tropicube.sheepwars.util.LangHelper;
 import net.kyori.adventure.text.Component;
@@ -108,6 +109,7 @@ public final class WhitelistMenu implements Listener {
         Inventory inventory = Bukkit.createInventory(holder, SIZE,
                 LangHelper.component(player, "sw.whitelist-menu-title"));
         holder.inventory = inventory;
+        NetworkMenuStyle.frame(inventory);
 
         int index = 0;
         for (Map.Entry<UUID, String> member : members.entrySet()) {

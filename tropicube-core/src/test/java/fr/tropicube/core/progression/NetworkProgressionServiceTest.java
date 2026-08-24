@@ -11,4 +11,12 @@ class NetworkProgressionServiceTest {
         assertEquals(3, NetworkProgressionService.levelForExperience(400));
         assertThrows(IllegalArgumentException.class, () -> NetworkProgressionService.levelForExperience(-1));
     }
+
+    @Test void experienceBarTracksProgressWithinTheCurrentLevel() {
+        assertEquals(0.0f, NetworkProgressionService.progressWithinLevel(0), 0.0001f);
+        assertEquals(0.5f, NetworkProgressionService.progressWithinLevel(50), 0.0001f);
+        assertEquals(0.0f, NetworkProgressionService.progressWithinLevel(100), 0.0001f);
+        assertEquals(0.5f, NetworkProgressionService.progressWithinLevel(250), 0.0001f);
+        assertTrue(NetworkProgressionService.progressWithinLevel(399) < 1.0f);
+    }
 }

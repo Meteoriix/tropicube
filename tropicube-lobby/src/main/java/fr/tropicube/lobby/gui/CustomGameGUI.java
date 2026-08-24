@@ -119,7 +119,8 @@ public class CustomGameGUI {
         return new ItemBuilder(icon)
                 .name("<gold>" + tpl.name())
                 .lore(
-                        LangHelper.get(player, "lobby.custom-game-type", tpl.type()),
+                        LangHelper.get(player, "lobby.custom-game-type",
+                                ServerTypeSelectorGUI.displayType(player, tpl.type())),
                         LangHelper.get(player, "lobby.custom-game-max-players", tpl.maxPlayers()),
                         "",
                         LangHelper.get(player, "lobby.custom-game-click")

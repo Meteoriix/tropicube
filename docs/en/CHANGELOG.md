@@ -6,6 +6,11 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-08-24
 
+#### Changed
+
+- Core, Lobby, and SheepWars menus now share one frame; Profile uses the player's head, missions and settings explain their contents, and actions and domain values are localized without technical identifiers.
+- The experience bar now displays the network level and progress toward the next level, refreshing after each XP gain.
+
 #### Fixed
 
 - The full “Welcome to Tropicube” title is now reserved for the initial lobby arrival after proxy login; returns from a mini-game keep only the discreet action bar.

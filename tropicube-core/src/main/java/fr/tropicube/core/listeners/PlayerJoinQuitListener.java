@@ -25,6 +25,7 @@ public class PlayerJoinQuitListener implements Listener {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
         event.joinMessage(null); // L'événement ne doit pas être modifié après sa clôture.
+        plugin.getNetworkProgressionService().refreshDisplay(uuid);
 
         // Load player data async
         plugin.getPlayerDataManager().loadPlayer(player)

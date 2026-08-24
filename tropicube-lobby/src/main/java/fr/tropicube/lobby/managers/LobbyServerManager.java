@@ -187,6 +187,15 @@ public class LobbyServerManager {
         return Optional.ofNullable(activeMatchmakingCache.get(playerId));
     }
 
+    /** Resolves an internal template identifier to its player-facing configured name. */
+    public String getTemplateDisplayName(String templateId) {
+        return templateCacheRef.get().stream()
+                .filter(template -> template.id().equals(templateId))
+                .map(TemplateInfo::name)
+                .findFirst()
+                .orElse("—");
+    }
+
     /** Refreshes one player's queue cache. Must be called away from the Paper thread. */
     public void refreshPlayerMatchmaking(UUID playerId) {
         try {

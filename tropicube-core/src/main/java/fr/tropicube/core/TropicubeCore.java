@@ -201,7 +201,7 @@ public class TropicubeCore extends JavaPlugin {
             contextualHelpService = new fr.tropicube.core.network.ContextualHelpService(
                     this, databaseManager, playerPreferenceService);
             privacyService = new fr.tropicube.core.network.PrivacyService(this, databaseManager);
-            networkProgressionService = new NetworkProgressionService(databaseManager);
+            networkProgressionService = new NetworkProgressionService(this, databaseManager);
             profileService = new ProfileService(databaseManager, playerPreferenceService);
             try (var input = java.nio.file.Files.newInputStream(
                     new File(getDataFolder(), "missions.yml").toPath())) {

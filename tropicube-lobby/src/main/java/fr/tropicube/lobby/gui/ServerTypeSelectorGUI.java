@@ -121,7 +121,7 @@ public class ServerTypeSelectorGUI {
         int onlineServers = (int) servers.stream().filter(LobbyServerManager.ServerInfo::isOnline).count();
 
         ItemBuilder ib = new ItemBuilder(getTypeIcon(type))
-                .name("<yellow>" + capitalize(type))
+                .name("<yellow>" + displayType(player, type))
                 .lore(
                         LangHelper.get(player, "lobby.type-lore-online", onlineServers, servers.size()),
                         LangHelper.get(player, "lobby.type-lore-players", totalPlayers),
@@ -172,9 +172,11 @@ public class ServerTypeSelectorGUI {
         return new ItemStack(Material.PAPER);
     }
 
-    private static String capitalize(String s) {
-        if (s == null || s.isEmpty()) return s;
-        return s.substring(0, 1).toUpperCase(Locale.ROOT) + s.substring(1).toLowerCase(Locale.ROOT);
+    static String displayType(Player player, String type) {
+        if ("SHEEPWARS".equalsIgnoreCase(type)) return LangHelper.get(player, "lobby.game-type-sheepwars");
+        if (type == null || type.isBlank()) return LangHelper.get(player, "lobby.game-type-unknown");
+        String value = type.toLowerCase(Locale.ROOT).replace('_', ' ').replace('-', ' ');
+        return Character.toUpperCase(value.charAt(0)) + value.substring(1);
     }
 
     private static boolean customGameAllowed(Player player) {

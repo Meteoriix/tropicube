@@ -1,6 +1,8 @@
 package fr.tropicube.core.progression;
 
+import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.core.managers.DatabaseManager;
+import org.bukkit.entity.Player;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,9 +14,13 @@ import java.util.concurrent.CompletableFuture;
 /** Persistent network experience with a monotonic, configurable-independent level curve. */
 public final class NetworkProgressionService {
     public record Progression(long experience, int level) {}
+    private final TropicubeCore plugin;
     private final DatabaseManager database;
 
-    public NetworkProgressionService(DatabaseManager database) { this.database = database; }
+    public NetworkProgressionService(TropicubeCore plugin, DatabaseManager database) {
+        this.plugin = plugin;
+        this.database = database;
+    }
 
     public CompletableFuture<Progression> get(UUID playerId) {
         return database.supplyAsync(() -> load(playerId));
@@ -22,7 +28,24 @@ public final class NetworkProgressionService {
 
     public CompletableFuture<Progression> addExperience(UUID playerId, long amount) {
         if (amount <= 0) throw new IllegalArgumentException("amount doit être strictement positif");
-        return database.supplyAsync(() -> add(playerId, amount));
+        return database.supplyAsync(() -> add(playerId, amount))
+                .whenComplete((progression, error) -> {
+                    if (error == null) display(playerId, progression);
+                });
+    }
+
+    /** Loads and displays the persistent network level without blocking the Paper thread. */
+    public void refreshDisplay(UUID playerId) {
+        get(playerId).thenAccept(progression -> display(playerId, progression));
+    }
+
+    private void display(UUID playerId, Progression progression) {
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            Player player = plugin.getServer().getPlayer(playerId);
+            if (player == null || !player.isOnline()) return;
+            player.setLevel(progression.level());
+            player.setExp(progressWithinLevel(progression.experience()));
+        });
     }
 
     private Progression load(UUID playerId) throws SQLException {
@@ -75,5 +98,24 @@ public final class NetworkProgressionService {
         while (100L * (root + 1) * (root + 1) <= experience && root < 46_000_000) root++;
         while (100L * root * root > experience) root--;
         return Math.toIntExact(Math.min(Integer.MAX_VALUE - 1L, root + 1));
+    }
+
+    /** Returns the normalized progress between the current and next network-level thresholds. */
+    public static float progressWithinLevel(long experience) {
+        int level = levelForExperience(experience);
+        long currentThreshold = thresholdForLevel(level);
+        long nextThreshold = thresholdForLevel(level + 1);
+        if (nextThreshold <= currentThreshold) return 0.0f;
+        double progress = (experience - currentThreshold) / (double) (nextThreshold - currentThreshold);
+        return (float) Math.max(0.0, Math.min(0.999_999, progress));
+    }
+
+    private static long thresholdForLevel(int level) {
+        long offset = Math.max(0L, (long) level - 1L);
+        try {
+            return Math.multiplyExact(100L, Math.multiplyExact(offset, offset));
+        } catch (ArithmeticException ignored) {
+            return Long.MAX_VALUE;
+        }
     }
 }

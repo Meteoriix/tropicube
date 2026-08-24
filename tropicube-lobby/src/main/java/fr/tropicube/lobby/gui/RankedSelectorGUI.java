@@ -70,7 +70,8 @@ public final class RankedSelectorGUI {
         if (active != null) {
             inventory.setItem(CANCEL_SLOT, new ItemBuilder(Material.RED_DYE)
                     .name(LangHelper.get(player, "lobby.ranked-cancel-name"))
-                    .lore(LangHelper.get(player, "lobby.ranked-cancel-lore", active)).build());
+                    .lore(LangHelper.get(player, "lobby.ranked-cancel-lore",
+                            plugin.getLobbyServerManager().getTemplateDisplayName(active))).build());
         }
         inventory.setItem(BACK_SLOT, ItemBuilder.backButton(player));
         inventory.setItem(CLOSE_SLOT, ItemBuilder.closeButton(player));

@@ -106,9 +106,11 @@ Tout type public, API partagée et comportement non évident doit avoir une Java
 - Tous les menus Core et Lobby suivent la même structure : fond gris neutre, accent aqua sur la ligne supérieure, actions principales au centre, retour à gauche et fermeture à droite sur la dernière ligne.
 - Une même action conserve son matériau, sa couleur, son icône, son vocabulaire et sa position logique d'un menu à l'autre. Les états actif, verrouillé, indisponible, chargement et « bientôt » doivent être visuellement explicites.
 - Ne jamais coder un titre, un lore, une explication de verrouillage ou une donnée joueur directement en Java : utiliser les langues et, pour les données variables, des placeholders identiques dans les quatre langues.
+- Ne jamais exposer directement un identifiant technique, un nom d'énumération, une clé de template ou une valeur contenant des underscores. Chaque valeur métier visible possède un libellé localisé naturel ; un réglage précise son effet et son état courant, une mission son objectif, sa progression, ses récompenses et ses actions disponibles.
+- Tout bouton d'action indique le bouton de souris exact et le résultat attendu (`Clic gauche : choisir le type de partie`, par exemple). Éviter les formulations vagues comme « cliquer pour continuer ». Une entrée représentant le profil d'un joueur utilise sa véritable tête quand elle est disponible.
 - Toute nouvelle interface doit rester cohérente après `/lang` sans reconnexion et doit distinguer clairement les informations fiables en temps réel des fonctionnalités non encore implémentées.
 - La hotbar du lobby réserve durablement les emplacements `0 Jeux`, `2 Social`, `4 Profil` (tête du joueur) et `8 Boutique`. Une évolution de cette navigation doit être traitée comme un changement d'expérience structurant, documenté et testé.
-- Une revue d'interface doit vérifier au minimum le titre, le cadrage, les boutons retour/fermeture, les clics gauche/droit/molette, les états vide/chargement/erreur/verrouillé, les quatre langues et le rafraîchissement des données mises en cache.
+- Une revue d'interface doit vérifier au minimum le titre, le cadrage, les boutons retour/fermeture, les clics gauche/droit/molette, les états vide/chargement/erreur/verrouillé, les données dynamiques, l'absence d'identifiants bruts, les quatre langues et le rafraîchissement des données mises en cache. L'audit porte sur tous les inventaires Core, Lobby et mini-jeux, pas uniquement sur l'écran modifié.
 
 Les langues supportées sont `fr`, `en`, `de` et `es`, dans :
 

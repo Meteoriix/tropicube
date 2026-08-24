@@ -98,13 +98,13 @@ MySQL is authoritative for bans, while `ban:<uuid>` lets Velocity reject the log
 
 Core owns the localized persistent-data Profile head. Lobby places it in slot 4 and SheepWars in slot 7 only while waiting; Core handles both clicks and exposes a bounded bridge to Lobby Settings. Core and Lobby inventories reuse `NetworkMenuStyle` for the same frame, palette, and controls without introducing a game-to-game dependency.
 
-The game selector routes clicks without blocking Paper: left to Quick Play, right to Ranked 4v4/8v8, and middle to the filtered public-instance browser. Velocity publishes an explicit `InstanceMode` for templates and instances, so Lobby never infers Quick Play, Ranked, or Custom behavior from display names. Private custom instances remain whitelist-filtered and creation is visibly locked below VIP+.
+The game selector routes clicks without blocking Paper: left to Quick Play, right to Ranked 4v4/8v8, and `Shift + left click` to the filtered public-instance browser. Velocity publishes an explicit `InstanceMode` for templates and instances, so Lobby never infers Quick Play, Ranked, or Custom behavior from display names. Private custom instances remain whitelist-filtered and creation is visibly locked below VIP+.
 
 Grade purchases lock the profile and economy rows in one MySQL transaction, revalidate the expected grade, charge only the catalog-price difference, record the transaction, and promote before commit. Economy and permission caches are refreshed only after success.
 
 ## Persistence
 
-Network level `n` begins at `100 × (n-1)²` XP. Personal rotations use the `Europe/Paris` day and ISO week, with five daily and three weekly slots. Players receive two daily rerolls, plus two through `tropicube.missions.reroll.bonus`. Claiming completion, currency, transaction history, and XP is one SQL transaction.
+Network level `n` begins at `100 × (n-1)²` XP. Core loads it on join and displays it in the experience bar; the gauge shows progress toward the next level and refreshes after every XP gain or mission reward. Personal rotations use the `Europe/Paris` day and ISO week, with five daily and three weekly slots. Players receive two daily rerolls, plus two through `tropicube.missions.reroll.bonus`. Claiming completion, currency, transaction history, and XP is one SQL transaction.
 
 Guilds persist independently from matches. Owner, officer, and member roles gate mutations; member/officer limits are checked server-side. Per-member weekly contribution caps feed guild levels and contribution/ranked-match challenges. Seasonal competitive score aggregates member rating changes without a separate queue. A daily job transfers ownership after 30 inactive days to the oldest-joined active member and audits the transition.
 

@@ -14,6 +14,8 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Locale;
+
 /** Lobby player settings, built from an asynchronously loaded settings snapshot. */
 public final class SettingsGUI {
     private static final String LANGUAGE_HEAD_ID = "71786";
@@ -42,33 +44,46 @@ public final class SettingsGUI {
                 .lore(LangHelper.get(player, "lobby.settings-language-lore")).build());
         inventory.setItem(PROFILE_VISIBILITY_SLOT, new ItemBuilder(Material.NAME_TAG)
                 .name(LangHelper.get(player, "lobby.settings-profile-name"))
-                .lore(LangHelper.get(player, "lobby.settings-profile-lore", preferences.profileVisibility().name())).build());
+                .lore(LangHelper.get(player, "lobby.settings-profile-lore",
+                                settingValue(player, preferences.profileVisibility().name())),
+                        LangHelper.get(player, "lobby.settings-profile-help"), "",
+                        LangHelper.get(player, "lobby.settings-change-action")).build());
         inventory.setItem(MESSAGE_PRIVACY_SLOT, new ItemBuilder(Material.WRITABLE_BOOK)
                 .name(LangHelper.get(player, "lobby.settings-messages-name"))
-                .lore(LangHelper.get(player, "lobby.settings-messages-lore", preferences.messagePrivacy().name())).build());
+                .lore(LangHelper.get(player, "lobby.settings-messages-lore",
+                                settingValue(player, preferences.messagePrivacy().name())),
+                        LangHelper.get(player, "lobby.settings-messages-help"), "",
+                        LangHelper.get(player, "lobby.settings-change-action")).build());
         inventory.setItem(GLOBAL_CHAT_SLOT, new ItemBuilder(preferences.globalChatEnabled() ? Material.LIME_DYE : Material.GRAY_DYE)
                 .name(LangHelper.get(player, "lobby.settings-global-chat-name"))
                 .lore(LangHelper.get(player, preferences.globalChatEnabled()
-                        ? "lobby.settings-global-chat-on" : "lobby.settings-global-chat-off")).build());
+                                ? "lobby.settings-global-chat-on" : "lobby.settings-global-chat-off"),
+                        LangHelper.get(player, "lobby.settings-global-chat-help")).build());
         boolean enabled = autoReplayRemaining >= 0;
         String stateKey = !enabled ? "lobby.settings-auto-replay-off"
                 : autoReplayRemaining == 0 ? "lobby.settings-auto-replay-confirm"
                 : "lobby.settings-auto-replay-on";
         inventory.setItem(AUTO_REPLAY_SLOT, new ItemBuilder(enabled ? Material.LIME_DYE : Material.GRAY_DYE)
                 .name(LangHelper.get(player, "lobby.settings-auto-replay-name"))
-                .lore(LangHelper.get(player, stateKey, autoReplayRemaining)).build());
+                .lore(LangHelper.get(player, stateKey, autoReplayRemaining),
+                        LangHelper.get(player, "lobby.settings-auto-replay-help")).build());
         inventory.setItem(VISIBILITY_SLOT, new ItemBuilder(Material.ENDER_EYE)
                 .name(LangHelper.get(player, "lobby.settings-visibility-name"))
-                .lore(LangHelper.get(player, "lobby.settings-visibility-lore", preferences.lobbyVisibility().name()))
+                .lore(LangHelper.get(player, "lobby.settings-visibility-lore",
+                                settingValue(player, preferences.lobbyVisibility().name())),
+                        LangHelper.get(player, "lobby.settings-visibility-help"), "",
+                        LangHelper.get(player, "lobby.settings-change-action"))
                 .build());
         inventory.setItem(HINTS_SLOT, new ItemBuilder(preferences.contextualHelp() ? Material.LIME_DYE : Material.GRAY_DYE)
                 .name(LangHelper.get(player, "lobby.settings-hints-name"))
                 .lore(LangHelper.get(player, preferences.contextualHelp()
-                        ? "lobby.settings-hints-on" : "lobby.settings-hints-off")).build());
+                                ? "lobby.settings-hints-on" : "lobby.settings-hints-off"),
+                        LangHelper.get(player, "lobby.settings-hints-help")).build());
         inventory.setItem(EFFECTS_SLOT, new ItemBuilder(preferences.lobbyEffectsEnabled() ? Material.FIREWORK_ROCKET : Material.GRAY_DYE)
                 .name(LangHelper.get(player, "lobby.settings-effects-name"))
                 .lore(LangHelper.get(player, preferences.lobbyEffectsEnabled()
-                        ? "lobby.settings-effects-on" : "lobby.settings-effects-off")).build());
+                                ? "lobby.settings-effects-on" : "lobby.settings-effects-off"),
+                        LangHelper.get(player, "lobby.settings-effects-help")).build());
         inventory.setItem(CLOSE_SLOT, ItemBuilder.closeButton(player));
         return inventory;
     }
@@ -85,6 +100,11 @@ public final class SettingsGUI {
             // HeadDatabase is optional at runtime; the menu remains usable with its vanilla fallback.
         }
         return fallback;
+    }
+
+    static String settingValue(Player player, String rawValue) {
+        String key = rawValue.toLowerCase(Locale.ROOT).replace('_', '-');
+        return LangHelper.get(player, "lobby.settings-value-" + key);
     }
 
     public static final class Holder implements InventoryHolder {

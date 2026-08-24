@@ -1,6 +1,7 @@
 package fr.tropicube.sheepwars.menu;
 
 import fr.tropicube.sheepwars.TropicubeSheepwars;
+import fr.tropicube.core.menu.NetworkMenuStyle;
 import fr.tropicube.sheepwars.competitive.KitMasteryBranch;
 import fr.tropicube.sheepwars.player.PlayerKit;
 import fr.tropicube.sheepwars.util.ItemBuilder;
@@ -39,6 +40,7 @@ public final class KitMasteryMenu implements Listener {
         var view = plugin.getProgressionService().mastery(player.getUniqueId(), kit);
         var inventory = Bukkit.createInventory(null, 9, LangHelper.component(player, "sw.mastery-title",
                 view.level(), view.experience()));
+        NetworkMenuStyle.fill(inventory);
         inventory.setItem(3, branchItem(player, kit, KitMasteryBranch.BRANCH_A, Material.LIME_DYE, view));
         inventory.setItem(5, branchItem(player, kit, KitMasteryBranch.BRANCH_B, Material.CYAN_DYE, view));
         player.openInventory(inventory);
@@ -79,7 +81,9 @@ public final class KitMasteryMenu implements Listener {
                         player.sendMessage(LangHelper.component(player, "sw.mastery-locked",
                                 plugin.getKitMasteryCatalog().unlockLevel()));
                     } else {
-                        player.sendMessage(LangHelper.component(player, "sw.mastery-branch-selected", branch.name()));
+                        String suffix = branch == KitMasteryBranch.BRANCH_A ? "a" : "b";
+                        player.sendMessage(LangHelper.component(player, "sw.mastery-branch-selected",
+                                LangHelper.get(player, "sw.mastery-branch-" + suffix + "-name")));
                         open(player);
                     }
                 }));

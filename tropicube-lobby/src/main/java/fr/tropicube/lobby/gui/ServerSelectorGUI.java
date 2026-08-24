@@ -1,6 +1,7 @@
 package fr.tropicube.lobby.gui;
 
 import fr.tropicube.lobby.TropicubeLobby;
+import fr.tropicube.core.menu.NetworkMenuStyle;
 import fr.tropicube.lobby.managers.LobbyServerManager;
 import fr.tropicube.lobby.utils.ItemBuilder;
 import fr.tropicube.lobby.utils.LangHelper;
@@ -37,7 +38,8 @@ public class ServerSelectorGUI {
     public static final int SLOT_NEXT  = 53;
 
     private static Component buildTitle(Player player, String type, int page) {
-        return LangHelper.component(player, "lobby.server-selector-title", capitalize(type), page + 1);
+        return LangHelper.component(player, "lobby.server-selector-title",
+                ServerTypeSelectorGUI.displayType(player, type), page + 1);
     }
 
     public static final class Holder implements InventoryHolder {
@@ -141,7 +143,7 @@ public class ServerSelectorGUI {
         holder.hasNextPage    = hasNext;
         holder.slotToServerId = Collections.unmodifiableMap(newSlotMap);
 
-        ItemStack border = new ItemBuilder(Material.BLUE_STAINED_GLASS_PANE).name(" ").build();
+        ItemStack border = NetworkMenuStyle.item(NetworkMenuStyle.BACKGROUND, Component.text(" "));
         topInv.setItem(SLOT_PREV, hasPrev
                 ? new ItemBuilder(Material.ARROW).name(LangHelper.get(player, "lobby.server-prev-page")).build()
                 : border);
@@ -169,13 +171,7 @@ public class ServerSelectorGUI {
     }
 
     private static void drawBorder(Inventory inv) {
-        ItemStack border = new ItemBuilder(Material.BLUE_STAINED_GLASS_PANE).name(" ").build();
-        for (int i = 0; i < 9; i++)  inv.setItem(i, border);
-        for (int i = 45; i < 54; i++) inv.setItem(i, border);
-        for (int i = 9; i < 45; i += 9) {
-            inv.setItem(i,     border);
-            inv.setItem(i + 8, border);
-        }
+        NetworkMenuStyle.frame(inv);
     }
 
     private static void drawControls(Inventory inv, Player player, boolean hasPrev, boolean hasNext, Filter filter) {
@@ -256,7 +252,8 @@ public class ServerSelectorGUI {
         }
 
         ItemBuilder ib = new ItemBuilder(icon)
-                .name(namePrefix + "⬛ " + s.id().toUpperCase(Locale.ROOT))
+                .name(namePrefix + LangHelper.get(player, "lobby.server-instance-name",
+                        s.templateName(), Math.floorMod(s.id().hashCode(), 10_000)))
                 .lore(lore.toArray(new String[0]));
         if (s.isJoinable()) ib.glow();
         return ib;
@@ -281,8 +278,4 @@ public class ServerSelectorGUI {
         return (holder instanceof Holder h) ? h : null;
     }
 
-    private static String capitalize(String s) {
-        if (s == null || s.isEmpty()) return s;
-        return s.substring(0, 1).toUpperCase(Locale.ROOT) + s.substring(1).toLowerCase(Locale.ROOT);
-    }
 }

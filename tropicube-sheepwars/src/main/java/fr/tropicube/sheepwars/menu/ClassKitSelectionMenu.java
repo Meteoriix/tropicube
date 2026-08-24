@@ -1,6 +1,7 @@
 package fr.tropicube.sheepwars.menu;
 
 import fr.tropicube.sheepwars.TropicubeSheepwars;
+import fr.tropicube.core.menu.NetworkMenuStyle;
 import fr.tropicube.sheepwars.player.GamePlayer;
 import fr.tropicube.sheepwars.util.LangHelper;
 import fr.tropicube.sheepwars.player.PlayerClass;
@@ -63,6 +64,7 @@ public class ClassKitSelectionMenu implements Listener {
     public void openClassMenu(Player player) {
         Inventory inv = Bukkit.createInventory(null, 9,
                 LangHelper.component(player, "sw.class-menu-title"));
+        NetworkMenuStyle.fill(inv);
 
         GamePlayer gp = plugin.getGameManager().getPlayer(player);
         PlayerClass currentClass = gp != null ? gp.getPlayerClass() : plugin.getPlayerDataManager().getKit(player.getUniqueId()).getPlayerClass();
@@ -82,6 +84,7 @@ public class ClassKitSelectionMenu implements Listener {
     private void openKitMenu(Player player, PlayerClass playerClass) {
         Inventory inv = Bukkit.createInventory(null, 9,
                 LangHelper.component(player, "sw.kit-menu-title", className(player, playerClass)));
+        NetworkMenuStyle.fill(inv);
 
         GamePlayer gp = plugin.getGameManager().getPlayer(player);
         PlayerKit currentKit = gp != null

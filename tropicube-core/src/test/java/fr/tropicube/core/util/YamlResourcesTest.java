@@ -217,12 +217,38 @@ class YamlResourcesTest {
     }
 
     @Test
-    void settingsLanguageButtonIsBilingualInEveryLocale() {
-        String expected = "<light_purple>🌐 Langues / Language";
+    void settingsLanguageButtonIsLocalizedInEveryLocale() {
+        Map<String, String> expected = Map.of(
+                "fr", "<light_purple>🌐 Langue de l'interface",
+                "en", "<light_purple>🌐 Interface language",
+                "de", "<light_purple>🌐 Sprache der Oberfläche",
+                "es", "<light_purple>🌐 Idioma de la interfaz");
         for (String language : List.of("fr", "en", "es", "de")) {
             Map<String, Object> values = leafValues(
                     Path.of("src/main/resources/languages", language + ".yml"));
-            assertEquals(expected, values.get("lobby.settings-language-name"));
+            assertEquals(expected.get(language), values.get("lobby.settings-language-name"));
+        }
+    }
+
+    @Test
+    void menuDomainValuesHaveLocalizedLabelsInEveryLocale() {
+        List<String> keys = List.of(
+                "lobby.settings-value-summary", "lobby.settings-value-friends",
+                "lobby.settings-value-private", "lobby.settings-value-everyone",
+                "lobby.settings-value-friends-party", "lobby.settings-value-nobody",
+                "lobby.settings-value-party", "lobby.game-type-sheepwars",
+                "center.mission-event-match-played", "center.mission-event-match-won",
+                "center.mission-event-player-kill", "center.mission-event-sheep-launched",
+                "center.mission-event-damage-dealt", "center.mission-event-party-match",
+                "center.mission-event-match-survived", "sw.team-name-red", "sw.team-name-blue");
+        for (String language : List.of("fr", "en", "es", "de")) {
+            Map<String, Object> values = leafValues(
+                    Path.of("src/main/resources/languages", language + ".yml"));
+            for (String key : keys) {
+                assertTrue(values.containsKey(key), () -> key + " manquant en " + language);
+                assertFalse(String.valueOf(values.get(key)).contains("_"),
+                        () -> "Identifiant brut dans " + key + " en " + language);
+            }
         }
     }
 

@@ -2,6 +2,7 @@ package fr.tropicube.sheepwars.menu;
 
 import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.sheepwars.TropicubeSheepwars;
+import fr.tropicube.core.menu.NetworkMenuStyle;
 import fr.tropicube.sheepwars.game.PlayerLimitPolicy;
 import fr.tropicube.sheepwars.player.PlayerClass;
 import fr.tropicube.sheepwars.player.PlayerKit;
@@ -119,6 +120,7 @@ public class GameSettingsMenu implements Listener {
     private void openMain(Player player) {
         Inventory inv = Bukkit.createInventory(null, 27,
                 Component.text(LangHelper.get(player, "sw.settings-main-title"), NamedTextColor.DARK_AQUA));
+        NetworkMenuStyle.frame(inv);
         inv.setItem(10, new ItemBuilder(Material.PINK_WOOL)
                 .name(Component.text(LangHelper.get(player, "sw.settings-sheep-name"), NamedTextColor.LIGHT_PURPLE)
                         .decoration(TextDecoration.ITALIC, false))
@@ -180,6 +182,7 @@ public class GameSettingsMenu implements Listener {
     private void openSheepPage(Player player) {
         Inventory inv = Bukkit.createInventory(null, 54,
                 Component.text(LangHelper.get(player, "sw.settings-sheep-title"), NamedTextColor.LIGHT_PURPLE));
+        NetworkMenuStyle.frame(inv);
         SheepType[] types = SheepType.values();
         for (int i = 0; i < types.length && i < SHEEP_SLOTS.length; i++)
             inv.setItem(SHEEP_SLOTS[i], sheepToggleItem(player, types[i]));
@@ -192,6 +195,7 @@ public class GameSettingsMenu implements Listener {
     private void openKitsPage(Player player) {
         Inventory inv = Bukkit.createInventory(null, 27,
                 Component.text(LangHelper.get(player, "sw.settings-kits-title"), NamedTextColor.RED));
+        NetworkMenuStyle.frame(inv);
         PlayerKit[] dps     = PlayerKit.getKitsForClass(PlayerClass.DPS);
         PlayerKit[] tank    = PlayerKit.getKitsForClass(PlayerClass.TANK);
         PlayerKit[] support = PlayerKit.getKitsForClass(PlayerClass.SUPPORT);
@@ -209,6 +213,7 @@ public class GameSettingsMenu implements Listener {
     private void openClassesPage(Player player) {
         Inventory inv = Bukkit.createInventory(null, 27,
                 Component.text(LangHelper.get(player, "sw.settings-classes-title"), NamedTextColor.RED));
+        NetworkMenuStyle.frame(inv);
         // Ignore PlayerClass.NONE and display only playable classes.
         PlayerClass[] allClasses = PlayerClass.values();
         for (int i = 0; i < CLASS_SLOTS.length && (i + 1) < allClasses.length; i++)
@@ -221,6 +226,7 @@ public class GameSettingsMenu implements Listener {
     private void openOptionsPage(Player player) {
         Inventory inv = Bukkit.createInventory(null, 27,
                 Component.text(LangHelper.get(player, "sw.settings-options-title"), NamedTextColor.YELLOW));
+        NetworkMenuStyle.frame(inv);
         FileConfiguration cfg = plugin.getConfig();
 
         // Row 1: min-players (0-2) | max-players (4-6)
@@ -289,6 +295,7 @@ public class GameSettingsMenu implements Listener {
     private void openDropRatesPage(Player player) {
         Inventory inv = Bukkit.createInventory(null, 54,
                 Component.text(LangHelper.get(player, "sw.settings-drop-rates-title"), NamedTextColor.LIGHT_PURPLE));
+        NetworkMenuStyle.frame(inv);
         SheepType[] types = SheepType.values();
         for (int i = 0; i < types.length; i++) {
             int row = i / 3;

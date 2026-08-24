@@ -467,8 +467,6 @@ public class GameManager {
         player.setFoodLevel(20);
         player.setSaturation(0);
         player.setFireTicks(0);
-        player.setExp(0);
-        player.setLevel(0);
         player.getActivePotionEffects().forEach(e -> player.removePotionEffect(e.getType()));
     }
 

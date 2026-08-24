@@ -1,6 +1,7 @@
 package fr.tropicube.sheepwars.menu;
 
 import fr.tropicube.sheepwars.TropicubeSheepwars;
+import fr.tropicube.core.menu.NetworkMenuStyle;
 import fr.tropicube.sheepwars.player.GamePlayer;
 import fr.tropicube.sheepwars.game.GameTeam;
 import fr.tropicube.sheepwars.util.ItemBuilder;
@@ -68,6 +69,7 @@ public class TeamSelectionMenu implements Listener {
     public void open(Player player) {
         Inventory inv = Bukkit.createInventory(null, 27,
                 LangHelper.component(player, "sw.team-menu-title"));
+        NetworkMenuStyle.frame(inv);
 
         int redCount  = plugin.getGameManager().getTeamPlayers(GameTeam.RED).size();
         int blueCount = plugin.getGameManager().getTeamPlayers(GameTeam.BLUE).size();
@@ -83,7 +85,7 @@ public class TeamSelectionMenu implements Listener {
 
     private ItemStack teamItem(Player player, GameTeam team, int count, boolean selected) {
         Material wool = Material.valueOf(team.getDyeColor().name() + "_WOOL");
-        Component name = Component.text(team.getDisplayName(), team.getColor())
+        Component name = Component.text(teamName(player, team), team.getColor())
                 .decoration(TextDecoration.ITALIC, false);
 
         Component memberLine = Component.text(
@@ -139,14 +141,14 @@ public class TeamSelectionMenu implements Listener {
         boolean roleAllowed = plugin.getGameManager().canSelectRole(gp, gp.getPlayerClass(), chosen);
         if (balanced && roleAllowed) {
             gp.setTeam(chosen);
-            player.sendMessage(LangHelper.component(player, "sw.team-joined", chosen.getDisplayName()));
+            player.sendMessage(LangHelper.component(player, "sw.team-joined", teamName(player, chosen)));
             // Refreshes the team selection object in the quickbar.
             player.getInventory().setItem(0, createSelectorItem(player));
             plugin.getScoreboardManager().updateAll();
         } else if (!roleAllowed) {
             player.sendMessage(LangHelper.component(player, "sw.role-limit-reached"));
         } else {
-            player.sendMessage(LangHelper.component(player, "sw.team-unbalanced", chosen.getDisplayName()));
+            player.sendMessage(LangHelper.component(player, "sw.team-unbalanced", teamName(player, chosen)));
         }
 
         player.closeInventory();
@@ -155,5 +157,9 @@ public class TeamSelectionMenu implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         openMenus.remove(event.getPlayer().getUniqueId());
+    }
+
+    private String teamName(Player player, GameTeam team) {
+        return LangHelper.get(player, team == GameTeam.RED ? "sw.team-name-red" : "sw.team-name-blue");
     }
 }

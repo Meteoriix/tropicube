@@ -152,6 +152,7 @@ public final class MissionService {
                 }
                 connection.commit();
                 plugin.getEconomyManager().invalidateCache(playerId);
+                plugin.getNetworkProgressionService().refreshDisplay(playerId);
                 return ClaimResult.CLAIMED;
             } catch (SQLException | RuntimeException error) {
                 connection.rollback();

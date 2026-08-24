@@ -24,6 +24,12 @@ Scoreboards group contextual information with whitespace and short dotted `•` 
 
 Grades use a bold colored label without brackets. Chat follows `VIP Player > message`, while the tab list ends after the player name.
 
+## Inventories and menus
+
+Every Core, Lobby, and game inventory reuses the `NetworkMenuStyle` frame: neutral gray background, aqua top accent, main actions in the center, back on the left, and close on the right of the last row. The same action keeps its icon, color, wording, and logical position across screens.
+
+Player-facing labels never expose enum names, template identifiers, or underscored values. Each domain value has a natural translation in all four languages. Settings show their current state and explain their actual effect; missions show objective, progress, rewards, status, and available actions. Buttons name the exact click and its result. Profile entries use the relevant player's head whenever available.
+
 ## Technical logs
 
 Logs are authored in MiniMessage and rendered as `TROPICUBE > CONTEXT > message` or `SHEEPWARS > CONTEXT > message`. Adventure emits ANSI colors when supported and readable plain text otherwise. Logger levels, structured parameters, and stack traces must be preserved.

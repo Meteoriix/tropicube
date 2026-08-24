@@ -6,6 +6,11 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-08-24
 
+#### Modifié
+
+- Les menus Core, Lobby et SheepWars partagent désormais le même cadrage ; Profil utilise la tête du joueur, les missions et paramètres expliquent leur contenu, et les actions ainsi que valeurs métier sont localisées sans identifiants techniques.
+- Le niveau réseau et la progression vers le niveau suivant sont désormais affichés dans la barre d'expérience et actualisés après chaque gain d'XP.
+
 #### Corrigé
 
 - Le grand titre « Bienvenue sur Tropicube » est désormais réservé à l'arrivée initiale au lobby après connexion au proxy ; les retours depuis un mini-jeu conservent uniquement l'actionbar discrète.

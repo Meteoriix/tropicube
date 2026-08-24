@@ -1,6 +1,7 @@
 package fr.tropicube.sheepwars.menu;
 
 import fr.tropicube.sheepwars.TropicubeSheepwars;
+import fr.tropicube.core.menu.NetworkMenuStyle;
 import fr.tropicube.sheepwars.game.GameMap;
 import fr.tropicube.sheepwars.util.ItemBuilder;
 import fr.tropicube.sheepwars.util.LangHelper;
@@ -79,6 +80,7 @@ public class MapSelectionMenu implements Listener {
         List<GameMap> candidates = ballot(maps);
         Inventory inv = Bukkit.createInventory(null, 9,
                 LangHelper.component(player, "sw.map-vote-title"));
+        NetworkMenuStyle.fill(inv);
 
         GameMap myVote = votes.get(player.getUniqueId());
         Map<GameMap, Integer> counts = countVotes(candidates);
@@ -98,6 +100,7 @@ public class MapSelectionMenu implements Listener {
     private void openPickMenu(Player player, List<GameMap> maps) {
         Inventory inv = Bukkit.createInventory(null, 9,
                 LangHelper.component(player, "sw.map-pick-title"));
+        NetworkMenuStyle.fill(inv);
 
         GameMap selected = plugin.getGameManager().getSelectedMap();
         for (int i = 0; i < maps.size() && i < 9; i++) {

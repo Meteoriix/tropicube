@@ -24,6 +24,12 @@ Les scoreboards regroupent les informations par contexte avec des espaces et de 
 
 Les grades utilisent un libellé coloré en gras sans crochets. Le chat suit le rendu `VIP Joueur > message`, tandis que la tablist s'arrête au nom.
 
+## Inventaires et menus
+
+Tous les inventaires Core, Lobby et mini-jeux réutilisent le cadrage de `NetworkMenuStyle` : fond gris neutre, accent aqua en haut, actions principales au centre, retour à gauche et fermeture à droite sur la dernière ligne. Une action conserve son icône, sa couleur, son vocabulaire et sa position logique entre les écrans.
+
+Les libellés joueur ne montrent jamais une énumération, un identifiant de template ou une valeur avec underscores. Chaque valeur métier possède une traduction naturelle dans les quatre langues. Les réglages affichent leur état courant et expliquent concrètement leur effet ; les missions indiquent objectif, progression, récompenses, état et actions disponibles. Les boutons nomment le clic exact et son résultat. Une entrée de profil emploie la tête du joueur concerné lorsqu'elle est disponible.
+
 ## Logs techniques
 
 Les logs sont écrits en MiniMessage et rendus sous la forme `TROPICUBE > CONTEXTE > message` ou `SHEEPWARS > CONTEXTE > message`. Adventure produit les couleurs ANSI quand le terminal les supporte et un texte lisible sinon. Les niveaux du logger, paramètres structurés et stacktraces doivent être conservés.
