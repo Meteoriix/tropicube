@@ -127,6 +127,19 @@ copy_verified() {
   ok "$destination"
 }
 
+sync_language_directory() {
+  local source_directory=$1 destination_directory=$2 source destination
+  [[ -d $source_directory ]] || fail "Language source directory not found: $source_directory"
+  mkdir -p "$destination_directory"
+  for source in "$source_directory"/*.yml; do
+    [[ -f $source ]] || continue
+    destination="$destination_directory/${source##*/}"
+    cp -f -- "$source" "$destination"
+    cmp -s -- "$source" "$destination" || fail "Language verification failed after copy: $destination"
+    ok "$destination"
+  done
+}
+
 if $only_images; then
   artifact_is_fresh "$core_jar" tropicube-core tropicube-docker-api
   artifact_is_fresh "$lobby_jar" tropicube-lobby tropicube-core tropicube-docker-api
@@ -140,7 +153,7 @@ copy_verified "$lobby_jar" dockerfiles/plugins/lobby/tropicube-lobby.jar
 copy_verified "$sheepwars_jar" dockerfiles/plugins/sheepwars/tropicube-sheepwars.jar
 copy_verified "$velocity_jar" dockerfiles/plugins/velocity/tropicube-velocity.jar
 
-step 'Merging missing language keys...'
+step 'Synchronizing language configuration...'
 stale_languages='dockerfiles/configs/TropicubeCore/languages/languages'
 if [[ -d $stale_languages ]]; then
   rm -rf -- "$stale_languages"
@@ -285,6 +298,11 @@ def process(jar_path, destination_dir):
 process(sys.argv[1], "dockerfiles/configs/TropicubeCore/languages")
 process(sys.argv[2], "dockerfiles/configs/TropicubeVelocity/languages")
 PY
+
+sync_language_directory tropicube-core/src/main/resources/languages \
+  dockerfiles/configs/TropicubeCore/languages
+sync_language_directory tropicube-velocity/src/main/resources/languages \
+  dockerfiles/configs/TropicubeVelocity/languages
 
 if $validate_only; then
   printf '\n==> Validation complete in %ss; no image or container was changed.\n' "$((SECONDS - start_seconds))"

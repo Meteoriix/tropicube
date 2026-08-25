@@ -120,7 +120,7 @@ Le premier `docker compose up` télécharge MySQL, Redis, le proxy de socket et 
 | Refuse un artefact périmé avec `OnlyImages` | oui | oui | oui |
 | Vérifie l'intégrité après copie | SHA-256 | comparaison binaire | équivalent |
 | Nettoie l'ancien dossier de langues doublement imbriqué | oui | oui | oui |
-| Fusionne uniquement les clés de langue absentes | natif PowerShell/.NET | Python 3 | oui |
+| Valide puis synchronise exactement les langues sources | .NET et SHA-256 | Python 3 et comparaison binaire | oui |
 | Refuse sections/clés dupliquées et feuilles trop imbriquées | oui | oui | oui |
 | Construit trois images en parallèle avec `--pull` | jobs PowerShell | processus Bash | oui |
 | Vérifie Paper, le JAR Mojang, le runtime patché et les configurations de démarrage dans les images | oui | oui | oui |
@@ -129,7 +129,7 @@ Le premier `docker compose up` télécharge MySQL, Redis, le proxy de socket et 
 | Recrée Velocity, sauf option contraire | oui | oui | oui |
 | Affiche le tag utilisable pour un rollback | oui | oui | oui |
 
-Différence de prérequis : Bash délègue la lecture des ZIP et le merge YAML à Python 3. PowerShell utilise directement .NET et n'a donc pas ce prérequis. Le résultat et les validations sont identiques.
+Différence de prérequis : Bash délègue la lecture des ZIP et la validation YAML à Python 3. PowerShell utilise directement .NET et n'a donc pas ce prérequis. Le résultat et les validations sont identiques.
 
 ## Options des scripts
 
@@ -138,9 +138,15 @@ Différence de prérequis : Bash délègue la lecture des ZIP et le merge YAML �
 | `-SkipTests` | `--skip-tests` | Compile et package sans exécuter les tests |
 | `-OnlyImages` | `--only-images` | Réutilise les JAR de `target` après contrôle de fraîcheur |
 | `-SkipRestart` | `--skip-restart` | Construit les images mais ne recrée pas Velocity |
-| `-ValidateOnly` | `--validate-only` | Compile si nécessaire, distribue/vérifie les JAR et fusionne les langues, sans image ni conteneur |
+| `-ValidateOnly` | `--validate-only` | Compile si nécessaire, distribue/vérifie les JAR et synchronise les langues, sans image ni conteneur |
 
-`ValidateOnly` ne modifie aucun conteneur ni image, mais peut copier des JAR sous `dockerfiles/plugins` et compléter les traductions de déploiement. `OnlyImages` n'est accepté que si aucun POM ou fichier source dépendant n'est plus récent que son artefact.
+`ValidateOnly` ne modifie aucun conteneur ni image, mais peut copier des JAR sous `dockerfiles/plugins` et remplacer les traductions de déploiement par leurs sources. `OnlyImages` n'est accepté que si aucun POM ou fichier source dépendant n'est plus récent que son artefact.
+
+Les traductions embarquées de Core et Velocity sont les sources de vérité. Un build Maven les
+recopie pendant `process-resources`, et chaque déploiement répète la copie avec un contrôle
+d'intégrité, y compris en mode `OnlyImages`. Toute modification faite uniquement sous
+`dockerfiles/configs/*/languages` sera donc écrasée ; modifier le fichier correspondant sous
+`src/main/resources/languages`.
 
 Exemples :
 
@@ -159,7 +165,7 @@ Exemples :
 1. validation des outils, du daemon, de Compose et de `.env` ;
 2. compilation Maven de tout le réacteur ;
 3. copie des JAR ombrés vers les contextes Docker avec contrôle d'intégrité ;
-4. fusion des nouvelles traductions dans les configurations persistantes ;
+4. synchronisation exacte des traductions sources vers les configurations Docker ;
 5. construction parallèle de `tropicube-lobby`, `tropicube-sheepwars` et `tropicube-velocity` ;
 6. vérification des caches Paper/Mojang et des configurations de démarrage dans les deux images de backend ;
 7. double tag `latest` et `YYYYMMDD-HHMMSS` UTC ;

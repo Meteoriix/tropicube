@@ -44,6 +44,13 @@ La commande compile tous les modules, applique les règles Maven Enforcer, exéc
 bash ./mvnw -pl tropicube-sheepwars -am test
 ```
 
+Les fichiers `tropicube-core/src/main/resources/languages/*.yml` et
+`tropicube-velocity/src/main/resources/languages/*.yml` sont les sources de vérité des traductions.
+La phase Maven `process-resources` de chaque module recopie automatiquement ces fichiers, sans
+filtrage, vers `dockerfiles/configs/TropicubeCore/languages` et
+`dockerfiles/configs/TropicubeVelocity/languages`. Il ne faut donc pas personnaliser directement
+les copies Docker : elles sont remplacées au prochain build ou déploiement.
+
 Les tests existants couvrent notamment les modèles Docker/Redis, la conversion des durées, la validité des ressources YAML et les invariants du catalogue SheepWars. Toute correction de bug devrait ajouter un test de non-régression lorsque le comportement peut être isolé de Paper ou Velocity.
 
 Les interactions nécessitant un serveur réel — inventaires Bukkit, événements réseau, démarrage d'instances et routage Velocity — restent à valider sur une pile Docker de développement. Si leur volume augmente, l'étape suivante recommandée est de créer des tests d'intégration avec des adaptateurs Paper/Velocity plutôt que de simuler toute l'API serveur.

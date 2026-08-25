@@ -4,6 +4,12 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+### 2026-08-25
+
+#### Changed
+
+- Maven builds and Windows/Linux deployments now synchronize Core and Velocity translations exactly from their resources to `dockerfiles/configs`, with automatic parity verification.
+
 ### 2026-08-24
 
 #### Changed

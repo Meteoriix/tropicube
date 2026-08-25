@@ -51,6 +51,22 @@ function Assert-TotpMasterKey {
     }
 }
 
+function Sync-LanguageDirectory([string]$sourceDirectory, [string]$destinationDirectory) {
+    if (-not (Test-Path -LiteralPath $sourceDirectory -PathType Container)) {
+        Fail "Language source directory not found: $sourceDirectory"
+    }
+    $null = New-Item -ItemType Directory -Force -Path $destinationDirectory
+    foreach ($source in Get-ChildItem -LiteralPath $sourceDirectory -Filter "*.yml" -File) {
+        $destination = Join-Path $destinationDirectory $source.Name
+        Copy-Item -LiteralPath $source.FullName -Destination $destination -Force
+        if ((Get-FileHash -LiteralPath $source.FullName -Algorithm SHA256).Hash -ne
+                (Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash) {
+            Fail "Language verification failed after copy: $destination"
+        }
+        Ok "$destination"
+    }
+}
+
 # ── Lang-merge helpers ────────────────────────────────────────────────────────
 
 function script:Find-SectionStart([string[]]$lines, [string]$section) {
@@ -280,8 +296,8 @@ foreach ($artifact in $artifacts) {
     }
 }
 
-# ── 2b. Merge missing language keys into config ────────────────────────────
-Step "Merging missing language keys..."
+# ── 2b. Synchronize language configuration ───────────────────────────────────
+Step "Synchronizing language configuration..."
 
     # Remove stale double-nested languages\languages\ dir if present (deploy artifact)
     $staleDir = "dockerfiles\configs\TropicubeCore\languages\languages"
@@ -319,6 +335,11 @@ Step "Merging missing language keys..."
     } finally {
         $velocityZip.Dispose()
     }
+
+Sync-LanguageDirectory "tropicube-core\src\main\resources\languages" `
+    "dockerfiles\configs\TropicubeCore\languages"
+Sync-LanguageDirectory "tropicube-velocity\src\main\resources\languages" `
+    "dockerfiles\configs\TropicubeVelocity\languages"
 
 if ($ValidateOnly) {
     $elapsed = [math]::Round(((Get-Date) - $start).TotalSeconds, 1)

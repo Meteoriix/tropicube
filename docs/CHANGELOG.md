@@ -4,6 +4,12 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-08-25
+
+#### Modifié
+
+- Les builds Maven et les déploiements Windows/Linux synchronisent désormais exactement les traductions Core et Velocity depuis leurs ressources vers `dockerfiles/configs`, avec vérification automatique de parité.
+
 ### 2026-08-24
 
 #### Modifié

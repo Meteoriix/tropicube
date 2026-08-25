@@ -359,11 +359,11 @@ class YamlResourcesTest {
     }
 
     @Test
-    void deployedLanguagesMatchBundledLanguageKeys() {
-        assertLanguageKeysMatch(
+    void deployedLanguagesMatchBundledFiles() {
+        assertLanguagesMatch(
                 Path.of("src/main/resources/languages"),
                 Path.of("../dockerfiles/configs/TropicubeCore/languages"));
-        assertLanguageKeysMatch(
+        assertLanguagesMatch(
                 Path.of("../tropicube-velocity/src/main/resources/languages"),
                 Path.of("../dockerfiles/configs/TropicubeVelocity/languages"));
     }
@@ -453,10 +453,12 @@ class YamlResourcesTest {
         }
     }
 
-    private static void assertLanguageKeysMatch(Path bundled, Path deployed) {
+    private static void assertLanguagesMatch(Path bundled, Path deployed) {
         for (String language : List.of("fr", "en", "es", "de")) {
             Path bundledFile = bundled.resolve(language + ".yml");
             Path deployedFile = deployed.resolve(language + ".yml");
+            assertDoesNotThrow(() -> assertEquals(-1L, Files.mismatch(bundledFile, deployedFile),
+                    "Le fichier déployé doit être une copie exacte pour " + language));
             assertEquals(leafKeys(bundledFile), leafKeys(deployedFile),
                     "Clés déployées différentes pour " + language);
             Map<String, Object> bundledValues = leafValues(bundledFile);

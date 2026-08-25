@@ -46,6 +46,12 @@ JaCoCo reports are generated under each module's `target/site/jacoco/` directory
 
 Player-facing messages are available in French, English, German, and Spanish. Every new key must exist in all four files with the same placeholder structure. Embedded resources and deployment copies must stay synchronized. Cached interfaces must refresh after `/lang` without requiring a reconnect.
 
+The `tropicube-core/src/main/resources/languages/*.yml` and
+`tropicube-velocity/src/main/resources/languages/*.yml` files are the translation sources of truth.
+Each module's Maven `process-resources` phase copies them without filtering to the matching
+directory under `dockerfiles/configs`. Do not customize the Docker copies directly: the next build
+or deployment replaces them.
+
 ## Documentation site
 
 French Markdown lives in `docs/`; English equivalents live in `docs/en/`. `README.md` and `README.en.md` provide the two home pages. Build and validate both languages with:

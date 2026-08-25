@@ -48,6 +48,7 @@
 <p>JaCoCo reports are generated under each module's <code>target/site/jacoco/</code> directory. Coverage helps locate missing behavior, but assertions must remain meaningful.</p>
 <h2 id="languages">Languages<a class="heading-anchor" href="#languages" aria-label="Link to this section">#</a></h2>
 <p>Player-facing messages are available in French, English, German, and Spanish. Every new key must exist in all four files with the same placeholder structure. Embedded resources and deployment copies must stay synchronized. Cached interfaces must refresh after <code>/lang</code> without requiring a reconnect.</p>
+<p>The <code>tropicube-core/src/main/resources/languages/*.yml</code> and <code>tropicube-velocity/src/main/resources/languages/*.yml</code> files are the translation sources of truth. Each module's Maven <code>process-resources</code> phase copies them without filtering to the matching directory under <code>dockerfiles/configs</code>. Do not customize the Docker copies directly: the next build or deployment replaces them.</p>
 <h2 id="documentation-site">Documentation site<a class="heading-anchor" href="#documentation-site" aria-label="Link to this section">#</a></h2>
 <p>French Markdown lives in <code>docs/</code>; English equivalents live in <code>docs/en/</code>. <code>README.md</code> and <code>README.en.md</code> provide the two home pages. Build and validate both languages with:</p>
 <div class="code-block"><span class="code-language">powershell</span><pre class=""><code>node docs-site/build.mjs
