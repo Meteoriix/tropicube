@@ -11,6 +11,14 @@ TropicubeCore complète automatiquement les fichiers de langue existants avec le
 
 Les variables d'environnement ont priorité sur certaines valeurs Core. Dans les conteneurs `itzg`, le mécanisme `REPLACE_ENV_VARIABLES` remplace également les marqueurs `${CFG_...}` présents dans les fichiers copiés.
 
+Les builds Maven et les scripts de déploiement synchronisent les quatre ressources de langue Core et Velocity vers leurs copies sous `dockerfiles/configs`. Les `config.yml` de déploiement restent distincts, car ils contiennent les marqueurs de secrets et l'adresse du proxy Docker.
+
+### Grades et niveaux d'accès
+
+Chaque entrée `grades.<nom>` contient uniquement son affichage, sa priorité cosmétique et `default-vip-level` (0–3) / `default-mod-level` (0–4). Appliquer ou faire expirer un grade remplace toujours les niveaux courants par ces valeurs. `access.audit-retention-days`, fixé à 365 par défaut, contrôle la purge quotidienne du journal SQL.
+
+La configuration Velocity ne contient plus `admin-uuids`, `nick.allowed-grades` ni `OPS`. Core publie les niveaux avec une révision dans Redis ; Velocity échoue fermé à `0/0` tant qu'un profil valide n'est pas disponible.
+
 ## `.env`
 
 Créer `.env` depuis `.env.example` et remplacer chaque valeur :

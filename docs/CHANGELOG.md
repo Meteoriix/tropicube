@@ -4,6 +4,13 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-08-27
+
+#### Modifié
+
+- Refonte complète des autorisations autour de `vipLevel` (0–3) et `modLevel` (0–4) : grades cosmétiques, commande `/level`, audit SQL, cache Redis révisionné et suppression des permissions individuelles, des UUID administrateurs et des opérateurs Docker.
+- Les achats, commandes et expirations de grade appliquent désormais atomiquement les niveaux configurés ; Velocity utilise les mêmes niveaux pour `/nick`, les files prioritaires et les commandes d'exploitation.
+
 ### 2026-08-25
 
 #### Modifié

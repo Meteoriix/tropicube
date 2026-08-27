@@ -50,16 +50,16 @@ commands:
 permissions:
   tropicube.lobby.build:
     description: "Permet de construire dans le lobby"
-    default: op
+    default: false
   tropicube.lobby.drop:
     description: "Permet de poser des items dans le lobby"
-    default: op
+    default: false
   tropicube.lobby.pickup:
     description: "Permet de ramasser des items dans le lobby"
-    default: op
+    default: false
   tropicube.lobby.fly:
     description: "Vol permanent dans le lobby"
-    default: op
+    default: false
   tropicube.lobby.jump:
     description: "Double saut (1 saut) dans le lobby — VIP"
     default: false
@@ -68,4 +68,4 @@ permissions:
     default: false
   tropicube.lobby.infinitejump:
     description: "Double saut infini dans le lobby — Premium+"
-    default: op
+    default: false

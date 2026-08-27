@@ -43,11 +43,8 @@ language:
   default: "fr"
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Ranks — defines all ranks in the network.
-# These values ​​are synchronized into the database at each startup
-# (INSERT … ON DUPLICATE KEY UPDATE), so changes here apply
-# we reboot. Changes made via /tropiperm grade in game are
-# overwritten on the next reboot.
+# Cosmetic grades and their default access levels. Applying a grade always
+# replaces the player's current vipLevel and modLevel with these defaults.
 # ──────────────────────────────────────────────────────────────────────────────
 grades:
   JOUEUR:
@@ -56,99 +53,82 @@ grades:
     suffix: ""
     color: "<white>"
     priority: 0
-    is-vip: false
-    is-staff: false
-    permissions: []
+    default-vip-level: 0
+    default-mod-level: 0
   VIP:
     display-name: "VIP"
     prefix: "<green><bold>VIP</bold></green> "
     suffix: ""
     color: "<green>"
     priority: 10
-    is-vip: true
-    is-staff: false
-    permissions:
-      - tropicube.vip
-      - tropicube.kit.vip
-      - tropicube.lobby.jump
+    default-vip-level: 1
+    default-mod-level: 0
   VIP_PLUS:
     display-name: "VIP+"
     prefix: "<gold><bold>VIP+</bold></gold> "
     suffix: ""
     color: "<gold>"
     priority: 20
-    is-vip: true
-    is-staff: false
-    permissions:
-      - tropicube.vip
-      - tropicube.vip.plus
-      - tropicube.kit.vip_plus
-      - tropicube.lobby.jump.double
+    default-vip-level: 2
+    default-mod-level: 0
   PREMIUM:
     display-name: "Premium"
     prefix: "<light_purple><bold>PREMIUM</bold></light_purple> "
     suffix: ""
     color: "<light_purple>"
     priority: 30
-    is-vip: true
-    is-staff: false
-    permissions:
-      - tropicube.vip
-      - tropicube.premium
-      - tropicube.kit.premium
-      - tropicube.lobby.infinitejump
-      - tropicube.announce.join
+    default-vip-level: 3
+    default-mod-level: 0
   HELPER:
     display-name: "Helper"
     prefix: "<aqua><bold>HELPER</bold></aqua> "
     suffix: ""
     color: "<aqua>"
     priority: 50
-    is-vip: false
-    is-staff: true
-    permissions:
-      - tropicube.staff
-      - tropicube.helper
-      - tropicube.mute
-      - tropicube.kick
-      - tropicube.lobby.infinitejump
-      - tropicube.announce.join
+    default-vip-level: 3
+    default-mod-level: 1
   MODERATEUR:
     display-name: "Modérateur"
     prefix: "<dark_aqua><bold>MODO</bold></dark_aqua> "
     suffix: ""
     color: "<dark_aqua>"
     priority: 60
-    is-vip: false
-    is-staff: true
-    permissions:
-      - tropicube.staff
-      - tropicube.moderateur
-      - tropicube.mute
-      - tropicube.kick
-      - tropicube.warn
-      - tropicube.ban
-      - tropicube.lobby.infinitejump
-      - tropicube.announce.join
+    default-vip-level: 3
+    default-mod-level: 2
   ADMIN:
     display-name: "Administrateur"
     prefix: "<red><bold>ADMIN</bold></red> "
     suffix: ""
     color: "<red>"
     priority: 80
-    is-vip: false
-    is-staff: true
-    permissions:
-      - tropicube.admin
-      - tropicube.staff
-      - tropicube.*
+    default-vip-level: 3
+    default-mod-level: 3
   OWNER:
     display-name: "Propriétaire"
     prefix: "<dark_red><bold>OWNER</bold></dark_red> "
     suffix: ""
     color: "<dark_red>"
     priority: 100
-    is-vip: false
-    is-staff: true
-    permissions:
-      - "*"
+    default-vip-level: 3
+    default-mod-level: 4
+
+access:
+  audit-retention-days: 365
+  permission-thresholds:
+    vip:
+      "tropicube.lobby.jump": 1
+      "tropicube.lobby.jump.double": 2
+      "tropicube.custom-game.create": 2
+      "tropicube.queue.priority": 2
+      "sheepwars.mapvote.weight.2": 2
+      "tropicube.lobby.infinitejump": 3
+      "tropicube.announce.join": 3
+      "tropicube.nick": 3
+    mod:
+      "tropicube.staff": 1
+      "tropicube.mute": 1
+      "tropicube.kick": 1
+      "tropicube.warn": 2
+      "tropicube.ban": 2
+      "tropicube.history": 2
+      "tropicube.reports.manage": 2

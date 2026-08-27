@@ -11,9 +11,11 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 | `/eco set <joueur> <montant>` | — | `tropicube.eco.admin` | Fixe un solde |
 | `/eco add <joueur> <montant>` | — | `tropicube.eco.admin` | Crédite un compte |
 | `/eco remove <joueur> <montant>` | — | `tropicube.eco.admin` | Débite un compte si le solde suffit |
-| `/rank list` | `/grade` | `tropicube.grade.admin` | Liste les grades |
-| `/rank info <joueur>` | `/grade` | `tropicube.grade.admin` | Affiche le grade d'un joueur |
-| `/rank set <joueur> <grade>` | `/grade` | `tropicube.grade.admin` | Attribue un grade existant |
+| `/rank list` | `/grade` | `modLevel ≥ 3` | Liste les grades cosmétiques et leurs niveaux par défaut |
+| `/rank info <joueur>` | `/grade` | `modLevel ≥ 3` | Affiche le grade et ses niveaux par défaut |
+| `/rank set <joueur> <grade> [durée]` | `/grade` | `modLevel ≥ 3` | Attribue un grade et remplace les deux niveaux du joueur |
+| `/level <joueur>` | — | `modLevel ≥ 3` | Affiche le grade cosmétique, le `vipLevel` et le `modLevel` |
+| `/level <joueur> <vip\|mod> <niveau>` | — | `modLevel ≥ 3` | Modifie définitivement un niveau, y compris hors ligne |
 | `/lang [fr|en|es|de]` | `/language`, `/langue` | aucune | Affiche ou change la langue |
 | `/help [general|games|social|profile|staff]` | — | aucune ; catégorie staff réservée au personnel | Présente toutes les commandes et fonctionnalités disponibles par catégorie |
 | `/friend add|accept|deny|cancel|remove <joueur>` | — | aucune | Gère les relations d'amitié persistantes et permet d'annuler une demande envoyée |
@@ -61,26 +63,17 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 | `/coreadmin reload` | `/tropiadmin`, `/ca` | `tropicube.admin` | Recharge la configuration Core et les langues |
 | `/coreadmin info` | `/tropiadmin`, `/ca` | `tropicube.admin` | Affiche l'état des services Core |
 
-Durées acceptées : une valeur comprise par `DurationParser`, par exemple `30s`, `10m`, `2h`, `7d`. Une permission sans durée est permanente.
+Durées de grade acceptées : une valeur comprise par `DurationParser`, par exemple `30s`, `10m`, `2h`, `7d`. Les niveaux attribués par `/level` sont permanents.
 
 Les amis sont persistants en MySQL. Une party est temporaire dans Redis, limitée par la configuration Core et créée lors de la première invitation. Accepter une invitation depuis une autre party retire atomiquement le joueur de l'ancienne ; s'il en était chef, un autre membre est promu, ou la party vide est dissoute. Le suivi est activé par défaut à l'entrée, puis reste un choix individuel. Les transferts sociaux respectent la whitelist et la capacité de l'instance cible.
 
 L'aide en jeu regroupe la navigation et le chat dans `general`, les files et la progression SheepWars dans `games`, les amis/parties/guildes dans `social`, la progression réseau et les préférences dans `profile`, puis les outils sécurisés de modération et d'exploitation dans `staff`. Chaque commande principale occupe exactement une ligne avec sa syntaxe complète ; seuls ses véritables alias restent entre parenthèses sur cette ligne. L'autocomplétion masque la catégorie `staff` aux joueurs non habilités.
 
-### Gestion détaillée des permissions
+### Hiérarchie des niveaux
 
-Toutes les formes ci-dessous exigent `tropicube.admin.perm` :
+`vipLevel` est compris entre 0 et 3 et `modLevel` entre 0 et 4. Un joueur ne peut jamais se modifier lui-même. Le niveau modérateur attribué doit être strictement inférieur à celui de l'émetteur ; le niveau 4 est donc réservé à la console. La console n'est pas limitée. Les permissions individuelles et `/permissions` n'existent plus.
 
-| Commande | Effet |
-|---|---|
-| `/permissions add <joueur> <permission> [durée]` | Ajoute une permission individuelle |
-| `/permissions remove <joueur> <permission>` | Retire une permission individuelle |
-| `/permissions list <joueur>` | Affiche le grade et les permissions effectives stockées |
-| `/permissions grade add <grade> <permission>` | Ajoute une permission à un grade |
-| `/permissions grade remove <grade> <permission>` | Retire une permission d'un grade |
-| `/permissions grade list <grade>` | Liste les permissions d'un grade |
-
-Attention : les permissions de grade présentes dans `TropicubeCore/config.yml` sont resynchronisées au démarrage. Il faut modifier la configuration de déploiement pour rendre un changement durable.
+Les avantages VIP cumulés sont : un saut au niveau 1 ; deux sauts, parties personnalisées et priorité de file au niveau 2 ; sauts illimités, annonce d'entrée et `/nick` au niveau 3. Les niveaux modérateur donnent Helper au niveau 1, Moderator au niveau 2, toute l'administration Tropicube au niveau 3 et le wildcard global au niveau 4. Les actions sensibles conservent leur exigence TOTP.
 
 ## TropicubeLobby — Paper
 
@@ -140,7 +133,7 @@ Le module est actuellement vide et n'ajoute donc aucune commande ni permission.
 | `/whitelist remove <joueur>` | — | hôte d'une partie privée | Retire un joueur de la partie, sauf l'hôte lui-même |
 | `/server [nom]` | — | aucune | Liste les instances ou se connecte à une instance joignable |
 | `/queue <serveur>` | `/file` | aucune | Entre dans la file d'une instance pleine ; VIP+ et Premium sont prioritaires |
-| `/nick` | — | grade autorisé | Génère un pseudonyme et un skin aléatoires |
+| `/nick` | — | `vipLevel ≥ 3` | Génère un pseudonyme et un skin aléatoires |
 | `/nick off` | — | aucune | Restaure l'identité originale, même après une perte de grade |
 | `/find <joueur>` | — | `tropicube.admin.find` | Localise un joueur connecté |
 | `/send <joueur|*> <serveur>` | — | `tropicube.admin.send` | Transfère un joueur ou tous les joueurs |
@@ -150,7 +143,7 @@ Le module est actuellement vide et n'ajoute donc aucune commande ni permission.
 | `/announce <network\|type\|instance> <clé.langue>` | — | `tropicube.admin.announce` | Diffuse une annonce localisée configurée |
 | `/networkdiag` | `/netdiag` | `tropicube.admin.diagnostic` | Affiche l'état Redis, les instances et la protection des connexions |
 
-Les grades autorisés à activer `/nick` sont configurés dans `nick.allowed-grades`; les grades staff sont destinés à y figurer explicitement. `/nick off` reste toujours accessible, annule aussi une génération encore en attente et peut être rejoué si un backend n'a pas encore restauré le profil. Le changement est propagé aux backends par Redis sans déconnexion volontaire du joueur ; l'identité et le profil original restent disponibles jusqu'à la restauration effective afin qu'une perte d'événement ne bloque jamais le joueur. Deux générations simultanées pour le même joueur sont refusées. L'identité Redis conserve également le grade d'affichage factice `PREMIUM` pendant 24 heures après une déconnexion et le restaure dans la tablist à la reconnexion, sans modifier les permissions réelles.
+`vipLevel ≥ 3` autorise l'activation de `/nick`. `/nick off` reste toujours accessible et le grade d'affichage factice ne modifie jamais les niveaux réels.
 
 `/whitelist` est validée par Velocity : l'émetteur doit posséder une partie personnalisée active et privée. Un pseudo est résolu parmi les joueurs actuellement ou précédemment vus par le proxy ; un UUID est aussi accepté. L'item de whitelist remis à l'hôte dans la hotbar SheepWars utilise le même flux proxy.
 
@@ -167,15 +160,15 @@ Les grades autorisés à activer `/nick` sont configurés dans `nick.allowed-gra
 | `/tropi maintenance <template> <on|off>` | Interdit ou réautorise les créations sur un template |
 | `/tropi reload` | Recharge les templates et la configuration du proxy |
 
-## Permissions réseau principales
+## Capacités réseau dérivées
 
-Les permissions Paper sont résolues par TropicubeCore à partir du grade et des attributions individuelles :
+Les nœuds Paper et Velocity sont uniquement des adaptateurs calculés depuis `vipLevel` et `modLevel` :
 
 - `tropicube.bypass.whitelist` : accès aux parties en liste blanche ;
 - `tropicube.bypass.spam` : exemption de l'anti-spam du chat ;
 - `tropicube.chat.color` : MiniMessage/couleurs autorisés dans le chat ;
-- `tropicube.vip`, `tropicube.premium`, `tropicube.staff` : marqueurs fonctionnels de grade.
+- `tropicube.vip`, `tropicube.premium`, `tropicube.staff` : marqueurs fonctionnels de niveau.
 
-Velocity possède son propre fournisseur de permissions. Les UUID inscrits dans `admin-uuids` reçoivent exactement `tropicube.admin`, `tropicube.admin.find`, `tropicube.admin.send`, `tropicube.admin.pull` et `tropicube.bypass.whitelist`. Les permissions arbitraires de Core ne sont pas automatiquement importées dans le proxy. La priorité de `/queue` et l'accès à `/nick` lisent séparément le grade publié dans Redis.
+Velocity utilise le profil révisionné publié par Core dans Redis et le conserve en mémoire. Une valeur absente ou invalide vaut `0/0` ; aucun accès Redis n'est effectué dans le callback de permissions.
 
-`OWNER` possède `*` et `ADMIN` possède `tropicube.*` sur Paper. Les valeurs `default: op` de `plugin.yml` restent utiles en environnement local, mais les grades constituent la source normale des autorisations sur les backends.
+`modLevel 3` couvre toute l'administration Tropicube. `modLevel 4` ajoute le wildcard global ; les opérateurs Paper et UUID configurés ne donnent plus de droits.

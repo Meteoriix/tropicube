@@ -8,9 +8,9 @@ Tropicube separates proxy orchestration, shared network services, lobby presenta
 
 | Module | Main contracts |
 |---|---|
-| Docker API | `ServerTemplate`, `ServerInstance`, Redis access, Docker lifecycle, shared nick and grade payloads |
+| Docker API | `ServerTemplate`, `ServerInstance`, Redis access, Docker lifecycle, shared nick and access-level payloads |
 | Velocity | Dynamic registration, routing, queues, health checks, nick profiles, and proxy commands |
-| Core | SQL profiles, economy, grades, permissions, localization, moderation, and Paper-side nick application |
+| Core | SQL profiles, economy, cosmetic grades, VIP/mod levels, localization, moderation, and Paper-side nick application |
 | Lobby | Server catalogs, menus, custom game creation, reconnect and replay entry points |
 | SheepWars | Explicit game state machine, teams, kits, sheep abilities, scoreboard, spectators, and match cleanup |
 | Fallen Kingdoms | Empty implementation slot governed by the separate design and technical specification |
@@ -60,7 +60,7 @@ Sheep distribution uses an immutable effective-weight table followed by an indep
 | `party:<id>:leader` / `party:<id>:members` | Core | Core, Velocity, Lobby | Leader and atomic `uuid -> follow` membership hash, with a 24-hour TTL |
 | `party:offline:<uuid>` | Velocity | Velocity | Durable disconnect timestamp with a 24-hour TTL, cleared on reconnect or reconciliation |
 | `party:invites:<target>` / `party:invites:sent:<leader>` | Core | Core, Lobby | Received (`leader -> party`) and sent (`target -> party`) indexes for the same invitation, using the configured invitation TTL; Lua scripts atomically update both indexes on creation, acceptance, denial, and cancellation. The sent index is populated for new or renewed invitations |
-| `player:grade:<uuid>` | Core | Velocity | Current network grade, 24-hour TTL |
+| `player:access:<uuid>` | Core | Velocity | Persistent `vipLevel:modLevel:revision`; consumed through a local fail-closed cache |
 | `player:language:<uuid>` | Core | Velocity | Current interface language |
 | `nick:<uuid>` | Velocity | Core and games | Nickname, signed skin, persistent fake display grade; 24-hour TTL |
 | `nick:original:<uuid>` | Velocity | Core | Original name and signed skin used by `/nick off` |
@@ -100,7 +100,7 @@ Core owns the localized persistent-data Profile head. Lobby places it in slot 4 
 
 The game selector routes clicks without blocking Paper: left to Quick Play, right to Ranked 4v4/8v8, and `Shift + left click` to the filtered public-instance browser. Velocity publishes an explicit `InstanceMode` for templates and instances, so Lobby never infers Quick Play, Ranked, or Custom behavior from display names. Private custom instances remain whitelist-filtered and creation is visibly locked below VIP+.
 
-Grade purchases lock the profile and economy rows in one MySQL transaction, revalidate the expected grade, charge only the catalog-price difference, record the transaction, and promote before commit. Economy and permission caches are refreshed only after success.
+Grade purchases lock the profile and economy rows in one MySQL transaction, revalidate the expected grade, charge only the catalog-price difference, apply both configured default levels, write the access audit, and commit before caches are refreshed.
 
 ## Persistence
 
@@ -110,7 +110,7 @@ Guilds persist independently from matches. Owner, officer, and member roles gate
 
 Profiles aggregate identity, level, balance, social state, guild, and SheepWars statistics while enforcing summary/friends/private visibility. Lobby resolves preferences away from the Paper thread, hides only entities according to everyone/friends/party/nobody, and reapplies the filter after joins or changes. Smart selection favors a started countdown and then the fullest instance with enough capacity.
 
-MySQL stores durable profiles, friendships, grades, permissions, balances, moderation history, and SheepWars preferences. Redis accelerates reads and coordinates ephemeral network state. Any SQL schema change requires a compatible migration and suitable indexes; any Redis contract change must document its key, TTL, atomicity, and consumers.
+MySQL stores durable profiles, friendships, cosmetic grades, access levels and their audit, balances, moderation history, and SheepWars preferences. Individual permission rows no longer exist. Redis accelerates reads and coordinates ephemeral network state.
 
 ## Shutdown
 

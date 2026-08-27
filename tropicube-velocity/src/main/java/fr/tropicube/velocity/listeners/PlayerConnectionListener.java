@@ -15,12 +15,11 @@ import fr.tropicube.docker.model.SecuritySessionKeys;
 import fr.tropicube.docker.model.ServerInstance;
 import fr.tropicube.velocity.TropicubeVelocity;
 import fr.tropicube.velocity.managers.TropiServerManager;
+import fr.tropicube.velocity.managers.AccessProfileCache;
 import fr.tropicube.velocity.managers.VelocityLanguageManager;
 import org.slf4j.Logger;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -31,60 +30,29 @@ public class PlayerConnectionListener {
 
     private static final int INITIAL_LOBBY_WELCOME_TTL_SECONDS = 60;
 
-    private static final Set<String> ADMIN_PERMISSIONS = Set.of(
-            "tropicube.admin",
-            "tropicube.admin.find",
-            "tropicube.admin.send",
-            "tropicube.admin.pull",
-            "tropicube.admin.maintenance",
-            "tropicube.admin.announce",
-            "tropicube.admin.diagnostic",
-            "tropicube.bypass.whitelist"
-    );
-
     private final TropicubeVelocity plugin;
     private final TropiServerManager serverManager;
     private final RedisManager redisManager;
     private final Logger logger;
     private final VelocityLanguageManager lm;
+    private final AccessProfileCache accessProfiles;
 
     public PlayerConnectionListener(TropicubeVelocity plugin, TropiServerManager serverManager,
-                                    RedisManager redisManager, Logger logger, VelocityLanguageManager lm) {
+                                    RedisManager redisManager, AccessProfileCache accessProfiles,
+                                    Logger logger, VelocityLanguageManager lm) {
         this.plugin = plugin;
         this.serverManager = serverManager;
         this.redisManager = redisManager;
         this.logger = logger;
         this.lm = lm;
+        this.accessProfiles = accessProfiles;
     }
 
     @Subscribe
     public void onPermissionsSetup(PermissionsSetupEvent event) {
         if (!(event.getSubject() instanceof Player player)) return;
-        try {
-            List<String> admins = plugin.getConfig().node("admin-uuids").getList(String.class, List.of());
-            boolean isAdmin = admins.stream().map(PlayerConnectionListener::parseUuid)
-                    .filter(Objects::nonNull)
-                    .anyMatch(player.getUniqueId()::equals);
-            if (isAdmin) {
-                event.setProvider(_ -> permission -> isAdminPermission(permission)
-                        ? Tristate.TRUE
-                        : Tristate.UNDEFINED);
-            }
-        } catch (Exception e) {
-            logger.warn(MessageStyle.log("PROXY", "<yellow>Erreur lecture liste admins"), e);
-        }
-    }
-
-    static boolean isAdminPermission(String permission) {
-        return ADMIN_PERMISSIONS.contains(permission);
-    }
-
-    private static UUID parseUuid(String value) {
-        try {
-            return UUID.fromString(value);
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
+        event.setProvider(_ -> permission -> accessProfiles.hasPermission(player.getUniqueId(), permission)
+                ? Tristate.TRUE : Tristate.FALSE);
     }
 
     @Subscribe
@@ -118,6 +86,7 @@ public class PlayerConnectionListener {
         Player player = event.getPlayer();
 
         lm.loadPlayerLanguage(player.getUniqueId());
+        accessProfiles.refresh(player.getUniqueId());
 
         // A previous proxy crash may have prevented disconnect cleanup.
         redisManager.delete(SecuritySessionKeys.staff(player.getUniqueId()));
@@ -146,6 +115,7 @@ public class PlayerConnectionListener {
         plugin.getQueueManager().removeFromQueue(player.getUniqueId());
         serverManager.removeFromMatchmaking(player.getUniqueId());
         lm.unloadPlayer(player.getUniqueId());
+        accessProfiles.unload(player.getUniqueId());
         redisManager.publishPlayerEvent("PLAYER_QUIT",
                 player.getUniqueId() + ":" + player.getUsername());
         plugin.getPartyCoordinator().onPlayerDisconnected(player.getUniqueId());

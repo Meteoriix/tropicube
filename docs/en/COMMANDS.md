@@ -5,11 +5,11 @@
 | Command | Alias | Permission | Purpose |
 |---|---|---|---|
 | `/server [name]` | — | none | Lists known instances or connects to one |
-| `/queue <server>` | `/file` | none | Joins the queue for a full instance; Premium and staff grades have priority |
+| `/queue <server>` | `/file` | none | Joins the queue for a full instance; `vipLevel ≥ 2` has priority |
 | `/hub` | `/lobby` | none | Connects to the least loaded lobby |
 | `/whitelist add <player>` | — | private-game host | Adds a known player to the private custom game |
 | `/whitelist remove <player>` | — | private-game host | Removes a player, except the host, from the private game |
-| `/nick` | — | configured grade | Generates and applies a random name and signed skin |
+| `/nick` | — | `vipLevel ≥ 3` | Generates and applies a random name and signed skin |
 | `/nick off` | — | none | Restores the original identity, even after losing the required grade |
 | `/find <player>` | — | `tropicube.admin.find` | Locates a connected player |
 | `/send <player|*> <server>` | — | `tropicube.admin.send` | Transfers one or all players |
@@ -19,7 +19,7 @@
 | `/announce <network\|type\|instance> <language.key>` | — | `tropicube.admin.announce` | Broadcasts a configured localized announcement |
 | `/networkdiag` | `/netdiag` | `tropicube.admin.diagnostic` | Displays Redis, instance, and connection-protection health |
 
-`nick.allowed-grades` controls who may enable a nick. Disabling is always allowed, cancels an outstanding skin request, and can be retried while a backend has not restored the profile. The nick and original-profile Redis entries remain available until restoration succeeds, so a lost event cannot lock the player into the visual identity. The Redis identity keeps the fake `PREMIUM` display grade for 24 hours after disconnecting and restores it in the tablist after reconnecting, without changing real permissions. Concurrent generations for the same player are rejected.
+`vipLevel ≥ 3` controls who may enable a nick. Disabling is always allowed, cancels an outstanding skin request, and can be retried while a backend has not restored the profile. The visual grade remains independent from access levels.
 
 Velocity validates `/whitelist`: the sender must own an active private custom game. Names resolve among players currently or previously seen by the proxy, and UUIDs are accepted directly. The SheepWars host hotbar item uses the same proxy-owned mutation path.
 
@@ -29,8 +29,8 @@ Velocity validates `/whitelist`: the sender must own an active private custom ga
 |---|---|---|
 | `/money` | none | Displays only the sender's TropiCoin balance |
 | `/eco <set|add|remove|top> ...` | economy administration | Changes balances or displays the ranking |
-| `/rank <set|info|list> ...` | grade administration | Reads and assigns grades, including temporary grades |
-| `/tropiperm ...` | permission administration | Manages individual and grade permissions |
+| `/rank <set|info|list> ...` | `modLevel ≥ 3` | Reads and assigns cosmetic grades, including temporary grades; assignment replaces both levels |
+| `/level <player> [vip|mod] [level]` | `modLevel ≥ 3` | Reads or permanently changes cumulative access levels |
 | `/lang [fr|en|de|es]` | none | Reads or changes the persistent language |
 | `/help [general|games|profile|staff]` | none; staff section is restricted | Summarizes available commands by category |
 | `/friend add|accept|deny|cancel|remove <player>` | none | Manages persistent friendships and cancels sent requests |
@@ -79,5 +79,7 @@ The lobby hotbar keeps stable positions: Games in slot 0, Social in slot 2, the 
 ## Administration principles
 
 Command handlers validate arguments and permissions at the boundary. Player-facing text comes from the four language files. Operations involving SQL, Redis, Docker, or disk must not block the Paper or Velocity event thread.
+
+`vipLevel` ranges from 0 to 3 and `modLevel` from 0 to 4. Players cannot change themselves and may only assign a moderator level strictly below their own; level 4 is console-only. Arbitrary individual permissions no longer exist. Sensitive staff actions still require TOTP.
 
 After `/` is entered, clients receive every registered Tropicube command and alias from Velocity, Core, Lobby, and the current game, while permission checks continue to hide inaccessible staff commands. External commands and namespaces stay hidden; `/?`, Bukkit/Minecraft namespaces, and vanilla commands are rejected network-wide. Accepting a party invitation while already grouped atomically leaves the old party, promotes a successor when needed, and joins the new one.

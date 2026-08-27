@@ -4,6 +4,13 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+### 2026-08-27
+
+#### Changed
+
+- Replaced grade and individual-permission authorization with cumulative `vipLevel` (0–3) and `modLevel` (0–4), `/level`, SQL auditing, and a revisioned Redis cache shared with Velocity.
+- Grades are now cosmetic and atomically apply their configured default levels; administrator UUIDs, Docker operators, and `/tropiperm` were removed.
+
 ### 2026-08-25
 
 #### Changed

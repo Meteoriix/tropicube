@@ -20,7 +20,7 @@ class NickManagerPersistenceTest {
         UUID uuid = UUID.randomUUID();
         InMemoryRedisManager redis = new InMemoryRedisManager();
         try {
-            NickManager manager = new NickManager(redis, LoggerFactory.getLogger(getClass()), List.of(), List.of());
+            NickManager manager = new NickManager(redis, LoggerFactory.getLogger(getClass()), List.of(), null);
             NickIdentity identity = new NickIdentity("MaskedWolf", "skin", "signature", "PREMIUM");
             redis.set(NickIdentity.key(uuid), identity.toJson(), 10);
             redis.set("nick:original:" + uuid,
@@ -42,7 +42,7 @@ class NickManagerPersistenceTest {
         UUID uuid = UUID.randomUUID();
         InMemoryRedisManager redis = new InMemoryRedisManager();
         try {
-            NickManager manager = new NickManager(redis, LoggerFactory.getLogger(getClass()), List.of(), List.of());
+            NickManager manager = new NickManager(redis, LoggerFactory.getLogger(getClass()), List.of(), null);
             manager.storeNick(uuid, "MaskedWolf", new NickManager.SkinData("skin", "signature"));
             redis.set("nick:original:" + uuid,
                     "{\"n\":\"RealWolf\",\"v\":\"skin\",\"s\":\"signature\"}", 10);
@@ -62,7 +62,7 @@ class NickManagerPersistenceTest {
         UUID uuid = UUID.randomUUID();
         InMemoryRedisManager redis = new InMemoryRedisManager();
         try {
-            NickManager manager = new NickManager(redis, LoggerFactory.getLogger(getClass()), List.of(), List.of());
+            NickManager manager = new NickManager(redis, LoggerFactory.getLogger(getClass()), List.of(), null);
             redis.set("nick:original:" + uuid,
                     "{\"n\":\"RealWolf\",\"v\":\"skin\",\"s\":\"signature\"}", 10);
 

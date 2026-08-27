@@ -90,7 +90,7 @@ Plugin obligatoire sur chaque backend Paper. Son ordre d'initialisation est volo
 Il fournit :
 
 - le profil et la langue du joueur ;
-- les grades, priorités et permissions calculées ;
+- les grades strictement cosmétiques et les profils d'accès `vipLevel`/`modLevel` ;
 - l'économie et l'historique des transactions ;
 - les sanctions de modération ;
 - le formatage du chat et des pseudos ;
@@ -178,8 +178,8 @@ Ce module est pour l'instant un squelette Maven sans classe, ressource, dépenda
 | `post-game:<uuid>` | SheepWars | Lobby | Cible et type proposés par `/playnext`, TTL 120 s |
 | `settings:auto-replay:<uuid>` | Lobby | Lobby | `OFF`, compteur restant ou `0` en attente de confirmation ; persistant dans Redis |
 | `nick:<uuid>` | Velocity | Core/mini-jeux | Pseudonyme, skin et grade d'affichage factice actifs, TTL 24 h renouvelé après reconnexion |
-| `player:grade:<uuid>` | Core | Velocity | Grade réseau courant, TTL 24 h, utilisé par `/nick` et la priorité de file |
-| langue/grade/cache joueur | Core | Core/Velocity | Accélération et synchronisation du profil |
+| `player:access:<uuid>` | Core | Velocity | `vipLevel:modLevel:revision`, persistant et remis en cache localement sans I/O dans les callbacks de permissions |
+| langue/cache joueur | Core | Core/Velocity | Accélération et synchronisation du profil |
 
 Les messages de transfert ne doivent jamais appeler Bukkit depuis le thread d'abonnement Redis. Chaque plugin planifie les opérations d'entité ou d'inventaire sur le thread Paper.
 
@@ -231,8 +231,8 @@ Le profil agrège identité, niveau, solde, relations, guilde et statistiques Sh
 - `tropicube_economy` : solde courant ;
 - `tropicube_transactions` : journal des mouvements ;
 - `tropicube_sanctions` : mutes, avertissements et expulsions ;
-- `tropicube_grades` : définition des grades ;
-- `tropicube_permissions` : permissions individuelles temporaires ou permanentes ;
+- `tropicube_grades` : affichage cosmétique et niveaux par défaut des grades ;
+- `tropicube_access_audit` : journal des changements de grade et de niveaux, conservé 365 jours par défaut ;
 - `tropicube_sheepwars` : choix de kit historique ;
 - `tropicube_sheepwars_matches` et `tropicube_sheepwars_match_players` : historique détaillé et cotes avant/après ;
 - `tropicube_sheepwars_ratings` : cote unique 4v4/8v8, incertitude, placements et saison ;

@@ -9,7 +9,7 @@ import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.util.GameProfile;
 import fr.tropicube.docker.client.RedisManager;
 import fr.tropicube.docker.model.NickIdentity;
-import fr.tropicube.docker.model.PlayerGradeCache;
+import fr.tropicube.docker.model.PlayerAccessProfile;
 import org.slf4j.Logger;
 
 import java.lang.reflect.Field;
@@ -52,11 +52,11 @@ public class NickManager {
     private final Logger       logger;
     private final HttpClient   http;
     private final List<String> skinUuids;
-    private final List<String> allowedGrades;
+    private final AccessProfileCache accessProfiles;
     private final Gson         gson = new Gson();
 
     public NickManager(RedisManager redis, Logger logger,
-                       List<String> configuredSkinUuids, List<String> allowedGrades) {
+                       List<String> configuredSkinUuids, AccessProfileCache accessProfiles) {
         this.redis  = redis;
         this.logger = logger;
         this.http   = HttpClient.newBuilder()
@@ -74,21 +74,16 @@ public class NickManager {
             .forEach(pool::add);
         this.skinUuids = List.copyOf(pool);
 
-        this.allowedGrades = Objects.requireNonNullElse(allowedGrades, List.<String>of()).stream()
-            .filter(Objects::nonNull)
-            .map(String::trim)
-            .filter(grade -> !grade.isEmpty())
-            .map(grade -> grade.toUpperCase(Locale.ROOT))
-            .distinct()
-            .toList();
+        this.accessProfiles = accessProfiles;
     }
 
     // Autorisation
 
     public boolean canUseNick(UUID uuid) {
-        if (allowedGrades.isEmpty()) return false;
-        String grade = redis.get(PlayerGradeCache.key(uuid));
-        return PlayerGradeCache.isAllowed(grade, allowedGrades);
+        if (accessProfiles != null) return accessProfiles.hasPermission(uuid, "tropicube.nick");
+        PlayerAccessProfile profile = PlayerAccessProfile.parse(redis.get(PlayerAccessProfile.key(uuid)))
+                .orElse(PlayerAccessProfile.none());
+        return fr.tropicube.docker.model.AccessPolicy.defaults().hasPermission(profile, "tropicube.nick");
     }
 
     // Pseudonym generation

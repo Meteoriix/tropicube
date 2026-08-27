@@ -10,6 +10,18 @@ redis:
 language:
   default: "fr"
 
+access:
+  permission-thresholds:
+    vip:
+      "tropicube.queue.priority": 2
+      "tropicube.nick": 3
+    mod:
+      "tropicube.staff": 1
+      "tropicube.mute": 1
+      "tropicube.kick": 1
+      "tropicube.warn": 2
+      "tropicube.ban": 2
+
 party:
   # Offline members are removed after this grace period; leadership is then transferred to an online member.
   # A party with no online member is deleted immediately.
@@ -26,6 +38,7 @@ connection-protection:
 maintenance:
   default-deadline-minutes: 30
 
+# Public proxy entry shown in the multiplayer server list. Backends remain hidden.
 motd:
   line-1: "<gold><bold>Tropicube</bold></gold> <gray>•</gray> <aqua>Des cubes, du soleil et de l’aventure !</aqua>"
   line-2: "<yellow>{games}</yellow>"
@@ -63,11 +76,6 @@ docker:
   # Absolute path of the project on the Docker host (used to resolve relative volumes)
   base-path: ""
 
-admin-uuids:
-  - "bcc80c2b-98ca-4b6c-b21b-33cf85e41228" # Meteoriix
-  - "7f72f5e5-72ba-4a2f-99fc-d5a204c1b9da" # OloWak
-  - "62a69a13-11bc-4b74-9c19-5d0a5253af2d" # Flashoune
-
 # =====================================================
 # Nick system (/nick)
 # skin-uuids: Additional Mojang UUIDs used
@@ -75,8 +83,7 @@ admin-uuids:
 # Notch, jeb_ and Dinnerbone are included by default.
 # =====================================================
 nick:
-  # Ranks allowed to use /nick (staff ranks are included explicitly).
-  allowed-grades: ["PREMIUM", "HELPER", "MODERATEUR", "ADMIN", "OWNER"]
+  # /nick is authorized locally from vipLevel >= 3.
   # Additional Mojang UUIDs for the random skin pool.
   skin-uuids:
     - "96ac1c5a-de96-4556-9763-46011a868496"
@@ -147,10 +154,6 @@ templates:
       TROPICUBE_DB_USER: "${MYSQL_USER}"
       TROPICUBE_DB_PASSWORD: "${MYSQL_PASSWORD}"
       TROPICUBE_TOTP_MASTER_KEY: "${TOTP_MASTER_KEY}"
-      OPS: |
-        Meteoriix
-        OloWak
-        Flashoune
 
   sheepwars:
     enabled: true
@@ -194,10 +197,6 @@ templates:
       TROPICUBE_DB_USER: "${MYSQL_USER}"
       TROPICUBE_DB_PASSWORD: "${MYSQL_PASSWORD}"
       TROPICUBE_TOTP_MASTER_KEY: "${TOTP_MASTER_KEY}"
-      OPS: |
-        Meteoriix
-        OloWak
-        Flashoune
 
   sheepwars-ranked-4v4:
     enabled: true

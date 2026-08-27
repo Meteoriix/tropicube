@@ -1,6 +1,7 @@
 package fr.tropicube.core.network;
 
 import fr.tropicube.core.TropicubeCore;
+import fr.tropicube.core.managers.PermissionManager;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -44,10 +45,10 @@ public final class GradePurchaseService {
         try (Connection connection = core.getDatabaseManager().getConnection()) {
             connection.setAutoCommit(false);
             try {
-                String current = lockGrade(connection, playerId);
+                AccessRow current = lockAccess(connection, playerId);
                 if (current == null) return rollback(connection, Result.INVALID);
-                if (!current.equalsIgnoreCase(expected)) return rollback(connection, Result.STALE_GRADE);
-                var currentInfo = core.getPermissionManager().getAllGrades().get(current.toUpperCase(Locale.ROOT));
+                if (!current.grade().equalsIgnoreCase(expected)) return rollback(connection, Result.STALE_GRADE);
+                var currentInfo = core.getPermissionManager().getAllGrades().get(current.grade().toUpperCase(Locale.ROOT));
                 var targetInfo = core.getPermissionManager().getAllGrades().get(target);
                 if (currentInfo == null || targetInfo == null) return rollback(connection, Result.INVALID);
                 if (currentInfo.priority() >= targetInfo.priority()) return rollback(connection, Result.ALREADY_OWNED);
@@ -67,11 +68,17 @@ public final class GradePurchaseService {
                     if (update.executeUpdate() != 1) throw new SQLException("Compte économique introuvable");
                 }
                 try (PreparedStatement update = connection.prepareStatement(
-                        "UPDATE tropicube_players SET grade=?, grade_expiry=-1 WHERE uuid=?")) {
+                        "UPDATE tropicube_players SET grade=?,grade_expiry=-1,vip_level=?,mod_level=?,access_revision=? WHERE uuid=?")) {
                     update.setString(1, target);
-                    update.setString(2, playerId.toString());
+                    update.setInt(2, targetInfo.defaultVipLevel());
+                    update.setInt(3, targetInfo.defaultModLevel());
+                    update.setLong(4, current.revision() + 1);
+                    update.setString(5, playerId.toString());
                     if (update.executeUpdate() != 1) throw new SQLException("Joueur introuvable");
                 }
+                PermissionManager.insertAudit(connection, playerId, playerId, "SHOP_PURCHASE",
+                        current.grade(), target, current.vipLevel(), targetInfo.defaultVipLevel(),
+                        current.modLevel(), targetInfo.defaultModLevel(), current.revision() + 1);
                 if (price > 0) insertTransaction(connection, playerId, charge, target);
                 connection.commit();
                 return Result.PURCHASED;
@@ -84,13 +91,18 @@ public final class GradePurchaseService {
         }
     }
 
-    private static String lockGrade(Connection connection, UUID playerId) throws SQLException {
+    private static AccessRow lockAccess(Connection connection, UUID playerId) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(
-                "SELECT grade FROM tropicube_players WHERE uuid=? FOR UPDATE")) {
+                "SELECT grade,vip_level,mod_level,access_revision FROM tropicube_players WHERE uuid=? FOR UPDATE")) {
             statement.setString(1, playerId.toString());
-            try (ResultSet result = statement.executeQuery()) { return result.next() ? result.getString(1) : null; }
+            try (ResultSet result = statement.executeQuery()) {
+                return result.next() ? new AccessRow(result.getString(1), result.getInt(2),
+                        result.getInt(3), result.getLong(4)) : null;
+            }
         }
     }
+
+    private record AccessRow(String grade, int vipLevel, int modLevel, long revision) {}
 
     private static BigDecimal lockBalance(Connection connection, UUID playerId) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(

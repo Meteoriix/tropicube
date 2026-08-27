@@ -1,5 +1,8 @@
 package fr.tropicube.core.util;
 
+import fr.tropicube.docker.model.AccessPolicy;
+import fr.tropicube.docker.model.PlayerAccessProfile;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -62,6 +65,21 @@ class YamlResourcesTest {
                 config.loadFromString(yaml);
             }, () -> "YAML invalide : " + file);
         }
+    }
+
+    @Test
+    void accessThresholdsRemainReadableWithDottedPermissionNames() {
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(
+                Path.of("src/main/resources/config.yml").toFile());
+        ConfigurationSection section = config.getConfigurationSection("access.permission-thresholds.vip");
+        assertNotNull(section);
+        Map<String, Integer> thresholds = new TreeMap<>();
+        section.getValues(true).forEach((permission, value) -> {
+            if (value instanceof Number number) thresholds.put(permission, number.intValue());
+        });
+
+        AccessPolicy policy = new AccessPolicy(thresholds, Map.of());
+        assertTrue(policy.hasPermission(new PlayerAccessProfile(2, 0, 0), "tropicube.queue.priority"));
     }
 
     @Test
@@ -380,7 +398,7 @@ class YamlResourcesTest {
                 "notifications", "settings", "nick", "fly", "2fa", "staff", "staffchat",
                 "reports", "kick", "mute", "unmute", "warn", "history", "ban", "tempban",
                 "unban", "privacy", "find", "send", "pull", "maintenance", "announce",
-                "networkdiag", "eco", "rank", "permissions", "tropicube", "coreadmin");
+                "networkdiag", "eco", "rank", "level", "tropicube", "coreadmin");
 
         for (String language : List.of("fr", "en", "es", "de")) {
             YamlConfiguration config = YamlConfiguration.loadConfiguration(
@@ -406,7 +424,7 @@ class YamlResourcesTest {
                 "profile", List.of("profile", "center", "missions", "notifications", "settings", "nick", "fly"),
                 "staff", List.of("2fa", "staff", "staffchat", "reports", "kick", "mute", "unmute",
                         "warn", "history", "ban", "tempban", "unban", "privacy", "find", "send", "pull",
-                        "maintenance", "announce", "networkdiag", "eco", "rank", "permissions", "tropicube",
+                        "maintenance", "announce", "networkdiag", "eco", "rank", "level", "tropicube",
                         "coreadmin")
         );
         Map<String, List<String>> aliases = Map.ofEntries(
@@ -424,7 +442,6 @@ class YamlResourcesTest {
                 Map.entry("settings", List.of("preferences", "parametres")),
                 Map.entry("fly", List.of("flymode", "fm")), Map.entry("staffchat", List.of("sc")),
                 Map.entry("networkdiag", List.of("netdiag")), Map.entry("rank", List.of("grade")),
-                Map.entry("permissions", List.of("tropiperm")),
                 Map.entry("tropicube", List.of("tropi", "cm")),
                 Map.entry("coreadmin", List.of("tropiadmin", "ca"))
         );

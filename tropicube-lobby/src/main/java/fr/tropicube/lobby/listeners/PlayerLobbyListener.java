@@ -1,6 +1,7 @@
 package fr.tropicube.lobby.listeners;
 
 import fr.tropicube.core.TropicubeCore;
+import fr.tropicube.core.events.PlayerAccessChangedEvent;
 import fr.tropicube.docker.model.PlayerSessionKeys;
 import fr.tropicube.lobby.TropicubeLobby;
 import fr.tropicube.lobby.utils.ItemBuilder;
@@ -60,6 +61,15 @@ public class PlayerLobbyListener implements Listener {
         if (player.hasPermission("tropicube.lobby.jump.double"))  return 2;
         if (player.hasPermission("tropicube.lobby.jump"))         return 1;
         return 0;
+    }
+
+    @EventHandler
+    public void onAccessChanged(PlayerAccessChangedEvent event) {
+        Player player = event.player();
+        int maximum = maxJumps(player);
+        if (maximum == 0) remainingJumps.remove(player.getUniqueId());
+        else remainingJumps.put(player.getUniqueId(), maximum);
+        player.setAllowFlight(player.hasPermission("tropicube.lobby.fly") || maximum > 0);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

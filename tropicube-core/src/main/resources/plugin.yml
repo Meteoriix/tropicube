@@ -20,7 +20,6 @@ commands:
   rank:
     description: "Gérer les grades des joueurs"
     usage: /rank <set|info|list> [joueur] [rank]
-    permission: tropicube.grade.admin
     aliases: [ grade ]
   lang:
     description: "Changer la langue du serveur"
@@ -119,11 +118,9 @@ commands:
     description: "Créer et gérer une guilde"
     usage: /guild <info|create|invite|accept|leave|kick|promote|demote|transfer>
     aliases: [ guilde ]
-  permissions:
-    description: "Gérer les permissions individuelles"
-    usage: /permissions <add|remove|list|grade> ...
-    permission: tropicube.admin.perm
-    aliases: [ tropiperm ]
+  level:
+    description: "Consulter ou modifier les niveaux VIP et modérateur"
+    usage: /level <joueur> [vip|mod] [niveau]
   coreadmin:
     description: "Administration générale Tropicube"
     usage: /coreadmin <reload|info>
@@ -147,52 +144,49 @@ commands:
 permissions:
   tropicube.admin:
     description: "Accès aux commandes d'administration"
-    default: op
+    default: false
   tropicube.eco.admin:
     description: "Administration de l'économie"
-    default: op
+    default: false
   tropicube.grade.admin:
     description: "Gérer les grades"
-    default: op
-  tropicube.admin.perm:
-    description: "Gérer les permissions individuelles"
-    default: op
+    default: false
   tropicube.mute:
     description: "Muter des joueurs"
-    default: op
+    default: false
   tropicube.kick:
     description: "Expulser des joueurs"
-    default: op
+    default: false
   tropicube.warn:
     description: "Avertir des joueurs"
-    default: op
+    default: false
   tropicube.ban:
     description: "Bannir des joueurs"
-    default: op
+    default: false
   tropicube.history:
     description: "Voir l'historique de sanctions"
-    default: op
+    default: false
   tropicube.reports.manage:
     description: "Consulter et traiter les signalements"
-    default: op
+    default: false
   tropicube.moderation.chat-evidence:
     description: "Afficher les identifiants cliquables des messages"
-    default: op
+    default: false
   tropicube.privacy.manage:
     description: "Gérer les demandes relatives aux données personnelles"
-    default: op
+    default: false
   tropicube.2fa.issue:
     description: "Émettre un jeton d'inscription TOTP"
-    default: op
+    default: false
   tropicube.missions.reroll.bonus:
     description: "Accorde deux rerolls quotidiens supplémentaires"
     default: false
   tropicube.bypass.whitelist:
     description: "Bypasser la whitelist"
-    default: op
+    default: false
   tropicube.bypass.spam:
     description: "Bypasser l'anti-spam chat"
-    default: op
+    default: false
   tropicube.chat.color:
     description: "Utiliser des couleurs dans le chat"
     default: false

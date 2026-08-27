@@ -213,6 +213,9 @@ public class TropicubeCore extends JavaPlugin {
                     positiveConfig("guilds.weekly-contribution-cap", 5000, 1));
             getServer().getAsyncScheduler().runAtFixedRate(this, task -> guildService.applySuccession(),
                     1, 24, java.util.concurrent.TimeUnit.HOURS);
+            getServer().getAsyncScheduler().runAtFixedRate(this,
+                    task -> permissionManager.purgeAudit(positiveConfig("access.audit-retention-days", 365, 1)),
+                    1, 24, java.util.concurrent.TimeUnit.HOURS);
             moderationService = new ModerationService(databaseManager, redisManager);
             staffSecurityService = new StaffSecurityService(databaseManager, redisManager,
                     System.getenv("TROPICUBE_TOTP_MASTER_KEY"));
@@ -254,10 +257,10 @@ public class TropicubeCore extends JavaPlugin {
             Objects.requireNonNull(getCommand("rank")).setExecutor(rankCmd);
             Objects.requireNonNull(getCommand("rank")).setTabCompleter(rankCmd); // auto-complétion
 
-            // --- Permissions ---
-            var permCmd = new PermissionCommand(this);
-            Objects.requireNonNull(getCommand("permissions")).setExecutor(permCmd);
-            Objects.requireNonNull(getCommand("permissions")).setTabCompleter(permCmd);
+            // --- Cumulative access levels ---
+            var levelCommand = new LevelCommand(this);
+            Objects.requireNonNull(getCommand("level")).setExecutor(levelCommand);
+            Objects.requireNonNull(getCommand("level")).setTabCompleter(levelCommand);
 
         // --- Language ---
             Objects.requireNonNull(getCommand("lang")).setExecutor(new LanguageCommand(this));

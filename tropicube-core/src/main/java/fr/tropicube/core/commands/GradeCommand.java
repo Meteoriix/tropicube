@@ -26,7 +26,7 @@ public class GradeCommand implements CommandExecutor, TabCompleter {
         var lm = plugin.getLanguageManager();
         var pm = plugin.getPermissionManager();
 
-        if (!sender.hasPermission("tropicube.grade.admin")) {
+        if (sender instanceof Player player && pm.getModLevel(player.getUniqueId()) < 3) {
             sender.sendMessage(lm.getComponentForLang(lang(sender), "general.no-permission"));
             return true;
         }
@@ -53,9 +53,9 @@ public class GradeCommand implements CommandExecutor, TabCompleter {
                     return true;
                 }
                 if (sender instanceof Player sPlayer) {
-                    int senderPrio = pm.getPriority(sPlayer.getUniqueId());
-                    int gradePrio  = pm.getAllGrades().get(args[2].toUpperCase()).priority();
-                    if (gradePrio >= senderPrio && !sender.isOp()) {
+                    int senderLevel = pm.getModLevel(sPlayer.getUniqueId());
+                    int targetLevel = pm.getAllGrades().get(args[2].toUpperCase()).defaultModLevel();
+                    if (targetLevel >= senderLevel) {
                         sender.sendMessage(lm.getComponentForLang(lang(sender), "grade.no-downgrade"));
                         return true;
                     }
@@ -79,11 +79,15 @@ public class GradeCommand implements CommandExecutor, TabCompleter {
                 CommandAsync.run(plugin, sender, language, () -> {
                     UUID target = onlineUuid != null ? onlineUuid
                             : plugin.getPlayerDataManager().getUuidByName(targetName).orElse(null);
-                    if (target != null) pm.setGrade(target, gradeName, gradeDuration);
+                    if (target != null && !target.equals(sender instanceof Player p ? p.getUniqueId() : null))
+                        pm.setGrade(target, gradeName, gradeDuration,
+                                sender instanceof Player p ? p.getUniqueId() : null, "COMMAND_GRADE");
                     return target;
                 }, target -> {
                     if (target == null) sender.sendMessage(lm.getComponentForLang(language,
                             "general.player-not-found", targetName));
+                    else if (sender instanceof Player player && target.equals(player.getUniqueId()))
+                        sender.sendMessage(lm.getComponentForLang(language, "access.no-self"));
                     else sender.sendMessage(lm.getComponentForLang(language, "grade.set-success",
                             targetName, g.prefix() + g.displayName()));
                 });
@@ -109,10 +113,8 @@ public class GradeCommand implements CommandExecutor, TabCompleter {
                     }
                     sender.sendMessage(lm.getComponentForLang(language, "commands.grade-info-grade",
                             targetName, g.prefix() + g.displayName()));
-                    String yes = lm.getForLang(language, "commands.grade-info-yes");
-                    String no  = lm.getForLang(language, "commands.grade-info-no");
-                    sender.sendMessage(lm.getComponentForLang(language, "commands.grade-info-flags",
-                            g.isVip() ? yes : no, g.isStaff() ? yes : no));
+                    sender.sendMessage(lm.getComponentForLang(language, "access.grade-defaults",
+                            g.defaultVipLevel(), g.defaultModLevel()));
                 });
             }
             default -> sender.sendMessage(lm.getComponentForLang(lang(sender), "commands.grade-usage"));
@@ -122,7 +124,8 @@ public class GradeCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!sender.hasPermission("tropicube.grade.admin")) return Collections.emptyList();
+        if (sender instanceof Player player && plugin.getPermissionManager().getModLevel(player.getUniqueId()) < 3)
+            return Collections.emptyList();
         var pm = plugin.getPermissionManager();
 
         if (args.length == 1) {
@@ -133,7 +136,10 @@ public class GradeCommand implements CommandExecutor, TabCompleter {
                     .map(Player::getName).toList(), args[1]);
         }
         if (args.length == 3 && args[0].equalsIgnoreCase("set")) {
-            return filter(new ArrayList<>(pm.getAllGrades().keySet()), args[2]);
+            int senderLevel = sender instanceof Player player ? pm.getModLevel(player.getUniqueId()) : 5;
+            return filter(pm.getAllGrades().values().stream()
+                    .filter(grade -> grade.defaultModLevel() < senderLevel)
+                    .map(PermissionManager.Grade::name).toList(), args[2]);
         }
         return Collections.emptyList();
     }

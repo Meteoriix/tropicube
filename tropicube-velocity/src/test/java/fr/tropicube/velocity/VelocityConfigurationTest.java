@@ -40,12 +40,14 @@ class VelocityConfigurationTest {
     }
 
     @Test
-    void bundledNickConfigurationAllowsPremiumAndStaffGrades() throws IOException {
+    void bundledConfigurationHasNoGradeOrOperatorAuthorizationFallback() throws IOException {
         ConfigurationNode config = loadBundledConfig();
 
-        assertEquals(
-                java.util.List.of("PREMIUM", "HELPER", "MODERATEUR", "ADMIN", "OWNER"),
-                config.node("nick", "allowed-grades").getList(String.class));
+        assertTrue(config.node("admin-uuids").virtual());
+        assertTrue(config.node("nick", "allowed-grades").virtual());
+        for (String template : new String[]{"lobby", "sheepwars"}) {
+            assertTrue(config.node("templates", template, "environment", "OPS").virtual());
+        }
     }
 
     @Test

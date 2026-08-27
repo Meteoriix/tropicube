@@ -1,5 +1,9 @@
 # Installation, déploiement et exploitation
 
+## Migration des niveaux d'accès
+
+La migration V008 supprime définitivement `tropicube_permissions` et les anciens champs de permissions des grades. Effectuer un dump MySQL avant le premier déploiement. Déployer et recréer Velocity ainsi que tous les backends Paper dans la même fenêtre : les versions précédentes ne comprennent pas `player:access:<uuid>`. Après démarrage, vérifier les huit grades, une modification `/level`, la priorité de file et `/nick`. Un retour arrière nécessite la sauvegarde SQL réalisée avant V008.
+
 ## Prérequis
 
 ### Communs

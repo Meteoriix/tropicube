@@ -2,31 +2,26 @@ package fr.tropicube.velocity.commands;
 
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;
-import fr.tropicube.docker.client.RedisManager;
-import fr.tropicube.docker.model.PlayerGradeCache;
+import fr.tropicube.velocity.managers.AccessProfileCache;
 import fr.tropicube.velocity.managers.QueueManager;
 import fr.tropicube.velocity.managers.TropiServerManager;
 import fr.tropicube.velocity.managers.VelocityLanguageManager;
 
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
 /** Adds a player to the queue of a full instance. */
 public class QueueCommand implements SimpleCommand {
 
-    private static final Set<String> PRIORITY_GRADES = Set.of("VIP_PLUS", "PREMIUM");
-
     private final TropiServerManager serverManager;
     private final QueueManager queueManager;
-    private final RedisManager redisManager;
+    private final AccessProfileCache accessProfiles;
     private final VelocityLanguageManager languageManager;
 
     public QueueCommand(TropiServerManager serverManager, QueueManager queueManager,
-                        RedisManager redisManager, VelocityLanguageManager languageManager) {
+                        AccessProfileCache accessProfiles, VelocityLanguageManager languageManager) {
         this.serverManager = serverManager;
         this.queueManager = queueManager;
-        this.redisManager = redisManager;
+        this.accessProfiles = accessProfiles;
         this.languageManager = languageManager;
     }
 
@@ -51,8 +46,7 @@ public class QueueCommand implements SimpleCommand {
                         "proxy.server-unavailable", instance.getStatus()));
                 return;
             }
-            String grade = redisManager.get(PlayerGradeCache.key(player.getUniqueId()));
-            boolean priority = grade != null && PRIORITY_GRADES.contains(grade.toUpperCase(Locale.ROOT));
+            boolean priority = accessProfiles.hasPermission(player.getUniqueId(), "tropicube.queue.priority");
             queueManager.addToQueue(player, instance.getInstanceId(), priority);
         }, () -> player.sendMessage(languageManager.getComponent(player.getUniqueId(),
                 "proxy.server-not-found", args[0])));

@@ -69,8 +69,9 @@ public class DatabaseManager {
                 language VARCHAR(8) DEFAULT 'fr',
                 grade VARCHAR(32) DEFAULT 'JOUEUR',
                 grade_expiry BIGINT DEFAULT -1,
-                vipLevel SMALLINT DEFAULT 0,
-                staffLevel SMALLINT DEFAULT 0,
+                vip_level SMALLINT NOT NULL DEFAULT 0,
+                mod_level SMALLINT NOT NULL DEFAULT 0,
+                access_revision BIGINT NOT NULL DEFAULT 0,
                 is_banned BOOLEAN DEFAULT FALSE,
                 ban_reason TEXT,
                 ban_expiry BIGINT DEFAULT 0,
@@ -133,23 +134,8 @@ public class DatabaseManager {
                 suffix VARCHAR(64) DEFAULT '',
                 color VARCHAR(32) DEFAULT '<white>',
                 priority INT DEFAULT 0,
-                is_vip BOOLEAN DEFAULT FALSE,
-                is_staff BOOLEAN DEFAULT FALSE,
-                permissions TEXT
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            """,
-
-            // Individual permissions, possibly temporary
-            """
-            CREATE TABLE IF NOT EXISTS tropicube_permissions (
-                uuid VARCHAR(36) NOT NULL,
-                permission VARCHAR(191) NOT NULL,
-                value BOOLEAN DEFAULT TRUE,
-                expiry BIGINT DEFAULT -1,
-                granted_by VARCHAR(36),
-                PRIMARY KEY (uuid, permission),
-                INDEX idx_permissions_expiry (expiry),
-                FOREIGN KEY (uuid) REFERENCES tropicube_players(uuid) ON DELETE CASCADE
+                default_vip_level SMALLINT NOT NULL DEFAULT 0,
+                default_mod_level SMALLINT NOT NULL DEFAULT 0
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
             """,
 
@@ -221,9 +207,11 @@ public class DatabaseManager {
         boolean hadGradeColumn = hasColumn(conn, "tropicube_players", "grade");
         ensureColumn(conn, "tropicube_players", "grade", "VARCHAR(32) DEFAULT 'JOUEUR'");
         ensureColumn(conn, "tropicube_players", "grade_expiry", "BIGINT DEFAULT -1");
-        ensureColumn(conn, "tropicube_grades", "is_vip", "BOOLEAN DEFAULT FALSE");
-        ensureColumn(conn, "tropicube_grades", "is_staff", "BOOLEAN DEFAULT FALSE");
-        ensureColumn(conn, "tropicube_grades", "permissions", "TEXT");
+        ensureColumn(conn, "tropicube_players", "vip_level", "SMALLINT NOT NULL DEFAULT 0");
+        ensureColumn(conn, "tropicube_players", "mod_level", "SMALLINT NOT NULL DEFAULT 0");
+        ensureColumn(conn, "tropicube_players", "access_revision", "BIGINT NOT NULL DEFAULT 0");
+        ensureColumn(conn, "tropicube_grades", "default_vip_level", "SMALLINT NOT NULL DEFAULT 0");
+        ensureColumn(conn, "tropicube_grades", "default_mod_level", "SMALLINT NOT NULL DEFAULT 0");
 
         if (legacyPlayerRank && !hadGradeColumn) {
             try (PreparedStatement stmt = conn.prepareStatement(
@@ -263,33 +251,35 @@ public class DatabaseManager {
 
         String sql = """
             INSERT INTO tropicube_grades
-                (name, display_name, prefix, suffix, color, priority, is_vip, is_staff, permissions)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (name, display_name, prefix, suffix, color, priority, default_vip_level, default_mod_level)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE
                 display_name = VALUES(display_name),
                 prefix       = VALUES(prefix),
                 suffix       = VALUES(suffix),
                 color        = VALUES(color),
-                priority     = VALUES(priority),
-                is_vip       = VALUES(is_vip),
-                is_staff     = VALUES(is_staff),
-                permissions  = VALUES(permissions)
+                priority          = VALUES(priority),
+                default_vip_level = VALUES(default_vip_level),
+                default_mod_level = VALUES(default_mod_level)
             """;
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             for (String gradeName : gradesSection.getKeys(false)) {
                 var s = gradesSection.getConfigurationSection(gradeName);
                 if (s == null) continue;
-                String permsStr = String.join(",", s.getStringList("permissions"));
                 stmt.setString(1, gradeName);
                 stmt.setString(2, s.getString("display-name", gradeName));
                 stmt.setString(3, s.getString("prefix", ""));
                 stmt.setString(4, s.getString("suffix", ""));
                 stmt.setString(5, s.getString("color", "<white>"));
                 stmt.setInt(6, s.getInt("priority", 0));
-                stmt.setBoolean(7, s.getBoolean("is-vip", false));
-                stmt.setBoolean(8, s.getBoolean("is-staff", false));
-                stmt.setString(9, permsStr);
+                int vipLevel = s.getInt("default-vip-level", 0);
+                int modLevel = s.getInt("default-mod-level", 0);
+                if (vipLevel < 0 || vipLevel > 3 || modLevel < 0 || modLevel > 4) {
+                    throw new SQLException("Niveaux invalides pour le grade " + gradeName);
+                }
+                stmt.setInt(7, vipLevel);
+                stmt.setInt(8, modLevel);
                 stmt.addBatch();
             }
             stmt.executeBatch();

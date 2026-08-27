@@ -181,6 +181,6 @@ public class ServerTypeSelectorGUI {
 
     private static boolean customGameAllowed(Player player) {
         return Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core
-                && core.getPermissionManager().getPriority(player.getUniqueId()) >= 20;
+                && core.getPermissionManager().hasPermission(player.getUniqueId(), "tropicube.custom-game.create");
     }
 }

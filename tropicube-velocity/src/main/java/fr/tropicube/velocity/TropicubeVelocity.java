@@ -10,6 +10,7 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import fr.tropicube.docker.client.DockerManager;
 import fr.tropicube.docker.client.RedisManager;
+import fr.tropicube.docker.model.AccessPolicy;
 import fr.tropicube.velocity.commands.*;
 import fr.tropicube.velocity.listeners.NickListener;
 import fr.tropicube.velocity.listeners.CommandVisibilityListener;
@@ -17,6 +18,7 @@ import fr.tropicube.velocity.listeners.PlayerConnectionListener;
 import fr.tropicube.velocity.listeners.ServerSwitchListener;
 import fr.tropicube.velocity.listeners.OperationsListener;
 import fr.tropicube.velocity.managers.AnnouncementManager;
+import fr.tropicube.velocity.managers.AccessProfileCache;
 import fr.tropicube.velocity.managers.ConnectionRateLimiter;
 import fr.tropicube.velocity.managers.MaintenanceManager;
 import fr.tropicube.velocity.managers.NickManager;
@@ -66,6 +68,7 @@ public class TropicubeVelocity {
     private MaintenanceManager maintenanceManager;
     private ConnectionRateLimiter connectionRateLimiter;
     private AnnouncementManager announcementManager;
+    private AccessProfileCache accessProfileCache;
     private ScheduledTask maintenanceTask;
     private ScheduledTask announcementTask;
     private final AtomicBoolean shuttingDown = new AtomicBoolean();
@@ -195,6 +198,8 @@ public class TropicubeVelocity {
     }
 
     private void initManagers() {
+        accessProfileCache = new AccessProfileCache(redisManager, logger,
+                new AccessPolicy(accessThresholds("vip"), accessThresholds("mod")));
         tropiServerManager = new TropiServerManager(server, dockerManager, redisManager, config, logger, languageManager);
         queueManager = new QueueManager(server, tropiServerManager, languageManager);
         tropiServerManager.initialize();
@@ -229,6 +234,13 @@ public class TropicubeVelocity {
         return value;
     }
 
+    private java.util.Map<String, Integer> accessThresholds(String axis) {
+        java.util.Map<String, Integer> values = new java.util.HashMap<>();
+        config.node("access", "permission-thresholds", axis).childrenMap().forEach((key, node) ->
+                values.put(String.valueOf(key), node.getInt()));
+        return values;
+    }
+
     static int partyDisconnectGraceSeconds(ConfigurationNode config) {
         int value = config.node("party", "disconnect-grace-seconds").getInt(60);
         if (value <= 0) {
@@ -240,16 +252,14 @@ public class TropicubeVelocity {
 
     private void initNickManager() {
         List<String> extraUuids   = List.of();
-        List<String> allowedGrades = List.of();
         try {
             extraUuids    = config.node("nick", "skin-uuids").getList(String.class, List.of());
-            allowedGrades = config.node("nick", "allowed-grades").getList(String.class, List.of());
         } catch (Exception e) {
             logger.warn(MessageStyle.log("NICK", "<yellow>Impossible de lire la configuration nick : {}"), e.getMessage());
         }
-        nickManager = new NickManager(redisManager, logger, extraUuids, allowedGrades);
-        logger.info(MessageStyle.log("PROXY", "<gray>Nick manager initialisé ({} grades autorisés, {} UUIDs dans le pool)."),
-            allowedGrades.size(), extraUuids.size() + 3);
+        nickManager = new NickManager(redisManager, logger, extraUuids, accessProfileCache);
+        logger.info(MessageStyle.log("PROXY", "<gray>Nick manager initialisé (vipLevel 3, {} UUIDs dans le pool)."),
+            extraUuids.size() + 3);
     }
 
     private void registerCommands() {
@@ -283,7 +293,7 @@ public class TropicubeVelocity {
         );
         server.getCommandManager().register(
                 server.getCommandManager().metaBuilder("queue").aliases("file").build(),
-                new QueueCommand(tropiServerManager, queueManager, redisManager, languageManager)
+                new QueueCommand(tropiServerManager, queueManager, accessProfileCache, languageManager)
         );
         server.getCommandManager().register(
                 server.getCommandManager().metaBuilder("whitelist").build(),
@@ -306,7 +316,8 @@ public class TropicubeVelocity {
     }
 
     private void registerListeners() {
-        server.getEventManager().register(this, new PlayerConnectionListener(this, tropiServerManager, redisManager, logger, languageManager));
+        server.getEventManager().register(this, new PlayerConnectionListener(this, tropiServerManager, redisManager,
+                accessProfileCache, logger, languageManager));
         server.getEventManager().register(this, new ServerSwitchListener(this, redisManager, nickManager, partyCoordinator, logger));
         server.getEventManager().register(this, new NickListener(nickManager, logger));
         server.getEventManager().register(this, new CommandVisibilityListener());
@@ -328,5 +339,6 @@ public class TropicubeVelocity {
     public PartyCoordinator getPartyCoordinator() { return partyCoordinator; }
     public NickManager getNickManager() { return nickManager; }
     public MaintenanceManager getMaintenanceManager() { return maintenanceManager; }
+    public AccessProfileCache getAccessProfileCache() { return accessProfileCache; }
     public Path getDataDirectory() { return dataDirectory; }
 }

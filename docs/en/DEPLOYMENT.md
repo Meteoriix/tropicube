@@ -1,5 +1,9 @@
 # Deployment
 
+## Access-level migration
+
+Migration V008 permanently removes `tropicube_permissions` and the former grade permission fields. Take a MySQL dump before the first deployment, then recreate Velocity and every Paper backend in one maintenance window because older builds do not understand `player:access:<uuid>`. Validate all eight grade defaults, `/level`, queue priority, and `/nick`. Rolling back requires the pre-V008 SQL backup.
+
 ## Supported platforms
 
 The repository supports Windows through `deploy.ps1` and Linux through `deploy.sh`. Both paths build the same Maven reactor, redistribute plugin artifacts, validate Docker inputs, and rebuild the selected images. Java 25, Maven 3.9.11, Docker Compose, Git LFS, and Node.js are required.

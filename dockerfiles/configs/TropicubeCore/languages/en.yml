@@ -125,16 +125,6 @@ commands:
   tropiadmin-info-langs: "<gray>Languages loaded: <white>{0}"
   tropiadmin-info-grades: "<gray>Grades loaded: <white>{0}"
   grade-info-grade: "<gray>Grade of <white>{0}<gray>: {1}"
-  grade-info-flags: "<gray>VIP: {0} <gray>Staff: {1}"
-  grade-info-yes: "<green>Yes"
-  grade-info-no: "<red>No"
-  perm-usage: "<tc><red>Usage: /tropiperm \\<add|remove|list|grade> \\<player|grade> [perm] [expiry]"
-  perm-add-usage: "<tc><red>Usage: /tropiperm add \\<player> \\<permission> [seconds]"
-  perm-remove-usage: "<tc><red>Usage: /tropiperm remove \\<player> \\<permission>"
-  perm-grade-usage: "<tc><red>Usage: /tropiperm grade \\<add|remove|list> \\<grade> [permission]"
-  perm-grade-add-usage: "<tc><red>Usage: /tropiperm grade add \\<grade> \\<permission>"
-  perm-grade-remove-usage: "<tc><red>Usage: /tropiperm grade remove \\<grade> \\<permission>"
-  perm-grade-list-usage: "<tc><red>Usage: /tropiperm grade list \\<grade>"
 
 # SheepWars
 sw:
@@ -671,20 +661,21 @@ lobby:
     - "<gray>• <gold>VIP+</gold> prefix and color"
     - "<gray>• Two air jumps in the lobby"
     - "<gray>• Custom game creation"
+    - "<gray>• Queue priority"
   shop-active-premium:
     - "<gray>• <light_purple>PREMIUM</light_purple> prefix and color"
     - "<gray>• Unlimited air jumps in the lobby"
     - "<gray>• Join announcement"
     - "<gray>• Custom game creation"
+    - "<gray>• Custom nickname with /nick"
   shop-soon-vip:
     - "<gray>• Recurring VIP kit"
   shop-soon-vip-plus:
     - "<gray>• Recurring VIP+ kit"
     - "<gray>• Particle cosmetic"
-    - "<gray>• Queue priority"
   shop-soon-premium:
     - "<gray>• Recurring Premium kit"
-    - "<gray>• Custom trail and /nick"
+    - "<gray>• Custom trail"
     - "<gray>• Early access to new features"
   ranked-title: "<dark_gray>» <gold>Ranked queue"
   ranked-mode-name: "<gold><bold>Ranked {0}</bold>"
@@ -783,7 +774,7 @@ help:
     - "  <gold>/networkdiag <dark_gray>(/netdiag) — <gray>Diagnose Redis, instances and connections"
     - "  <gold>/eco <white>top | ‹set|add|remove› ‹player› ‹amount› <dark_gray>— <gray>Inspect or change the economy"
     - "  <gold>/rank <white>list | info ‹player› | set ‹player› ‹grade› [duration] <dark_gray>(/grade) — <gray>Manage grades"
-    - "  <gold>/permissions <white>add ‹player› ‹permission› [duration] | remove ‹player› ‹permission› | list ‹player› | grade ‹add|remove› ‹grade› ‹permission› | grade list ‹grade› <dark_gray>(/tropiperm) — <gray>Manage permissions"
+    - "  <gold>/level <white>‹player› [vip|mod] [level] <dark_gray>— <gray>View or change access levels"
     - "  <gold>/tropicube <white>[list|templates|start ‹template› [name]|‹stop|kill|info› ‹id|name›|maintenance ‹template› ‹on|off›|reload] <dark_gray>(/tropi, /cm) — <gray>Administer instances"
     - "  <gold>/coreadmin <white>‹reload|info› <dark_gray>(/tropiadmin, /ca) — <gray>Administer Core and reload languages"
 
@@ -838,7 +829,7 @@ guild:
 center:
   hotbar-name: "<gold><bold>Profile</bold>"
   hotbar-lore: "<gray>Profile, missions, notifications and guild · <yellow>Right-click"
-  profile-hotbar-name: "<gold><bold>My profile</bold>"
+  profile-hotbar-name: "<gold>⛏Profile"
   profile-hotbar-lore: "<gray>Profile, settings and progress. <yellow>▶ Right click: open"
   title: "<dark_aqua>Profile <dark_gray>• Home"
   profile: "<gold>Full profile"
@@ -1029,7 +1020,7 @@ social:
   requests-sent-right-click: "<red>▶ Right click: cancel"
   requests-incoming-empty: "<gray>No incoming requests"
   requests-sent-empty: "<gray>No sent requests"
-  menu-party: "<aqua>My party"
+  menu-party: "<aqua>Party"
   menu-party-member: "<aqua>{0}"
   menu-party-member-leader: "<gold>★ {0}"
   menu-party-member-left-click: "<green>▶ Left click: move here"
@@ -1041,7 +1032,7 @@ social:
   menu-party-requests-count: "<gray>{0} incoming invitation(s)"
   menu-party-requests-sent-count: "<gray>{0} sent invitation(s)"
   menu-party-requests-action: "<aqua>▶ Left click: manage"
-  party-requests-title: "<dark_aqua>Social <dark_gray>• Party requests • Page {0}"
+  party-requests-title: "<aqua>Party requests <dark_gray>• Page {0}"
   party-requests-incoming-title: "<green>Incoming <gray>({0})"
   party-requests-sent-title: "<aqua>Sent <gray>({0})"
   party-requests-incoming-empty: "<gray>No incoming invitations"
@@ -1056,3 +1047,11 @@ social:
   menu-follow-on: "<green>Follow leader: enabled"
   menu-follow-off: "<red>Follow leader: disabled"
   menu-warp: "<light_purple>Gather the party"
+access:
+  usage: "<yellow>Usage: /level \\<player> [vip|mod] [level]"
+  invalid: "<red>Invalid axis or level. VIP: 0 to 3, mod: 0 to 4."
+  no-self: "<red>You cannot change your own levels."
+  no-escalation: "<red>You may only assign a moderator level strictly below your own."
+  info: "<aqua>{0}</aqua> <gray>— grade:</gray> <white>{1}</white><gray>, VIP:</gray> <white>{2}</white><gray>, mod:</gray> <white>{3}</white>"
+  changed: "<green>{0}'s levels were updated.</green> <gray>Grade:</gray> <white>{1}</white><gray>, VIP:</gray> <white>{2}</white><gray>, mod:</gray> <white>{3}</white>"
+  grade-defaults: "<gray>Default levels — VIP:</gray> <white>{0}</white><gray>, mod:</gray> <white>{1}</white>"

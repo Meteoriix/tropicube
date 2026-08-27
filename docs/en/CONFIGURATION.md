@@ -23,15 +23,13 @@ The implementation minimizes captured context and enforces retention, but code a
 
 Source: `tropicube-velocity/src/main/resources/config.yml`; deployment copy: `dockerfiles/configs/TropicubeVelocity/config.yml`.
 
-- `admin-uuids` grants `tropicube.admin`, the `find`, `send`, `pull`, `maintenance`, `announce` and `diagnostic` proxy administration permissions, and `tropicube.bypass.whitelist` to approved UUIDs;
 - `party.disconnect-grace-seconds` defaults to `60`, removes members who remain offline after that grace period and transfers leadership to an online member; fully offline parties are deleted immediately;
 - `remove-dynamic-servers-on-shutdown` controls cleanup during a normal proxy shutdown;
 - health-check values define probe frequency, timeout, and failed-start cleanup;
-- `nick.allowed-grades` defines grades that may enable `/nick`;
 - `nick.skin-uuids` extends the Mojang skin pool;
 - `templates` define Docker image, server type, capacity, scaling, auto-stop, volumes, and environment variables. `max-players` is the participant limit; `spectator-slots` adds backend capacity only for an ongoing game (`8` for SheepWars).
 
-Core publishes `player:grade:<uuid>` with a 24-hour TTL and refreshes it on load and grade changes. An active nick is stored under `nick:<uuid>` with nickname, signed skin, and fake display grade. Legacy payloads without a grade default to `PREMIUM`. The full identity gets a fresh 24-hour TTL on disconnect and reconnect; there is no separate 30-second reconnect limit.
+Core publishes persistent, revisioned `player:access:<uuid>` values. Velocity keeps a local fail-closed cache for proxy authorization, `/nick`, and queue priority. `admin-uuids`, `nick.allowed-grades`, and Docker `OPS` are no longer authority sources.
 
 Velocity also accepts the following operational settings:
 
@@ -44,7 +42,7 @@ Velocity also accepts the following operational settings:
 
 Source: `tropicube-core/src/main/resources/config.yml`; deployment copy: `dockerfiles/configs/TropicubeCore/config.yml`.
 
-Core configuration covers Redis, MySQL, the default language, economy cache rules, and the complete grade catalog. Social limits are `social.friends.max-count` (`100`), `social.friends.request-expiry-days` (`30`), `social.party.max-size` (`8`), and `social.party.invite-expiry-seconds` (`60`). Grade definitions are synchronized to MySQL at startup. Existing values are preserved by the configuration updater when new keys are introduced.
+Core configuration covers Redis, MySQL, the default language, economy cache rules, and the complete cosmetic grade catalog. Each grade defines validated `default-vip-level` (0–3) and `default-mod-level` (0–4); applying a grade always replaces both current levels. `access.audit-retention-days` defaults to 365 and drives the daily SQL audit purge.
 
 Guild limits are `guilds.max-members` (`50`), `guilds.max-officers` (`5`), and `guilds.weekly-contribution-cap` (`5000` XP per member).
 

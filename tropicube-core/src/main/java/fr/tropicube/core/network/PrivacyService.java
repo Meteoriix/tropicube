@@ -47,7 +47,8 @@ public final class PrivacyService {
                 export.put("account", rows(connection, "SELECT * FROM tropicube_players WHERE uuid = ?", playerId));
                 export.put("economy", rows(connection, "SELECT * FROM tropicube_economy WHERE uuid = ?", playerId));
                 export.put("transactions", rows(connection, "SELECT * FROM tropicube_transactions WHERE from_uuid = ? OR to_uuid = ?", playerId, playerId));
-                export.put("permissions", rows(connection, "SELECT * FROM tropicube_permissions WHERE uuid = ?", playerId));
+                export.put("accessAudit", rows(connection,
+                        "SELECT * FROM tropicube_access_audit WHERE target_uuid = ? ORDER BY changed_at DESC", playerId));
                 export.put("preferences", rows(connection, "SELECT * FROM tropicube_player_preferences WHERE player_uuid = ?", playerId));
                 export.put("comfort", rows(connection, "SELECT * FROM tropicube_player_comfort WHERE player_uuid = ?", playerId));
                 export.put("progression", rows(connection, "SELECT * FROM tropicube_network_progression WHERE player_uuid = ?", playerId));
@@ -167,6 +168,8 @@ public final class PrivacyService {
                 execute(connection, "UPDATE tropicube_reports SET reporter_uuid=? WHERE reporter_uuid=?", anonymous, playerId);
                 execute(connection, "UPDATE tropicube_reports SET target_uuid=? WHERE target_uuid=?", anonymous, playerId);
                 execute(connection, "UPDATE tropicube_report_evidence SET author_uuid=? WHERE author_uuid=?", anonymous, playerId);
+                execute(connection, "UPDATE tropicube_access_audit SET target_uuid=? WHERE target_uuid=?", anonymous, playerId);
+                execute(connection, "UPDATE tropicube_access_audit SET actor_uuid=? WHERE actor_uuid=?", anonymous, playerId);
                 execute(connection, "DELETE FROM tropicube_players WHERE uuid=?", playerId);
                 updateRequest(connection, requestId, "COMPLETED");
                 connection.commit();

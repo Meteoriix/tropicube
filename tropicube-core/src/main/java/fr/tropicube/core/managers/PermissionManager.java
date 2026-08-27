@@ -1,43 +1,43 @@
 package fr.tropicube.core.managers;
 
-import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.core.TropicubeCore;
-import fr.tropicube.docker.model.PlayerGradeCache;
+import fr.tropicube.core.util.MessageStyle;
+import fr.tropicube.core.events.PlayerAccessChangedEvent;
+import fr.tropicube.docker.model.AccessPolicy;
+import fr.tropicube.docker.model.PlayerAccessProfile;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 
 import java.sql.*;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
-/**
- * Tropicube permissions and grades manager.
- * <p>
- * Rank hierarchy (ascending order):
- * PLAYER → VIP → VIP+ → PREMIUM → HELPER → MODERATOR → ADMIN → OWNER
- */
+/** Cosmetic grade catalog and sole owner of cumulative VIP/moderation access. */
 public class PermissionManager {
-
     public record Grade(String name, String displayName, String prefix, String suffix,
-                        String color, int priority, boolean isVip, boolean isStaff,
-                        Set<String> permissions) {}
+                        String color, int priority, int defaultVipLevel, int defaultModLevel) {
+        /** Compatibility constructor for display-only callers. */
+        public Grade(String name, String displayName, String prefix, String suffix, String color,
+                     int priority, boolean vip, boolean staff, Set<String> ignored) {
+            this(name, displayName, prefix, suffix, color, priority, vip ? 1 : 0, staff ? 1 : 0);
+        }
+        public boolean isVip() { return defaultVipLevel > 0; }
+        public boolean isStaff() { return defaultModLevel > 0; }
+    }
+    public enum Axis { VIP, MOD }
 
     private final TropicubeCore plugin;
     private final DatabaseManager db;
-
-    // Cache of defined grades
     private final Map<String, Grade> gradeRegistry = new ConcurrentHashMap<>();
-    // Rank of each player: UUID -> grade name
     private final Map<UUID, String> playerGrades = new ConcurrentHashMap<>();
     private final Map<UUID, Long> playerGradeExpiries = new ConcurrentHashMap<>();
-    // Permissions individuelles : UUID -> Set<permission>
-    private final Map<UUID, Set<String>> playerPermissions = new ConcurrentHashMap<>();
-    private final Map<UUID, Map<String, Long>> playerPermissionExpiries = new ConcurrentHashMap<>();
-    // Attachments Bukkit : UUID -> PermissionAttachment
+    private final Map<UUID, PlayerAccessProfile> accessProfiles = new ConcurrentHashMap<>();
     private final Map<UUID, PermissionAttachment> attachments = new ConcurrentHashMap<>();
-    // Visual-only grade carried by an active /nick identity.
     private final DisplayGradeOverrideCache displayGradeOverrides = new DisplayGradeOverrideCache();
+    private AccessPolicy accessPolicy = AccessPolicy.defaults();
 
     public PermissionManager(TropicubeCore plugin, DatabaseManager db) {
         this.plugin = plugin;
@@ -45,155 +45,131 @@ public class PermissionManager {
     }
 
     public void initialize() throws SQLException {
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM tropicube_grades ORDER BY priority ASC");
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                Set<String> perms = ConcurrentHashMap.newKeySet();
-                String permStr = rs.getString("permissions");
-                if (permStr != null && !permStr.isEmpty()) {
-                    perms.addAll(Arrays.asList(permStr.split(",")));
-                }
-                Grade grade = new Grade(
-                        rs.getString("name"),
-                        rs.getString("display_name"),
-                        rs.getString("prefix"),
-                        rs.getString("suffix"),
-                        rs.getString("color"),
-                        rs.getInt("priority"),
-                        rs.getBoolean("is_vip"),
-                        rs.getBoolean("is_staff"),
-                        perms
-                );
+        accessPolicy = new AccessPolicy(configuredThresholds("access.permission-thresholds.vip"),
+                configuredThresholds("access.permission-thresholds.mod"));
+        gradeRegistry.clear();
+        try (Connection c = db.getConnection(); PreparedStatement s = c.prepareStatement(
+                "SELECT name,display_name,prefix,suffix,color,priority,default_vip_level,default_mod_level FROM tropicube_grades ORDER BY priority");
+             ResultSet r = s.executeQuery()) {
+            while (r.next()) {
+                Grade grade = new Grade(r.getString(1), r.getString(2), r.getString(3), r.getString(4),
+                        r.getString(5), r.getInt(6), r.getInt(7), r.getInt(8));
+                new PlayerAccessProfile(grade.defaultVipLevel(), grade.defaultModLevel(), 0);
                 gradeRegistry.put(grade.name(), grade);
             }
-            plugin.getLogger().info(MessageStyle.log("tc", "PERMS", "<gray>" + gradeRegistry.size() + " grades chargés."));
+        }
+        CompletableFuture.runAsync(this::preloadRedisProfiles);
+        plugin.getLogger().info(MessageStyle.log("tc", "ACCESS", "<gray>" + gradeRegistry.size()
+                + " grades cosmétiques chargés."));
+    }
+
+    private void preloadRedisProfiles() {
+        try (Connection c = db.getConnection(); PreparedStatement s = c.prepareStatement(
+                "SELECT uuid,vip_level,mod_level,access_revision FROM tropicube_players"); ResultSet r = s.executeQuery()) {
+            while (r.next()) publishProfile(UUID.fromString(r.getString(1)),
+                    new PlayerAccessProfile(r.getInt(2), r.getInt(3), r.getLong(4)), false);
+            plugin.getRedisManager().publishPlayerEvent("ACCESS_SNAPSHOT_READY",
+                    Long.toString(System.currentTimeMillis()));
+        } catch (SQLException | RuntimeException error) {
+            plugin.getLogger().log(Level.SEVERE,
+                    MessageStyle.log("tc", "ACCESS", "<red>Préchargement Redis des accès impossible"), error);
         }
     }
 
-    // ===== Player Loading =====
-
     public void loadPlayer(UUID uuid) {
         CompletableFuture.runAsync(() -> {
-            try (Connection conn = db.getConnection()) {
-        // Load the grade
-                try (PreparedStatement stmt = conn.prepareStatement(
-                        "SELECT grade, grade_expiry FROM tropicube_players WHERE uuid = ?")) {
-                    stmt.setString(1, uuid.toString());
-                    ResultSet rs = stmt.executeQuery();
-                    if (rs.next()) {
-                        String grade = rs.getString("grade");
-                        long expiry = rs.getLong("grade_expiry");
-                        long now = System.currentTimeMillis() / 1000;
-                        if (expiry > 0 && expiry <= now) {
-                            grade = "JOUEUR";
-                            expiry = -1;
-                            db.executeUpdate("UPDATE tropicube_players SET grade = 'JOUEUR', grade_expiry = -1 WHERE uuid = ?",
-                                    uuid.toString());
-                        }
-                        playerGrades.put(uuid, grade);
-                        playerGradeExpiries.put(uuid, expiry);
-                        scheduleGradeExpiry(uuid, expiry);
-                    } else {
-                        playerGrades.put(uuid, "JOUEUR");
-                        playerGradeExpiries.put(uuid, -1L);
+            try (Connection c = db.getConnection(); PreparedStatement s = c.prepareStatement(
+                    "SELECT grade,grade_expiry,vip_level,mod_level,access_revision FROM tropicube_players WHERE uuid=?")) {
+                s.setString(1, uuid.toString());
+                try (ResultSet r = s.executeQuery()) {
+                    if (!r.next()) return;
+                    String grade = r.getString(1);
+                    long expiry = r.getLong(2);
+                    if (expiry > 0 && expiry <= System.currentTimeMillis() / 1000) {
+                        setGrade(uuid, "JOUEUR", -1, null, "GRADE_EXPIRY");
+                        return;
                     }
+                    playerGrades.put(uuid, grade);
+                    playerGradeExpiries.put(uuid, expiry);
+                    PlayerAccessProfile profile = new PlayerAccessProfile(r.getInt(3), r.getInt(4), r.getLong(5));
+                    accessProfiles.put(uuid, profile);
+                    publishProfile(uuid, profile, true);
+                    plugin.getRedisManager().publishPlayerEvent("GRADE_LOADED", uuid.toString());
+                    scheduleGradeExpiry(uuid, expiry);
                 }
-
-        // Load individual permissions
-                try (PreparedStatement stmt = conn.prepareStatement(
-                        "SELECT permission, value, expiry FROM tropicube_permissions WHERE uuid = ?")) {
-                    stmt.setString(1, uuid.toString());
-                    ResultSet rs = stmt.executeQuery();
-                    Set<String> perms = ConcurrentHashMap.newKeySet();
-                    Map<String, Long> expiries = new ConcurrentHashMap<>();
-                    long now = System.currentTimeMillis() / 1000;
-                    while (rs.next()) {
-                        long expiry = rs.getLong("expiry");
-                        if (expiry == -1 || expiry > now) {
-                            if (rs.getBoolean("value")) {
-                                String permission = rs.getString("permission");
-                                perms.add(permission);
-                                expiries.put(permission, expiry);
-                            }
-                        }
-                    }
-                    playerPermissions.put(uuid, perms);
-                    playerPermissionExpiries.put(uuid, expiries);
-                    expiries.forEach((permission, expiry) -> schedulePermissionExpiry(uuid, permission, expiry));
-                }
-                db.executeUpdate("DELETE FROM tropicube_permissions WHERE uuid = ? AND expiry > 0 AND expiry <= ?",
-                        uuid.toString(), System.currentTimeMillis() / 1000);
-                plugin.getRedisManager().set(PlayerGradeCache.key(uuid),
-                        playerGrades.getOrDefault(uuid, "JOUEUR"), PlayerGradeCache.TTL_SECONDS);
-                plugin.getRedisManager().publishPlayerEvent("GRADE_LOADED", uuid.toString());
-            } catch (SQLException e) {
-                plugin.getLogger().log(Level.SEVERE, MessageStyle.log("tc", "PERMS", "<red>Erreur chargement joueur " + uuid), e);
+            } catch (SQLException | RuntimeException error) {
+                plugin.getLogger().log(Level.SEVERE,
+                        MessageStyle.log("tc", "ACCESS", "<red>Erreur chargement joueur " + uuid), error);
             }
-
-            // Apply permissions synchronously on the Bukkit thread
-            plugin.getServer().getScheduler().runTask(plugin, () -> {
-                Player player = plugin.getServer().getPlayer(uuid);
-                if (player != null) applyPermissions(player);
-            });
+            runSync(() -> Optional.ofNullable(plugin.getServer().getPlayer(uuid)).ifPresent(this::applyPermissions));
         });
     }
 
     public void unloadPlayer(UUID uuid) {
         PermissionAttachment attachment = attachments.remove(uuid);
-        if (attachment != null) {
-            Player player = plugin.getServer().getPlayer(uuid);
-            if (player != null) player.removeAttachment(attachment);
-        }
+        Player player = plugin.getServer().getPlayer(uuid);
+        if (attachment != null && player != null) player.removeAttachment(attachment);
         playerGrades.remove(uuid);
         playerGradeExpiries.remove(uuid);
-        playerPermissions.remove(uuid);
-        playerPermissionExpiries.remove(uuid);
+        accessProfiles.remove(uuid);
         displayGradeOverrides.remove(uuid);
     }
 
-    // ===== Applying permissions =====
-
     private void applyPermissions(Player player) {
-        UUID uuid = player.getUniqueId();
-
-        // Retirer l'ancien attachment
-        PermissionAttachment old = attachments.remove(uuid);
-        if (old != null) player.removeAttachment(old);
-
+        PermissionAttachment previous = attachments.remove(player.getUniqueId());
+        if (previous != null) player.removeAttachment(previous);
         PermissionAttachment attachment = player.addAttachment(plugin);
-        attachments.put(uuid, attachment);
-
-        // Apply grade permissions
-        String gradeName = playerGrades.getOrDefault(uuid, "JOUEUR");
-        Grade grade = gradeRegistry.get(gradeName);
-        if (grade != null) {
-            grade.permissions().forEach(perm -> applyPermissionPattern(attachment, perm));
-        }
-
-        // Apply individual permissions
-        Set<String> individual = playerPermissions.getOrDefault(uuid, Collections.emptySet());
-        individual.forEach(perm -> applyPermissionPattern(attachment, perm));
-
+        attachments.put(player.getUniqueId(), attachment);
+        PlayerAccessProfile profile = getCachedAccessProfile(player.getUniqueId());
+        plugin.getServer().getPluginManager().getPermissions().forEach(permission ->
+                attachment.setPermission(permission.getName(), accessPolicy.hasPermission(profile, permission.getName())));
+        if (profile.modLevel() >= 4) attachment.setPermission("*", true);
         player.recalculatePermissions();
+        player.updateCommands();
+        plugin.getServer().getPluginManager().callEvent(new PlayerAccessChangedEvent(player, profile));
     }
 
-    // ===== Grade =====
+    public PlayerAccessProfile getAccessProfile(UUID uuid) {
+        PlayerAccessProfile cached = accessProfiles.get(uuid);
+        if (cached != null) return cached;
+        try (Connection c = db.getConnection(); PreparedStatement s = c.prepareStatement(
+                "SELECT vip_level,mod_level,access_revision FROM tropicube_players WHERE uuid=?")) {
+            s.setString(1, uuid.toString());
+            try (ResultSet r = s.executeQuery()) {
+                return r.next() ? new PlayerAccessProfile(r.getInt(1), r.getInt(2), r.getLong(3))
+                        : PlayerAccessProfile.none();
+            }
+        } catch (SQLException error) {
+            throw new DatabaseManager.DatabaseOperationException("Impossible de charger le profil d'accès", error);
+        }
+    }
+
+    /** Returns the local snapshot without performing SQL on the server thread. */
+    public PlayerAccessProfile getCachedAccessProfile(UUID uuid) {
+        return accessProfiles.getOrDefault(uuid, PlayerAccessProfile.none());
+    }
+
+    public int getVipLevel(UUID uuid) { return getCachedAccessProfile(uuid).vipLevel(); }
+    public int getModLevel(UUID uuid) { return getCachedAccessProfile(uuid).modLevel(); }
+    public boolean hasPermission(UUID uuid, String permission) {
+        return accessPolicy.hasPermission(getCachedAccessProfile(uuid), permission);
+    }
+
+    public void setAccessLevel(UUID uuid, Axis axis, int level, UUID actor) {
+        int maximum = axis == Axis.VIP ? PlayerAccessProfile.MAX_VIP_LEVEL : PlayerAccessProfile.MAX_MOD_LEVEL;
+        if (level < 0 || level > maximum) throw new IllegalArgumentException("Niveau hors limites");
+        mutate(uuid, actor, "COMMAND_LEVEL", null, -1, axis, level);
+    }
 
     public String getGrade(UUID uuid) {
         String cached = playerGrades.get(uuid);
         if (cached != null) return cached;
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT grade, grade_expiry FROM tropicube_players WHERE uuid = ?")) {
-            stmt.setString(1, uuid.toString());
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (!rs.next()) return "JOUEUR";
-                long expiry = rs.getLong("grade_expiry");
-                if (expiry > 0 && expiry <= System.currentTimeMillis() / 1000) return "JOUEUR";
-                return rs.getString("grade");
-            }
-        } catch (SQLException e) {
-            throw new DatabaseManager.DatabaseOperationException("Impossible de charger le grade", e);
+        try (Connection c = db.getConnection(); PreparedStatement s = c.prepareStatement(
+                "SELECT grade FROM tropicube_players WHERE uuid=?")) {
+            s.setString(1, uuid.toString());
+            try (ResultSet r = s.executeQuery()) { return r.next() ? r.getString(1) : "JOUEUR"; }
+        } catch (SQLException error) {
+            throw new DatabaseManager.DatabaseOperationException("Impossible de charger le grade", error);
         }
     }
 
@@ -201,263 +177,161 @@ public class PermissionManager {
         return gradeRegistry.getOrDefault(getGrade(uuid), gradeRegistry.get("JOUEUR"));
     }
 
-    public void setGrade(UUID uuid, String gradeName, long expirySeconds) {
-        if (!gradeRegistry.containsKey(gradeName)) return;
+    public void setGrade(UUID uuid, String gradeName, long durationSeconds) {
+        setGrade(uuid, gradeName, durationSeconds, null, "COMMAND_GRADE");
+    }
 
-        long expiryEpoch = expirySeconds > 0 ? Math.addExact(System.currentTimeMillis() / 1000, expirySeconds) : -1;
-        playerGrades.put(uuid, gradeName);
-        playerGradeExpiries.put(uuid, expiryEpoch);
-        db.executeUpdate("UPDATE tropicube_players SET grade = ?, grade_expiry = ? WHERE uuid = ?",
-                gradeName, expiryEpoch, uuid.toString());
-        plugin.getRedisManager().set(PlayerGradeCache.key(uuid), gradeName, PlayerGradeCache.TTL_SECONDS);
-        plugin.getRedisManager().publishPlayerEvent("GRADE_CHANGED", uuid.toString());
-
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
-            Player player = plugin.getServer().getPlayer(uuid);
-            if (player != null) {
-                applyPermissions(player);
+    public void setGrade(UUID uuid, String gradeName, long durationSeconds, UUID actor, String source) {
+        if (!gradeRegistry.containsKey(gradeName)) throw new IllegalArgumentException("Grade inconnu: " + gradeName);
+        long expiry = durationSeconds > 0 ? Math.addExact(System.currentTimeMillis() / 1000, durationSeconds) : -1;
+        mutate(uuid, actor, source, gradeName, expiry, null, -1);
+        scheduleGradeExpiry(uuid, expiry);
+        runSync(() -> Optional.ofNullable(plugin.getServer().getPlayer(uuid)).ifPresent(player ->
                 player.sendMessage(plugin.getLanguageManager().getComponent(uuid, "grade.set-self",
-                        gradeRegistry.get(gradeName).prefix() + gradeRegistry.get(gradeName).displayName()));
-            }
-        });
-
-        // Grade temporaire
-        scheduleGradeExpiry(uuid, expiryEpoch);
+                        gradeRegistry.get(gradeName).prefix() + gradeRegistry.get(gradeName).displayName()))));
     }
 
-    public boolean isVip(UUID uuid) {
-        Grade grade = getGradeInfo(uuid);
-        return grade != null && grade.isVip();
+    private void mutate(UUID uuid, UUID actor, String source, String requestedGrade, long expiry,
+                        Axis axis, int requestedLevel) {
+        PlayerAccessProfile updated;
+        String newGrade;
+        try (Connection c = db.getConnection()) {
+            c.setAutoCommit(false);
+            try {
+                try (PreparedStatement lock = c.prepareStatement(
+                        "SELECT grade,grade_expiry,vip_level,mod_level,access_revision FROM tropicube_players WHERE uuid=? FOR UPDATE")) {
+                    lock.setString(1, uuid.toString());
+                    try (ResultSet r = lock.executeQuery()) {
+                        if (!r.next()) throw new IllegalArgumentException("Joueur introuvable");
+                        String oldGrade = r.getString(1);
+                        long oldExpiry = r.getLong(2);
+                        int oldVip = r.getInt(3), oldMod = r.getInt(4);
+                        long revision = r.getLong(5) + 1;
+                        newGrade = requestedGrade == null ? oldGrade : requestedGrade;
+                        int newVip = oldVip, newMod = oldMod;
+                        if (requestedGrade != null) {
+                            Grade grade = gradeRegistry.get(requestedGrade);
+                            newVip = grade.defaultVipLevel();
+                            newMod = grade.defaultModLevel();
+                        } else if (axis == Axis.VIP) newVip = requestedLevel;
+                        else newMod = requestedLevel;
+                        updated = new PlayerAccessProfile(newVip, newMod, revision);
+                        try (PreparedStatement update = c.prepareStatement(
+                                "UPDATE tropicube_players SET grade=?,grade_expiry=?,vip_level=?,mod_level=?,access_revision=? WHERE uuid=?")) {
+                            update.setString(1, newGrade);
+                            update.setLong(2, requestedGrade == null ? oldExpiry : expiry);
+                            update.setInt(3, newVip); update.setInt(4, newMod); update.setLong(5, revision);
+                            update.setString(6, uuid.toString()); update.executeUpdate();
+                        }
+                        insertAudit(c, uuid, actor, source, oldGrade, newGrade,
+                                oldVip, newVip, oldMod, newMod, revision);
+                    }
+                }
+                c.commit();
+            } catch (SQLException | RuntimeException failure) {
+                c.rollback();
+                throw failure;
+            } finally { c.setAutoCommit(true); }
+        } catch (SQLException error) {
+            throw new DatabaseManager.DatabaseOperationException("Impossible de modifier le profil d'accès", error);
+        }
+        playerGrades.put(uuid, newGrade);
+        if (requestedGrade != null) playerGradeExpiries.put(uuid, expiry);
+        accessProfiles.put(uuid, updated);
+        publishProfile(uuid, updated, true);
+        if (requestedGrade != null) {
+            plugin.getRedisManager().publishPlayerEvent("GRADE_CHANGED", uuid.toString());
+        }
+        runSync(() -> Optional.ofNullable(plugin.getServer().getPlayer(uuid)).ifPresent(this::applyPermissions));
     }
 
-    public boolean isStaff(UUID uuid) {
-        Grade grade = getGradeInfo(uuid);
-        return grade != null && grade.isStaff();
+    public static void insertAudit(Connection c, UUID target, UUID actor, String source,
+                                   String oldGrade, String newGrade, int oldVip, int newVip,
+                                   int oldMod, int newMod, long revision) throws SQLException {
+        try (PreparedStatement s = c.prepareStatement("""
+                INSERT INTO tropicube_access_audit(target_uuid,actor_uuid,source,previous_grade,new_grade,
+                previous_vip_level,new_vip_level,previous_mod_level,new_mod_level,revision,changed_at)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?)
+                """)) {
+            s.setString(1, target.toString()); s.setString(2, actor == null ? null : actor.toString());
+            s.setString(3, source); s.setString(4, oldGrade); s.setString(5, newGrade);
+            s.setInt(6, oldVip); s.setInt(7, newVip); s.setInt(8, oldMod); s.setInt(9, newMod);
+            s.setLong(10, revision); s.setLong(11, System.currentTimeMillis() / 1000); s.executeUpdate();
+        }
     }
 
-    public int getPriority(UUID uuid) {
-        Grade grade = getGradeInfo(uuid);
-        return grade != null ? grade.priority() : 0;
+    private void publishProfile(UUID uuid, PlayerAccessProfile profile, boolean event) {
+        plugin.getRedisManager().setPersistent(PlayerAccessProfile.key(uuid), profile.serialize());
+        if (event) plugin.getRedisManager().publishPlayerEvent("ACCESS_CHANGED", uuid + ":" + profile.serialize());
     }
 
-    // ===== Permissions individuelles =====
-
-    public void addPermission(UUID uuid, String permission, long durationSeconds, UUID grantedBy) {
-        long expiryEpoch = durationSeconds > 0
-                ? Math.addExact(System.currentTimeMillis() / 1000, durationSeconds) : -1;
-        playerPermissions.computeIfAbsent(uuid, k -> ConcurrentHashMap.newKeySet()).add(permission);
-        playerPermissionExpiries.computeIfAbsent(uuid, k -> new ConcurrentHashMap<>()).put(permission, expiryEpoch);
-
-        db.executeUpdate(
-                "INSERT INTO tropicube_permissions (uuid, permission, value, expiry, granted_by) VALUES (?, ?, TRUE, ?, ?) " +
-                "ON DUPLICATE KEY UPDATE value = TRUE, expiry = ?, granted_by = ?",
-                uuid.toString(), permission, expiryEpoch,
-                grantedBy != null ? grantedBy.toString() : null,
-                expiryEpoch, grantedBy != null ? grantedBy.toString() : null
-        );
-
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
-            Player player = plugin.getServer().getPlayer(uuid);
-            if (player != null) applyPermissions(player);
-        });
-        schedulePermissionExpiry(uuid, permission, expiryEpoch);
-    }
-
-    public void removePermission(UUID uuid, String permission) {
-        Set<String> perms = playerPermissions.get(uuid);
-        if (perms != null) perms.remove(permission);
-        Map<String, Long> expiries = playerPermissionExpiries.get(uuid);
-        if (expiries != null) expiries.remove(permission);
-
-        db.executeUpdate("DELETE FROM tropicube_permissions WHERE uuid = ? AND permission = ?",
-                uuid.toString(), permission);
-
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
-            Player player = plugin.getServer().getPlayer(uuid);
-            if (player != null) applyPermissions(player);
-        });
-    }
-
-    /** Refreshes local and Redis state after another service committed a permanent grade change. */
-    public void applyCommittedGrade(UUID uuid, String gradeName) {
-        if (!gradeRegistry.containsKey(gradeName)) return;
-        playerGrades.put(uuid, gradeName);
-        playerGradeExpiries.put(uuid, -1L);
-        plugin.getRedisManager().set(PlayerGradeCache.key(uuid), gradeName, PlayerGradeCache.TTL_SECONDS);
-        plugin.getRedisManager().publishPlayerEvent("GRADE_CHANGED", uuid.toString());
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
-            Player player = plugin.getServer().getPlayer(uuid);
-            if (player != null) applyPermissions(player);
-        });
-    }
-
-    public boolean hasPermission(UUID uuid, String permission) {
-        Player player = plugin.getServer().getPlayer(uuid);
-        if (player != null) return player.hasPermission(permission);
-
-        // Offline verification
-        Grade grade = getGradeInfo(uuid);
-        if (grade != null && grade.permissions().stream().anyMatch(pattern -> matches(pattern, permission))) return true;
-        Set<String> individual = getIndividualPermissions(uuid);
-        return individual.stream().anyMatch(pattern -> matches(pattern, permission));
-    }
-
-    // ===== Formatage =====
-
+    /** Refreshes local state after a purchase transaction committed a complete profile. */
+    public void applyCommittedGrade(UUID uuid, String ignoredGradeName) { loadPlayer(uuid); }
+    public boolean isVip(UUID uuid) { return getVipLevel(uuid) > 0; }
+    public boolean isStaff(UUID uuid) { return getModLevel(uuid) > 0; }
     public String getFormattedName(UUID uuid, String username) {
-        Grade grade = getGradeInfo(uuid);
-        if (grade == null) return "<white>" + username;
-        return grade.prefix() + grade.color() + username;
+        Grade g = getGradeInfo(uuid); return g == null ? "<white>" + username : g.prefix() + g.color() + username;
     }
-
-    /**
-     * Formats a name only when the asynchronous player-grade load has completed.
-     * This prevents lobby rendering from falling back to a blocking SQL lookup on the Paper thread.
-     */
     public Optional<String> getCachedFormattedName(UUID uuid, String username) {
-        String gradeName = playerGrades.get(uuid);
-        if (gradeName == null) return Optional.empty();
-        return Optional.of(formatName(gradeRegistry, gradeName, username));
+        String grade = playerGrades.get(uuid);
+        return grade == null ? Optional.empty() : Optional.of(formatName(gradeRegistry, grade, username));
     }
-
-    /**
-     * Formats a visible name with the active nick grade when present, falling
-     * back to the cached real grade. This method never changes permissions.
-     */
     public Optional<String> getCachedDisplayFormattedName(UUID uuid, String username) {
-        DisplayGradeOverrideCache.DisplayOverride identity = displayGradeOverrides.resolve(
-                uuid, username, playerGrades.get(uuid));
-        if (identity.gradeName() == null) return Optional.empty();
-        return Optional.of(formatName(gradeRegistry, identity.gradeName(), identity.name()));
+        var identity = displayGradeOverrides.resolve(uuid, username, playerGrades.get(uuid));
+        return identity.gradeName() == null ? Optional.empty()
+                : Optional.of(formatName(gradeRegistry, identity.gradeName(), identity.name()));
     }
-
-    /** Installs the name and visual grade carried by an active nick identity. */
     public void setDisplayIdentityOverride(UUID uuid, String displayName, String gradeName) {
         displayGradeOverrides.put(uuid, displayName, gradeName);
     }
-
-    /** Removes the nick display identity while leaving the real profile untouched. */
-    public void clearDisplayIdentityOverride(UUID uuid) {
-        displayGradeOverrides.remove(uuid);
-    }
-
+    public void clearDisplayIdentityOverride(UUID uuid) { displayGradeOverrides.remove(uuid); }
     static String formatName(Map<String, Grade> grades, String gradeName, String username) {
-        Grade grade = grades.get(gradeName);
-        return grade == null ? "<white>" + username : grade.prefix() + grade.color() + username;
+        Grade g = grades.get(gradeName); return g == null ? "<white>" + username : g.prefix() + g.color() + username;
     }
-
-    public String getPrefix(UUID uuid) {
-        Grade grade = getGradeInfo(uuid);
-        return grade != null ? grade.prefix() : "";
-    }
-
+    public String getPrefix(UUID uuid) { Grade g = getGradeInfo(uuid); return g == null ? "" : g.prefix(); }
     public Map<String, Grade> getAllGrades() { return Collections.unmodifiableMap(gradeRegistry); }
 
-    // ===== Grade permissions =====
-
-    public void addGradePermission(String gradeName, String permission) {
-        Grade grade = gradeRegistry.get(gradeName);
-        if (grade == null) return;
-        grade.permissions().add(permission.trim());
-        persistGradePermissions(gradeName);
-    }
-
-    public void removeGradePermission(String gradeName, String permission) {
-        Grade grade = gradeRegistry.get(gradeName);
-        if (grade == null) return;
-        grade.permissions().remove(permission.trim());
-        persistGradePermissions(gradeName);
-    }
-
-    public Set<String> getGradePermissions(String gradeName) {
-        Grade grade = gradeRegistry.get(gradeName);
-        return grade != null ? Collections.unmodifiableSet(grade.permissions()) : Collections.emptySet();
-    }
-
-    public Set<String> getIndividualPermissions(UUID uuid) {
-        Set<String> cached = playerPermissions.get(uuid);
-        if (cached != null) return Collections.unmodifiableSet(cached);
-        Set<String> loaded = ConcurrentHashMap.newKeySet();
-        long now = System.currentTimeMillis() / 1000;
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT permission FROM tropicube_permissions WHERE uuid = ? AND value = TRUE AND (expiry = -1 OR expiry > ?)")) {
-            stmt.setString(1, uuid.toString());
-            stmt.setLong(2, now);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) loaded.add(rs.getString(1));
-            }
-            return Collections.unmodifiableSet(loaded);
-        } catch (SQLException e) {
-            throw new DatabaseManager.DatabaseOperationException("Impossible de charger les permissions", e);
-        }
-    }
-
-    private void persistGradePermissions(String gradeName) {
-        Grade grade = gradeRegistry.get(gradeName);
-        if (grade == null) return;
-        String permsStr = String.join(",", grade.permissions());
-        db.executeUpdate("UPDATE tropicube_grades SET permissions = ? WHERE name = ?", permsStr, gradeName);
-        plugin.getServer().getScheduler().runTask(plugin, () ->
-                plugin.getServer().getOnlinePlayers().stream()
-                        .filter(p -> gradeName.equals(playerGrades.get(p.getUniqueId())))
-                        .forEach(this::applyPermissions));
+    public void purgeAudit(int retentionDays) {
+        if (retentionDays < 1) throw new IllegalArgumentException("La rétention d'audit doit être positive");
+        db.executeUpdate("DELETE FROM tropicube_access_audit WHERE changed_at < ?",
+                System.currentTimeMillis() / 1000 - retentionDays * 86_400L);
     }
 
     public void reload() {
-        gradeRegistry.clear();
-        try {
-            initialize();
-        } catch (SQLException e) {
-            throw new DatabaseManager.DatabaseOperationException("Impossible de recharger les permissions", e);
-        }
-        Runnable reapply = () -> plugin.getServer().getOnlinePlayers()
-                .forEach(p -> loadPlayer(p.getUniqueId()));
-        if (plugin.getServer().isPrimaryThread()) reapply.run();
-        else plugin.getServer().getScheduler().runTask(plugin, reapply);
+        try { initialize(); }
+        catch (SQLException error) { throw new DatabaseManager.DatabaseOperationException("Rechargement impossible", error); }
+        runSync(() -> plugin.getServer().getOnlinePlayers().forEach(player -> loadPlayer(player.getUniqueId())));
     }
 
-    private void applyPermissionPattern(PermissionAttachment attachment, String rawPattern) {
-        String pattern = rawPattern == null ? "" : rawPattern.trim();
-        if (pattern.isEmpty()) return;
-        if (!pattern.endsWith("*")) {
-            attachment.setPermission(pattern, true);
-            return;
-        }
-        String prefix = pattern.substring(0, pattern.length() - 1);
-        plugin.getServer().getPluginManager().getPermissions().stream()
-                .map(org.bukkit.permissions.Permission::getName)
-                .filter(name -> prefix.isEmpty() || name.startsWith(prefix))
-                .forEach(name -> attachment.setPermission(name, true));
-    }
-
-    private boolean matches(String pattern, String permission) {
-        if (pattern == null) return false;
-        String trimmed = pattern.trim();
-        if (trimmed.equals("*")) return true;
-        return trimmed.endsWith("*")
-                ? permission.startsWith(trimmed.substring(0, trimmed.length() - 1))
-                : trimmed.equalsIgnoreCase(permission);
-    }
-
-    private void scheduleGradeExpiry(UUID uuid, long expiryEpoch) {
-        if (expiryEpoch <= 0) return;
-        long delaySeconds = Math.max(1, expiryEpoch - System.currentTimeMillis() / 1000);
-        long ticks = Math.multiplyExact(delaySeconds, 20L);
+    private void scheduleGradeExpiry(UUID uuid, long expiry) {
+        if (expiry <= 0) return;
+        long delay = Math.max(1, expiry - System.currentTimeMillis() / 1000);
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            if (playerGradeExpiries.getOrDefault(uuid, -1L) != expiryEpoch) return;
-            setGrade(uuid, "JOUEUR", -1);
-        }, ticks);
+            if (playerGradeExpiries.getOrDefault(uuid, -1L) == expiry) {
+                CompletableFuture.runAsync(() -> setGrade(uuid, "JOUEUR", -1, null, "GRADE_EXPIRY"))
+                        .exceptionally(error -> {
+                            plugin.getLogger().log(Level.SEVERE, MessageStyle.log("tc", "ACCESS",
+                                    "<red>Expiration du grade impossible pour " + uuid), error);
+                            return null;
+                        });
+            }
+        }, Math.min(Long.MAX_VALUE / 2, delay * 20L));
+    }
+    private void runSync(Runnable action) {
+        if (plugin.getServer().isPrimaryThread()) action.run();
+        else plugin.getServer().getScheduler().runTask(plugin, action);
     }
 
-    private void schedulePermissionExpiry(UUID uuid, String permission, long expiryEpoch) {
-        if (expiryEpoch <= 0) return;
-        long delaySeconds = Math.max(1, expiryEpoch - System.currentTimeMillis() / 1000);
-        long ticks = Math.multiplyExact(delaySeconds, 20L);
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            Map<String, Long> expiries = playerPermissionExpiries.get(uuid);
-            if (expiries == null || expiries.getOrDefault(permission, -1L) != expiryEpoch) return;
-            removePermission(uuid, permission);
-        }, ticks);
+    private Map<String, Integer> configuredThresholds(String path) {
+        var section = plugin.getConfig().getConfigurationSection(path);
+        if (section == null) return Map.of();
+        Map<String, Integer> values = new HashMap<>();
+        section.getValues(true).forEach((permission, value) -> {
+            if (value instanceof ConfigurationSection) return;
+            if (!(value instanceof Number number)) throw new IllegalArgumentException(path + "." + permission
+                    + " doit être un entier");
+            values.put(permission, number.intValue());
+        });
+        return values;
     }
 }
