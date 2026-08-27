@@ -16,6 +16,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 #### Corrigé
 
+- La préparation MySQL est désormais sérialisée entre les backends ; V008 utilise une syntaxe compatible MySQL 9.7 et reprend sans doublon une exécution interrompue.
 - `/level` est à nouveau publié dans les suggestions Velocity ; les anciennes entrées `/permissions` et `/tropiperm` ont été retirées.
 - `/maintenance` utilise et valide désormais `maintenance.default-deadline-minutes` lorsqu'aucune durée n'est fournie.
 

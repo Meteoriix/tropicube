@@ -112,6 +112,8 @@ Profiles aggregate identity, level, balance, social state, guild, and SheepWars 
 
 MySQL stores durable profiles, friendships, cosmetic grades, access levels and their audit, balances, moderation history, and SheepWars preferences. Individual permission rows no longer exist. Redis accelerates reads and coordinates ephemeral network state.
 
+Core applies the ordered resources in `db/migration/index.txt` and records successful versions in `tropicube_schema_migrations`. The MySQL advisory lock `tropicube:core:schema` serializes the complete schema preparation across concurrently starting Paper backends. Conditional column changes query `information_schema.columns`; tests reject the unsupported MySQL variants `ADD/DROP COLUMN IF [NOT] EXISTS`.
+
 ## Shutdown
 
 Every plugin cancels scheduled work and closes pools or subscriptions during shutdown. A completed game sends `PROXY:FINISH_GAME:<instanceId>`; Velocity transfers remaining players, unregisters the backend, removes the container and its labelled ephemeral `/data` volume, and clears Redis state. On startup, Velocity also removes labelled game volumes whose containers no longer exist.

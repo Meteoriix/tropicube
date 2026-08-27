@@ -2,7 +2,7 @@
 
 ## Access-level migration
 
-Migration V008 permanently removes `tropicube_permissions` and the former grade permission fields. Take a MySQL dump before the first deployment, then recreate Velocity and every Paper backend in one maintenance window because older builds do not understand `player:access:<uuid>`. Validate all eight grade defaults, `/level`, queue priority, and `/nick`. Rolling back requires the pre-V008 SQL backup.
+Migration V008 permanently removes `tropicube_permissions` and the former grade permission fields. Take a MySQL dump before the first deployment, then recreate Velocity and every Paper backend in one maintenance window because older builds do not understand `player:access:<uuid>`. Core serializes schema preparation across backends, and V008 resumes an interrupted execution from its `MIGRATION` audit without incrementing revisions or duplicating those rows. Confirm that V008 appears in `tropicube_schema_migrations`, then validate all eight grade defaults, `/level`, queue priority, and `/nick`. Rolling back requires the pre-V008 SQL backup.
 
 ## Supported platforms
 

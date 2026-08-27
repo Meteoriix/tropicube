@@ -16,6 +16,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 #### Fixed
 
+- MySQL schema preparation is now serialized across backends; V008 uses MySQL 9.7-compatible syntax and resumes an interrupted run without duplicate audit entries.
 - `/level` is published in Velocity suggestions again, while stale `/permissions` and `/tropiperm` entries are gone.
 - `/maintenance` now reads and validates `maintenance.default-deadline-minutes` when no duration is supplied.
 

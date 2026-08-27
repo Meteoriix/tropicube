@@ -19,6 +19,9 @@ import java.util.logging.Level;
  */
 public class DatabaseManager {
 
+    private static final String SCHEMA_LOCK_NAME = "tropicube:core:schema";
+    private static final int SCHEMA_LOCK_TIMEOUT_SECONDS = 25;
+
     private final TropicubeCore plugin;
 
     private HikariDataSource dataSource;
@@ -167,7 +170,9 @@ public class DatabaseManager {
             """
         };
 
-        try (Connection conn = getConnection()) {
+        try (Connection conn = getConnection();
+             DatabaseSchemaLock ignored = DatabaseSchemaLock.acquire(
+                     conn, SCHEMA_LOCK_NAME, SCHEMA_LOCK_TIMEOUT_SECONDS)) {
             for (String sql : tables) {
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.execute();
@@ -340,6 +345,48 @@ public class DatabaseManager {
     public static class DatabaseOperationException extends RuntimeException {
         public DatabaseOperationException(String message, Throwable cause) {
             super(message, cause);
+        }
+    }
+
+    /**
+     * Holds a MySQL connection-level advisory lock while the shared schema is prepared.
+     * Dynamic Paper instances start concurrently, so metadata checks followed by DDL
+     * must never run independently on several servers.
+     */
+    private static final class DatabaseSchemaLock implements AutoCloseable {
+        private final Connection connection;
+        private final String name;
+
+        private DatabaseSchemaLock(Connection connection, String name) {
+            this.connection = connection;
+            this.name = name;
+        }
+
+        private static DatabaseSchemaLock acquire(Connection connection, String name, int timeoutSeconds)
+                throws SQLException {
+            try (PreparedStatement statement = connection.prepareStatement("SELECT GET_LOCK(?, ?)")) {
+                statement.setString(1, name);
+                statement.setInt(2, timeoutSeconds);
+                try (ResultSet result = statement.executeQuery()) {
+                    if (!result.next() || result.getInt(1) != 1) {
+                        throw new SQLException("Impossible d'acquérir le verrou MySQL du schéma '" + name
+                                + "' sous " + timeoutSeconds + " secondes");
+                    }
+                }
+            }
+            return new DatabaseSchemaLock(connection, name);
+        }
+
+        @Override
+        public void close() throws SQLException {
+            try (PreparedStatement statement = connection.prepareStatement("SELECT RELEASE_LOCK(?)")) {
+                statement.setString(1, name);
+                try (ResultSet result = statement.executeQuery()) {
+                    if (!result.next() || result.getInt(1) != 1) {
+                        throw new SQLException("Impossible de libérer le verrou MySQL du schéma '" + name + "'");
+                    }
+                }
+            }
         }
     }
 }
