@@ -61,6 +61,16 @@ class VelocityConfigurationTest {
     }
 
     @Test
+    void bundledMaintenanceDeadlineIsValidated() throws IOException {
+        ConfigurationNode config = loadBundledConfig();
+
+        assertEquals(30, TropicubeVelocity.maintenanceDefaultDeadlineMinutes(config));
+        config.node("maintenance", "default-deadline-minutes").set(0);
+        assertThrows(IllegalArgumentException.class,
+                () -> TropicubeVelocity.maintenanceDefaultDeadlineMinutes(config));
+    }
+
+    @Test
     void bundledMotdPromotesAvailableGamesWithoutLanguagesOrPlayerCount() throws IOException {
         ConfigurationNode motd = loadBundledConfig().node("motd");
 

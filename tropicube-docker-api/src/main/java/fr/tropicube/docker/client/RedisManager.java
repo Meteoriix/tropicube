@@ -317,11 +317,6 @@ public class RedisManager {
         }
     }
 
-    /** Exposes the raw Jedis client for advanced operations not covered by this handler. */
-    public RedisClient getClient() {
-        return redis();
-    }
-
     private RedisClient redis() {
         RedisClient current = client;
         if (current == null) {

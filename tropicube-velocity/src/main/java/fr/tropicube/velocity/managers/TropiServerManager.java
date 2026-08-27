@@ -1039,15 +1039,6 @@ public class TropiServerManager {
                 .flatMap(i -> proxy.getServer(i.getServerName()));
     }
 
-    /**
-     * Returns all instances of a certain type.
-     */
-    public List<ServerInstance> getInstancesByType(String type) {
-        return activeInstances.values().stream()
-                .filter(i -> i.getServerType().equalsIgnoreCase(type))
-                .collect(Collectors.toList());
-    }
-
     public Map<String, ServerTemplate> getTemplates() { return Map.copyOf(templates); }
     public Map<String, ServerInstance> getActiveInstances() { return Map.copyOf(activeInstances); }
 

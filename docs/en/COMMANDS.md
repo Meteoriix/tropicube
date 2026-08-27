@@ -15,7 +15,7 @@
 | `/send <player|*> <server>` | — | `tropicube.admin.send` | Transfers one or all players |
 | `/pull <player>` | — | `tropicube.admin.pull` | Brings a player to the sender's joinable server |
 | `/tropicube ...` | `/tropi`, `/cm` | `tropicube.admin` | Administers dynamic instances |
-| `/maintenance <network\|type> <on\|off\|status> [minutes] [reason]` | — | `tropicube.admin.maintenance` | Starts a network or game-type drain with a deadline |
+| `/maintenance <network\|type> <on\|off\|status> [minutes] [reason]` | — | `tropicube.admin.maintenance` | Starts a network or game-type drain with the configured default deadline |
 | `/announce <network\|type\|instance> <language.key>` | — | `tropicube.admin.announce` | Broadcasts a configured localized announcement |
 | `/networkdiag` | `/netdiag` | `tropicube.admin.diagnostic` | Displays Redis, instance, and connection-protection health |
 
@@ -79,6 +79,8 @@ The lobby hotbar keeps stable positions: Games in slot 0, Social in slot 2, the 
 ## Administration principles
 
 Command handlers validate arguments and permissions at the boundary. Player-facing text comes from the four language files. Operations involving SQL, Redis, Docker, or disk must not block the Paper or Velocity event thread.
+
+`tropicube.chat.color` allows safe MiniMessage colors and decorations in global chat. Interactive tags such as click and hover actions remain literal text.
 
 `vipLevel` ranges from 0 to 3 and `modLevel` from 0 to 4. Players cannot change themselves and may only assign a moderator level strictly below their own; level 4 is console-only. Arbitrary individual permissions no longer exist. Sensitive staff actions still require TOTP.
 

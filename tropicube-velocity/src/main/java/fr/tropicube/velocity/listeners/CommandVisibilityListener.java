@@ -16,7 +16,7 @@ public final class CommandVisibilityListener {
             "report", "reports", "msg", "tell", "w", "reply", "r", "ignore",
             "globalchat", "g", "2fa", "staff", "staffchat", "sc", "profile", "profil",
             "settings", "preferences", "parametres", "missions", "notifications", "inbox",
-            "center", "centre", "privacy", "guild", "guilde", "permissions", "tropiperm",
+            "center", "centre", "privacy", "guild", "guilde", "level",
             "coreadmin", "tropiadmin", "ca", "help", "friend", "friends", "ami", "amis",
             "party", "groupe", "pc", "spawn", "play", "servers", "sv", "languages",
             "vip", "boutique", "shop", "fly", "flymode", "fm", "replay", "playnext",

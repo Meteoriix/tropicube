@@ -14,10 +14,15 @@ import java.util.List;
 public final class MaintenanceCommand implements SimpleCommand {
     private final MaintenanceManager maintenance;
     private final TropiServerManager servers;
+    private final int defaultDeadlineMinutes;
 
-    public MaintenanceCommand(MaintenanceManager maintenance, TropiServerManager servers) {
+    public MaintenanceCommand(MaintenanceManager maintenance, TropiServerManager servers, int defaultDeadlineMinutes) {
         this.maintenance = maintenance;
         this.servers = servers;
+        if (defaultDeadlineMinutes < 1 || defaultDeadlineMinutes > 1_440) {
+            throw new IllegalArgumentException("defaultDeadlineMinutes doit être compris entre 1 et 1440");
+        }
+        this.defaultDeadlineMinutes = defaultDeadlineMinutes;
     }
 
     @Override
@@ -44,7 +49,7 @@ public final class MaintenanceCommand implements SimpleCommand {
     }
 
     private void enable(Invocation invocation, String scope, String[] args) {
-        int minutes = 30;
+        int minutes = defaultDeadlineMinutes;
         if (args.length >= 3) {
             try {
                 minutes = Integer.parseInt(args[2]);

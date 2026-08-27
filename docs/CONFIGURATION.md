@@ -120,10 +120,10 @@ Le service Compose `velocity` monte `/server` en `tmpfs` avec une limite de 512 
 
 La valeur `false` conserve les backends et leurs volumes afin qu'un redémarrage de Velocity puisse restaurer les parties actives. Cette dérogation doit être réservée aux redéploiements où cette continuité est explicitement recherchée ; si la clé est absente, le comportement sûr reste la suppression.
 
-### Nick et administration
+### Accès, nick et administration
 
-- `admin-uuids` donne `tropicube.admin`, `tropicube.admin.find`, `tropicube.admin.send`, `tropicube.admin.pull`, `tropicube.admin.maintenance`, `tropicube.admin.announce`, `tropicube.admin.diagnostic` et `tropicube.bypass.whitelist` aux UUID approuvés ;
-- `nick.allowed-grades` contrôle les grades pouvant activer `/nick` ; la désactivation reste accessible à tous ;
+- `access.permission-thresholds.vip|mod` permet d'ajuster les seuils des permissions connues, validés au démarrage ;
+- `vipLevel >= 3` contrôle l'activation de `/nick` ; la désactivation reste accessible à tous ;
 - `nick.skin-uuids` complète le pool de profils Mojang utilisés comme skins.
 
 Core publie le grade courant sous `player:grade:<uuid>` avec une durée de vie de 24 heures. La valeur est actualisée au chargement et à chaque changement de grade, et n'est pas supprimée pendant un transfert entre backends.
@@ -135,7 +135,7 @@ Une identité active est enregistrée sous `nick:<uuid>` avec le pseudonyme, le 
 - `connection-protection.address-limit`, `global-limit`, `window-seconds` et `quarantine-seconds` contrôlent les limites adaptatives avant authentification. Aucun historique d'adresse n'est persisté.
 - `motd.line-1`, `line-2` et `maintenance-line` décrivent uniquement l'entrée publique Velocity. `{games}` est remplacé par les types de jeux activés, dédupliqués entre leurs différentes files ; `motd.game-<TYPE>`, `games-separator` et `no-games` contrôlent leurs libellés et le repli. Le MOTD ne publie ni langues ni effectif connecté.
 - `announcements.interval-seconds` et `announcements.entries[].message-key/target` définissent la rotation localisée. Une cible vaut `network`, un type, un template ou une instance.
-- `/maintenance` persiste un drain dans Redis pendant sept jours au plus. L'échéance vaut de 1 à 1 440 minutes.
+- `maintenance.default-deadline-minutes` fixe l'échéance utilisée par `/maintenance ... on` lorsqu'aucune durée n'est fournie. Elle doit valoir de 1 à 1 440 minutes ; le drain est persisté dans Redis pendant sept jours au plus.
 
 ## Velocity natif
 
@@ -170,15 +170,15 @@ Sections métier :
 - `social.party.invite-expiry-seconds` : validité d'une invitation de party (`60`) ;
 - `guilds.max-members` : capacité d'une guilde (`50`) ;
 - `guilds.max-officers` : nombre maximal d'officiers (`5`) ;
-- `guilds.weekly-contribution-cap` : contribution d'XP hebdomadaire maximale par membre (`5000`) ;
+- `guilds.weekly-contribution-cap` : contribution d'XP hebdomadaire maximale par membre (`5000`), alimentée automatiquement par l'XP des parties et des missions ;
 - `language.default` : langue utilisée avant chargement d'un profil existant. À la création d'un joueur, la langue du client Minecraft sélectionne `fr`, `en`, `es` ou `de` ; toute autre locale utilise l'anglais ;
-- `grades` : présentation MiniMessage, priorité, statut VIP/staff et permissions.
+- `grades` : présentation MiniMessage, priorité et niveaux VIP/modérateur appliqués par défaut.
 
 `TropicubeCore/missions.yml` est un catalogue métier versionné. Chaque définition déclare un événement, une cible, de l'XP réseau et de la monnaie. Le catalogue livré contient au moins six missions quotidiennes et quatre hebdomadaires afin que les rotations de 5 + 3 puissent toujours proposer un remplacement sans doublon. Toute modification exige une hausse explicite de `version`, des identifiants stables et des valeurs positives validées au démarrage.
 
 Une mission peut déclarer `reward-reroll-tokens`. Les jetons sont crédités atomiquement avec les autres récompenses, plafonnés à cinq, puis consommés seulement après les deux rerolls quotidiens gratuits — quatre avec `tropicube.missions.reroll.bonus`.
 
-Les noms de grades sont utilisés comme identifiants stables dans la boutique, le nick et les permissions. Une modification doit donc être répercutée dans tous les fichiers concernés.
+Les noms de grades sont utilisés comme identifiants stables dans la boutique, les affichages et les données persistées. Une modification doit donc être répercutée dans tous les fichiers concernés.
 
 ## TropicubeLobby
 
@@ -192,7 +192,7 @@ Fichier : `dockerfiles/configs/TropicubeLobby/config.yml`.
 - `vip-shop.entries` associe grade, icône, nom et prix catalogue croissant ; le prix d'une montée en grade est la différence entre le grade ciblé et le grade déjà acheté ;
 - `lang-selector.languages` configure codes, têtes et textes de présentation.
 
-Le `grade-key` d'une entrée doit exister dans Core et ne peut apparaître qu'une fois. Les prix doivent être strictement croissants. L'onglet Grades sépare les permissions réellement actives (`lobby.shop-active-<grade>`) des promesses non implémentées (`lobby.shop-soon-<grade>`) dans les quatre langues ; une fonctionnalité ne doit passer dans la première section qu'après validation de son comportement effectif.
+Le `grade-key` d'une entrée doit exister dans Core et ne peut apparaître qu'une fois. Les prix doivent être strictement croissants. L'onglet Grades sépare les avantages réellement actifs (`lobby.shop-active-<grade>`) des promesses non implémentées (`lobby.shop-soon-<grade>`) dans les quatre langues ; une fonctionnalité ne doit passer dans la première section qu'après validation de son comportement effectif.
 
 ## TropicubeSheepwars
 
@@ -207,7 +207,6 @@ Catalogues complémentaires :
 - `default-settings.min-players` et `max-players` sont bornés entre 2 et 16. L'hôte ne peut pas réduire le maximum sous l'effectif déjà présent, et chaque modification du maximum est propagée à l'instance Redis afin que Velocity applique immédiatement la capacité ;
 - `default-settings.auto-start` vaut `true` par défaut pour les parties classiques et lance le compte à rebours dès que `min-players` est atteint ;
 - `custom-game-default-settings.auto-start` vaut `false` par défaut et remplace cette valeur à l'initialisation d'une instance possédant un `HOST_UUID` ; l'hôte peut ensuite la modifier pour la partie courante ;
-- `competitive.matchmaking` documente les mêmes valeurs de fenêtre que Velocity pour l'affichage et la validation métier ; les valeurs livrées sont 75, 25, 15 secondes et 500 ;
 - `competitive.role-limits.4v4|8v8.dps|tank|support` limite chaque rôle par équipe ; les sommes par défaut valent exactement quatre ou huit ;
 - `CUSTOM_GAME_PRIVATE`, injecté automatiquement par Velocity avec `HOST_UUID`, indique au backend si l'item de whitelist doit être remis à l'hôte ; cette variable interne ne doit pas être configurée manuellement dans le template ;
 - `sheep-probabilities` contient des poids relatifs, pas nécessairement un total de 100 ; les valeurs par défaut totalisent 100 et privilégient TNT/Soin à 10 %, Force à 9 %, Abordage/Feu/Foudre à 8 %, Recherche/Échange à 7 %, Ténèbres/Poison/Fragmentation à 6 %, Gravité à 5 %, Météore à 4 % et Distorsion/Mécha à 3 % ;

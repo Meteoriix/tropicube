@@ -23,9 +23,6 @@ public class EconomyManager {
         PAYMENT, REWARD, PURCHASE, ADMIN_SET, ADMIN_ADD, ADMIN_REMOVE, TRANSFER
     }
 
-    public record Transaction(String fromUuid, String toUuid, double amount,
-                               String reason, TransactionType type, long timestamp) {}
-
     private final TropicubeCore plugin;
     private final DatabaseManager db;
     private final RedisManager redis;
@@ -115,10 +112,6 @@ public class EconomyManager {
 
     public CompletableFuture<Double> getBalanceAsync(UUID uuid) {
         return CompletableFuture.supplyAsync(() -> getBalance(uuid));
-    }
-
-    public boolean hasBalance(UUID uuid, double amount) {
-        return getBalance(uuid) >= amount;
     }
 
     // ===== Operations =====
@@ -309,42 +302,6 @@ public class EconomyManager {
         return result;
     }
 
-    public void logTransaction(String fromUuid, String toUuid, double amount,
-                                String reason, TransactionType type) {
-        db.executeUpdate(
-                "INSERT INTO tropicube_transactions (from_uuid, to_uuid, amount, reason, transaction_type, timestamp) VALUES (?, ?, ?, ?, ?, ?)",
-                fromUuid, toUuid, amount, reason, type.name(), System.currentTimeMillis()
-        );
-    }
-
-    // ===== Historique =====
-
-    public List<Transaction> getTransactionHistory(UUID uuid, int limit) {
-        List<Transaction> transactions = new ArrayList<>();
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT * FROM tropicube_transactions WHERE from_uuid = ? OR to_uuid = ? " +
-                     "ORDER BY timestamp DESC LIMIT ?")) {
-            stmt.setString(1, uuid.toString());
-            stmt.setString(2, uuid.toString());
-            stmt.setInt(3, limit);
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                transactions.add(new Transaction(
-                        rs.getString("from_uuid"),
-                        rs.getString("to_uuid"),
-                        rs.getDouble("amount"),
-                        rs.getString("reason"),
-                        TransactionType.valueOf(rs.getString("transaction_type")),
-                        rs.getLong("timestamp")
-                ));
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, MessageStyle.log("tc", "ECONOMY", "<yellow>Erreur historique"), e);
-        }
-        return transactions;
-    }
-
     // ===== Classement =====
 
     public List<Map.Entry<String, Double>> getTopBalances(int limit) {
@@ -381,10 +338,6 @@ public class EconomyManager {
         if (amount >= 1_000) return String.format("%.1fK %s", amount / 1_000, currencySymbol);
         return String.format("%.2f %s", amount, currencySymbol);
     }
-
-    public String getCurrencyName() { return currencyName; }
-    public String getCurrencySymbol() { return currencySymbol; }
-    public double getStartingBalance() { return startingBalance; }
 
     public enum TransferResult {
         SUCCESS, INSUFFICIENT_FUNDS, SAME_PLAYER, INVALID_AMOUNT, TOO_LOW, TOO_HIGH, ACCOUNT_NOT_FOUND;

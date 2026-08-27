@@ -19,13 +19,6 @@ import java.util.logging.Level;
 public class PermissionManager {
     public record Grade(String name, String displayName, String prefix, String suffix,
                         String color, int priority, int defaultVipLevel, int defaultModLevel) {
-        /** Compatibility constructor for display-only callers. */
-        public Grade(String name, String displayName, String prefix, String suffix, String color,
-                     int priority, boolean vip, boolean staff, Set<String> ignored) {
-            this(name, displayName, prefix, suffix, color, priority, vip ? 1 : 0, staff ? 1 : 0);
-        }
-        public boolean isVip() { return defaultVipLevel > 0; }
-        public boolean isStaff() { return defaultModLevel > 0; }
     }
     public enum Axis { VIP, MOD }
 
@@ -267,14 +260,8 @@ public class PermissionManager {
 
     /** Refreshes local state after a purchase transaction committed a complete profile. */
     public void applyCommittedGrade(UUID uuid, String ignoredGradeName) { loadPlayer(uuid); }
-    public boolean isVip(UUID uuid) { return getVipLevel(uuid) > 0; }
-    public boolean isStaff(UUID uuid) { return getModLevel(uuid) > 0; }
     public String getFormattedName(UUID uuid, String username) {
         Grade g = getGradeInfo(uuid); return g == null ? "<white>" + username : g.prefix() + g.color() + username;
-    }
-    public Optional<String> getCachedFormattedName(UUID uuid, String username) {
-        String grade = playerGrades.get(uuid);
-        return grade == null ? Optional.empty() : Optional.of(formatName(gradeRegistry, grade, username));
     }
     public Optional<String> getCachedDisplayFormattedName(UUID uuid, String username) {
         var identity = displayGradeOverrides.resolve(uuid, username, playerGrades.get(uuid));
@@ -288,7 +275,6 @@ public class PermissionManager {
     static String formatName(Map<String, Grade> grades, String gradeName, String username) {
         Grade g = grades.get(gradeName); return g == null ? "<white>" + username : g.prefix() + g.color() + username;
     }
-    public String getPrefix(UUID uuid) { Grade g = getGradeInfo(uuid); return g == null ? "" : g.prefix(); }
     public Map<String, Grade> getAllGrades() { return Collections.unmodifiableMap(gradeRegistry); }
 
     public void purgeAudit(int retentionDays) {

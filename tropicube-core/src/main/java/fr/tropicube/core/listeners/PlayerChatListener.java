@@ -1,6 +1,7 @@
 package fr.tropicube.core.listeners;
 
 import fr.tropicube.core.TropicubeCore;
+import fr.tropicube.core.util.MessageStyle;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
@@ -49,7 +50,7 @@ public class PlayerChatListener implements Listener {
 
         // Network chat is rendered once by every backend after Redis delivery.
         String rawText = PlainTextComponentSerializer.plainText().serialize(event.message());
-        rawText = rawText.replaceAll("&[0-9a-fk-or]", "");
+        rawText = MessageStyle.prepareChat(rawText, player.hasPermission("tropicube.chat.color"));
         event.setCancelled(true);
         plugin.getCommunicationService().publishGlobal(player, rawText);
     }

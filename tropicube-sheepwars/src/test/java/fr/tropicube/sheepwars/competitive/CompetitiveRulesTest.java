@@ -3,20 +3,17 @@ package fr.tropicube.sheepwars.competitive;
 import fr.tropicube.sheepwars.player.PlayerClass;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class CompetitiveRulesTest {
     @Test
-    void queuesShareRatingRulesButKeepTheirCapacities() {
+    void rankedQueuesKeepTheirExpectedCapacities() {
         assertEquals(8, SheepWarsMode.RANKED_4V4.maximumPlayers());
         assertEquals(16, SheepWarsMode.RANKED_8V8.maximumPlayers());
         assertTrue(SheepWarsMode.RANKED_4V4.ranked());
         assertFalse(SheepWarsMode.QUICK_PLAY.ranked());
-        assertTrue(PartyQueuePolicy.accepts(SheepWarsMode.RANKED_4V4, 2));
-        assertFalse(PartyQueuePolicy.accepts(SheepWarsMode.RANKED_4V4, 3));
     }
 
     @Test
@@ -36,14 +33,6 @@ class CompetitiveRulesTest {
         assertEquals(1700, reset.value());
         assertEquals(5, reset.placementsRemaining());
         assertEquals(RankTier.DIAMOND, reset.tier());
-    }
-
-    @Test
-    void matchmakingWindowWidensAndStopsAtItsCeiling() {
-        MatchmakingPolicy policy = new MatchmakingPolicy(75, 25, Duration.ofSeconds(15), 500);
-        assertEquals(75, policy.rangeAfter(Duration.ZERO));
-        assertEquals(125, policy.rangeAfter(Duration.ofSeconds(30)));
-        assertEquals(500, policy.rangeAfter(Duration.ofHours(1)));
     }
 
     @Test

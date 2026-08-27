@@ -67,11 +67,6 @@ public class ItemBuilder {
         return this;
     }
 
-    public ItemBuilder hideFlags() {
-        meta.addItemFlags(ItemFlag.values());
-        return this;
-    }
-
     public ItemBuilder customModelData(int data) {
         CustomModelDataComponent component = meta.getCustomModelDataComponent();
         component.setFloats(List.of((float) data));

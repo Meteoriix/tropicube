@@ -234,6 +234,15 @@ public class TropicubeVelocity {
         return value;
     }
 
+    static int maintenanceDefaultDeadlineMinutes(ConfigurationNode config) {
+        int value = config.node("maintenance", "default-deadline-minutes").getInt(30);
+        if (value < 1 || value > 1_440) {
+            throw new IllegalArgumentException(
+                    "maintenance.default-deadline-minutes doit être compris entre 1 et 1440, valeur reçue : " + value);
+        }
+        return value;
+    }
+
     private java.util.Map<String, Integer> accessThresholds(String axis) {
         java.util.Map<String, Integer> values = new java.util.HashMap<>();
         config.node("access", "permission-thresholds", axis).childrenMap().forEach((key, node) ->
@@ -301,7 +310,8 @@ public class TropicubeVelocity {
         );
         server.getCommandManager().register(
                 server.getCommandManager().metaBuilder("maintenance").build(),
-                new MaintenanceCommand(maintenanceManager, tropiServerManager)
+                new MaintenanceCommand(maintenanceManager, tropiServerManager,
+                        maintenanceDefaultDeadlineMinutes(config))
         );
         server.getCommandManager().register(
                 server.getCommandManager().metaBuilder("networkdiag").aliases("netdiag").build(),
@@ -331,14 +341,9 @@ public class TropicubeVelocity {
     public ProxyServer getServer() { return server; }
     public Logger getLogger() { return logger; }
     public ConfigurationNode getConfig() { return config; }
-    public DockerManager getDockerManager() { return dockerManager; }
     public RedisManager getRedisManager() { return redisManager; }
     public VelocityLanguageManager getLanguageManager() { return languageManager; }
     public TropiServerManager getTropiServerManager() { return tropiServerManager; }
     public QueueManager getQueueManager() { return queueManager; }
     public PartyCoordinator getPartyCoordinator() { return partyCoordinator; }
-    public NickManager getNickManager() { return nickManager; }
-    public MaintenanceManager getMaintenanceManager() { return maintenanceManager; }
-    public AccessProfileCache getAccessProfileCache() { return accessProfileCache; }
-    public Path getDataDirectory() { return dataDirectory; }
 }

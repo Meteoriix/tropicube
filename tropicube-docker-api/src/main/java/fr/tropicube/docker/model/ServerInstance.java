@@ -244,10 +244,6 @@ public class ServerInstance {
         return instanceId;
     }
 
-    public void setInstanceId(String instanceId) {
-        this.instanceId = requireNonBlank(instanceId, "instanceId");
-    }
-
     public String getContainerId() {
         return containerId;
     }
@@ -282,11 +278,6 @@ public class ServerInstance {
 
     public int getPort() {
         return port;
-    }
-
-    public void setPort(int port) {
-        requirePort(port, "port");
-        this.port = port;
     }
 
     public int getRconPort() {

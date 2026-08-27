@@ -344,7 +344,6 @@ class YamlResourcesTest {
                 "join.message",
                 "join.first-join",
                 "join.welcome-back",
-                "quit.message",
                 "sw.player-joined",
                 "sw.player-left"
         );

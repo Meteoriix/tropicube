@@ -34,9 +34,9 @@ Core publishes persistent, revisioned `player:access:<uuid>` values. Velocity ke
 Velocity also accepts the following operational settings:
 
 - `connection-protection.address-limit`, `global-limit`, `window-seconds`, and `quarantine-seconds` control adaptive limits before authentication. No address history is persisted.
-- `motd.line-1`, `line-2`, and `maintenance-line` describe only the public Velocity endpoint. `{online}` is replaced with the current player count.
+- `motd.line-1`, `line-2`, and `maintenance-line` describe only the public Velocity endpoint. `{games}` is replaced with the enabled, deduplicated game types.
 - `announcements.interval-seconds` and `announcements.entries[].message-key/target` define the localized rotation. A target is `network`, a type, a template, or an instance.
-- `/maintenance` persists a drain in Redis for at most seven days. Its deadline ranges from 1 to 1,440 minutes.
+- `maintenance.default-deadline-minutes` supplies `/maintenance ... on` when no duration is provided. It must range from 1 to 1,440 minutes; the drain is persisted in Redis for at most seven days.
 
 ## Core
 
@@ -44,7 +44,7 @@ Source: `tropicube-core/src/main/resources/config.yml`; deployment copy: `docker
 
 Core configuration covers Redis, MySQL, the default language, economy cache rules, and the complete cosmetic grade catalog. Each grade defines validated `default-vip-level` (0–3) and `default-mod-level` (0–4); applying a grade always replaces both current levels. `access.audit-retention-days` defaults to 365 and drives the daily SQL audit purge.
 
-Guild limits are `guilds.max-members` (`50`), `guilds.max-officers` (`5`), and `guilds.weekly-contribution-cap` (`5000` XP per member).
+Guild limits are `guilds.max-members` (`50`), `guilds.max-officers` (`5`), and `guilds.weekly-contribution-cap` (`5000` XP per member). Match and mission XP automatically feeds the capped guild contribution.
 
 `TropicubeCore/missions.yml` is a versioned business catalog. Every mission declares an event, target, network-XP reward, and currency reward. Stable IDs and a version bump are required when it changes; startup rejects invalid or undersized catalogs.
 
@@ -54,7 +54,7 @@ Supported language resources are `fr`, `en`, `de`, and `es`. A newly created pla
 
 Lobby configuration defines spawn coordinates, void recovery, scoreboard refresh, double-jump, selector layout, and feature toggles. `lobby.welcome.enabled` globally controls the immersive welcome: its title, sound, and particles play only on the initial lobby arrival after connecting to the proxy, while later lobby returns use only the discreet action bar. Each player can disable these effects persistently under Profile > Settings. `auto-replay.batch-size` defaults to five and is clamped from 1 to 100. The selector reads live instance snapshots from Redis. `GAME_PLAYING` appears as a blue `PLAYING` entry and, for SheepWars, connects available players as spectators.
 
-Every `vip-shop.entries` grade key must exist in Core, be unique, and use a strictly increasing catalog price. An upgrade charges the target price minus the already purchased grade price. The Grades tab localizes proven permissions under `lobby.shop-active-<grade>` and unimplemented promises under `lobby.shop-soon-<grade>`; an item moves to the active section only after its behavior exists.
+Every `vip-shop.entries` grade key must exist in Core, be unique, and use a strictly increasing catalog price. An upgrade charges the target price minus the already purchased grade price. The Grades tab localizes proven perks under `lobby.shop-active-<grade>` and unimplemented promises under `lobby.shop-soon-<grade>`; an item moves to the active section only after its behavior exists.
 
 ## SheepWars
 

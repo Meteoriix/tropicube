@@ -10,6 +10,14 @@ This document records functional, technical, and operational changes. Entries ar
 
 - Replaced grade and individual-permission authorization with cumulative `vipLevel` (0–3) and `modLevel` (0–4), `/level`, SQL auditing, and a revisioned Redis cache shared with Velocity.
 - Grades are now cosmetic and atomically apply their configured default levels; administrator UUIDs, Docker operators, and `/tropiperm` were removed.
+- Match and mission XP now contributes automatically to the player's guild within the configured weekly cap.
+- Global chat applies `tropicube.chat.color` only to safe MiniMessage colors and decorations; online and offline private messages use the recipient's language.
+- Unconsumed classes, methods, permissions, SheepWars configuration, and 85 language keys were removed together with their Docker copies and obsolete tests.
+
+#### Fixed
+
+- `/level` is published in Velocity suggestions again, while stale `/permissions` and `/tropiperm` entries are gone.
+- `/maintenance` now reads and validates `maintenance.default-deadline-minutes` when no duration is supplied.
 
 ### 2026-08-25
 

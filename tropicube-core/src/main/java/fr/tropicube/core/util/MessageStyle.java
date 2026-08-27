@@ -24,12 +24,35 @@ public final class MessageStyle {
                     .tag("sw", Tag.inserting(SHEEPWARS_PREFIX))
                     .build())
             .build();
+    private static final MiniMessage CHAT_MESSAGE = MiniMessage.builder()
+            .tags(TagResolver.builder()
+                    .resolver(StandardTags.color())
+                    .resolver(StandardTags.decorations())
+                    .resolver(StandardTags.reset())
+                    .build())
+            .build();
 
     private MessageStyle() {}
 
     /** Parses MiniMessage with the Tropicube {@code <tc>} and SheepWars {@code <sw>} tags. */
     public static Component component(String message) {
         return MINI_MESSAGE.deserialize(message);
+    }
+
+    /** Prepares chat input so only authorized players can use safe visual MiniMessage tags. */
+    public static String prepareChat(String message, boolean formattingAllowed) {
+        if (formattingAllowed) return message;
+        return MINI_MESSAGE.escapeTags(message.replaceAll("(?i)&[0-9a-fk-or]", ""));
+    }
+
+    /** Renders network chat with colors and decorations, excluding interactive MiniMessage tags. */
+    public static Component chatComponent(String message) {
+        return CHAT_MESSAGE.deserialize(message);
+    }
+
+    /** Escapes user-controlled text before inserting it into a localized MiniMessage template. */
+    public static String escapeTags(String message) {
+        return MINI_MESSAGE.escapeTags(message);
     }
 
     /** Renders a MiniMessage technical log using ANSI when the terminal supports it. */

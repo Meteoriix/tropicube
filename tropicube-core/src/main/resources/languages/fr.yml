@@ -4,26 +4,22 @@
 
 # General
 general:
-  prefix: "<tc>"
   no-permission: "<tc><red>Oups ! Tu n'as pas la permission de faire ça. 🚫"
   player-only: "<tc><red>Cette commande est réservée aux joueurs."
   player-not-found: "<tc><red>Joueur introuvable : <white>{0}"
   invalid-number: "<tc><red>Nombre invalide."
   player-offline: "<tc><red>Joueur introuvable ou hors ligne."
-  specify-player: "<tc><red>Spécifie un joueur."
   invalid-amount: "<tc><red>Montant invalide."
   operation-failed: "<tc><red>L'opération a échoué. Réessaie dans un instant."
   no-reason: "Aucune raison"
   chat-cooldown: "<tc><red>Doucement ! Attends un peu avant d'envoyer un autre message. ⏳"
 
-# Connection / Disconnect
+# Connexion
 join:
   message: "<green>🌴</green> <yellow>{0}</yellow> <gray>a rejoint Tropicube</gray>"
   first-join: "<gold>☀</gold> <yellow>{0}</yellow> <gray>débarque pour la première fois sur Tropicube !</gray>"
   welcome-back: "<aqua>🌊</aqua> <gray>Content de te revoir, <white>{0}</white> !</gray>"
 
-quit:
-  message: "<red>↪</red> <white>{0}</white> <gray>a quitté Tropicube</gray>"
 
 # Economy
 economy:
@@ -46,21 +42,6 @@ grade:
   list-entry: "  {0}<white>{1} <dark_gray>(priorité: <gray>{2}<dark_gray>)"
   invalid: "<tc><red>Grade invalide : <white>{0}"
   no-downgrade: "<tc><red>Tu ne peux pas changer le grade d'un joueur de rang supérieur."
-
-# Permissions
-permissions:
-  add-success: "<tc><green>Permission <white>{0} <green>ajoutée à <white>{1}<green>."
-  remove-success: "<tc><green>Permission <white>{0} <green>supprimée de <white>{1}<green>."
-  list-header: "<tc><dark_gray>Permissions de <white>{0}<dark_gray> :"
-  list-grade: "  <gray>Grade ({0}): <white>{1}"
-  list-individual: "  <gray>Individuelle: <white>{0}"
-  list-none: "  <gray>Aucune permission individuelle."
-  grade-add-success: "<tc><green>Permission <white>{0} <green>ajoutée au grade <white>{1}<green>."
-  grade-remove-success: "<tc><green>Permission <white>{0} <green>supprimée du grade <white>{1}<green>."
-  grade-list-header: "<tc><dark_gray>Permissions du grade <white>{0}<dark_gray> :"
-  grade-list-entry: "  <gray>- <white>{0}"
-  grade-list-none: "  <gray>Aucune permission définie."
-  grade-invalid: "<tc><red>Grade introuvable : <white>{0}"
 
 # Langues
 language:
@@ -85,8 +66,6 @@ moderation:
   history-empty: "  <gray>Aucune sanction."
   ban-success: "<tc><white>{0} <green>a été banni. Raison : <white>{1}"
   ban-message: "<tc><red>Tu as été banni !\n<gray>Raison : <white>{0}\n<gray>Expiration : <white>{1}"
-  already-banned: "<tc><white>{0} <red>est déjà banni."
-  not-banned: "<tc><white>{0} <red>n'est pas banni."
   warn-kick: "<tc><red>⚠ Tu as atteint {0} avertissements et as été expulsé."
   unban-success: "<tc><green>Le bannissement de <white>{0}</white> a été levé."
   report-usage: "<tc><red>Usage : /report \\<joueur> \\<chat|cheat|behavior|other> [#message] [détails]"
@@ -104,6 +83,7 @@ communication:
   stored: "<tc><gray>{0} est hors ligne : message conservé pendant 7 jours."
   blocked: "<tc><red>Ce joueur refuse les messages privés."
   private: "<light_purple>[MP]</light_purple> <white>{0}</white><gray> : {1}"
+  private-offline: "<light_purple>[MP hors ligne]</light_purple> <white>{0}</white><gray> : {1}"
   ignored: "<tc><gray>Tu ignores maintenant <white>{0}</white>."
   unignored: "<tc><green>Tu n'ignores plus <white>{0}</white>."
 
@@ -198,7 +178,6 @@ sw:
   game-already-started: "<sw><red>Une partie est déjà en cours."
   spectator-joined: "<sw><aqua>Vous avez rejoint la partie en tant que spectateur."
   arena-not-ready: "<sw><red>L'arène n'est pas configurée."
-  game-full: "<sw><red>La partie est pleine ! Tente ta chance plus tard 🌊"
   # Broadcasts
   player-joined: "<green>🐑</green> <yellow>{0}</yellow> <gray>a rejoint la partie</gray> <dark_gray>({1}/{2})</dark_gray>"
   player-left: "<red>↪</red> <yellow>{0}</yellow> <gray>a quitté la partie</gray>"
@@ -206,11 +185,8 @@ sw:
   countdown-cancelled: "<sw><red>Annulation du lancement de la partie."
   arena-not-ready-start: "<sw><red>L'arène n'est pas configurée, impossible de démarrer."
   game-started: "<sw><green>L'aventure commence ! Montre tes talents ! 🌴"
-  can-start: "<sw><gold>La partie peut être démarrée."
   killed-by-connector: " <gray>a été éliminé par "
   died-connector: " <gray>est mort."
-  regen-start: "<sw><gray>Régénération de la map <dark_gray>({0} blocs)..."
-  regen-done: "<sw><green>Map régénérée !"
   # Titres
   title-start: "🌴 Que l'aventure commence !"
   subtitle-start: "Équipe {0}"
@@ -218,13 +194,10 @@ sw:
   title-winner: "🏆 Victoire de l'équipe {0} !"
   subtitle-end: "GG à tous les champions ! 🏆"
 # End message (MiniMessage)
-  join-next: "<sw><gold>Clique <click:run_command:'/sw join'><b>ICI</b></click> pour rejoindre la prochaine partie !</gold>"
   # PlayerListener
   arena-not-configured-msg: "<sw><aqua>L'arène n'est pas configurée. Utilise <gold>/sw setlobby<aqua> puis <gold>/sw setspawn \\<red|blue><aqua> pour la configurer."
   no-class-change-ingame: "<sw><red>Impossible de changer de classe en cours de partie."
   no-settings-change-ingame: "<sw><red>Impossible de changer les paramètres en cours de partie."
-  no-start-now: "<sw><red>Impossible de lancer une partie maintenant."
-  no-cancel-now: "<sw><red>Impossible d'annuler le lancement de la partie maintenant."
   # ClassSelectionMenu
   class-menu-title: "<gold>🌴 Choisir une Classe"
   kit-menu-title: "Classe — {0}"
@@ -235,17 +208,8 @@ sw:
   label-disabled: "✘ Désactivé"
   label-selected: "▶ SÉLECTIONNÉ ◀"
   # SheepWarsCommand
-  cmd-player-only: "<sw><red>Seul un joueur peut effectuer cette action."
   cmd-no-permission: "<sw><red>Permission refusée."
-  cmd-no-arena-modify-ingame: "<sw><red>Impossible de modifier l'arène pendant une partie."
-  cmd-lobby-set: "<sw><green>Lobby défini à ta position. ✔"
-  cmd-spawn-usage: "<sw><red>Usage : /sw setspawn \\<red|blue>"
-  cmd-spawn-unknown-team: "<sw><red>Équipe inconnue (red ou blue)."
-  cmd-spawn-max: "<sw><red>Maximum de 8 spawns atteint pour l'équipe {0}."
-  cmd-spawn-set: "<sw>Spawn {0} de l'équipe {1} défini."
   cmd-arena-not-ready: "<sw><red>L'arène n'est pas configurée (lobby et spawns requis)."
-  cmd-game-already-started: "<sw><red>Une partie est déjà en cours."
-  cmd-start-forced: "<sw><green>Partie démarrée de force."
   not-enough-players: "<sw><red>Pas assez de joueurs ({0}/{1} minimum)."
   # MapVoteMenu
   map-vote-item-name: "<gold>🗺 Vote de Map"
@@ -263,38 +227,6 @@ sw:
   settings-map-vote-name: "Vote de Map"
   settings-map-vote-lore1: "Les joueurs votent pour choisir la map"
   settings-map-vote-lore2: "au début de la partie."
-  cmd-no-game-running: "<sw><red>Aucune partie en cours à arrêter."
-  cmd-stopped: "<sw><green>Partie arrêtée."
-  cmd-info-header: "<sw><aqua><bold>SHEEPWARS</bold></aqua>"
-  cmd-info-state: "<sw><yellow>État : <white>{0}"
-  cmd-info-players: "<sw><yellow>Joueurs : <white>{0}"
-  cmd-info-arena-ready: "<sw><yellow>Arène prête : <white>{0}"
-  cmd-debug-on: "<sw><green>Mode Debug activé."
-  cmd-debug-off: "<sw><red>Mode Debug désactivé."
-  cmd-debug-disabled: "<sw><red>Le mode Debug est désactivé."
-  cmd-givesheep-usage: "<sw><red>Usage : /sw givesheep \\<all|type>"
-  cmd-givesheep-all-done: "<sw><green>Moutons de tous les types obtenus."
-  cmd-givesheep-done: "<sw><green>Mouton <white>{0}<green> obtenu."
-  cmd-givesheep-unknown: "<sw><red>Type inconnu. Utilise /sw givesheep ALL pour la liste."
-  cmd-regen-done: "<sw><green>Régénération lancée."
-  cmd-reload-done: "<sw><green>Plugin rechargé avec succès."
-  admin-start-item-name: "<gold>Démarrer la partie"
-  admin-start-item-lore: "<gray>Clic droit pour lancer le compte à rebours"
-  admin-cancel-item-name: "<gold>Annuler le démarrage de la partie"
-  admin-cancel-item-lore: "<gray>Clic droit pour stopper le compte à rebours"
-  cmd-state: "<sw><green>Statut de la partie : <white>{0}"
-  cmd-help-join: "<sw><yellow>/sw join <gray>- Rejoindre la partie"
-  cmd-help-leave: "<sw><yellow>/sw leave <gray>- Quitter la partie"
-  cmd-help-info: "<sw><yellow>/sw info <gray>- Informations sur la partie"
-  cmd-help-setlobby: "<sw><gold>/sw setlobby <gray>- Définir le lobby"
-  cmd-help-setspawn: "<sw><gold>/sw setspawn \\<red|blue> <gray>- Ajouter un spawn d'équipe (max 8)"
-  cmd-help-start: "<sw><gold>/sw start <gray>- Forcer le démarrage de la partie"
-  cmd-help-stop: "<sw><gold>/sw stop <gray>- Arrêter la partie"
-  cmd-help-debug: "<sw><gold>/sw debug <gray>- Activer/désactiver le mode Debug"
-  cmd-help-givesheep: "<sw><gold>/sw givesheep \\<all|type> <gray>- Obtenir un mouton (mode Debug)"
-  cmd-help-regen: "<sw><gold>/sw regen <gray>- Régénérer la map (mode Debug)"
-  cmd-help-getstate: "<sw><gold>/sw getstate <gray>- Afficher le statut de la partie"
-  cmd-help-reload: "<sw><gold>/sw reload <gray>- Recharger la config et ré-ajouter les joueurs"
   # GameSettingsMenu
   settings-selector-name: "<gold>Paramètres de la partie"
   settings-selector-lore: "<gray>Clic droit pour ouvrir"
@@ -382,7 +314,6 @@ sw:
   whitelist-close: "<red>Fermer"
   whitelist-anvil-title: "<dark_gray>» <gold>Ajouter un joueur"
   whitelist-anvil-placeholder: "<gray>Pseudo du joueur"
-  cant-leave-ingame: "<sw><red>Tu ne peux pas quitter pendant une partie en cours."
   # End of game
   replay-message: "<sw><gray>Partie terminée ! Retour au lobby dans quelques instants..."
   # Launch buttons (settings menu)
@@ -497,9 +428,6 @@ lobby:
   post-game-message: "<tc><aqua>▶ <click:run_command:'/playnext'><u>Cliquer ici pour rejoindre la prochaine partie !</u></click></aqua>"
   auto-replay-message: "<tc><aqua>▶ Rejeu automatique dans 2 secondes. <gray>Il restera {0} partie(s) avant confirmation."
   auto-replay-confirm-message: "<tc><yellow>Tu as joué 5 parties automatiquement. <click:run_command:'/replayconfirm'><green><bold>Clique ici pour continuer 5 parties</bold></green></click>."
-  hotbar-custom-game-name: "<gold>✦ Partie personnalisée"
-  hotbar-custom-game-lore1: "<gray>Crée ta propre partie avec tes règles."
-  hotbar-custom-game-lore2: "<yellow>▶ Clic droit pour ouvrir"
   custom-game-title: "<dark_gray>» <gold>✦ Partie personnalisée"
   custom-game-privacy-public: "Partie Publique"
   custom-game-public: "<gray>Crée une partie publique que tous les joueurs pourront rejoindre."
@@ -534,12 +462,6 @@ lobby:
   hotbar-servers-name: "<aqua>⚡ Sélecteur de serveur"
   hotbar-servers-lore1: "<gray>Rejoins un serveur de jeu."
   hotbar-servers-lore2: "<yellow>▶ Clic droit pour ouvrir"
-  hotbar-lang-name: "<light_purple>🌐 Langue <gray>/ Language"
-  hotbar-lang-lore1: "<gray>Change la langue du serveur."
-  hotbar-lang-lore2: "<yellow>▶ Clic droit pour ouvrir"
-  hotbar-settings-name: "<light_purple>⚙ Paramètres"
-  hotbar-settings-lore1: "<gray>Langue et préférences de jeu."
-  hotbar-settings-lore2: "<yellow>▶ Clic droit pour ouvrir"
   settings-title: "<dark_gray>» <light_purple>Paramètres"
   settings-visibility-name: "<aqua>Visibilité des joueurs"
   settings-visibility-lore: "<gray>Réglage actuel : <white>{0}</white>"
@@ -584,7 +506,6 @@ lobby:
   type-selector-title: "<dark_gray>» <gold>Choisir un mode de jeu"
   type-lore-online: "<gray>Serveurs en ligne : <green>{0}<gray>/<white>{1}"
   type-lore-players: "<gray>Joueurs : <aqua>{0}"
-  type-lore-click: "<gray>Choisis une action parmi celles ci-dessous."
   type-lore-left-click: "<green>▶ Clic gauche : file Quick Play."
   type-lore-right-click: "<yellow>▶ Clic droit : file Ranked."
   type-lore-shift-left-click: "<aqua>▶ Maj + clic gauche : instances publiques."
@@ -637,11 +558,6 @@ lobby:
   vip-grade-owned: "<green>✔ Tu possèdes déjà ce grade ! 🏆"
   vip-grade-buy: "<green>▶ Clic gauche : acheter ce grade"
   vip-grade-no-funds: "<red>✖ Solde insuffisant !"
-  vip-advantages-name: "<gray>Avantages <white>{0}"
-  vip-online-shop-name: "<aqua>🌐 Boutique en ligne"
-  vip-online-shop-lore1: "<gray>Achète des grades avec de la"
-  vip-online-shop-lore2: "<gray>vraie monnaie sur notre site web :"
-  vip-online-shop-lore3: "<aqua><u>store.tropicube.fr</u>"
   vip-perks-vip:
     - "<gray>• Grade <green><bold>VIP</bold></green> <gray>dans le chat et la tablist"
     - "<gray>• <green>Accès aux serveurs VIP"
@@ -709,7 +625,6 @@ lobby:
   sb-network-online: "<aqua>☀ Réseau</aqua> <dark_gray>•</dark_gray> <white>{0}</white>"
   sb-games: "<green>🐑 Parties</green> <dark_gray>•</dark_gray> <white>{0}</white>"
   sb-title: "<gold><bold>🌴 TROPICUBE</bold></gold>"
-  sb-online: "<aqua>☀</aqua> <gray>En ligne</gray> <white>{0}</white>"
   sb-server-label: "<green>⛵</green> <gray>Destination</gray>"
   sb-server-value: "  <green>Lobby tropical</green>"
   sb-action-play: "<green>▶ Choisis un jeu avec la hotbar"
@@ -836,8 +751,6 @@ guild:
   usage: "<tc><yellow>Usage : /guild info|create \\<nom> \\<tag>|invite|accept|leave|kick|promote|demote|transfer|ranking"
 
 center:
-  hotbar-name: "<gold><bold>Profil</bold>"
-  hotbar-lore: "<gray>Profil, missions, notifications et guilde · <yellow>Clic droit"
   profile-hotbar-name: "<gold>⛏Profil"
   profile-hotbar-lore: "<gray>Profil, paramètres et progression. <yellow>▶ Clic droit : ouvrir"
   title: "<dark_aqua>Profil <dark_gray>• Accueil"
@@ -1052,7 +965,6 @@ social:
   party-request-left-click: "<green>▶ Clic gauche : accepter"
   party-request-right-click: "<red>▶ Clic droit : refuser"
   menu-party-none: "<red>Tu n'appartiens à aucune party."
-  menu-invites: "<gold>Invitations de party"
   menu-follow-on: "<green>Suivi du chef : activé"
   menu-follow-off: "<red>Suivi du chef : désactivé"
   menu-warp: "<light_purple>Rassembler la party"

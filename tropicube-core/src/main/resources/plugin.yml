@@ -148,9 +148,6 @@ permissions:
   tropicube.eco.admin:
     description: "Administration de l'économie"
     default: false
-  tropicube.grade.admin:
-    description: "Gérer les grades"
-    default: false
   tropicube.mute:
     description: "Muter des joueurs"
     default: false

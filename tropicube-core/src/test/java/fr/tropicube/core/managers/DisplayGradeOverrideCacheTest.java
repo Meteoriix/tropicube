@@ -3,7 +3,6 @@ package fr.tropicube.core.managers;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,7 +31,7 @@ class DisplayGradeOverrideCacheTest {
     void formatsTheTablistNameWithTheSelectedDisplayGrade() {
         PermissionManager.Grade premium = new PermissionManager.Grade(
                 "PREMIUM", "Premium", "<light_purple>[Premium] ", "",
-                "<light_purple>", 30, true, false, Set.of());
+                "<light_purple>", 30, 3, 0);
 
         assertEquals("<light_purple>[Premium] <light_purple>MaskedWolf",
                 PermissionManager.formatName(Map.of("PREMIUM", premium), "PREMIUM", "MaskedWolf"));

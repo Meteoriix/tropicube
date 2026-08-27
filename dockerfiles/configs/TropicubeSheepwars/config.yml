@@ -44,11 +44,6 @@ custom-game-default-settings:
 
 # Public queue rules. A ranked match only starts at its exact capacity.
 competitive:
-  matchmaking:
-    initial-rating-range: 75
-    growth-per-step: 25
-    step-seconds: 15
-    maximum-rating-range: 500
   role-limits:
     4v4:
       dps: 2

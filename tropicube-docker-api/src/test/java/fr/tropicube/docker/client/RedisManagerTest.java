@@ -24,7 +24,7 @@ class RedisManagerTest {
     void rejectsOperationsBeforeInitializationAndClosesIdempotently() {
         RedisManager manager = new RedisManager("redis", 6379, null);
 
-        assertThrows(IllegalStateException.class, manager::getClient);
+        assertThrows(IllegalStateException.class, () -> manager.get("key"));
         assertDoesNotThrow(manager::close);
         assertDoesNotThrow(manager::close);
         assertThrows(IllegalStateException.class, manager::initialize);

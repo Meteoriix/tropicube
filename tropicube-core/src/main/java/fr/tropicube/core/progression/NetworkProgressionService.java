@@ -30,8 +30,24 @@ public final class NetworkProgressionService {
         if (amount <= 0) throw new IllegalArgumentException("amount doit être strictement positif");
         return database.supplyAsync(() -> add(playerId, amount))
                 .whenComplete((progression, error) -> {
-                    if (error == null) display(playerId, progression);
+                    if (error == null) {
+                        display(playerId, progression);
+                        contributeToGuild(playerId, amount);
+                    }
                 });
+    }
+
+    private void contributeToGuild(UUID playerId, long amount) {
+        try {
+            plugin.getGuildService().contribute(playerId, amount).exceptionally(contributionError -> {
+                plugin.getLogger().warning("Impossible de contribuer l'XP de " + playerId
+                        + " à sa guilde : " + contributionError.getMessage());
+                return 0L;
+            });
+        } catch (RuntimeException contributionError) {
+            plugin.getLogger().warning("Impossible de planifier la contribution d'XP de " + playerId
+                    + " : " + contributionError.getMessage());
+        }
     }
 
     /** Loads and displays the persistent network level without blocking the Paper thread. */

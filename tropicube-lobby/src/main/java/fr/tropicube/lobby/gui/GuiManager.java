@@ -329,14 +329,6 @@ public class GuiManager {
 
     // ── Suivi ────────────────────────────────────────────────────────────────
 
-    public GuiType getOpenGui(Player player) {
-        return openGuis.get(player.getUniqueId());
-    }
-
-    public boolean hasGuiOpen(Player player) {
-        return openGuis.containsKey(player.getUniqueId());
-    }
-
     public void closeGui(Player player) {
         openGuis.remove(player.getUniqueId());
     }

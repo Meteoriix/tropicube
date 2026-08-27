@@ -2,7 +2,9 @@ package fr.tropicube.core.util;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,6 +43,19 @@ class MessageStyleTest {
     void rendersEscapedCommandParametersLiterally() {
         assertEquals("Usage : /msg <joueur> <message>",
                 MessageStyle.plain("<red>Usage : /msg \\<joueur> \\<message>"));
+    }
+
+    @Test
+    void limitsPlayerChatFormattingToAuthorizedVisualTags() {
+        String ordinary = MessageStyle.prepareChat("<red>Texte &a vert", false);
+        assertEquals("<red>Texte  vert", PlainTextComponentSerializer.plainText()
+                .serialize(MessageStyle.chatComponent(ordinary)));
+
+        String authorized = MessageStyle.prepareChat("<red>Rouge</red><click:run_command:'/op'>Action</click>", true);
+        Component rendered = MessageStyle.chatComponent(authorized);
+        assertEquals("Rouge<click:run_command:'/op'>Action</click>",
+                PlainTextComponentSerializer.plainText().serialize(rendered));
+        assertEquals(NamedTextColor.RED, rendered.children().getFirst().color());
     }
 
     private static void assertBoldState(Component component, String content, TextDecoration.State expected) {

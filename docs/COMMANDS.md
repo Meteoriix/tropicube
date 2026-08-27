@@ -102,9 +102,9 @@ Permissions fonctionnelles du lobby :
 | `tropicube.lobby.jump.double` | Deux sauts aériens | `false` |
 | `tropicube.lobby.infinitejump` | Sauts illimités | `op` |
 
-Les grades Core accordent déjà les permissions adaptées : VIP obtient un saut, VIP+ deux, Premium et le personnel des sauts illimités.
+Les niveaux appliqués par défaut avec les grades accordent les capacités adaptées : `vipLevel 1` obtient un saut, `vipLevel 2` deux et `vipLevel 3` des sauts illimités. Les niveaux propres au joueur restent indépendants de son grade cosmétique.
 
-La hotbar du lobby conserve une disposition stable : jeux au slot 0, partie personnalisée au slot 1 pour les grades autorisés, social au slot 2, centre Tropicube au slot 4, réglages rapides au slot 6 et boutique au slot 8.
+La hotbar du lobby conserve une disposition stable : jeux au slot 0, social au slot 2, profil au slot 4 et boutique au slot 8. Les parties personnalisées et les paramètres restent accessibles depuis le sélecteur de jeux et Profil.
 
 Après la saisie de `/`, le client reçoit toutes les commandes et tous les alias Tropicube réellement enregistrés par Velocity, Core, Lobby et le mini-jeu courant. Les permissions continuent de masquer les commandes staff non accessibles. Les commandes externes et leurs espaces de noms restent masqués ; `/?`, les espaces de noms `bukkit:` et `minecraft:` ainsi que les commandes vanilla sont refusés sur l'ensemble du réseau.
 
@@ -139,7 +139,7 @@ Le module est actuellement vide et n'ajoute donc aucune commande ni permission.
 | `/send <joueur|*> <serveur>` | — | `tropicube.admin.send` | Transfère un joueur ou tous les joueurs |
 | `/pull <joueur>` | — | `tropicube.admin.pull` | Fait venir un joueur sur le serveur actuel, si celui-ci est joignable |
 | `/tropicube ...` | `/tropi`, `/cm` | `tropicube.admin` | Administration des instances |
-| `/maintenance <network\|type> <on\|off\|status> [minutes] [motif]` | — | `tropicube.admin.maintenance` | Active un drain réseau ou par type avec échéance |
+| `/maintenance <network\|type> <on\|off\|status> [minutes] [motif]` | — | `tropicube.admin.maintenance` | Active un drain réseau ou par type avec l'échéance configurée par défaut |
 | `/announce <network\|type\|instance> <clé.langue>` | — | `tropicube.admin.announce` | Diffuse une annonce localisée configurée |
 | `/networkdiag` | `/netdiag` | `tropicube.admin.diagnostic` | Affiche l'état Redis, les instances et la protection des connexions |
 
@@ -166,7 +166,7 @@ Les nœuds Paper et Velocity sont uniquement des adaptateurs calculés depuis `v
 
 - `tropicube.bypass.whitelist` : accès aux parties en liste blanche ;
 - `tropicube.bypass.spam` : exemption de l'anti-spam du chat ;
-- `tropicube.chat.color` : MiniMessage/couleurs autorisés dans le chat ;
+- `tropicube.chat.color` : couleurs et décorations MiniMessage autorisées dans le chat ; les tags interactifs restent affichés comme texte ;
 - `tropicube.vip`, `tropicube.premium`, `tropicube.staff` : marqueurs fonctionnels de niveau.
 
 Velocity utilise le profil révisionné publié par Core dans Redis et le conserve en mémoire. Une valeur absente ou invalide vaut `0/0` ; aucun accès Redis n'est effectué dans le callback de permissions.

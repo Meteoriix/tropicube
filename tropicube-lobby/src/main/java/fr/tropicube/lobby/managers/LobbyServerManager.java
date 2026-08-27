@@ -111,17 +111,6 @@ public class LobbyServerManager {
         return result;
     }
 
-    /** Returns the distinct server types available (excluding lobby). */
-    public Set<String> getAvailableTypes() {
-        Set<String> types = new TreeSet<>();
-        for (ServerInfo info : cacheRef.get().values()) {
-            if (!"lobby".equalsIgnoreCase(info.type())) {
-                types.add(info.type());
-            }
-        }
-        return types;
-    }
-
     /** Returns distinct types published by Velocity templates (excluding lobby). */
     public Set<String> getAvailableTemplateTypes() {
         Set<String> types = new TreeSet<>();

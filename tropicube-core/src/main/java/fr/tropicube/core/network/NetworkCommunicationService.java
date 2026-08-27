@@ -3,6 +3,7 @@ package fr.tropicube.core.network;
 import com.google.gson.Gson;
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.core.managers.DatabaseManager;
+import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.docker.model.NetworkChatMessage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -172,7 +173,8 @@ public final class NetworkCommunicationService {
                 Component rendered = Component.text("[Global] ", NamedTextColor.AQUA)
                         .append(Component.text(message.authorName(), NamedTextColor.WHITE))
                         .append(Component.text(" > ", NamedTextColor.DARK_GRAY))
-                        .append(Component.text(message.body(), NamedTextColor.WHITE));
+                        .append(Component.text().color(NamedTextColor.WHITE)
+                                .append(MessageStyle.chatComponent(message.body())));
                 if (viewer.hasPermission("tropicube.moderation.chat-evidence")) {
                     rendered = rendered.hoverEvent(HoverEvent.showText(Component.text("Message " + message.messageId()
                                     + " — cliquer pour préparer une sanction")))
@@ -192,9 +194,9 @@ public final class NetworkCommunicationService {
         Bukkit.getScheduler().runTask(plugin, () -> {
             Player recipient = Bukkit.getPlayer(message.recipientId());
             if (recipient == null || isIgnored(recipient.getUniqueId(), message.senderId())) return;
-            recipient.sendMessage(Component.text("[MP] ", NamedTextColor.LIGHT_PURPLE)
-                    .append(Component.text(message.senderName() + " > ", NamedTextColor.WHITE))
-                    .append(Component.text(message.body(), NamedTextColor.GRAY)));
+            recipient.sendMessage(plugin.getLanguageManager().getComponent(recipient.getUniqueId(),
+                    "communication.private",
+                    MessageStyle.escapeTags(message.senderName()), MessageStyle.escapeTags(message.body())));
         });
     }
 
@@ -205,9 +207,9 @@ public final class NetworkCommunicationService {
                 Player player = Bukkit.getPlayer(recipientId);
                 if (player == null) return;
                 for (PrivateMessage message : messages) {
-                    player.sendMessage(Component.text("[MP hors ligne] ", NamedTextColor.LIGHT_PURPLE)
-                            .append(Component.text(message.senderName() + " > ", NamedTextColor.WHITE))
-                            .append(Component.text(message.body(), NamedTextColor.GRAY)));
+                    player.sendMessage(plugin.getLanguageManager().getComponent(player.getUniqueId(),
+                            "communication.private-offline",
+                            MessageStyle.escapeTags(message.senderName()), MessageStyle.escapeTags(message.body())));
                 }
             });
         });

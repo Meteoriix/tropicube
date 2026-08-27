@@ -10,6 +10,14 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 - Refonte complète des autorisations autour de `vipLevel` (0–3) et `modLevel` (0–4) : grades cosmétiques, commande `/level`, audit SQL, cache Redis révisionné et suppression des permissions individuelles, des UUID administrateurs et des opérateurs Docker.
 - Les achats, commandes et expirations de grade appliquent désormais atomiquement les niveaux configurés ; Velocity utilise les mêmes niveaux pour `/nick`, les files prioritaires et les commandes d'exploitation.
+- L'XP gagnée en partie ou via une mission contribue désormais automatiquement à la guilde, dans la limite hebdomadaire configurée.
+- Le chat global applique `tropicube.chat.color` aux seules couleurs et décorations MiniMessage sûres ; les messages privés en ligne et hors ligne utilisent la langue du destinataire.
+- Les classes, méthodes, permissions, configurations SheepWars et 85 clés de langue sans consommateur ont été retirées, ainsi que leurs copies Docker et tests obsolètes.
+
+#### Corrigé
+
+- `/level` est à nouveau publié dans les suggestions Velocity ; les anciennes entrées `/permissions` et `/tropiperm` ont été retirées.
+- `/maintenance` utilise et valide désormais `maintenance.default-deadline-minutes` lorsqu'aucune durée n'est fournie.
 
 ### 2026-08-25
 

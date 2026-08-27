@@ -267,12 +267,6 @@ public class ServerSelectorGUI {
         return slots;
     }
 
-    public static String resolveServerClick(InventoryClickEvent event) {
-        InventoryHolder holder = event.getInventory().getHolder();
-        if (!(holder instanceof Holder)) return null;
-        return ((Holder) holder).getServerForSlot(event.getRawSlot());
-    }
-
     public static Holder getHolder(InventoryClickEvent event) {
         InventoryHolder holder = event.getInventory().getHolder();
         return (holder instanceof Holder h) ? h : null;

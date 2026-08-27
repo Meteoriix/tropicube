@@ -53,12 +53,6 @@ public class QueueManager {
         });
     }
 
-    public int getQueuePosition(UUID playerUuid, String instanceId) {
-        Queue<QueueEntry> queue = queues.get(instanceId);
-        if (queue == null) return -1;
-        return getPosition(queue, playerUuid);
-    }
-
     private int getPosition(Queue<QueueEntry> queue, UUID uuid) {
         List<QueueEntry> ordered = new ArrayList<>(queue);
         Collections.sort(ordered);

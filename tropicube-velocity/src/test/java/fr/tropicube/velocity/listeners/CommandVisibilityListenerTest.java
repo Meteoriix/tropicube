@@ -20,6 +20,9 @@ class CommandVisibilityListenerTest {
         assertTrue(CommandVisibilityListener.isVisible("sheepwars"));
         assertTrue(CommandVisibilityListener.isVisible("maintenance"));
         assertTrue(CommandVisibilityListener.isVisible("networkdiag"));
+        assertTrue(CommandVisibilityListener.isVisible("level"));
+        assertFalse(CommandVisibilityListener.isVisible("permissions"));
+        assertFalse(CommandVisibilityListener.isVisible("tropiperm"));
     }
 
     @Test

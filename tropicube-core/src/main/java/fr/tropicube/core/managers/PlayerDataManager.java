@@ -264,9 +264,4 @@ public class PlayerDataManager {
         return Optional.empty();
     }
 
-    public Optional<PlayerProfile> getProfile(UUID uuid) {
-        return Optional.ofNullable(profileCache.get(uuid));
-    }
-
-    public Map<UUID, Long> getActiveMutes() { return Collections.unmodifiableMap(activeMutes); }
 }
