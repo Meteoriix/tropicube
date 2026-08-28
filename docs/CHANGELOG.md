@@ -4,6 +4,12 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-08-28
+
+#### Corrigé
+
+- La traduction allemande de `/level` emploie désormais une terminologie naturelle pour la catégorie d’accès et la limite hiérarchique des modérateurs.
+
 ### 2026-08-27
 
 #### Modifié

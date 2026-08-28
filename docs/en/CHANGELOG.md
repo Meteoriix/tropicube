@@ -4,6 +4,12 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+### 2026-08-28
+
+#### Fixed
+
+- The German `/level` translation now uses natural wording for the access category and moderator hierarchy limit.
+
 ### 2026-08-27
 
 #### Changed

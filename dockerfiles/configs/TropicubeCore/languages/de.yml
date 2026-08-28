@@ -953,9 +953,9 @@ social:
   menu-warp: "<light_purple>Party sammeln"
 access:
   usage: "<yellow>Verwendung: /level \\<Spieler> [vip|mod] [Stufe]"
-  invalid: "<red>Ungültige Achse oder Stufe. VIP: 0 bis 3, Mod: 0 bis 4."
+  invalid: "<red>Ungültige Zugriffsart oder Stufe. VIP: 0 bis 3, Mod: 0 bis 4."
   no-self: "<red>Du kannst deine eigenen Stufen nicht ändern."
-  no-escalation: "<red>Du kannst nur eine Moderatorstufe vergeben, die strikt unter deiner liegt."
+  no-escalation: "<red>Du darfst nur eine Moderatorstufe vergeben, die niedriger als deine eigene ist."
   info: "<aqua>{0}</aqua> <gray>— Rang:</gray> <white>{1}</white><gray>, VIP:</gray> <white>{2}</white><gray>, Mod:</gray> <white>{3}</white>"
   changed: "<green>Stufen von {0} wurden aktualisiert.</green> <gray>Rang:</gray> <white>{1}</white><gray>, VIP:</gray> <white>{2}</white><gray>, Mod:</gray> <white>{3}</white>"
   grade-defaults: "<gray>Standardstufen — VIP:</gray> <white>{0}</white><gray>, Mod:</gray> <white>{1}</white>"
