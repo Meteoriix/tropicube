@@ -4,6 +4,12 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-09-02
+
+#### Ajouté
+
+- Ajout d'un éditeur web local des langues avec aperçu MiniMessage contextuel, traduction LibreTranslate contrôlée, glossaire et écritures atomiques des quatre langues.
+
 ### 2026-08-28
 
 #### Corrigé

@@ -24,6 +24,7 @@
 <a class="nav-link" href="fallen-kingdoms-technical-spec.html"><span class="nav-icon">⌘</span><span>FK technical</span></a>
 <a class="nav-link active" href="development.html"><span class="nav-icon">{ }</span><span>Development</span></a>
 <a class="nav-link" href="messaging-style.html"><span class="nav-icon">✦</span><span>Messages</span></a>
+<a class="nav-link" href="language-editor.html"><span class="nav-icon">文</span><span>Language editor</span></a>
 <a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
 <a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changes</span></a></nav>
     <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
@@ -49,6 +50,7 @@
 <h2 id="languages">Languages<a class="heading-anchor" href="#languages" aria-label="Link to this section">#</a></h2>
 <p>Player-facing messages are available in French, English, German, and Spanish. Every new key must exist in all four files with the same placeholder structure. Embedded resources and deployment copies must stay synchronized. Cached interfaces must refresh after <code>/lang</code> without requiring a reconnect.</p>
 <p>The <code>tropicube-core/src/main/resources/languages/*.yml</code> and <code>tropicube-velocity/src/main/resources/languages/*.yml</code> files are the translation sources of truth. Each module's Maven <code>process-resources</code> phase copies them without filtering to the matching directory under <code>dockerfiles/configs</code>. Do not customize the Docker copies directly: the next build or deployment replaces them.</p>
+<p>The <a href="language-editor.html">language editor</a> provides structured and raw YAML editing, MiniMessage previews, and a LibreTranslate workflow. Start it with <code>language-editor.ps1</code> or <code>language-editor.sh</code>; its frontend and backend tests run in CI.</p>
 <h2 id="documentation-site">Documentation site<a class="heading-anchor" href="#documentation-site" aria-label="Link to this section">#</a></h2>
 <p>French Markdown lives in <code>docs/</code>; English equivalents live in <code>docs/en/</code>. <code>README.md</code> and <code>README.en.md</code> provide the two home pages. Build and validate both languages with:</p>
 <div class="code-block"><span class="code-language">powershell</span><pre class=""><code>node docs-site/build.mjs

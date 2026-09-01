@@ -6,6 +6,8 @@ La migration V008 supprime définitivement `tropicube_permissions` et les ancien
 
 ## Prérequis
 
+Le profil Compose facultatif `language-editor` démarre LibreTranslate sur localhost et conserve ses modèles dans `libretranslate-models`. Il n'est pas requis pour exécuter le réseau Minecraft et ne doit pas être exposé publiquement.
+
 ### Communs
 
 - machine x86-64 ou ARM64 supportée par les images utilisées ;

@@ -1,0 +1,18 @@
+version: 1
+
+glossary:
+  Tropicube:
+    en: Tropicube
+    de: Tropicube
+    es: Tropicube
+  SheepWars:
+    en: SheepWars
+    de: SheepWars
+    es: SheepWars
+  TropiCoin:
+    en: TropiCoin
+    de: TropiCoin
+    es: TropiCoin
+
+# Les contextes et exemples ne sont ajoutés que lorsqu'une inférence doit être corrigée.
+entries: {}

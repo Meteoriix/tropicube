@@ -8,6 +8,7 @@ Tropicube est une infrastructure Minecraft multi-serveurs pour **Minecraft 26.2*
 
 - [Ouvrir le site de documentation HTML](docs-site/index.html)
 - [Ouvrir la documentation anglaise](docs-site/en/index.html)
+- [Éditer et prévisualiser les langues](docs/LANGUAGE_EDITOR.md)
 - [Architecture et fonctionnement](docs/ARCHITECTURE.md)
 - [Commandes Minecraft et permissions](docs/COMMANDS.md)
 - [Configuration](docs/CONFIGURATION.md)

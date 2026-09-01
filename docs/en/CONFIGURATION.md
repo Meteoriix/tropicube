@@ -4,6 +4,8 @@
 
 Secrets and deployment-specific values belong in `.env`, never in Git. `.env.example` documents safe placeholders.
 
+The local language editor uses `LIBRETRANSLATE_URL` (default `http://127.0.0.1:5000`), optional `LIBRETRANSLATE_API_KEY`, and `TROPICUBE_LANGUAGE_EDITOR_PORT` (default `8765`). Keep the API key exclusively in the local environment.
+
 | Variable | Purpose |
 |---|---|
 | `TROPICUBE_REDIS_HOST`, `TROPICUBE_REDIS_PORT`, `TROPICUBE_REDIS_PASSWORD` | Redis connection |

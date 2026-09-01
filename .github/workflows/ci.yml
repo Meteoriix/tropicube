@@ -42,6 +42,15 @@ jobs:
       - name: Build and run automated tests
         run: bash ./mvnw --batch-mode --no-transfer-progress verify
 
+      - name: Test language editor backend
+        run: bash ./mvnw --batch-mode --no-transfer-progress -f tools/language-editor/backend/pom.xml verify
+
+      - name: Test and build language editor interface
+        run: |
+          npm --prefix tools/language-editor/frontend ci
+          npm --prefix tools/language-editor/frontend test
+          npm --prefix tools/language-editor/frontend run build
+
       - name: Rebuild and validate documentation site
         run: |
           node docs-site/build.mjs
@@ -52,19 +61,25 @@ jobs:
         run: docker compose --env-file .env.example config --quiet
 
       - name: Check Bash deployment script syntax
-        run: bash -n deploy.sh
+        run: |
+          bash -n deploy.sh
+          bash -n language-editor.sh
 
       - name: Check PowerShell deployment script syntax
         shell: pwsh
         run: |
           $tokens = $null
           $errors = $null
-          [System.Management.Automation.Language.Parser]::ParseFile(
-            (Resolve-Path './deploy.ps1'),
-            [ref] $tokens,
-            [ref] $errors
-          ) | Out-Null
-          if ($errors.Count -gt 0) {
-            $errors | ForEach-Object { Write-Error $_.Message }
-            exit 1
+          foreach ($script in @('./deploy.ps1', './language-editor.ps1')) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $script),
+              [ref] $tokens,
+              [ref] $errors
+            ) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error "$script : $($_.Message)" }
+              exit 1
+            }
           }

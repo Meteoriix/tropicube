@@ -2,6 +2,8 @@
 
 [Version française](README.md)
 
+[Edit and preview languages](docs/en/LANGUAGE_EDITOR.md)
+
 Tropicube is a modular Minecraft 26.2 network built around Velocity, dynamically created Paper servers, Redis, MySQL, and Docker Compose. The reference development environment is Java 25 with Maven 3.9.11.
 
 ## Modules

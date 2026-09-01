@@ -24,6 +24,7 @@
 <a class="nav-link" href="fallen-kingdoms-technical-spec.html"><span class="nav-icon">⌘</span><span>FK technical</span></a>
 <a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Development</span></a>
 <a class="nav-link" href="messaging-style.html"><span class="nav-icon">✦</span><span>Messages</span></a>
+<a class="nav-link" href="language-editor.html"><span class="nav-icon">文</span><span>Language editor</span></a>
 <a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
 <a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changes</span></a></nav>
     <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
@@ -34,6 +35,7 @@
       <article class="documentation"><h2 id="access-level-migration">Access-level migration<a class="heading-anchor" href="#access-level-migration" aria-label="Link to this section">#</a></h2>
 <p>Migration V008 permanently removes <code>tropicube_permissions</code> and the former grade permission fields. Take a MySQL dump before the first deployment, then recreate Velocity and every Paper backend in one maintenance window because older builds do not understand <code>player:access:&lt;uuid&gt;</code>. Core serializes schema preparation across backends, and V008 resumes an interrupted execution from its <code>MIGRATION</code> audit without incrementing revisions or duplicating those rows. Confirm that V008 appears in <code>tropicube_schema_migrations</code>, then validate all eight grade defaults, <code>/level</code>, queue priority, and <code>/nick</code>. Rolling back requires the pre-V008 SQL backup.</p>
 <h2 id="supported-platforms">Supported platforms<a class="heading-anchor" href="#supported-platforms" aria-label="Link to this section">#</a></h2>
+<p>The optional <code>language-editor</code> Compose profile starts LibreTranslate on localhost and keeps its models in <code>libretranslate-models</code>. It is not required by the Minecraft network and must not be exposed publicly.</p>
 <p>The repository supports Windows through <code>deploy.ps1</code> and Linux through <code>deploy.sh</code>. Both paths build the same Maven reactor, redistribute plugin artifacts, validate Docker inputs, and rebuild the selected images. Java 25, Maven 3.9.11, Docker Compose, Git LFS, and Node.js are required.</p>
 <h2 id="initial-setup">Initial setup<a class="heading-anchor" href="#initial-setup" aria-label="Link to this section">#</a></h2>
 <ol><li>Clone the repository with Git LFS enabled.</li><li>Copy <code>.env.example</code> to <code>.env</code>.</li><li>Replace placeholder passwords and the forwarding secret locally.</li><li>Ensure <code>TROPICUBE_PROJECT_PATH</code> is an absolute path visible to the Docker host.</li><li>Validate Compose and scripts before starting services.</li></ol>

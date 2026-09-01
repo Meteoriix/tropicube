@@ -16,6 +16,9 @@ Desktop.ini
 
 # Compilation et diagnostics JVM
 **/target/
+**/node_modules/
+tools/language-editor/frontend/dist/
+tools/language-editor/frontend/*.tsbuildinfo
 *.log
 hs_err_pid*
 replay_pid*

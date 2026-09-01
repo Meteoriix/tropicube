@@ -4,6 +4,12 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+### 2026-09-02
+
+#### Added
+
+- Added a local web language editor with contextual MiniMessage previews, reviewed LibreTranslate workflow, glossary, and atomic four-language writes.
+
 ### 2026-08-28
 
 #### Fixed

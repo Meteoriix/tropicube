@@ -24,6 +24,7 @@
 <a class="nav-link" href="fallen-kingdoms-technical-spec.html"><span class="nav-icon">⌘</span><span>FK technical</span></a>
 <a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Development</span></a>
 <a class="nav-link" href="messaging-style.html"><span class="nav-icon">✦</span><span>Messages</span></a>
+<a class="nav-link" href="language-editor.html"><span class="nav-icon">文</span><span>Language editor</span></a>
 <a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
 <a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changes</span></a></nav>
     <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
@@ -33,6 +34,7 @@
     <div class="content-grid">
       <article class="documentation"><h2 id="environment-variables">Environment variables<a class="heading-anchor" href="#environment-variables" aria-label="Link to this section">#</a></h2>
 <p>Secrets and deployment-specific values belong in <code>.env</code>, never in Git. <code>.env.example</code> documents safe placeholders.</p>
+<p>The local language editor uses <code>LIBRETRANSLATE_URL</code> (default <code>http://127.0.0.1:5000</code>), optional <code>LIBRETRANSLATE_API_KEY</code>, and <code>TROPICUBE_LANGUAGE_EDITOR_PORT</code> (default <code>8765</code>). Keep the API key exclusively in the local environment.</p>
 <div class="table-scroll"><table><thead><tr><th>Variable</th><th>Purpose</th></tr></thead><tbody><tr><td><code>TROPICUBE_REDIS_HOST</code>, <code>TROPICUBE_REDIS_PORT</code>, <code>TROPICUBE_REDIS_PASSWORD</code></td><td>Redis connection</td></tr><tr><td><code>TROPICUBE_MYSQL_HOST</code>, <code>TROPICUBE_MYSQL_PORT</code>, <code>TROPICUBE_MYSQL_DATABASE</code></td><td>MySQL location</td></tr><tr><td><code>TROPICUBE_MYSQL_USER</code>, <code>TROPICUBE_MYSQL_PASSWORD</code>, <code>MYSQL_ROOT_PASSWORD</code></td><td>Database credentials</td></tr><tr><td><code>VELOCITY_FORWARDING_SECRET</code></td><td>Shared Velocity/Paper forwarding secret</td></tr><tr><td><code>TROPICUBE_PROJECT_PATH</code></td><td>Absolute Docker-host project path used for bind mounts</td></tr><tr><td><code>TOTP_MASTER_KEY</code></td><td>Base64-encoded AES-256 key used to encrypt staff TOTP secrets</td></tr></tbody></table></div>
 <p>The TOTP key must encode exactly 32 random bytes, for example with <code>openssl rand -base64 32</code>. Losing it makes existing enrollments unreadable. When absent, Core starts but deliberately keeps protected staff commands locked.</p>
 <h3 id="report-privacy-framework">Report privacy framework<a class="heading-anchor" href="#report-privacy-framework" aria-label="Link to this section">#</a></h3>

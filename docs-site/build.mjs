@@ -19,6 +19,7 @@ const pages = [
   { source: "docs/FALLEN_KINGDOMS_TECHNICAL_SPEC.md", sourceEn: "docs/en/FALLEN_KINGDOMS_TECHNICAL_SPEC.md", output: "fallen-kingdoms-technical-spec.html", label: { fr: "FK technique", en: "FK technical" }, icon: "⌘", description: { fr: "Spécification V1, états, protections et contrats techniques", en: "V1 specification, states, protections, and technical contracts" } },
   { source: "docs/DEVELOPMENT.md", sourceEn: "docs/en/DEVELOPMENT.md", output: "development.html", label: { fr: "Développement", en: "Development" }, icon: "{ }", description: { fr: "Environnement, tests et contributions", en: "Environment, tests, and contributions" } },
   { source: "docs/MESSAGING_STYLE.md", sourceEn: "docs/en/MESSAGING_STYLE.md", output: "messaging-style.html", label: { fr: "Messages", en: "Messages" }, icon: "✦", description: { fr: "Identité, préfixes, couleurs et logs MiniMessage", en: "Identity, prefixes, colors, and MiniMessage logs" } },
+  { source: "docs/LANGUAGE_EDITOR.md", sourceEn: "docs/en/LANGUAGE_EDITOR.md", output: "language-editor.html", label: { fr: "Éditeur de langues", en: "Language editor" }, icon: "文", description: { fr: "Édition, aperçu et traduction des textes en jeu", en: "Edit, preview, and translate in-game text" } },
   { source: "docs/GIT_CI.md", sourceEn: "docs/en/GIT_CI.md", output: "git-ci.html", label: { fr: "Git & CI", en: "Git & CI" }, icon: "⑂", description: { fr: "Branches, commits, CI, Dependabot et versions", en: "Branches, commits, CI, Dependabot, and releases" } },
   { source: "docs/CHANGELOG.md", sourceEn: "docs/en/CHANGELOG.md", output: "changelog.html", label: { fr: "Changements", en: "Changes" }, icon: "≡", description: { fr: "Historique fonctionnel et technique du projet", en: "Functional and technical project history" } }
 ];
@@ -46,6 +47,8 @@ const outputByMarkdown = new Map([
   ["DEVELOPMENT.md", "development.html"],
   ["docs/MESSAGING_STYLE.md", "messaging-style.html"],
   ["MESSAGING_STYLE.md", "messaging-style.html"],
+  ["docs/LANGUAGE_EDITOR.md", "language-editor.html"],
+  ["LANGUAGE_EDITOR.md", "language-editor.html"],
   ["docs/GIT_CI.md", "git-ci.html"],
   ["GIT_CI.md", "git-ci.html"],
   ["docs/CHANGELOG.md", "changelog.html"],

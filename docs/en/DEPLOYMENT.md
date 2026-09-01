@@ -6,6 +6,8 @@ Migration V008 permanently removes `tropicube_permissions` and the former grade 
 
 ## Supported platforms
 
+The optional `language-editor` Compose profile starts LibreTranslate on localhost and keeps its models in `libretranslate-models`. It is not required by the Minecraft network and must not be exposed publicly.
+
 The repository supports Windows through `deploy.ps1` and Linux through `deploy.sh`. Both paths build the same Maven reactor, redistribute plugin artifacts, validate Docker inputs, and rebuild the selected images. Java 25, Maven 3.9.11, Docker Compose, Git LFS, and Node.js are required.
 
 ## Initial setup

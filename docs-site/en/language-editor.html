@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Edit, preview, and translate in-game text">
+  <meta name="theme-color" content="#2d1b6b">
+  <title>Language editor · Tropicube</title>
+  <link rel="stylesheet" href="../styles.css?v=54e32bb45a59">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="mobile-header"><a href="index.html" class="mobile-brand"><span class="brand-cube">T</span><span><span class="brand-name-accent">Tropi</span>cube</span></a><a class="language-switch" href="../language-editor.html" hreflang="fr">Français</a></header>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong><span class="brand-name-accent">Tropi</span>cube</strong><small>Network documentation</small></span></a>
+    <a class="language-switch" href="../language-editor.html" hreflang="fr">Français</a>
+    <nav aria-label="Main documentation"><a class="nav-link" href="index.html"><span class="nav-icon">⌂</span><span>Home</span></a>
+<a class="nav-link" href="architecture.html"><span class="nav-icon">◇</span><span>Architecture</span></a>
+<a class="nav-link" href="commands.html"><span class="nav-icon">>_</span><span>Commands</span></a>
+<a class="nav-link" href="configuration.html"><span class="nav-icon">⚙</span><span>Configuration</span></a>
+<a class="nav-link" href="deployment.html"><span class="nav-icon">⇧</span><span>Deployment</span></a>
+<a class="nav-link" href="sheepwars.html"><span class="nav-icon">♙</span><span>SheepWars</span></a>
+<a class="nav-link" href="fallen-kingdoms.html"><span class="nav-icon">♜</span><span>Fallen Kingdoms</span></a>
+<a class="nav-link" href="fallen-kingdoms-technical-spec.html"><span class="nav-icon">⌘</span><span>FK technical</span></a>
+<a class="nav-link" href="development.html"><span class="nav-icon">{ }</span><span>Development</span></a>
+<a class="nav-link" href="messaging-style.html"><span class="nav-icon">✦</span><span>Messages</span></a>
+<a class="nav-link active" href="language-editor.html"><span class="nav-icon">文</span><span>Language editor</span></a>
+<a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
+<a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changes</span></a></nav>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+  </aside>
+  <main id="content" class="main">
+    <section class="hero"><div class="eyebrow">Official documentation</div><h1>Language editor</h1><p>Edit, preview, and translate in-game text</p></section>
+    <div class="content-grid">
+      <article class="documentation"><p>The Tropicube language editor is a local web application for Core, Velocity, and future modules' MiniMessage resources. It discovers <code>src/main/resources/languages</code> directories, treats French as the source, and writes all four supported languages together with their Docker mirrors.</p>
+<h2 id="starting-the-editor">Starting the editor<a class="heading-anchor" href="#starting-the-editor" aria-label="Link to this section">#</a></h2>
+<p>Java 25, Node.js 24, and npm are required. Run <code>.\language-editor.ps1</code> on Windows or <code>./language-editor.sh</code> on Linux and macOS.</p>
+<p>The application only listens on <code>http://127.0.0.1:8765</code>. Override the port with <code>TROPICUBE_LANGUAGE_EDITOR_PORT</code>.</p>
+<h2 id="translation">Translation<a class="heading-anchor" href="#translation" aria-label="Link to this section">#</a></h2>
+<p>The editor accepts any LibreTranslate-compatible endpoint. Start the optional local service with:</p>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>docker compose --env-file .env.example --profile language-editor up -d libretranslate</code></pre></div>
+<p><code>LIBRETRANSLATE_URL</code> defaults to <code>http://127.0.0.1:5000</code>. <code>LIBRETRANSLATE_API_KEY</code> selects a protected external instance and must never be committed.</p>
+<p>French is first translated to English for review. Once approved, German and Spanish are generated directly from French. MiniMessage tags, placeholders, commands, and glossary terms are not sent as translatable text. The editor remains available for drafting when the service is offline.</p>
+<h2 id="editing-and-safety">Editing and safety<a class="heading-anchor" href="#editing-and-safety" aria-label="Link to this section">#</a></h2>
+<ul><li>the structured view can search, create, rename, and delete keys;</li><li>raw French YAML mode supports bulk changes;</li><li>previews cover chat, titles, actionbar, inventories, lore, scoreboard, and tablist;</li><li>validation checks YAML, key parity, placeholders, and allowed tags;</li><li>writes are rejected when a file changed after it was opened;</li><li>four sources and their Docker mirrors are replaced together, with rollback on failure.</li></ul>
+<p>The versioned <code>tools/language-editor/catalog.yml</code> stores the glossary, context overrides, and placeholder samples. Machine translations remain proposals: review at least English and verify width-sensitive interfaces in game.</p>
+<h2 id="validation">Validation<a class="heading-anchor" href="#validation" aria-label="Link to this section">#</a></h2>
+<div class="code-block"><span class="code-language">bash</span><pre class=""><code>npm --prefix tools/language-editor/frontend ci
+npm --prefix tools/language-editor/frontend test
+npm --prefix tools/language-editor/frontend run build
+./mvnw -f tools/language-editor/backend/pom.xml verify</code></pre></div></article>
+      <aside class="page-toc" aria-label="On this page"><span class="toc-title">On this page</span><a class="toc-level-2" href="#starting-the-editor">Starting the editor</a><a class="toc-level-2" href="#translation">Translation</a><a class="toc-level-2" href="#editing-and-safety">Editing and safety</a><a class="toc-level-2" href="#validation">Validation</a></aside>
+    </div>
+    <footer><span><span class="brand-name-accent">Tropi</span>cube</span><span>Static documentation generated from Markdown files</span></footer>
+  </main>
+</body>
+</html>

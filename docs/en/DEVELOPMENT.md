@@ -52,6 +52,8 @@ Each module's Maven `process-resources` phase copies them without filtering to t
 directory under `dockerfiles/configs`. Do not customize the Docker copies directly: the next build
 or deployment replaces them.
 
+The [language editor](LANGUAGE_EDITOR.md) provides structured and raw YAML editing, MiniMessage previews, and a LibreTranslate workflow. Start it with `language-editor.ps1` or `language-editor.sh`; its frontend and backend tests run in CI.
+
 ## Documentation site
 
 French Markdown lives in `docs/`; English equivalents live in `docs/en/`. `README.md` and `README.en.md` provide the two home pages. Build and validate both languages with:

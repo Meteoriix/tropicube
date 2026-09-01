@@ -1,0 +1,6 @@
+Copyright (c) 2022, Idrees Hassan (https://github.com/IdreesInc/Monocraft)
+
+Monocraft is licensed under the SIL Open Font License, Version 1.1.
+The complete license is available at https://openfontlicense.org/open-font-license-official-text/
+
+The editor can use a locally installed Monocraft font and otherwise falls back to a monospace font.
