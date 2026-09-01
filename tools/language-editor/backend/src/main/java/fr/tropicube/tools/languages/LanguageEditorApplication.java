@@ -52,17 +52,22 @@ public final class LanguageEditorApplication {
     public static void main(String[] arguments) throws Exception {
         Path repository = findRepository(Path.of(System.getProperty("user.dir")));
         int port = Integer.parseInt(System.getenv().getOrDefault("TROPICUBE_LANGUAGE_EDITOR_PORT", "8765"));
-        LanguageEditorApplication application = new LanguageEditorApplication(repository);
-        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
-        server.createContext("/api/", application::api);
-        server.createContext("/", application::staticFile);
-        server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
+        HttpServer server = createServer(repository, port);
         server.start();
         URI address = URI.create("http://127.0.0.1:" + port);
         System.out.println("Éditeur de langues Tropicube : " + address);
         if (!List.of(arguments).contains("--no-browser") && Desktop.isDesktopSupported()) {
             try { Desktop.getDesktop().browse(address); } catch (IOException ignored) { }
         }
+    }
+
+    static HttpServer createServer(Path repository, int port) throws IOException {
+        LanguageEditorApplication application = new LanguageEditorApplication(repository);
+        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
+        server.createContext("/api/", application::api);
+        server.createContext("/", application::staticFile);
+        server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
+        return server;
     }
 
     private void api(HttpExchange exchange) throws IOException {
@@ -180,24 +185,28 @@ public final class LanguageEditorApplication {
     }
 
     private void staticFile(HttpExchange exchange) throws IOException {
-        String requested = exchange.getRequestURI().getPath();
-        if (requested.equals("/")) requested = "/index.html";
-        Path root = repository.resolve("tools/language-editor/frontend/dist").normalize();
-        Path file = root.resolve(requested.substring(1)).normalize();
-        if (!file.startsWith(root) || !Files.isRegularFile(file)) {
-            file = root.resolve("index.html");
+        try {
+            String requested = exchange.getRequestURI().getPath();
+            if (requested.equals("/")) requested = "/index.html";
+            Path root = repository.resolve("tools/language-editor/frontend/dist").normalize();
+            Path file = root.resolve(requested.substring(1)).normalize();
+            if (!file.startsWith(root) || !Files.isRegularFile(file)) {
+                file = root.resolve("index.html");
+            }
+            if (!Files.isRegularFile(file)) {
+                text(exchange, 503, "Interface non construite. Lancez npm --prefix tools/language-editor/frontend run build.", "text/plain; charset=utf-8");
+                return;
+            }
+            String type = file.toString().endsWith(".js") ? "text/javascript" : file.toString().endsWith(".css")
+                    ? "text/css" : "text/html; charset=utf-8";
+            byte[] content = Files.readAllBytes(file);
+            exchange.getResponseHeaders().set("Content-Type", type);
+            exchange.getResponseHeaders().set("Cache-Control", "no-store");
+            exchange.sendResponseHeaders(200, content.length);
+            exchange.getResponseBody().write(content);
+        } finally {
+            exchange.close();
         }
-        if (!Files.isRegularFile(file)) {
-            text(exchange, 503, "Interface non construite. Lancez npm --prefix tools/language-editor/frontend run build.", "text/plain; charset=utf-8");
-            return;
-        }
-        String type = file.toString().endsWith(".js") ? "text/javascript" : file.toString().endsWith(".css")
-                ? "text/css" : "text/html; charset=utf-8";
-        byte[] content = Files.readAllBytes(file);
-        exchange.getResponseHeaders().set("Content-Type", type);
-        exchange.getResponseHeaders().set("Cache-Control", "no-store");
-        exchange.sendResponseHeaders(200, content.length);
-        exchange.getResponseBody().write(content);
     }
 
     private JsonObject body(HttpExchange exchange) throws IOException {

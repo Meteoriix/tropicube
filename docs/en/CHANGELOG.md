@@ -10,6 +10,10 @@ This document records functional, technical, and operational changes. Entries ar
 
 - Added a local web language editor with contextual MiniMessage previews, reviewed LibreTranslate workflow, glossary, and atomic four-language writes.
 
+#### Fixed
+
+- The editor server now completes static-file responses correctly, so the interface loads without hanging.
+
 ### 2026-08-28
 
 #### Fixed

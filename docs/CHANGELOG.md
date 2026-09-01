@@ -10,6 +10,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 - Ajout d'un éditeur web local des langues avec aperçu MiniMessage contextuel, traduction LibreTranslate contrôlée, glossaire et écritures atomiques des quatre langues.
 
+#### Corrigé
+
+- Le serveur de l'éditeur termine désormais correctement les réponses des fichiers statiques, afin que l'interface charge sans rester en attente.
+
 ### 2026-08-28
 
 #### Corrigé

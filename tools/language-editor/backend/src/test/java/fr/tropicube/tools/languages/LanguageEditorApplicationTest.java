@@ -1,0 +1,41 @@
+package fr.tropicube.tools.languages;
+
+import com.sun.net.httpserver.HttpServer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class LanguageEditorApplicationTest {
+    @TempDir
+    Path repository;
+
+    @Test
+    void staticResponseCompletesWithItsDeclaredBody() throws Exception {
+        Path distribution = repository.resolve("tools/language-editor/frontend/dist");
+        Files.createDirectories(distribution);
+        Files.writeString(distribution.resolve("index.html"), "<html>éditeur</html>");
+
+        HttpServer server = LanguageEditorApplication.createServer(repository, 0);
+        server.start();
+        try {
+            URI address = URI.create("http://127.0.0.1:" + server.getAddress().getPort() + "/");
+            HttpResponse<String> response = HttpClient.newHttpClient().send(
+                    HttpRequest.newBuilder(address).timeout(Duration.ofSeconds(2)).GET().build(),
+                    HttpResponse.BodyHandlers.ofString());
+
+            assertEquals(200, response.statusCode());
+            assertEquals("<html>éditeur</html>", response.body());
+        } finally {
+            server.stop(0);
+        }
+    }
+}
