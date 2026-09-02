@@ -78,8 +78,8 @@ public class MapSelectionMenu implements Listener {
 
     private void openVoteMenu(Player player, List<GameMap> maps) {
         List<GameMap> candidates = ballot(maps);
-        Inventory inv = Bukkit.createInventory(null, 9,
-                LangHelper.component(player, "sw.map-vote-title"));
+        Inventory inv = Bukkit.createInventory(null, LangHelper.menuSize("map-vote"),
+                LangHelper.menuTitle(player, "map-vote"));
         NetworkMenuStyle.fill(inv);
 
         GameMap myVote = votes.get(player.getUniqueId());
@@ -98,8 +98,8 @@ public class MapSelectionMenu implements Listener {
     // ── Host pick menu (vote mode disabled) ────────────────────────────────
 
     private void openPickMenu(Player player, List<GameMap> maps) {
-        Inventory inv = Bukkit.createInventory(null, 9,
-                LangHelper.component(player, "sw.map-pick-title"));
+        Inventory inv = Bukkit.createInventory(null, LangHelper.menuSize("map-pick"),
+                LangHelper.menuTitle(player, "map-pick"));
         NetworkMenuStyle.fill(inv);
 
         GameMap selected = plugin.getGameManager().getSelectedMap();

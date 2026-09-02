@@ -49,4 +49,26 @@ class LiveLanguageDeploymentTest {
         assertEquals(0, result.updatedContainers());
         assertEquals(List.of("Docker indisponible : daemon absent"), result.errors());
     }
+
+    @Test
+    void copiesUiManifestsBeforeOneReloadPerContainer() throws Exception {
+        Path source = repository.resolve("tropicube-lobby/src/main/resources/menus.yml");
+        Files.createDirectories(source.getParent());
+        Files.writeString(source, "version: 1\nmenus: {}\n");
+        List<List<String>> commands = new ArrayList<>();
+        LiveLanguageDeployment deployment = new LiveLanguageDeployment(repository, (command, _, _) -> {
+            commands.add(List.copyOf(command));
+            if (command.contains("version")) return new LiveLanguageDeployment.CommandResult(0, "29.0");
+            if (command.contains("ps")) return new LiveLanguageDeployment.CommandResult(0, "paper-one\n");
+            return new LiveLanguageDeployment.CommandResult(0, "ok");
+        }, "docker-test");
+
+        var result = deployment.deployUi(List.of(new UiFiles.UiSnapshot("tropicube-lobby:menus.yml",
+                "tropicube-lobby", "menus", "tropicube-lobby/src/main/resources/menus.yml", null,
+                Files.readString(source), "hash")));
+
+        assertEquals(1, result.updatedContainers());
+        assertEquals(1, commands.stream().filter(command -> command.contains("cp")).count());
+        assertEquals(1, commands.stream().filter(command -> command.contains("languageeditorreload")).count());
+    }
 }

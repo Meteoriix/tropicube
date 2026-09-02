@@ -79,7 +79,8 @@ public class ServerTypeSelectorGUI {
 
         boolean customGameAllowed = customGameAllowed(player);
         Holder holder = new Holder(slotToType, customGameAllowed);
-        Inventory inv = Bukkit.createInventory(holder, SIZE, LangHelper.component(player, "lobby.type-selector-title"));
+        Inventory inv = Bukkit.createInventory(holder, LangHelper.menuSize("server-type-selector"),
+                LangHelper.menuTitle(player, "server-type-selector"));
         holder.setInventory(inv);
 
         NetworkMenuStyle.frame(inv);

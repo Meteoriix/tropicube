@@ -2,6 +2,7 @@ package fr.tropicube.core.managers;
 
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.core.util.MessageStyle;
+import fr.tropicube.language.PlaceholderValues;
 import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -81,6 +82,11 @@ public class LanguageManager {
         return msg;
     }
 
+    /** Returns localized MiniMessage with safely rendered named placeholders. */
+    public String get(UUID uuid, String key, PlaceholderValues placeholders) {
+        return MessageStyle.miniMessage(raw(uuid, key), placeholders);
+    }
+
     /** Returns a YAML list in the player's language, with fallback to the default language. */
     public List<String> getList(UUID uuid, String key) {
         String lang = playerLanguages.getOrDefault(uuid, defaultLanguage);
@@ -105,14 +111,44 @@ public class LanguageManager {
         return msg;
     }
 
+    /** Returns localized MiniMessage for an explicit language with named placeholders. */
+    public String getForLang(String lang, String key, PlaceholderValues placeholders) {
+        return MessageStyle.miniMessage(rawForLang(lang, key), placeholders);
+    }
+
     /** Returns a localized Adventure component for the player. */
     public Component getComponent(UUID uuid, String key, Object... args) {
         return MessageStyle.component(get(uuid, key, args));
     }
 
+    /** Returns a localized component with safely rendered named placeholders. */
+    public Component getComponent(UUID uuid, String key, PlaceholderValues placeholders) {
+        return MessageStyle.component(raw(uuid, key), placeholders);
+    }
+
     /** Returns an Adventure component in an explicit language. */
     public Component getComponentForLang(String lang, String key, Object... args) {
         return MessageStyle.component(getForLang(lang, key, args));
+    }
+
+    /** Returns a localized component in an explicit language with named placeholders. */
+    public Component getComponentForLang(String lang, String key, PlaceholderValues placeholders) {
+        return MessageStyle.component(rawForLang(lang, key), placeholders);
+    }
+
+    private String raw(UUID uuid, String key) {
+        return rawForLang(playerLanguages.getOrDefault(uuid, defaultLanguage), key);
+    }
+
+    private String rawForLang(String lang, String key) {
+        YamlConfiguration config = languages.getOrDefault(lang, languages.get(defaultLanguage));
+        if (config == null) return "<tc><red>Langue indisponible : <white>" + key;
+        String message = config.getString(key);
+        if (message == null) {
+            YamlConfiguration fallback = languages.get(defaultLanguage);
+            if (fallback != null) message = fallback.getString(key);
+        }
+        return message == null ? "<tc><red>Clé de traduction manquante : <white>" + key : message;
     }
 
     public void setPlayerLanguage(UUID uuid, String lang, boolean save) {

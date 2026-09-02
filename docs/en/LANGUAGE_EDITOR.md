@@ -1,6 +1,6 @@
 # Language editor
 
-The Tropicube language editor is a local web application for Core, Velocity, and future modules' MiniMessage resources. It discovers `src/main/resources/languages` directories, treats French as the source, and writes all four supported languages together with their Docker mirrors.
+The Tropicube language editor is a local web application for Core, Lobby, SheepWars, and Velocity MiniMessage resources and interfaces. It discovers languages plus `scoreboards.yml` and `menus.yml` manifests, treats French as the source, and maintains their Docker mirrors.
 
 ## Starting the editor
 
@@ -35,6 +35,8 @@ Validation recognizes every tag supplied by `StandardTags.defaults()` in the pro
 
 Serialization keeps each YAML string on one physical line regardless of length so that it remains compatible with the deployment scripts' configuration merge.
 
+New APIs accept named placeholders such as `{player}`, `{balance}`, or `{countdown}`. Legacy positional forms such as `{0}` remain readable during migration. Plain values are escaped before MiniMessage insertion; only explicitly rich components preserve styling.
+
 ## Editing and safety
 
 - the structured view can search by key or within all four languages' text, then create, rename, and delete keys;
@@ -45,8 +47,13 @@ Serialization keeps each YAML string on one physical line regardless of length s
 - four sources and their Docker mirrors are replaced together, with rollback on failure;
 - after saving, validated files are copied to Velocity or every active Paper instance, then the internal `languageeditorreload` command reloads languages only;
 - the status bar distinguishes an available Docker daemon from a partial or failed live synchronization without rolling back files that were already saved.
+- the Scoreboards tab groups variants, previews all fifteen Minecraft lines, and can add, remove, or reorder them;
+- the Menus tab renders the inventory grid, required buttons, dynamic regions, and localized item properties;
+- manifest drafts support undo/redo, drag and drop, and a summary before applying changes.
 
-Live synchronization exclusively uses the local Docker client, active Tropicube containers, and their internal RCON service. It does not publish an additional port or read a password. `TROPICUBE_DOCKER_COMMAND` overrides the default `docker` executable name. This version must be delivered once to install the internal Core and Velocity command and enable Velocity RCON; subsequent text changes require neither an image rebuild nor a deployment. An instance created after an edit uses the languages in its image until the editor's next **Apply** action.
+Live synchronization exclusively uses the local Docker client, active Tropicube containers, and their internal RCON service. It does not publish an additional port or read a password. `TROPICUBE_DOCKER_COMMAND` overrides the default executable. This version must be delivered once to install the engine. Later applications need no image rebuild: Core publishes a complete hashed generation to Redis and new instances restore it before initializing languages and interfaces.
+
+Item previews look for the local Minecraft 26.2 client. `TROPICUBE_MINECRAFT_CLIENT_JAR` can point to its JAR explicitly; loaded textures are cached only in editor memory.
 
 The versioned `tools/language-editor/catalog.yml` stores the glossary, context overrides, and placeholder samples. Machine translations remain proposals: review at least English and verify width-sensitive interfaces in game.
 

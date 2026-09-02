@@ -1,0 +1,112 @@
+version: 1
+menus:
+  class-selector:
+    title-key: sw.class-menu-title
+    rows: 1
+    frame: neutral
+    buttons: {}
+    dynamic-regions:
+      classes: { slots: [2,4,6], template-action: select_class, preview-count: 3 }
+  kit-selector:
+    title-key: sw.kit-menu-title
+    rows: 1
+    frame: neutral
+    buttons: {}
+    dynamic-regions:
+      kits: { slots: [1,2,3,4,5,6,7], template-action: select_kit, preview-count: 7 }
+  game-settings:
+    title-key: sw.settings-main-title
+    rows: 3
+    frame: network
+    buttons:
+      sheep: { slot: 10, material: PINK_WOOL, name-key: sw.settings-sheep-name, lore-key: sw.settings-sheep-lore, action: sheep }
+      classes: { slot: 12, material: BLAZE_POWDER, name-key: sw.settings-classes-name, lore-key: sw.settings-classes-lore, action: classes }
+      kits: { slot: 14, material: IRON_SWORD, name-key: sw.settings-kits-name, lore-key: sw.settings-kits-lore, action: kits }
+      options: { slot: 16, material: COMPARATOR, name-key: sw.settings-options-name, lore-key: sw.settings-options-lore, action: options }
+      launch: { slot: 22, material: LIME_CONCRETE, name-key: sw.settings-launch-name, lore-key: sw.settings-launch-lore, action: launch, required: true }
+  sheep-settings:
+    title-key: sw.settings-sheep-title
+    rows: 6
+    frame: network
+    buttons:
+      drop-rates: { slot: 47, material: HOPPER, name-key: sw.settings-drop-rates-name, lore-key: sw.settings-drop-rates-lore, action: drop_rates }
+      back: { slot: 49, material: ARROW, name-key: sw.settings-back, action: back, required: true }
+    dynamic-regions:
+      sheep: { slots: [10,11,12,13,14,15,16,19,20,21,22,23,24,25,28,29,30,31,32,33,34], template-action: toggle_sheep, preview-count: 7 }
+  kit-settings:
+    title-key: sw.settings-kits-title
+    rows: 3
+    frame: network
+    buttons:
+      back: { slot: 26, material: ARROW, name-key: sw.settings-back, action: back, required: true }
+    dynamic-regions:
+      kits: { slots: [9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25], template-action: toggle_kit, preview-count: 7 }
+  class-settings:
+    title-key: sw.settings-classes-title
+    rows: 3
+    frame: network
+    buttons:
+      back: { slot: 22, material: ARROW, name-key: sw.settings-back, action: back, required: true }
+    dynamic-regions:
+      classes: { slots: [10,12,14], template-action: toggle_class, preview-count: 3 }
+  option-settings:
+    title-key: sw.settings-options-title
+    rows: 3
+    frame: network
+    buttons:
+      random-kits: { slot: 22, material: ENDER_EYE, name-key: sw.settings-random-kits-name, lore-key: sw.settings-random-kits-lore, action: random_kits }
+      auto-start: { slot: 23, material: REDSTONE_TORCH, name-key: sw.settings-auto-start-name, lore-key: sw.settings-auto-start-lore, action: auto_start }
+      map-vote: { slot: 24, material: MAP, name-key: sw.settings-map-vote-name, lore-key: sw.settings-map-vote-lore, action: map_vote }
+      back: { slot: 26, material: ARROW, name-key: sw.settings-back, action: back, required: true }
+  drop-rates:
+    title-key: sw.settings-drop-rates-title
+    rows: 6
+    frame: network
+    buttons:
+      back: { slot: 53, material: ARROW, name-key: sw.settings-back, action: back, required: true }
+    dynamic-regions:
+      sheep: { slots: [1,5,10,14,19,23,28,32,37,41,46,50], template-action: edit_drop_rate, preview-count: 6 }
+  mastery:
+    title-key: sw.mastery-title
+    rows: 1
+    frame: neutral
+    buttons:
+      branch-a: { slot: 3, material: LIME_DYE, name-key: sw.mastery-branch-a-name, lore-key: sw.mastery-branch-lore, action: branch_a, required: true }
+      branch-b: { slot: 5, material: CYAN_DYE, name-key: sw.mastery-branch-b-name, lore-key: sw.mastery-branch-lore, action: branch_b, required: true }
+  map-vote:
+    title-key: sw.map-vote-title
+    rows: 1
+    frame: neutral
+    buttons: {}
+    dynamic-regions:
+      maps: { slots: [0,1,2,3,4,5,6,7,8], template-action: vote_map, preview-count: 5 }
+  map-pick:
+    title-key: sw.map-pick-title
+    rows: 1
+    frame: neutral
+    buttons: {}
+    dynamic-regions:
+      maps: { slots: [0,1,2,3,4,5,6,7,8], template-action: pick_map, preview-count: 5 }
+  team-selection:
+    title-key: sw.team-menu-title
+    rows: 3
+    frame: network
+    buttons:
+      red: { slot: 11, material: RED_WOOL, name-key: sw.team-name-red, lore-key: sw.team-click-join, action: red, required: true }
+      blue: { slot: 15, material: BLUE_WOOL, name-key: sw.team-name-blue, lore-key: sw.team-click-join, action: blue, required: true }
+  whitelist:
+    title-key: sw.whitelist-menu-title
+    rows: 6
+    frame: network
+    buttons:
+      add: { slot: 49, material: ANVIL, name-key: sw.whitelist-add-name, lore-key: sw.whitelist-add-lore, action: add }
+      close: { slot: 53, material: BARRIER, name-key: sw.whitelist-close, action: close, required: true }
+    dynamic-regions:
+      players: { slots: [10,11,12,13,14,15,16,19,20,21,22,23,24,25,28,29,30,31,32,33,34], template-action: remove_player, preview-count: 5 }
+  whitelist-anvil:
+    title-key: sw.whitelist-anvil-title
+    rows: 1
+    inventory-type: ANVIL
+    frame: none
+    buttons:
+      input: { slot: 0, material: NAME_TAG, name-key: sw.whitelist-anvil-placeholder, action: input, required: true }

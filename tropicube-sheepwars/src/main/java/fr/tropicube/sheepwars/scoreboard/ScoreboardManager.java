@@ -7,11 +7,16 @@ import fr.tropicube.sheepwars.player.GamePlayer;
 import fr.tropicube.sheepwars.player.PlayerClass;
 import fr.tropicube.sheepwars.util.LangHelper;
 import fr.tropicube.sheepwars.util.PlayerDisplayName;
+import fr.tropicube.core.ui.ScoreboardTemplate;
+import fr.tropicube.core.ui.UiReloadParticipant;
+import fr.tropicube.core.util.MessageStyle;
+import fr.tropicube.language.PlaceholderValues;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
+import org.bukkit.plugin.ServicePriority;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,13 +25,16 @@ import java.util.Map;
 import java.util.UUID;
 
 /** Maintains the contextual scoreboard of each participant and viewer. */
-public class ScoreboardManager {
+public class ScoreboardManager implements UiReloadParticipant {
 
     private final TropicubeSheepwars plugin;
     private final Map<UUID, Scoreboard> boards = new HashMap<>();
+    private volatile ScoreboardTemplate template;
 
     public ScoreboardManager(TropicubeSheepwars plugin) {
         this.plugin = plugin;
+        prepareReload().run();
+        Bukkit.getServicesManager().register(UiReloadParticipant.class, this, plugin, ServicePriority.Normal);
     }
 
     public void updateAll() {
@@ -49,7 +57,7 @@ public class ScoreboardManager {
         Objective objective = board.registerNewObjective(
                 "sheepwars",
                 Criteria.DUMMY,
-                LangHelper.component(player, "sw.sb-title")
+                LangHelper.component(player, template.titleKey())
         );
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
@@ -57,47 +65,38 @@ public class ScoreboardManager {
         String mapName = plugin.getGameManager().getSelectedMap() == null
                 ? LangHelper.get(player, "sw.sb-map-unknown")
                 : plugin.getGameManager().getSelectedMap().getName();
-        int line = 15;
-
-        setLine(objective, line--, LangHelper.component(player, "sw.sb-separator"));
-        switch (state) {
-            case WAITING -> {
-                setLine(objective, line--, LangHelper.component(player, "sw.sb-waiting"));
-                setLine(objective, line--, LangHelper.component(player, "sw.sb-players",
-                        plugin.getGameManager().getPlayers().size(), plugin.getGameManager().getMaxPlayers()));
-                setLine(objective, line--, LangHelper.component(player, "sw.sb-min-players",
-                        plugin.getGameManager().getMinPlayers()));
-                setLine(objective, line--, LangHelper.component(player, "sw.sb-map", mapName));
-                line = addPersonalSection(objective, line, player, gp, false);
-            }
-            case STARTING -> {
-                setLine(objective, line--, LangHelper.component(player, "sw.sb-starting",
-                        plugin.getGameManager().getCountdown()));
-                setLine(objective, line--, LangHelper.component(player, "sw.sb-players",
-                        plugin.getGameManager().getPlayers().size(), plugin.getGameManager().getMaxPlayers()));
-                setLine(objective, line--, LangHelper.component(player, "sw.sb-map", mapName));
-                line = addPersonalSection(objective, line, player, gp, false);
-            }
-            case PLAYING -> {
-                int red  = plugin.getGameManager().getAliveTeamPlayers(GameTeam.RED).size();
-                int blue = plugin.getGameManager().getAliveTeamPlayers(GameTeam.BLUE).size();
-                setLine(objective, line--, LangHelper.component(player, "sw.sb-time",
-                        formatTime(plugin.getGameManager().getGameTime())));
-                setLine(objective, line--, LangHelper.component(player, "sw.sb-map", mapName));
-                setLine(objective, line--, Component.empty());
-                setLine(objective, line--, LangHelper.component(player, "sw.sb-red", red));
-                setLine(objective, line--, LangHelper.component(player, "sw.sb-blue", blue));
-                line = addPersonalSection(objective, line, player, gp, true);
-            }
-            case ENDING, ENDED -> {
-                setLine(objective, line--, LangHelper.component(player, "sw.sb-ending"));
-                setLine(objective, line--, LangHelper.component(player, "sw.sb-map", mapName));
-                setLine(objective, line--, Component.empty());
-                line = addPersonalSection(objective, line, player, gp, true);
-            }
-            default -> setLine(objective, line--, LangHelper.component(player, "sw.sb-waiting"));
+        boolean spectator = gp.getTeam() == null || !gp.isAlive();
+        int red = plugin.getGameManager().getAliveTeamPlayers(GameTeam.RED).size();
+        int blue = plugin.getGameManager().getAliveTeamPlayers(GameTeam.BLUE).size();
+        PlaceholderValues.Builder placeholders = PlaceholderValues.builder()
+                .put("current_players", plugin.getGameManager().getPlayers().size())
+                .put("max_players", plugin.getGameManager().getMaxPlayers())
+                .put("min_players", plugin.getGameManager().getMinPlayers())
+                .put("map", mapName)
+                .put("countdown", plugin.getGameManager().getCountdown())
+                .put("time", formatTime(plugin.getGameManager().getGameTime()))
+                .put("red_players", red)
+                .put("blue_players", blue)
+                .putComponent("player_class", MessageStyle.component(localizedClassName(player, gp.getPlayerClass())))
+                .put("kills", gp.getKills())
+                .put("sheep_thrown", gp.getSheepThrown());
+        if (!spectator) {
+            placeholders.putComponent("team", MessageStyle.component(localizedTeamName(player, gp.getTeam())));
         }
-        setLine(objective, line, LangHelper.component(player, "sw.sb-separator"));
+        String phase = switch (state) {
+            case WAITING -> "waiting";
+            case STARTING -> "starting";
+            case PLAYING -> "playing";
+            case ENDING, ENDED -> "ending";
+            default -> "waiting";
+        };
+        PlaceholderValues values = placeholders.build();
+        int line = 15;
+        for (ScoreboardTemplate.Line definition : template.lines(phase + (spectator ? "_spectator" : "_alive"))) {
+            Component display = definition.blank() ? Component.empty()
+                    : LangHelper.component(player, definition.key(), values);
+            setLine(objective, line--, display);
+        }
 
         // ── Team glow / color setup ───────────────────────────────────────────
         setupTeamBoards(board, state);
@@ -180,30 +179,6 @@ public class ScoreboardManager {
         return LangHelper.get(player, team == GameTeam.RED ? "sw.sb-team-red" : "sw.sb-team-blue");
     }
 
-    private int addPersonalSection(
-            Objective objective,
-            int line,
-            Player player,
-            GamePlayer gamePlayer,
-            boolean includeStatistics
-    ) {
-        setLine(objective, line--, LangHelper.component(player, "sw.sb-separator"));
-        if (gamePlayer.getTeam() == null || !gamePlayer.isAlive()) {
-            setLine(objective, line--, LangHelper.component(player, "sw.sb-spectator"));
-        } else {
-            setLine(objective, line--, LangHelper.component(player, "sw.sb-your-team",
-                    localizedTeamName(player, gamePlayer.getTeam())));
-        }
-        setLine(objective, line--, LangHelper.component(player, "sw.sb-class",
-                localizedClassName(player, gamePlayer.getPlayerClass())));
-        if (includeStatistics) {
-            setLine(objective, line--, LangHelper.component(player, "sw.sb-kills", gamePlayer.getKills()));
-            setLine(objective, line--, LangHelper.component(player, "sw.sb-sheep-thrown",
-                    gamePlayer.getSheepThrown()));
-        }
-        return line;
-    }
-
     private String localizedClassName(Player player, PlayerClass playerClass) {
         return LangHelper.get(player, "sw.sb-class-" + playerClass.name().toLowerCase(Locale.ROOT));
     }
@@ -251,6 +226,17 @@ public class ScoreboardManager {
             if (player != null) clear(player);
             else boards.remove(uuid);
         }
+    }
+
+    @Override
+    public Runnable prepareReload() {
+        ScoreboardTemplate prepared = ScoreboardTemplate.load(plugin, "scoreboards.yml", "sheepwars");
+        return () -> template = prepared;
+    }
+
+    @Override
+    public void refreshViewers() {
+        updateAll();
     }
 
     private void setLine(Objective objective, int lineNum, Component display) {

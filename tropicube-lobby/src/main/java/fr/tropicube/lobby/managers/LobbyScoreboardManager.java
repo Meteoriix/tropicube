@@ -2,10 +2,15 @@ package fr.tropicube.lobby.managers;
 
 import fr.tropicube.lobby.TropicubeLobby;
 import fr.tropicube.lobby.utils.LangHelper;
+import fr.tropicube.core.ui.ScoreboardTemplate;
+import fr.tropicube.core.ui.UiReloadParticipant;
+import fr.tropicube.core.util.MessageStyle;
+import fr.tropicube.language.PlaceholderValues;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
+import org.bukkit.plugin.ServicePriority;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +20,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** Builds and updates the personal scoreboard displayed in the lobby. */
-public class LobbyScoreboardManager {
+public class LobbyScoreboardManager implements UiReloadParticipant {
 
     private final TropicubeLobby plugin;
     private final Map<UUID, Scoreboard> boards = new HashMap<>();
@@ -23,9 +28,12 @@ public class LobbyScoreboardManager {
     private final Set<UUID> balanceRefreshes = ConcurrentHashMap.newKeySet();
     private final Map<UUID, QueueSnapshot> queueSnapshots = new ConcurrentHashMap<>();
     private final Set<UUID> queueRefreshes = ConcurrentHashMap.newKeySet();
+    private volatile ScoreboardTemplate template;
 
     public LobbyScoreboardManager(TropicubeLobby plugin) {
         this.plugin = plugin;
+        prepareReload().run();
+        Bukkit.getServicesManager().register(UiReloadParticipant.class, this, plugin, ServicePriority.Normal);
     }
 
     public void setup(Player player) {
@@ -36,7 +44,7 @@ public class LobbyScoreboardManager {
         if (old != null) old.unregister();
 
         Objective obj = board.registerNewObjective("lobby", Criteria.DUMMY,
-                LangHelper.component(player, "lobby.sb-title"));
+                LangHelper.component(player, template.titleKey()));
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         UUID playerId = player.getUniqueId();
@@ -50,27 +58,26 @@ public class LobbyScoreboardManager {
                 .filter(server -> server.isVisibleTo(playerId))
                 .count();
 
-        int line = 15;
-        setLine(obj, line--, LangHelper.component(player, "lobby.sb-separator"));
-        setLine(obj, line--, LangHelper.component(player, "lobby.sb-profile"));
-        setLine(obj, line--, LangHelper.component(player, "lobby.sb-profile-value", formattedName));
-        setLine(obj, line--, Component.empty());
-        setLine(obj, line--, LangHelper.component(player, "lobby.sb-balance", balance));
-        setLine(obj, line--, LangHelper.component(player, "lobby.sb-network-online", networkPlayers));
-        setLine(obj, line--, LangHelper.component(player, "lobby.sb-games", visibleGames));
         QueueSnapshot queue = queueSnapshots.get(playerId);
-        if (queue == null || queue.templateId() == null) {
-            setLine(obj, line--, LangHelper.component(player, "lobby.sb-action-play"));
-        } else {
-            setLine(obj, line--, LangHelper.component(player, "lobby.sb-queue",
-                    LangHelper.get(player, queue.labelKey())));
-            setLine(obj, line--, LangHelper.component(player, "lobby.sb-queue-state",
-                    queue.reservedPlayers(), queue.capacity(), queue.waitSeconds()));
+        boolean queued = queue != null && queue.templateId() != null;
+        PlaceholderValues.Builder values = PlaceholderValues.builder()
+                .putComponent("profile", MessageStyle.component(formattedName))
+                .put("balance", balance)
+                .put("online_players", networkPlayers)
+                .put("visible_games", visibleGames);
+        if (queued) {
+            values.putComponent("queue", MessageStyle.component(LangHelper.get(player, queue.labelKey())))
+                    .put("reserved_players", queue.reservedPlayers())
+                    .put("capacity", queue.capacity())
+                    .put("wait_seconds", queue.waitSeconds());
         }
-        setLine(obj, line--, Component.empty());
-        setLine(obj, line--, LangHelper.component(player, "lobby.sb-server-label"));
-        setLine(obj, line--, LangHelper.component(player, "lobby.sb-server-value"));
-        setLine(obj, line, LangHelper.component(player, "lobby.sb-separator"));
+        PlaceholderValues resolvedValues = values.build();
+        int line = 15;
+        for (ScoreboardTemplate.Line definition : template.lines(queued ? "queued" : "idle")) {
+            Component display = definition.blank() ? Component.empty()
+                    : LangHelper.component(player, definition.key(), resolvedValues);
+            setLine(obj, line--, display);
+        }
 
         player.setScoreboard(board);
 
@@ -121,6 +128,17 @@ public class LobbyScoreboardManager {
             if (player != null) clear(player);
             else boards.remove(uuid);
         }
+    }
+
+    @Override
+    public Runnable prepareReload() {
+        ScoreboardTemplate prepared = ScoreboardTemplate.load(plugin, "scoreboards.yml", "lobby");
+        return () -> template = prepared;
+    }
+
+    @Override
+    public void refreshViewers() {
+        updateAll();
     }
 
     private void setLine(Objective obj, int lineNum, Component display) {

@@ -3,6 +3,7 @@ package fr.tropicube.velocity.managers;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import fr.tropicube.docker.client.RedisManager;
+import fr.tropicube.language.PlaceholderValues;
 import fr.tropicube.velocity.util.MessageStyle;
 import net.kyori.adventure.text.Component;
 import org.slf4j.Logger;
@@ -83,31 +84,55 @@ public class VelocityLanguageManager {
         return format(playerLangs.getOrDefault(uuid, defaultLang), key, args);
     }
 
+    public String get(UUID uuid, String key, PlaceholderValues placeholders) {
+        return MessageStyle.miniMessage(raw(playerLangs.getOrDefault(uuid, defaultLang), key), placeholders);
+    }
+
     public String get(CommandSource source, String key, Object... args) {
         if (source instanceof Player p) return get(p.getUniqueId(), key, args);
         return format(defaultLang, key, args);
     }
 
+    public String get(CommandSource source, String key, PlaceholderValues placeholders) {
+        String language = source instanceof Player player
+                ? playerLangs.getOrDefault(player.getUniqueId(), defaultLang) : defaultLang;
+        return MessageStyle.miniMessage(raw(language, key), placeholders);
+    }
+
     private String format(String lang, String key, Object... args) {
+        String msg = raw(lang, key);
+        for (int i = 0; i < args.length; i++) msg = msg.replace("{" + i + "}", String.valueOf(args[i]));
+        return msg;
+    }
+
+    private String raw(String lang, String key) {
         ConfigurationNode cfg = languages.getOrDefault(lang, languages.get(defaultLang));
         if (cfg == null) return "<tc><red>Langue indisponible : <white>" + key;
         String[] parts = key.split("\\.");
-        String msg = cfg.node((Object[]) parts).getString();
-        if (msg == null) {
-            ConfigurationNode fb = languages.get(defaultLang);
-            if (fb != null) msg = fb.node((Object[]) parts).getString();
+        String message = cfg.node((Object[]) parts).getString();
+        if (message == null) {
+            ConfigurationNode fallback = languages.get(defaultLang);
+            if (fallback != null) message = fallback.node((Object[]) parts).getString();
         }
-        if (msg == null) return "<tc><red>Clé de traduction manquante : <white>" + key;
-        for (int i = 0; i < args.length; i++) msg = msg.replace("{" + i + "}", String.valueOf(args[i]));
-        return msg;
+        return message == null ? "<tc><red>Clé de traduction manquante : <white>" + key : message;
     }
 
     public Component getComponent(UUID uuid, String key, Object... args) {
         return MessageStyle.component(get(uuid, key, args));
     }
 
+    public Component getComponent(UUID uuid, String key, PlaceholderValues placeholders) {
+        return MessageStyle.component(raw(playerLangs.getOrDefault(uuid, defaultLang), key), placeholders);
+    }
+
     public Component getComponent(CommandSource source, String key, Object... args) {
         return MessageStyle.component(get(source, key, args));
+    }
+
+    public Component getComponent(CommandSource source, String key, PlaceholderValues placeholders) {
+        String language = source instanceof Player player
+                ? playerLangs.getOrDefault(player.getUniqueId(), defaultLang) : defaultLang;
+        return MessageStyle.component(raw(language, key), placeholders);
     }
 
     public void loadPlayerLanguage(UUID uuid) {

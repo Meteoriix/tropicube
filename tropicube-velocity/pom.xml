@@ -16,6 +16,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>fr.tropicube</groupId>
+            <artifactId>tropicube-language-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.velocitypowered</groupId>
             <artifactId>velocity-api</artifactId>
             <scope>provided</scope>

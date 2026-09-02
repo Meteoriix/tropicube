@@ -1,5 +1,7 @@
 package fr.tropicube.core.util;
 
+import fr.tropicube.language.PlaceholderValues;
+import fr.tropicube.language.TemplateRenderer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -37,6 +39,16 @@ public final class MessageStyle {
     /** Parses MiniMessage with the Tropicube {@code <tc>} and SheepWars {@code <sw>} tags. */
     public static Component component(String message) {
         return MINI_MESSAGE.deserialize(message);
+    }
+
+    /** Parses MiniMessage after safely inserting named, typed placeholders. */
+    public static Component component(String message, PlaceholderValues placeholders) {
+        return TemplateRenderer.component(MINI_MESSAGE, message, placeholders);
+    }
+
+    /** Renders a named template back to MiniMessage for legacy string-based consumers. */
+    public static String miniMessage(String message, PlaceholderValues placeholders) {
+        return MINI_MESSAGE.serialize(component(message, placeholders));
     }
 
     /** Prepares chat input so only authorized players can use safe visual MiniMessage tags. */

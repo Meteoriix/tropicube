@@ -67,8 +67,8 @@ public class TeamSelectionMenu implements Listener {
     // ── Menu ────────────────────────────────────────────────────────────────
 
     public void open(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 27,
-                LangHelper.component(player, "sw.team-menu-title"));
+        Inventory inv = Bukkit.createInventory(null, LangHelper.menuSize("team-selection"),
+                LangHelper.menuTitle(player, "team-selection"));
         NetworkMenuStyle.frame(inv);
 
         int redCount  = plugin.getGameManager().getTeamPlayers(GameTeam.RED).size();

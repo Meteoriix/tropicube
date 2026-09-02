@@ -8,6 +8,8 @@ type Docs = ReturnType<typeof documents>;
 type ComponentNode = { text?: string; color?: string; bold?: boolean; italic?: boolean; underlined?: boolean; strikethrough?: boolean; extra?: ComponentNode[] };
 type LiveStatus = { available: boolean; message: string };
 type LiveResult = { available: boolean; updatedContainers: number; containers: string[]; errors: string[] };
+type UiSnapshot = { id: string; module: string; type: 'scoreboards' | 'menus'; sourcePath: string; mirrorPath?: string; content: string; hash: string };
+type EditorMode = 'texts' | 'scoreboards' | 'menus';
 
 async function api<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(path, options);
@@ -18,6 +20,15 @@ async function api<T>(path: string, options?: RequestInit): Promise<T> {
 
 function App() {
   const [sets, setSets] = useState<StateSet[]>([]);
+  const [uiSnapshots, setUiSnapshots] = useState<UiSnapshot[]>([]);
+  const [uiDocuments, setUiDocuments] = useState<Record<string, any>>({});
+  const [uiHistory, setUiHistory] = useState<Record<string, any>[]>([]);
+  const [uiFuture, setUiFuture] = useState<Record<string, any>[]>([]);
+  const [mode, setMode] = useState<EditorMode>('texts');
+  const [selectedUi, setSelectedUi] = useState('');
+  const [selectedVariant, setSelectedVariant] = useState('');
+  const [surfacePreview, setSurfacePreview] = useState<ComponentNode[]>([]);
+  const [selectedButton, setSelectedButton] = useState('');
   const [setIndex, setSetIndex] = useState(0);
   const [docs, setDocs] = useState<Docs | null>(null);
   const [snapshots, setSnapshots] = useState<Record<Locale, FileSnapshot> | null>(null);
@@ -37,8 +48,8 @@ function App() {
   const [notice, setNotice] = useState('Chargement…');
 
   useEffect(() => {
-    Promise.all([api<{sets: StateSet[]; catalog: string; live: LiveStatus}>('/api/state'), api<{available: boolean}>('/api/translation/status')])
-      .then(([state, status]) => { setSets(state.sets); setCatalog(parse(state.catalog)); setCatalogText(state.catalog); setProvider(status.available); setLive(state.live); setNotice('Prêt'); })
+    Promise.all([api<{sets: StateSet[]; ui: UiSnapshot[]; catalog: string; live: LiveStatus}>('/api/state'), api<{available: boolean}>('/api/translation/status')])
+      .then(([state, status]) => { setSets(state.sets); setUiSnapshots(state.ui); setUiDocuments(Object.fromEntries(state.ui.map(file => [file.id, parse(file.content)]))); setCatalog(parse(state.catalog)); setCatalogText(state.catalog); setProvider(status.available); setLive(state.live); setNotice('Prêt'); })
       .catch(error => setNotice(error.message));
   }, []);
 
@@ -51,8 +62,11 @@ function App() {
   }, [sets, setIndex]);
 
   const keys = useMemo(() => docs ? filterKeys(docs, search, searchMode) : [], [docs, search, searchMode]);
+  const surfaces = useMemo(() => uiSnapshots.flatMap(file => Object.keys(uiDocuments[file.id]?.[file.type] || {})
+    .map(id => ({ file, id, identity: `${file.id}/${id}`, definition: uiDocuments[file.id][file.type][id] })))
+    .filter(surface => mode === 'texts' || surface.file.type === mode), [uiSnapshots, uiDocuments, mode]);
   const current = docs && selected ? value(docs.fr, selected) : '';
-  const placeholderIds = useMemo(() => Array.from(new Set((Array.isArray(current) ? current.join('\n') : current).match(/\{\d+}/g) || [])).map(token => token.slice(1, -1)), [current]);
+  const placeholderIds = useMemo(() => Array.from(new Set((Array.isArray(current) ? current.join('\n') : current).match(/\{(?:[a-z][a-z0-9_]*|\d+)}/g) || [])).map(token => token.slice(1, -1)), [current]);
 
   useEffect(() => {
     if (!selected) return;
@@ -65,10 +79,37 @@ function App() {
     const source = value(docs.fr, selected);
     const message = Array.isArray(source) ? source.join('\n') : source;
     const placeholders: Record<string, string> = {};
-    for (const match of message.matchAll(/\{(\d+)}/g)) placeholders[match[1]] = catalog.entries?.[`${sets[setIndex]?.set.id}:${selected}`]?.placeholders?.[match[1]] || `Valeur ${match[1]}`;
+    for (const match of message.matchAll(/\{([a-z][a-z0-9_]*|\d+)}/g)) placeholders[match[1]] = catalog.entries?.[`${sets[setIndex]?.set.id}:${selected}`]?.placeholders?.[match[1]] || placeholderSample(match[1]);
     api<ComponentNode>('/api/preview', { method: 'POST', body: JSON.stringify({ message, placeholders }) })
       .then(setPreview).catch(error => setNotice(error.message));
   }, [docs, selected, catalog, setIndex, sets]);
+
+  useEffect(() => {
+    if (mode === 'texts') return;
+    const coreIndex = sets.findIndex(entry => entry.set.id === 'tropicube-core');
+    if (coreIndex >= 0 && coreIndex !== setIndex) setSetIndex(coreIndex);
+    if (!surfaces.some(surface => surface.identity === selectedUi)) {
+      const first = surfaces[0];
+      setSelectedUi(first?.identity || '');
+      setSelectedVariant(first ? Object.keys(first.definition.variants || {})[0] || '' : '');
+    }
+  }, [mode, surfaces, selectedUi, sets, setIndex]);
+
+  const selectedSurface = surfaces.find(surface => surface.identity === selectedUi);
+
+  useEffect(() => {
+    if (!docs || !selectedSurface || mode !== 'scoreboards') { setSurfacePreview([]); return; }
+    const variant = selectedSurface.definition.variants?.[selectedVariant];
+    if (!variant) return;
+    Promise.all((variant.lines || []).map(async (line: any) => {
+      if (line.blank) return { text: '\n' } as ComponentNode;
+      const translated = value(docs.fr, line.key);
+      const message = Array.isArray(translated) ? translated.join('\n') : translated;
+      const placeholders: Record<string, string> = {};
+      for (const match of message.matchAll(/\{([a-z][a-z0-9_]*|\d+)}/g)) placeholders[match[1]] = placeholderSample(match[1]);
+      return api<ComponentNode>('/api/preview', { method: 'POST', body: JSON.stringify({ message, placeholders }) });
+    })).then(setSurfacePreview).catch(error => setNotice(error.message));
+  }, [docs, selectedSurface, selectedVariant, mode]);
 
   const mutate = (fn: (copy: Docs) => void) => {
     if (!docs) return;
@@ -132,6 +173,55 @@ function App() {
     } else setNotice('Enregistré ; aucun serveur actif à recharger');
   };
 
+  const mutateUi = (mutation: (copy: Record<string, any>) => void) => {
+    const copy = structuredClone(uiDocuments);
+    mutation(copy);
+    setUiHistory(history => [...history.slice(-49), structuredClone(uiDocuments)]);
+    setUiFuture([]);
+    setUiDocuments(copy);
+  };
+
+  const undoUi = () => {
+    const previous = uiHistory.at(-1); if (!previous) return;
+    setUiFuture(future => [structuredClone(uiDocuments), ...future]);
+    setUiDocuments(previous); setUiHistory(history => history.slice(0, -1));
+  };
+
+  const redoUi = () => {
+    const next = uiFuture[0]; if (!next) return;
+    setUiHistory(history => [...history, structuredClone(uiDocuments)]);
+    setUiDocuments(next); setUiFuture(future => future.slice(1));
+  };
+
+  const applyUi = async () => {
+    const documents = Object.fromEntries(uiSnapshots.map(file => [file.id, stringify(uiDocuments[file.id], { lineWidth: 0 })]));
+    for (const file of uiSnapshots) {
+      const validation = await api<{errors: string[]}>('/api/ui/validate', { method: 'POST', body: JSON.stringify({ type: file.type, content: documents[file.id] }) });
+      if (validation.errors.length) { setNotice(validation.errors.join(' · ')); return; }
+    }
+    const changed = uiSnapshots.filter(file => JSON.stringify(parse(file.content)) !== JSON.stringify(uiDocuments[file.id]));
+    if (!changed.length) { setNotice('Aucune modification à appliquer'); return; }
+    if (!window.confirm(`Appliquer et recharger ${changed.length} manifeste(s) ?\n\n${changed.map(file => `• ${file.id}`).join('\n')}`)) return;
+    const result = await api<{ui: UiSnapshot[]; live: LiveResult}>('/api/ui/apply', { method: 'POST', body: JSON.stringify({
+      expectedHashes: Object.fromEntries(uiSnapshots.map(file => [file.id, file.hash])), documents,
+    }) });
+    setUiSnapshots(result.ui); setUiDocuments(Object.fromEntries(result.ui.map(file => [file.id, parse(file.content)])));
+    setUiHistory([]); setUiFuture([]);
+    setLive({ available: result.live.available && !result.live.errors.length, message: result.live.errors.length ? result.live.errors.join(' · ') : 'Jeu synchronisé' });
+    setNotice(result.live.updatedContainers ? `Interfaces rechargées dans ${result.live.updatedContainers} serveur(s)` : 'Interfaces enregistrées ; aucun serveur actif');
+  };
+
+  const validateUi = async () => {
+    const serialized = Object.fromEntries(uiSnapshots.map(file => [file.id, stringify(uiDocuments[file.id], { lineWidth: 0 })]));
+    const errors: string[] = [];
+    for (const file of uiSnapshots) {
+      const result = await api<{errors: string[]}>('/api/ui/validate', { method: 'POST', body: JSON.stringify({ type: file.type, content: serialized[file.id] }) });
+      errors.push(...result.errors.map(error => `${file.id}: ${error}`));
+    }
+    setNotice(errors.length ? errors.join(' · ') : 'Validation réussie');
+    return errors.length === 0;
+  };
+
   const createKey = () => {
     if (!docs) return;
     const key = window.prompt('Nouvelle clé complète (ex. lobby.menu-title)');
@@ -171,10 +261,13 @@ function App() {
     <header><div><strong>TROPICUBE</strong><span>Éditeur de langues</span></div><div className="actions">
       <span className={provider ? 'status ok' : 'status'}>{provider ? 'LibreTranslate prêt' : 'Traduction hors ligne'}</span>
       <span title={live.message} className={live.available ? 'status ok' : 'status'}>{live.available ? 'Jeu connecté' : 'Jeu hors ligne'}</span>
-      <button onClick={validate}>Valider</button><button className="primary" onClick={apply}>Appliquer</button>
+      <button onClick={mode === 'texts' ? validate : validateUi}>Valider</button><button className="primary" onClick={mode === 'texts' ? apply : applyUi}>Appliquer</button>
     </div></header>
     <section className="toolbar">
-      <select value={setIndex} onChange={event => setSetIndex(Number(event.target.value))}>{sets.map((entry, index) => <option key={entry.set.id} value={index}>{entry.set.id}</option>)}</select>
+      <div className="mode-tabs">{(['texts','scoreboards','menus'] as EditorMode[]).map(item => <button className={mode === item ? 'active' : ''} key={item} onClick={() => setMode(item)}>{item === 'texts' ? 'Textes' : item === 'scoreboards' ? 'Scoreboards' : 'Menus'}</button>)}</div>
+      {mode === 'texts' && <select value={setIndex} onChange={event => setSetIndex(Number(event.target.value))}>{sets.map((entry, index) => <option key={entry.set.id} value={index}>{entry.set.id}</option>)}</select>}
+      {mode !== 'texts' && <><button disabled={!uiHistory.length} onClick={undoUi}>Annuler</button><button disabled={!uiFuture.length} onClick={redoUi}>Rétablir</button></>}
+      {mode === 'texts' && <>
       <select aria-label="Type de recherche" value={searchMode} onChange={event => setSearchMode(event.target.value as SearchMode)}>
         <option value="key">Clé</option><option value="text">Texte</option>
       </select>
@@ -182,12 +275,16 @@ function App() {
         placeholder={searchMode === 'key' ? 'Rechercher une clé…' : 'Rechercher dans les traductions…'}
         value={search} onChange={event => setSearch(event.target.value)} />
       <button onClick={createKey}>+ Clé</button><button onClick={() => setRaw(!raw)}>{raw ? 'Édition structurée' : 'YAML français'}</button>
+      </>}
       <span className="notice">{notice}</span>
     </section>
     <div className="workspace">
-      <aside>{keys.map(key => <button className={key === selected ? 'active' : ''} key={key} onClick={() => setSelected(key)}>{key}</button>)}</aside>
+      <aside>{mode === 'texts' ? keys.map(key => <button className={key === selected ? 'active' : ''} key={key} onClick={() => setSelected(key)}>{key}</button>)
+        : surfaces.map(surface => <button className={surface.identity === selectedUi ? 'active' : ''} key={surface.identity} onClick={() => { setSelectedUi(surface.identity); setSelectedVariant(Object.keys(surface.definition.variants || {})[0] || ''); }}>{surface.file.module}<small>{surface.id}</small></button>)}</aside>
       <section className="editor">
-        {raw ? <textarea className="raw" value={serialize(docs.fr)} onChange={event => mutate(copy => { copy.fr = documents({ ...snapshots, fr: { ...snapshots.fr, content: event.target.value } }).fr; })} /> : <>
+        {mode === 'scoreboards' && selectedSurface ? <ScoreboardEditor surface={selectedSurface} variant={selectedVariant} setVariant={setSelectedVariant} mutate={mutateUi} />
+        : mode === 'menus' && selectedSurface ? <MenuEditor surface={selectedSurface} selectedButton={selectedButton} setSelectedButton={setSelectedButton} mutate={mutateUi} />
+        : raw ? <textarea className="raw" value={serialize(docs.fr)} onChange={event => mutate(copy => { copy.fr = documents({ ...snapshots, fr: { ...snapshots.fr, content: event.target.value } }).fr; })} /> : <>
           <div className="keyline"><h2>{selected}</h2><button onClick={renameKey}>Renommer</button><button className="danger" onClick={deleteKey}>Supprimer</button></div>
           <label>Français</label><textarea value={editableValue(current)} onChange={event => editFrench(event.target.value)} />
           <p className="edit-hint">Entrée insère un saut de ligne dans le texte.</p>
@@ -200,14 +297,87 @@ function App() {
           <details><summary>{usages.length} usage(s) détecté(s)</summary>{usages.map((usage, index) => <code key={index}>{usage.file}:{usage.line} — {usage.text}</code>)}</details>
         </>}
       </section>
-      <section className="preview"><div className="preview-head"><b>Aperçu</b><select value={context} onChange={event => { setContext(event.target.value); updateEntry({ context: event.target.value }); }}>{['chat','title','subtitle','actionbar','inventory','lore','scoreboard','tablist'].map(item => <option key={item}>{item}</option>)}</select></div>
-        <div className={`frame ${context}`}><Rendered node={preview} /></div>
+      <section className="preview"><div className="preview-head"><b>Aperçu</b>{mode === 'texts' && <select value={context} onChange={event => { setContext(event.target.value); updateEntry({ context: event.target.value }); }}>{['chat','title','subtitle','actionbar','inventory','lore','scoreboard','tablist'].map(item => <option key={item}>{item}</option>)}</select>}</div>
+        {mode === 'scoreboards' ? <div className="scoreboard-full"><strong>{selectedSurface && docs ? editableValue(value(docs.fr, selectedSurface.definition['title-key'])) : ''}</strong>{surfacePreview.map((line,index) => <div key={index}><Rendered node={line} /></div>)}</div>
+        : mode === 'menus' && selectedSurface ? <MenuPreview surface={selectedSurface} selectedButton={selectedButton} docs={docs} />
+        : <div className={`frame ${context}`}><Rendered node={preview} /></div>}
+        {mode === 'texts' && <>
         {!!placeholderIds.length && <div className="samples"><b>Exemples des placeholders</b>{placeholderIds.map(id => <label key={id}>{`{${id}}`}<input value={catalog.entries?.[`${sets[setIndex].set.id}:${selected}`]?.placeholders?.[id] || `Valeur ${id}`} onChange={event => updateEntry({ placeholders: { ...(catalog.entries?.[`${sets[setIndex].set.id}:${selected}`]?.placeholders || {}), [id]: event.target.value } })} /></label>)}</div>}
         <details className="catalog"><summary>Glossaire et métadonnées</summary><textarea value={catalogText} onChange={event => setCatalogText(event.target.value)} /><button onClick={saveCatalog}>Enregistrer le catalogue</button></details>
         {!!diagnostics.length && <div className="diagnostics">{diagnostics.map((item, index) => <p key={index}><b>{item.language}:{item.key}</b> {item.message}</p>)}</div>}
+        </>}
       </section>
     </div>
   </main>;
+}
+
+function ScoreboardEditor({ surface, variant, setVariant, mutate }: { surface: any; variant: string; setVariant: (value: string) => void; mutate: (fn: (copy: Record<string, any>) => void) => void }) {
+  const definition = surface.definition;
+  const lines: any[] = definition.variants?.[variant]?.lines || [];
+  const updateLines = (next: any[]) => mutate(copy => { copy[surface.file.id].scoreboards[surface.id].variants[variant].lines = next; });
+  const move = (index: number, delta: number) => { const next = [...lines]; const target = index + delta; if (target < 0 || target >= next.length) return; [next[index], next[target]] = [next[target], next[index]]; updateLines(next); };
+  return <div className="surface-editor"><div className="keyline"><h2>{surface.id}</h2><select value={variant} onChange={event => setVariant(event.target.value)}>{Object.keys(definition.variants || {}).map(item => <option key={item}>{item}</option>)}</select></div>
+    <label>Clé du titre</label><input value={definition['title-key']} onChange={event => mutate(copy => { copy[surface.file.id].scoreboards[surface.id]['title-key'] = event.target.value; })} />
+    <div className="line-list">{lines.map((line,index) => <div className="line-row" draggable key={index} onDragStart={event => event.dataTransfer.setData('text/plain',String(index))} onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); const from=Number(event.dataTransfer.getData('text/plain')); if (Number.isInteger(from) && from !== index) move(from,index-from); }}><span title="Glisser pour déplacer">↕ {index + 1}</span>{line.blank ? <i>Ligne vide</i> : <input value={line.key} onChange={event => { const next = [...lines]; next[index] = { key: event.target.value }; updateLines(next); }} />}<button onClick={() => move(index,-1)}>↑</button><button onClick={() => move(index,1)}>↓</button><button className="danger" onClick={() => updateLines(lines.filter((_,i) => i !== index))}>×</button></div>)}</div>
+    <div className="surface-actions"><button disabled={lines.length >= 15} onClick={() => { const key = window.prompt('Clé de traduction de la nouvelle ligne'); if (key) updateLines([...lines,{key}]); }}>+ Texte</button><button disabled={lines.length >= 15} onClick={() => updateLines([...lines,{blank:true}])}>+ Ligne vide</button><span>{lines.length}/15 lignes</span></div>
+  </div>;
+}
+
+function MenuEditor({ surface, selectedButton, setSelectedButton, mutate }: { surface: any; selectedButton: string; setSelectedButton: (id: string) => void; mutate: (fn: (copy: Record<string, any>) => void) => void }) {
+  const definition = surface.definition;
+  const buttons: Record<string,any> = definition.buttons || {};
+  const selected = buttons[selectedButton];
+  const dynamicActions = Object.values<any>(definition['dynamic-regions'] || {}).map(region => region['template-action']);
+  const allowedActions = Array.from(new Set([...Object.values<any>(buttons).map(button => button.action), ...dynamicActions, 'none']));
+  const update = (id: string, change: Record<string,unknown>) => mutate(copy => Object.assign(copy[surface.file.id].menus[surface.id].buttons[id], change));
+  const add = () => {
+    const id = window.prompt('Identifiant stable du bouton (lower-kebab-case)'); if (!id || buttons[id]) return;
+    const occupied = new Set(Object.values<any>(buttons).map(button => Number(button.slot)));
+    const slot = Array.from({length: definition.rows * 9}, (_,index) => index).find(index => !occupied.has(index));
+    if (slot === undefined) return;
+    mutate(copy => { copy[surface.file.id].menus[surface.id].buttons[id] = { slot, material: 'STONE_BUTTON', 'name-key': '', 'lore-key': '', action: allowedActions[0] || 'none', amount: 1, glow: false }; });
+    setSelectedButton(id);
+  };
+  const remove = () => {
+    if (!selected || selected.required) return;
+    mutate(copy => { delete copy[surface.file.id].menus[surface.id].buttons[selectedButton]; }); setSelectedButton('');
+  };
+  return <div className="surface-editor"><div className="keyline"><h2>{surface.id}</h2><button onClick={add}>+ Bouton</button></div>
+    <div className="menu-properties"><label>Titre<input value={definition['title-key']} onChange={event => mutate(copy => { copy[surface.file.id].menus[surface.id]['title-key'] = event.target.value; })} /></label><label>Lignes<select value={definition.rows} onChange={event => mutate(copy => { copy[surface.file.id].menus[surface.id].rows = Number(event.target.value); })}>{[1,2,3,4,5,6].map(row => <option key={row}>{row}</option>)}</select></label><label>Cadrage<select value={definition.frame || 'network'} onChange={event => mutate(copy => { copy[surface.file.id].menus[surface.id].frame = event.target.value; })}>{['network','neutral','none'].map(frame => <option key={frame}>{frame}</option>)}</select></label></div>
+    <InventoryGrid definition={definition} selectedButton={selectedButton} select={setSelectedButton} move={(id,slot) => update(id,{slot})} />
+    {selected && <div className="button-editor"><div className="keyline"><h3>{selectedButton}</h3><button className="danger" disabled={!!selected.required} onClick={remove}>{selected.required ? 'Bouton requis' : 'Supprimer'}</button></div>
+      <label>Slot<input type="number" min="0" max={definition.rows * 9 - 1} value={selected.slot} onChange={event => update(selectedButton,{slot:Number(event.target.value)})} /></label>
+      <label>Matériau<input value={selected.material} onChange={event => update(selectedButton,{material:event.target.value.toUpperCase()})} /></label>
+      <label>Clé du nom<input value={selected['name-key'] || ''} onChange={event => update(selectedButton,{'name-key':event.target.value})} /></label>
+      <label>Clé du lore<input value={selected['lore-key'] || ''} onChange={event => update(selectedButton,{'lore-key':event.target.value})} /></label>
+      <label>Action<select value={selected.action} onChange={event => update(selectedButton,{action:event.target.value})}>{allowedActions.map(action => <option key={action}>{action}</option>)}</select></label>
+      <label>Quantité<input type="number" min="1" max="99" value={selected.amount || 1} onChange={event => update(selectedButton,{amount:Number(event.target.value)})} /></label>
+      <label className="check"><input type="checkbox" checked={!!selected.glow} onChange={event => update(selectedButton,{glow:event.target.checked})} /> Effet enchanté</label>
+    </div>}
+  </div>;
+}
+
+function InventoryGrid({ definition, selectedButton, select, move }: { definition: any; selectedButton: string; select: (id: string) => void; move?: (id:string,slot:number) => void }) {
+  const buttons: Record<string,any> = definition.buttons || {};
+  const bySlot = Object.fromEntries(Object.entries<any>(buttons).map(([id,button]) => [button.slot,{id,...button}]));
+  const dynamic = new Set(Object.values<any>(definition['dynamic-regions'] || {}).flatMap(region => region.slots || []));
+  return <div className="inventory-grid" style={{gridTemplateRows:`repeat(${definition.rows}, 52px)`}}>{Array.from({length:definition.rows * 9},(_,slot) => { const button = bySlot[slot]; return <button draggable={!!button && !!move} onDragStart={event => button && event.dataTransfer.setData('application/x-tropicube-button',button.id)} onDragOver={event => { if (move && !button) event.preventDefault(); }} onDrop={event => { const id=event.dataTransfer.getData('application/x-tropicube-button'); if (move && id && !button) { event.preventDefault(); move(id,slot); } }} title={button ? `${button.id} · ${button.material}` : `Slot ${slot}`} className={`${button ? 'item-slot' : ''} ${button?.id === selectedButton ? 'selected' : ''} ${dynamic.has(slot) ? 'dynamic' : ''}`} key={slot} onClick={() => button && select(button.id)}>{button ? <><img src={`/api/assets/item/${button.material.toLowerCase()}`} onError={event => { event.currentTarget.style.display='none'; }} /><small>{materialAbbreviation(button.material)}</small>{button.glow && <i>✦</i>}</> : dynamic.has(slot) ? <small>ex.</small> : null}</button>; })}</div>;
+}
+
+function MenuPreview({ surface, selectedButton, docs }: { surface: any; selectedButton: string; docs: Docs }) {
+  const definition = surface.definition;
+  const button = definition.buttons?.[selectedButton];
+  const translated = (key: string) => { if (!key) return ''; const found = value(docs.fr,key); return editableValue(found); };
+  return <div className="menu-preview"><div className="menu-title">{translated(definition['title-key']) || definition['title-key']}</div><InventoryGrid definition={definition} selectedButton={selectedButton} select={() => {}} />{button && <div className="item-tooltip"><b>{translated(button['name-key']) || button.id}</b><p>{translated(button['lore-key'])}</p><code>{button.action}</code></div>}</div>;
+}
+
+function materialAbbreviation(material: string): string {
+  return material.split('_').map((part:string) => part[0]).join('').slice(0,3);
+}
+
+function placeholderSample(name: string): string {
+  const samples: Record<string,string> = { profile:'[VIP] Nathan', balance:'12 450', online_players:'128', visible_games:'7', queue:'Ranked 4v4', reserved_players:'6', capacity:'8', wait_seconds:'42', current_players:'12', max_players:'16', min_players:'8', map:'Archipel', countdown:'10', time:'08:42', red_players:'5', blue_players:'6', team:'Rouge', player_class:'Support', kills:'3', sheep_thrown:'14' };
+  return samples[name] || `Valeur ${name}`;
 }
 
 function Rendered({ node }: { node: ComponentNode | null }) {

@@ -1,0 +1,99 @@
+version: 1
+scoreboards:
+  sheepwars:
+    title-key: sw.sb-title
+    variants:
+      waiting_alive:
+        lines:
+          - key: sw.sb-separator
+          - key: sw.sb-waiting
+          - key: sw.sb-players
+          - key: sw.sb-min-players
+          - key: sw.sb-map
+          - key: sw.sb-separator
+          - key: sw.sb-your-team
+          - key: sw.sb-class
+          - key: sw.sb-separator
+      waiting_spectator:
+        lines:
+          - key: sw.sb-separator
+          - key: sw.sb-waiting
+          - key: sw.sb-players
+          - key: sw.sb-min-players
+          - key: sw.sb-map
+          - key: sw.sb-separator
+          - key: sw.sb-spectator
+          - key: sw.sb-class
+          - key: sw.sb-separator
+      starting_alive:
+        lines:
+          - key: sw.sb-separator
+          - key: sw.sb-starting
+          - key: sw.sb-players
+          - key: sw.sb-map
+          - key: sw.sb-separator
+          - key: sw.sb-your-team
+          - key: sw.sb-class
+          - key: sw.sb-separator
+      starting_spectator:
+        lines:
+          - key: sw.sb-separator
+          - key: sw.sb-starting
+          - key: sw.sb-players
+          - key: sw.sb-map
+          - key: sw.sb-separator
+          - key: sw.sb-spectator
+          - key: sw.sb-class
+          - key: sw.sb-separator
+      playing_alive:
+        lines:
+          - key: sw.sb-separator
+          - key: sw.sb-time
+          - key: sw.sb-map
+          - blank: true
+          - key: sw.sb-red
+          - key: sw.sb-blue
+          - key: sw.sb-separator
+          - key: sw.sb-your-team
+          - key: sw.sb-class
+          - key: sw.sb-kills
+          - key: sw.sb-sheep-thrown
+          - key: sw.sb-separator
+      playing_spectator:
+        lines:
+          - key: sw.sb-separator
+          - key: sw.sb-time
+          - key: sw.sb-map
+          - blank: true
+          - key: sw.sb-red
+          - key: sw.sb-blue
+          - key: sw.sb-separator
+          - key: sw.sb-spectator
+          - key: sw.sb-class
+          - key: sw.sb-kills
+          - key: sw.sb-sheep-thrown
+          - key: sw.sb-separator
+      ending_alive:
+        lines:
+          - key: sw.sb-separator
+          - key: sw.sb-ending
+          - key: sw.sb-map
+          - blank: true
+          - key: sw.sb-separator
+          - key: sw.sb-your-team
+          - key: sw.sb-class
+          - key: sw.sb-kills
+          - key: sw.sb-sheep-thrown
+          - key: sw.sb-separator
+      ending_spectator:
+        lines:
+          - key: sw.sb-separator
+          - key: sw.sb-ending
+          - key: sw.sb-map
+          - blank: true
+          - key: sw.sb-separator
+          - key: sw.sb-spectator
+          - key: sw.sb-class
+          - key: sw.sb-kills
+          - key: sw.sb-sheep-thrown
+          - key: sw.sb-separator

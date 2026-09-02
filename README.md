@@ -25,6 +25,7 @@ Tropicube est une infrastructure Minecraft multi-serveurs pour **Minecraft 26.2*
 | Module | Environnement | Rôle |
 |---|---|---|
 | `tropicube-docker-api` | Java partagé | Modèles d'instances/templates, client Docker et accès Redis |
+| `tropicube-language-api` | Java partagé | Rendu sûr des placeholders MiniMessage nommés et compatibilité positionnelle |
 | `tropicube-velocity` | Velocity | Routage, files d'attente, création/arrêt des instances et commandes proxy |
 | `tropicube-core` | Paper | Joueurs, économie, grades cosmétiques, niveaux VIP/modération, langues, amis et parties |
 | `tropicube-lobby` | Paper | Accueil immersif, hotbar Jeux/Social/Profil/Boutique, Quick Play/Ranked, navigateur d'instances et menus harmonisés |

@@ -39,8 +39,8 @@ public final class FriendRequestsGUI {
         Map<Integer, Action> leftActions = new LinkedHashMap<>();
         Map<Integer, Action> rightActions = new LinkedHashMap<>();
         Holder holder = new Holder(page, hasPrevious, hasNext, leftActions, rightActions);
-        Inventory inventory = Bukkit.createInventory(holder, SIZE,
-                LangHelper.component(player, "social.requests-title", page + 1));
+        Inventory inventory = Bukkit.createInventory(holder, LangHelper.menuSize("friend-requests"),
+                LangHelper.menuTitle(player, "friend-requests", page + 1));
         holder.inventory = inventory;
         NetworkMenuStyle.frame(inventory);
 

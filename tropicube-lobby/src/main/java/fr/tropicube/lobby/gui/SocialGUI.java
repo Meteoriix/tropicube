@@ -46,7 +46,7 @@ public final class SocialGUI {
         Map<Integer, Action> actions = new LinkedHashMap<>();
         Map<Integer, Action> rightClickActions = new LinkedHashMap<>();
         Holder holder = new Holder(view, actions, rightClickActions);
-        Inventory inventory = Bukkit.createInventory(holder, SIZE,
+        Inventory inventory = Bukkit.createInventory(holder, LangHelper.menuSize("social"),
                 LangHelper.component(player, view == View.FRIENDS
                         ? "social.menu-title" : "social.menu-party-title"));
         holder.inventory = inventory;

@@ -79,7 +79,8 @@ public class LanguageSelectorGUI {
         String currentLang = getCurrentLang(player);
 
         Holder holder = new Holder();
-        Inventory inv = Bukkit.createInventory(holder, SIZE, LangHelper.component(player, "lobby.lang-selector-title"));
+        Inventory inv = Bukkit.createInventory(holder, LangHelper.menuSize("language-selector"),
+                LangHelper.menuTitle(player, "language-selector"));
         holder.setInventory(inv);
 
         NetworkMenuStyle.frame(inv);

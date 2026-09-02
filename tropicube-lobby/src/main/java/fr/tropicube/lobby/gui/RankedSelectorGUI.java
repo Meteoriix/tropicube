@@ -28,8 +28,8 @@ public final class RankedSelectorGUI {
 
     public static Inventory build(TropicubeLobby plugin, Player player, String type) {
         Holder holder = new Holder(type, new LinkedHashMap<>());
-        Inventory inventory = Bukkit.createInventory(holder, 27,
-                LangHelper.component(player, "lobby.ranked-title"));
+        Inventory inventory = Bukkit.createInventory(holder, LangHelper.menuSize("ranked-selector"),
+                LangHelper.menuTitle(player, "ranked-selector"));
         holder.inventory = inventory;
         draw(plugin, player, holder);
         return inventory;

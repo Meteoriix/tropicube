@@ -20,6 +20,8 @@ import fr.tropicube.lobby.managers.LobbyScoreboardManager;
 import fr.tropicube.lobby.managers.LobbyServerManager;
 import fr.tropicube.lobby.managers.LobbyVisibilityManager;
 import fr.tropicube.core.TropicubeCore;
+import fr.tropicube.core.ui.MenuTemplateRegistry;
+import fr.tropicube.core.ui.UiReloadParticipant;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -42,6 +44,7 @@ public class TropicubeLobby extends JavaPlugin {
     private LobbyScoreboardManager scoreboardManager;
     private LobbyVisibilityManager visibilityManager;
     private TropicubeCore core;
+    private MenuTemplateRegistry menuTemplates;
 
     @Override
     public void onEnable() {
@@ -71,6 +74,9 @@ public class TropicubeLobby extends JavaPlugin {
         // Managers
         lobbyServerManager = new LobbyServerManager(this, redisManager);
         guiManager = new GuiManager(this);
+        menuTemplates = new MenuTemplateRegistry(this);
+        getServer().getServicesManager().register(UiReloadParticipant.class, menuTemplates, this,
+                org.bukkit.plugin.ServicePriority.Normal);
         scoreboardManager = new LobbyScoreboardManager(this);
         if (!(Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore loadedCore)) {
             getLogger().severe("TropicubeCore est requis pour les préférences du lobby.");
@@ -184,6 +190,8 @@ public class TropicubeLobby extends JavaPlugin {
 
         getLogger().info(MessageStyle.log("tc", "LOBBY", "<gray>Tropicube Lobby activé !"));
     }
+
+    public MenuTemplateRegistry getMenuTemplates() { return menuTemplates; }
 
     @Override
     public void onDisable() {

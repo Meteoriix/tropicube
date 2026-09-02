@@ -15,12 +15,15 @@ header span { color: #9bb7ba; }
 .status { font-size: 12px; color: #ffb266; padding: 5px 9px; border-radius: 99px; background: #3b2715; }
 .status.ok { color: #71e9b2; background: #123a2b; }
 .toolbar { height: 58px; padding: 10px 16px; border-bottom: 1px solid #193236; }
+.mode-tabs { display: flex; gap: 4px; padding-right: 8px; border-right: 1px solid #29494d; }
+.mode-tabs button.active { color: #062022; background: #42e0df; border-color: #42e0df; font-weight: 700; }
 .toolbar input { width: min(500px, 40vw); }
 .notice { color: #86a8ab; font-size: 13px; margin-left: auto; }
 .workspace { display: grid; grid-template-columns: 270px minmax(520px, 1fr) 390px; height: calc(100vh - 122px); }
 aside { overflow: auto; padding: 8px; border-right: 1px solid #193236; }
 aside button { display: block; width: 100%; border: 0; padding: 7px 9px; text-align: left; color: #9eb8bb; background: transparent; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 aside button.active { color: #5df0ed; background: #163438; }
+aside button small { display: block; color: #718e91; margin-top: 2px; }
 .editor, .preview { min-width: 0; overflow: auto; padding: 18px; }
 .preview { border-left: 1px solid #193236; background: #091719; }
 .keyline { min-height: 42px; }
@@ -54,4 +57,35 @@ details code { display: block; padding: 6px; white-space: pre-wrap; }
 .catalog { margin-top: 14px; }
 .catalog textarea { height: 230px; margin: 8px 0; font-size: 12px; }
 .loading { padding: 40px; color: #75e8e5; }
+.surface-editor > input { width: 100%; }
+.line-list { display: grid; gap: 7px; margin-top: 18px; }
+.line-row { display: grid; grid-template-columns: 28px 1fr 38px 38px 38px; align-items: center; gap: 6px; padding: 7px; border: 1px solid #29494d; border-radius: 7px; background: #0c1c1f; }
+.line-row input { width: 100%; }
+.line-row button { padding: 6px; }
+.line-row i { color: #718e91; }
+.surface-actions { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+.surface-actions span { margin-left: auto; color: #86a8ab; }
+.scoreboard-full { margin: 50px 0 0 70px; min-height: 300px; padding: 10px 8px; color: white; background: #111d; border-left: 4px solid #0008; font-family: Monocraft, Consolas, monospace; text-shadow: 2px 2px #000; white-space: pre-wrap; }
+.scoreboard-full strong { display: block; text-align: center; margin-bottom: 4px; }
+.scoreboard-full > div { min-height: 21px; text-align: right; }
+.empty-editor { color: #86a8ab; }
+.menu-properties { display: grid; grid-template-columns: 1fr 100px 140px; gap: 8px; }
+.menu-properties label, .button-editor label { margin-top: 8px; }
+.menu-properties input, .menu-properties select, .button-editor input, .button-editor select { display: block; width: 100%; margin-top: 4px; }
+.inventory-grid { display: grid; grid-template-columns: repeat(9, 52px); gap: 3px; width: max-content; padding: 10px; margin: 18px auto; border: 3px solid #777; background: #c6c6c6; box-shadow: inset 2px 2px #fff, inset -2px -2px #555; }
+.inventory-grid > button { position: relative; width: 52px; height: 52px; padding: 3px; overflow: hidden; border: 2px solid #8b8b8b; border-radius: 0; color: #fff; background: #8b8b8b; box-shadow: inset 2px 2px #373737, inset -2px -2px #fff; }
+.inventory-grid > button.dynamic { background: #78999b; }
+.inventory-grid > button.selected { outline: 3px solid #42e0df; z-index: 1; }
+.inventory-grid img { width: 38px; height: 38px; image-rendering: pixelated; }
+.inventory-grid small { position: absolute; inset: 17px 2px auto; color: white; font: 700 11px Consolas; text-shadow: 1px 1px #000; }
+.inventory-grid i { position: absolute; top: 1px; right: 3px; color: #d66cff; }
+.button-editor { padding: 12px; border: 1px solid #29494d; border-radius: 8px; }
+.button-editor h3 { margin: 0; }
+.button-editor .check { display: flex; align-items: center; gap: 7px; }
+.button-editor .check input { width: auto; margin: 0; }
+.menu-preview { color: #3f3f3f; padding: 12px; background: #c6c6c6; border: 3px solid #222; font-family: Monocraft, Consolas, monospace; }
+.menu-title { padding: 3px 10px; color: #404040; }
+.menu-preview .inventory-grid { margin-top: 4px; }
+.item-tooltip { margin: 8px; padding: 10px; color: white; background: #100010ee; border: 2px solid #2d0a54; text-shadow: 1px 1px #000; }
+.item-tooltip p { white-space: pre-wrap; color: #aaa; }
 @media (max-width: 1300px) { .workspace { grid-template-columns: 230px minmax(460px, 1fr) 330px; } }

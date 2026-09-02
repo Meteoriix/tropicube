@@ -267,9 +267,9 @@ function script:Resolve-BuiltArtifact([string]$module) {
 }
 
 $artifacts = @(
-    [pscustomobject]@{ Source = Resolve-BuiltArtifact "tropicube-core"; Destinations = @("dockerfiles\plugins\lobby\tropicube-core.jar", "dockerfiles\plugins\sheepwars\tropicube-core.jar"); Module = "tropicube-core"; InputModules = @("tropicube-core", "tropicube-docker-api") }
-    [pscustomobject]@{ Source = Resolve-BuiltArtifact "tropicube-lobby"; Destinations = @("dockerfiles\plugins\lobby\tropicube-lobby.jar"); Module = "tropicube-lobby"; InputModules = @("tropicube-lobby", "tropicube-core", "tropicube-docker-api") }
-    [pscustomobject]@{ Source = Resolve-BuiltArtifact "tropicube-sheepwars"; Destinations = @("dockerfiles\plugins\sheepwars\tropicube-sheepwars.jar"); Module = "tropicube-sheepwars"; InputModules = @("tropicube-sheepwars", "tropicube-core", "tropicube-docker-api") }
+    [pscustomobject]@{ Source = Resolve-BuiltArtifact "tropicube-core"; Destinations = @("dockerfiles\plugins\lobby\tropicube-core.jar", "dockerfiles\plugins\sheepwars\tropicube-core.jar"); Module = "tropicube-core"; InputModules = @("tropicube-core", "tropicube-language-api", "tropicube-docker-api") }
+    [pscustomobject]@{ Source = Resolve-BuiltArtifact "tropicube-lobby"; Destinations = @("dockerfiles\plugins\lobby\tropicube-lobby.jar"); Module = "tropicube-lobby"; InputModules = @("tropicube-lobby", "tropicube-core", "tropicube-language-api", "tropicube-docker-api") }
+    [pscustomobject]@{ Source = Resolve-BuiltArtifact "tropicube-sheepwars"; Destinations = @("dockerfiles\plugins\sheepwars\tropicube-sheepwars.jar"); Module = "tropicube-sheepwars"; InputModules = @("tropicube-sheepwars", "tropicube-core", "tropicube-language-api", "tropicube-docker-api") }
     [pscustomobject]@{ Source = Resolve-BuiltArtifact "tropicube-velocity"; Destinations = @("dockerfiles\plugins\velocity\tropicube-velocity.jar"); Module = "tropicube-velocity"; InputModules = @("tropicube-velocity", "tropicube-docker-api") }
 )
 

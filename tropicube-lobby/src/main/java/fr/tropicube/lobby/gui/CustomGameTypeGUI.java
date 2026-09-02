@@ -36,7 +36,8 @@ public class CustomGameTypeGUI {
 
     public static Inventory build(Player player) {
         Holder holder = new Holder();
-        Inventory inv = Bukkit.createInventory(holder, SIZE, LangHelper.component(player, "lobby.custom-game-title"));
+        Inventory inv = Bukkit.createInventory(holder, LangHelper.menuSize("custom-game-type"),
+                LangHelper.menuTitle(player, "custom-game-type"));
         holder.setInventory(inv);
 
         NetworkMenuStyle.frame(inv);

@@ -15,6 +15,12 @@
     <name>Tropicube Sheepwars</name>
 
     <dependencies>
+        <dependency>
+            <groupId>fr.tropicube</groupId>
+            <artifactId>tropicube-language-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
         <!-- Paper API -->
         <dependency>
             <groupId>io.papermc.paper</groupId>
@@ -47,6 +53,22 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions><execution>
+                    <id>sync-docker-ui-configs</id>
+                    <phase>process-resources</phase>
+                    <goals><goal>copy-resources</goal></goals>
+                    <configuration>
+                        <outputDirectory>${project.basedir}/../dockerfiles/configs/TropicubeSheepwars</outputDirectory>
+                        <changeDetection>content</changeDetection>
+                        <resources><resource><directory>${project.basedir}/src/main/resources</directory>
+                            <includes><include>menus.yml</include><include>scoreboards.yml</include></includes>
+                        </resource></resources>
+                    </configuration>
+                </execution></executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>

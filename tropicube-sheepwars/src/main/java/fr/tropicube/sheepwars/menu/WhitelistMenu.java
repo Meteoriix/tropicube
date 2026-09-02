@@ -106,8 +106,8 @@ public final class WhitelistMenu implements Listener {
 
     private Inventory buildMemberInventory(Player player, Map<UUID, String> members) {
         MemberHolder holder = new MemberHolder();
-        Inventory inventory = Bukkit.createInventory(holder, SIZE,
-                LangHelper.component(player, "sw.whitelist-menu-title"));
+        Inventory inventory = Bukkit.createInventory(holder, LangHelper.menuSize("whitelist"),
+                LangHelper.menuTitle(player, "whitelist"));
         holder.inventory = inventory;
         NetworkMenuStyle.frame(inventory);
 
@@ -138,7 +138,7 @@ public final class WhitelistMenu implements Listener {
         String placeholder = LangHelper.get(player, "sw.whitelist-anvil-placeholder");
         AnvilHolder holder = new AnvilHolder(placeholder);
         Inventory inventory = Bukkit.createInventory(holder, InventoryType.ANVIL,
-                LangHelper.component(player, "sw.whitelist-anvil-title"));
+                LangHelper.menuTitle(player, "whitelist-anvil"));
         holder.inventory = inventory;
         inventory.setItem(0, new ItemBuilder(Material.NAME_TAG)
                 .name(LangHelper.component(player, "sw.whitelist-anvil-placeholder")

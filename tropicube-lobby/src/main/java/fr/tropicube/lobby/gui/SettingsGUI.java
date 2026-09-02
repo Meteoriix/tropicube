@@ -35,8 +35,8 @@ public final class SettingsGUI {
     public static Inventory build(Player player, int autoReplayRemaining,
                                   PlayerPreferenceService.Preferences preferences) {
         Holder holder = new Holder();
-        Inventory inventory = Bukkit.createInventory(holder, 27,
-                LangHelper.component(player, "lobby.settings-title"));
+        Inventory inventory = Bukkit.createInventory(holder, LangHelper.menuSize("settings"),
+                LangHelper.menuTitle(player, "settings"));
         holder.inventory = inventory;
         NetworkMenuStyle.frame(inventory);
         inventory.setItem(LANGUAGE_SLOT, new ItemBuilder(languageIcon())

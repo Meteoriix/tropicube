@@ -1,6 +1,6 @@
 # Éditeur de langues
 
-L'éditeur de langues Tropicube est une application web locale destinée aux ressources MiniMessage de Core, Velocity et des futurs modules. Il découvre les dossiers `src/main/resources/languages`, utilise le français comme source et écrit ensemble les quatre langues supportées ainsi que les copies Docker associées.
+L'éditeur de langues Tropicube est une application web locale destinée aux ressources MiniMessage et aux interfaces de Core, Lobby, SheepWars et Velocity. Il découvre les langues ainsi que les manifestes `scoreboards.yml` et `menus.yml`, utilise le français comme source et maintient leurs copies Docker.
 
 ## Démarrage
 
@@ -35,6 +35,8 @@ La validation reconnaît toutes les balises fournies par `StandardTags.defaults(
 
 La sérialisation conserve chaque chaîne YAML sur une seule ligne physique, quelle que soit sa longueur, afin de rester compatible avec la fusion de configuration des scripts de déploiement.
 
+Les nouvelles API acceptent des placeholders nommés comme `{player}`, `{balance}` ou `{countdown}`. Les anciennes formes positionnelles `{0}` restent lisibles pendant la migration. Une valeur texte est échappée avant son insertion MiniMessage ; seul un composant explicitement riche conserve son style.
+
 ## Édition et sécurité
 
 - la vue structurée permet de chercher par clé ou dans le texte des quatre langues, puis de créer, renommer et supprimer une clé ;
@@ -45,8 +47,13 @@ La sérialisation conserve chaque chaîne YAML sur une seule ligne physique, que
 - les quatre sources et leurs miroirs Docker sont remplacés ensemble, avec rollback sur erreur ;
 - après l'enregistrement, les fichiers validés sont copiés dans Velocity ou dans toutes les instances Paper actives, puis la commande interne `languageeditorreload` recharge uniquement les langues ;
 - la barre d'état distingue Docker disponible d'une synchronisation live partielle ou impossible, sans annuler les fichiers déjà enregistrés.
+- l'onglet Scoreboards regroupe les variantes d'un même scoreboard, affiche les quinze lignes Minecraft et permet de les ajouter, retirer ou réordonner ;
+- l'onglet Menus affiche la grille de l'inventaire, les boutons requis, les zones dynamiques et les propriétés localisées des items ;
+- les brouillons de manifestes disposent d'un historique annuler/rétablir, du glisser-déposer et d'un récapitulatif avant application.
 
-La synchronisation live utilise exclusivement le client Docker local, des conteneurs Tropicube actifs et leur RCON interne. Elle ne publie aucun port supplémentaire et ne lit aucun mot de passe. `TROPICUBE_DOCKER_COMMAND` permet de remplacer le nom de l'exécutable `docker`. Une première livraison de cette version reste nécessaire pour installer la commande interne dans Core et Velocity et activer le RCON de Velocity ; les changements de textes suivants ne nécessitent plus de rebuild d'image ni de déploiement. Une instance créée après une édition récupère les langues de son image jusqu'à la prochaine action **Appliquer** de l'éditeur.
+La synchronisation live utilise exclusivement le client Docker local, des conteneurs Tropicube actifs et leur RCON interne. Elle ne publie aucun port supplémentaire et ne lit aucun mot de passe. `TROPICUBE_DOCKER_COMMAND` permet de remplacer le nom de l'exécutable `docker`. Une première livraison de cette version reste nécessaire pour installer le moteur. Les applications suivantes ne nécessitent plus de rebuild : Core publie une génération complète et hashée dans Redis, et toute nouvelle instance la restaure avant d'initialiser ses langues et interfaces.
+
+L'aperçu des items cherche le client Minecraft 26.2 local. `TROPICUBE_MINECRAFT_CLIENT_JAR` permet d'indiquer explicitement son JAR ; les textures lues sont conservées uniquement en mémoire par l'éditeur.
 
 Le catalogue versionné `tools/language-editor/catalog.yml` contient le glossaire, les corrections de contexte et les exemples de placeholders. Les traductions automatiques restent des propositions : relire au minimum l'anglais et vérifier en jeu les interfaces sensibles à la largeur du texte.
 

@@ -38,7 +38,7 @@ public class ServerSelectorGUI {
     public static final int SLOT_NEXT  = 53;
 
     private static Component buildTitle(Player player, String type, int page) {
-        return LangHelper.component(player, "lobby.server-selector-title",
+        return LangHelper.menuTitle(player, "server-selector",
                 ServerTypeSelectorGUI.displayType(player, type), page + 1);
     }
 
@@ -97,7 +97,7 @@ public class ServerSelectorGUI {
         boolean hasNext = toIndex < servers.size();
 
         Holder holder = new Holder(type, page, hasPrev, hasNext, slotToServerId, filter);
-        Inventory inv = Bukkit.createInventory(holder, SIZE, buildTitle(player, type, page));
+        Inventory inv = Bukkit.createInventory(holder, LangHelper.menuSize("server-selector"), buildTitle(player, type, page));
         holder.setInventory(inv);
 
         drawBorder(inv);

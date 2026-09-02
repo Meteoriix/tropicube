@@ -4,7 +4,9 @@
 
 Secrets and deployment-specific values belong in `.env`, never in Git. `.env.example` documents safe placeholders.
 
-The local language editor uses `LIBRETRANSLATE_URL` (default `http://127.0.0.1:5000`), optional `LIBRETRANSLATE_API_KEY`, `TROPICUBE_LANGUAGE_EDITOR_PORT` (default `8765`), and `TROPICUBE_DOCKER_COMMAND` (default `docker`) for in-game synchronization. Keep the API key exclusively in the local environment.
+The local language editor uses `LIBRETRANSLATE_URL` (default `http://127.0.0.1:5000`), optional `LIBRETRANSLATE_API_KEY`, `TROPICUBE_LANGUAGE_EDITOR_PORT` (default `8765`), `TROPICUBE_DOCKER_COMMAND` (default `docker`), and optional `TROPICUBE_MINECRAFT_CLIENT_JAR` for Minecraft 26.2 textures. Keep the API key exclusively in the local environment.
+
+`menus.yml` and `scoreboards.yml` use the versioned `version: 1` schema. Menus declare their title, rows, frame, static buttons, and dynamic regions; scoreboards declare a title and variants containing 1–15 lines. Builds synchronize embedded resources with Docker mirrors.
 
 | Variable | Purpose |
 |---|---|

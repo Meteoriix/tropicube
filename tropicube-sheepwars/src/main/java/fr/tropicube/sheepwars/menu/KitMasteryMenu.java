@@ -38,7 +38,7 @@ public final class KitMasteryMenu implements Listener {
             return;
         }
         var view = plugin.getProgressionService().mastery(player.getUniqueId(), kit);
-        var inventory = Bukkit.createInventory(null, 9, LangHelper.component(player, "sw.mastery-title",
+        var inventory = Bukkit.createInventory(null, LangHelper.menuSize("mastery"), LangHelper.menuTitle(player, "mastery",
                 view.level(), view.experience()));
         NetworkMenuStyle.fill(inventory);
         inventory.setItem(3, branchItem(player, kit, KitMasteryBranch.BRANCH_A, Material.LIME_DYE, view));

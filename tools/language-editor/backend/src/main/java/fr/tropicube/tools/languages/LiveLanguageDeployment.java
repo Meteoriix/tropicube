@@ -72,6 +72,54 @@ final class LiveLanguageDeployment {
         return new LiveResult(true, updated.size(), List.copyOf(updated), List.copyOf(errors));
     }
 
+    /** Installs all UI manifests on active Paper instances and triggers one coherent reload. */
+    LiveResult deployUi(Iterable<UiFiles.UiSnapshot> snapshots) {
+        LiveStatus status = status();
+        if (!status.available()) return new LiveResult(false, 0, List.of(), List.of(status.message()));
+        Target paper = Target.forSet("tropicube-core");
+        CommandResult listed = run(paper.listCommand(dockerCommand));
+        if (!listed.success()) return new LiveResult(true, 0, List.of(),
+                List.of("Impossible de lister les conteneurs : " + listed.summary()));
+        List<String> containers = listed.output().lines().map(String::trim)
+                .filter(name -> !name.isEmpty()).distinct().toList();
+        List<String> updated = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
+        for (String container : containers) {
+            String token = UUID.randomUUID().toString().replace("-", "");
+            List<String> temporaryFiles = new ArrayList<>();
+            try {
+                for (UiFiles.UiSnapshot snapshot : snapshots) {
+                    String temporary = "/tmp/tropicube-ui-" + token + "-" + snapshot.module()
+                            + "-" + snapshot.type() + ".yml";
+                    temporaryFiles.add(temporary);
+                    requireSuccess(run(List.of(dockerCommand, "cp", resolve(snapshot.sourcePath()).toString(),
+                            container + ":" + temporary)), "copie de " + snapshot.id());
+                    String pluginDirectory = switch (snapshot.module()) {
+                        case "tropicube-core" -> "/data/plugins/TropicubeCore";
+                        case "tropicube-lobby" -> "/data/plugins/TropicubeLobby";
+                        case "tropicube-sheepwars" -> "/data/plugins/TropicubeSheepwars";
+                        default -> throw new IllegalArgumentException("Module UI non déployable : " + snapshot.module());
+                    };
+                    String target = pluginDirectory + "/" + snapshot.type() + ".yml";
+                    requireSuccess(run(List.of(dockerCommand, "exec", container, "sh", "-c",
+                            "set -eu; mkdir -p '" + pluginDirectory + "'; cp '" + temporary + "' '"
+                                    + target + ".next'; mv '" + target + ".next' '" + target + "'")),
+                            "installation de " + snapshot.id());
+                }
+                requireSuccess(run(List.of(dockerCommand, "exec", container, "rcon-cli", "languageeditorreload")),
+                        "rechargement en jeu");
+                updated.add(container);
+            } catch (IllegalStateException failure) {
+                errors.add(container + " : " + failure.getMessage());
+            } finally {
+                for (String temporary : temporaryFiles) {
+                    run(List.of(dockerCommand, "exec", container, "rm", "-f", temporary));
+                }
+            }
+        }
+        return new LiveResult(true, updated.size(), List.copyOf(updated), List.copyOf(errors));
+    }
+
     private void synchronize(String container, Path sourceDirectory, Target target) {
         String token = UUID.randomUUID().toString().replace("-", "").toLowerCase(Locale.ROOT);
         String prefix = "/tmp/tropicube-language-editor-" + token;

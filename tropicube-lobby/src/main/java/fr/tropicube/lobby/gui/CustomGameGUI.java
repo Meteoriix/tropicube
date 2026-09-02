@@ -73,7 +73,8 @@ public class CustomGameGUI {
                 && !plugin.getRedisManager().exists("sw:game-started:" + hostInstanceId);
 
         Holder holder = new Holder(slotToTemplate, showStop, whitelisted);
-        Inventory inv = Bukkit.createInventory(holder, SIZE, LangHelper.component(player, "lobby.custom-game-title"));
+        Inventory inv = Bukkit.createInventory(holder, LangHelper.menuSize("custom-game"),
+                LangHelper.menuTitle(player, "custom-game"));
         holder.setInventory(inv);
 
         NetworkMenuStyle.frame(inv);

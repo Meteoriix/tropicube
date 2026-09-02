@@ -4,13 +4,14 @@
 
 Tropicube separates proxy orchestration, shared network services, lobby presentation, and game-specific rules. Velocity is the only public player entry point. Paper backends are created dynamically and communicate through Redis without becoming directly accessible from the Internet.
 
-The local language editor keeps Maven resources as the source of truth and Docker mirrors as the build source. After successful validation, it discovers active containers through the Docker client, stages all four files in their temporary space, replaces them before any reload, and invokes the console-only `languageeditorreload` command through internal RCON. Core publishes its new immutable catalog with one assignment so concurrent readers never observe a partial load. A live failure does not roll back validated sources and is reported per container in the interface.
+The local editor keeps Maven resources as the source of truth and Docker mirrors as the build source, with named rendering shared through `tropicube-language-api`. After validation it installs languages and UI manifests, then invokes `languageeditorreload` through internal RCON. Core writes each set under a new Redis generation (`runtime-ui:generation:<id>:*`) and changes `runtime-ui:active` only after all files and their hash manifest exist. New instances verify and restore that generation before loading managers.
 
 ## Maven modules
 
 | Module | Main contracts |
 |---|---|
 | Docker API | `ServerTemplate`, `ServerInstance`, Redis access, Docker lifecycle, shared nick and access-level payloads |
+| Language API | Safe named and legacy positional MiniMessage placeholder rendering |
 | Velocity | Dynamic registration, routing, queues, health checks, nick profiles, and proxy commands |
 | Core | SQL profiles, economy, cosmetic grades, VIP/mod levels, localization, moderation, and Paper-side nick application |
 | Lobby | Server catalogs, menus, custom game creation, reconnect and replay entry points |

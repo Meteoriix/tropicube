@@ -1,5 +1,7 @@
 package fr.tropicube.velocity.util;
 
+import fr.tropicube.language.PlaceholderValues;
+import fr.tropicube.language.TemplateRenderer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -32,6 +34,16 @@ public final class MessageStyle {
     /** Parses MiniMessage with the Tropicube {@code <tc>} tag. */
     public static Component component(String message) {
         return MINI_MESSAGE.deserialize(message);
+    }
+
+    /** Parses MiniMessage after safely inserting named, typed placeholders. */
+    public static Component component(String message, PlaceholderValues placeholders) {
+        return TemplateRenderer.component(MINI_MESSAGE, message, placeholders);
+    }
+
+    /** Renders a named template back to MiniMessage for string-based consumers. */
+    public static String miniMessage(String message, PlaceholderValues placeholders) {
+        return MINI_MESSAGE.serialize(component(message, placeholders));
     }
 
     /** Renders a MiniMessage technical log using ANSI when the terminal supports it. */

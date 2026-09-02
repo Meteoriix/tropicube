@@ -8,6 +8,9 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 #### Ajouté
 
+- L'éditeur regroupe désormais les scoreboards et menus de Core, Lobby et SheepWars, avec aperçus complets, ajout, suppression, réorganisation, historique et textures Minecraft 26.2 locales.
+- Une API partagée de placeholders nommés protège les valeurs texte MiniMessage tout en acceptant temporairement les placeholders positionnels existants.
+- Les configurations live sont conservées sous forme de générations hashées dans Redis afin que les nouvelles instances récupèrent la dernière version approuvée.
 - L'éditeur de langues synchronise désormais chaque enregistrement validé avec les conteneurs Core ou Velocity actifs et recharge les textes en jeu sans rebuild d'image.
 - Ajout d'un éditeur web local des langues avec aperçu MiniMessage contextuel, traduction LibreTranslate contrôlée, glossaire et écritures atomiques des quatre langues.
 - L'éditeur de langues permet désormais de choisir une recherche par clé ou par texte dans les quatre traductions.

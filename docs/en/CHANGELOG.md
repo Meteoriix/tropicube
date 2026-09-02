@@ -8,6 +8,9 @@ This document records functional, technical, and operational changes. Entries ar
 
 #### Added
 
+- The editor now groups Core, Lobby, and SheepWars scoreboards and menus with full previews, add/remove/reorder controls, history, and local Minecraft 26.2 textures.
+- A shared named-placeholder API protects plain MiniMessage values while temporarily accepting existing positional placeholders.
+- Live configurations are stored as hashed Redis generations so new instances inherit the latest approved version.
 - The language editor now synchronizes every validated save with active Core or Velocity containers and reloads in-game text without rebuilding an image.
 - Added a local web language editor with contextual MiniMessage previews, reviewed LibreTranslate workflow, glossary, and atomic four-language writes.
 - The language editor can now search either by key or by text across all four translations.

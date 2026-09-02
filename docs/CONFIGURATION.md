@@ -13,7 +13,9 @@ Les variables d'environnement ont priorité sur certaines valeurs Core. Dans les
 
 Les builds Maven et les scripts de déploiement synchronisent les quatre ressources de langue Core et Velocity vers leurs copies sous `dockerfiles/configs`. Les `config.yml` de déploiement restent distincts, car ils contiennent les marqueurs de secrets et l'adresse du proxy Docker.
 
-L'éditeur local utilise `LIBRETRANSLATE_URL` (défaut `http://127.0.0.1:5000`), `LIBRETRANSLATE_API_KEY` facultative, `TROPICUBE_LANGUAGE_EDITOR_PORT` (défaut `8765`) et `TROPICUBE_DOCKER_COMMAND` (défaut `docker`) pour la synchronisation en jeu. La clé API reste exclusivement dans l'environnement local.
+L'éditeur local utilise `LIBRETRANSLATE_URL` (défaut `http://127.0.0.1:5000`), `LIBRETRANSLATE_API_KEY` facultative, `TROPICUBE_LANGUAGE_EDITOR_PORT` (défaut `8765`), `TROPICUBE_DOCKER_COMMAND` (défaut `docker`) et éventuellement `TROPICUBE_MINECRAFT_CLIENT_JAR` pour les textures Minecraft 26.2. La clé API reste exclusivement dans l'environnement local.
+
+Les fichiers `menus.yml` et `scoreboards.yml` utilisent le schéma versionné `version: 1`. Les menus déclarent titre, nombre de lignes, cadrage, boutons statiques et régions dynamiques ; les scoreboards déclarent un titre et des variantes de 1 à 15 lignes. Les ressources embarquées et leurs miroirs Docker sont synchronisés au build.
 
 ### Grades et niveaux d'accès
 

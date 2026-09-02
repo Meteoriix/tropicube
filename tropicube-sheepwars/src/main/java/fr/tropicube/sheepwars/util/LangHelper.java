@@ -1,7 +1,9 @@
 package fr.tropicube.sheepwars.util;
 
+import fr.tropicube.language.PlaceholderValues;
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.core.util.MessageStyle;
+import fr.tropicube.sheepwars.TropicubeSheepwars;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -21,6 +23,12 @@ public final class LangHelper {
         return get(player.getUniqueId(), key, args);
     }
 
+    public static String get(Player player, String key, PlaceholderValues placeholders) {
+        TropicubeCore core = getCore();
+        if (core == null) return "<sw><red>Clé de traduction indisponible : <white>" + key;
+        return core.getLanguageManager().get(player.getUniqueId(), key, placeholders);
+    }
+
     public static String get(CommandSender sender, String key, Object... args) {
         if (sender instanceof Player player) return get(player.getUniqueId(), key, args);
         return get((UUID) null, key, args);
@@ -38,12 +46,32 @@ public final class LangHelper {
         return component(player.getUniqueId(), key, args);
     }
 
+    public static Component component(Player player, String key, PlaceholderValues placeholders) {
+        TropicubeCore core = getCore();
+        if (core == null) return MessageStyle.component("<sw><red>Clé de traduction indisponible : <white>" + key);
+        return core.getLanguageManager().getComponent(player.getUniqueId(), key, placeholders);
+    }
+
     public static Component component(UUID uuid, String key, Object... args) {
         TropicubeCore core = getCore();
         if (core == null) return MessageStyle.component("<sw><red>Clé de traduction indisponible : <white>" + key);
         return uuid == null
                 ? core.getLanguageManager().getComponentForLang("fr", key, args)
                 : core.getLanguageManager().getComponent(uuid, key, args);
+    }
+
+    public static Component menuTitle(Player player, String menuId, Object... arguments) {
+        return component(player, sheepwars().getMenuTemplates().menu(menuId).titleKey(), arguments);
+    }
+
+    public static int menuSize(String menuId) {
+        return sheepwars().getMenuTemplates().menu(menuId).rows() * 9;
+    }
+
+    private static TropicubeSheepwars sheepwars() {
+        Plugin plugin = Bukkit.getPluginManager().getPlugin("TropicubeSheepwars");
+        if (plugin instanceof TropicubeSheepwars sheepwars && sheepwars.isEnabled()) return sheepwars;
+        throw new IllegalStateException("TropicubeSheepwars indisponible");
     }
 
     private static TropicubeCore getCore() {

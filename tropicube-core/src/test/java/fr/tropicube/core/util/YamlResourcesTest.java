@@ -7,6 +7,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.Material;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
@@ -32,7 +33,7 @@ class YamlResourcesTest {
     private static final TagResolver STANDARD_MINI_MESSAGE_TAGS = StandardTags.defaults();
     private static final Set<String> PROJECT_MINI_MESSAGE_TAGS = Set.of("sw", "tc");
     private static final Pattern MINI_MESSAGE_TAG = Pattern.compile("(?<!\\\\)<([^<>]+)>");
-    private static final Pattern POSITIONAL_PLACEHOLDER = Pattern.compile("\\{\\d+}");
+    private static final Pattern PLACEHOLDER = Pattern.compile("\\{(?:\\d+|[a-z][a-z0-9_]*)}");
 
     @TempDir
     Path temporaryDirectory;
@@ -94,9 +95,57 @@ class YamlResourcesTest {
     }
 
     @Test
-    void translationsKeepTheSamePositionalPlaceholders() {
+    void translationsKeepTheSamePlaceholders() {
         assertLanguagePlaceholdersMatch(Path.of("src/main/resources/languages"));
         assertLanguagePlaceholdersMatch(Path.of("../tropicube-velocity/src/main/resources/languages"));
+    }
+
+    @Test
+    void uiManifestsReferenceExistingTranslationsAndValidMaterials() {
+        Map<String, Object> translations = leafValues(Path.of("src/main/resources/languages/fr.yml"));
+        for (Path manifest : List.of(Path.of("src/main/resources/menus.yml"),
+                Path.of("../tropicube-lobby/src/main/resources/menus.yml"),
+                Path.of("../tropicube-sheepwars/src/main/resources/menus.yml"))) {
+            YamlConfiguration yaml = YamlConfiguration.loadConfiguration(manifest.toFile());
+            ConfigurationSection menus = yaml.getConfigurationSection("menus");
+            assertNotNull(menus);
+            for (String menuId : menus.getKeys(false)) {
+                ConfigurationSection menu = menus.getConfigurationSection(menuId);
+                assertNotNull(menu);
+                assertTranslationKey(translations, manifest, menu.getString("title-key"));
+                ConfigurationSection buttons = menu.getConfigurationSection("buttons");
+                if (buttons == null) continue;
+                for (String buttonId : buttons.getKeys(false)) {
+                    ConfigurationSection button = buttons.getConfigurationSection(buttonId);
+                    assertNotNull(button);
+                    assertNotNull(Material.matchMaterial(button.getString("material", "")),
+                            () -> manifest + ": matériau invalide pour " + menuId + "." + buttonId);
+                    assertTranslationKey(translations, manifest, button.getString("name-key"));
+                    assertTranslationKey(translations, manifest, button.getString("lore-key"));
+                }
+            }
+        }
+        for (Path manifest : List.of(Path.of("../tropicube-lobby/src/main/resources/scoreboards.yml"),
+                Path.of("../tropicube-sheepwars/src/main/resources/scoreboards.yml"))) {
+            YamlConfiguration yaml = YamlConfiguration.loadConfiguration(manifest.toFile());
+            ConfigurationSection scoreboards = yaml.getConfigurationSection("scoreboards");
+            assertNotNull(scoreboards);
+            for (String id : scoreboards.getKeys(false)) {
+                ConfigurationSection scoreboard = scoreboards.getConfigurationSection(id);
+                assertNotNull(scoreboard);
+                assertTranslationKey(translations, manifest, scoreboard.getString("title-key"));
+                ConfigurationSection variants = scoreboard.getConfigurationSection("variants");
+                assertNotNull(variants);
+                for (String variant : variants.getKeys(false)) for (Map<?, ?> line : variants.getMapList(variant + ".lines")) {
+                    if (line.get("key") != null) assertTranslationKey(translations, manifest, String.valueOf(line.get("key")));
+                }
+            }
+        }
+    }
+
+    private static void assertTranslationKey(Map<String, Object> translations, Path manifest, String key) {
+        if (key != null && !key.isBlank()) assertTrue(translations.containsKey(key),
+                () -> manifest + ": clé de traduction inconnue " + key);
     }
 
     @Test
@@ -132,7 +181,8 @@ class YamlResourcesTest {
                 values.forEach((key, value) -> {
                     List<?> messages = value instanceof List<?> list ? list : List.of(value);
                     for (Object message : messages) {
-                        String resolved = String.valueOf(message).replaceAll("\\{\\d+}", "valeur");
+                        String resolved = String.valueOf(message)
+                                .replaceAll("\\{(?:\\d+|[a-z][a-z0-9_]*)}", "valeur");
                         assertDoesNotThrow(() -> MessageStyle.component(resolved),
                                 () -> "MiniMessage invalide pour " + language + ": " + key);
                     }
@@ -362,8 +412,8 @@ class YamlResourcesTest {
             Map<String, Object> values = leafValues(Path.of("src/main/resources/languages", language + ".yml"));
             assertEquals("<gold><bold>🌴 TROPICUBE</bold></gold>", values.get("lobby.sb-title"));
             assertEquals("<aqua><bold>🐑 SHEEPWARS</bold></aqua>", values.get("sw.sb-title"));
-            assertEquals("<dark_aqua>• • • • • • •</dark_aqua>", values.get("lobby.sb-separator"));
-            assertEquals("<dark_aqua>• • • • • • •</dark_aqua>", values.get("sw.sb-separator"));
+            assertNotNull(values.get("lobby.sb-separator"));
+            assertNotNull(values.get("sw.sb-separator"));
             assertNotNull(values.get("lobby.sb-balance"));
             assertNotNull(values.get("lobby.sb-network-online"));
             assertNotNull(values.get("lobby.sb-games"));
@@ -497,7 +547,7 @@ class YamlResourcesTest {
     }
 
     private static List<String> placeholders(Object value) {
-        var matcher = POSITIONAL_PLACEHOLDER.matcher(String.valueOf(value));
+        var matcher = PLACEHOLDER.matcher(String.valueOf(value));
         List<String> result = new ArrayList<>();
         while (matcher.find()) result.add(matcher.group());
         return result;

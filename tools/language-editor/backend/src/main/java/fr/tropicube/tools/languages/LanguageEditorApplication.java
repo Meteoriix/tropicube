@@ -27,20 +27,27 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
+import java.util.zip.ZipFile;
 
 /** Local-only HTTP entry point for the Tropicube language editor. */
 public final class LanguageEditorApplication {
     private static final int MAX_BODY_BYTES = 8 * 1024 * 1024;
+    private static final Pattern MATERIAL = Pattern.compile("[a-z0-9_]+");
     private final Gson gson = new Gson();
     private final Path repository;
     private final LanguageFiles files;
+    private final UiFiles uiFiles;
     private final LiveLanguageDeployment liveDeployment;
     private final TranslationService translations = new TranslationService();
     private final MiniMessage miniMessage;
+    private final Map<String, byte[]> itemTextureCache = new ConcurrentHashMap<>();
 
     private LanguageEditorApplication(Path repository) {
         this.repository = repository;
         this.files = new LanguageFiles(repository);
+        this.uiFiles = new UiFiles(repository);
         this.liveDeployment = new LiveLanguageDeployment(repository);
         Component network = prefix("TROPICUBE", NamedTextColor.GOLD);
         Component sheepwars = prefix("SHEEPWARS", NamedTextColor.AQUA);
@@ -86,6 +93,9 @@ public final class LanguageEditorApplication {
             else if (method.equals("POST") && path.equals("/api/validate")) validate(exchange);
             else if (method.equals("POST") && path.equals("/api/apply")) apply(exchange);
             else if (method.equals("POST") && path.equals("/api/catalog")) saveCatalog(exchange);
+            else if (method.equals("POST") && path.equals("/api/ui/validate")) validateUi(exchange);
+            else if (method.equals("POST") && path.equals("/api/ui/apply")) applyUi(exchange);
+            else if (method.equals("GET") && path.startsWith("/api/assets/item/")) itemTexture(exchange, path.substring("/api/assets/item/".length()));
             else json(exchange, 404, Map.of("error", "Route inconnue"));
         } catch (IllegalArgumentException | IllegalStateException exception) {
             json(exchange, 409, Map.of("error", exception.getMessage()));
@@ -106,7 +116,7 @@ public final class LanguageEditorApplication {
             }
         }).toList();
         Path catalog = repository.resolve("tools/language-editor/catalog.yml");
-        json(exchange, 200, Map.of("sets", sets, "catalog",
+        json(exchange, 200, Map.of("sets", sets, "ui", uiFiles.readAll(), "catalog",
                 Files.exists(catalog) ? Files.readString(catalog) : "version: 1\n",
                 "live", liveDeployment.status()));
     }
@@ -186,6 +196,67 @@ public final class LanguageEditorApplication {
             Files.deleteIfExists(temporary);
         }
         json(exchange, 200, Map.of("ok", true));
+    }
+
+    private void validateUi(HttpExchange exchange) throws IOException {
+        JsonObject request = body(exchange);
+        json(exchange, 200, Map.of("errors", uiFiles.validate(
+                request.get("type").getAsString(), request.get("content").getAsString())));
+    }
+
+    private void applyUi(HttpExchange exchange) throws IOException {
+        JsonObject request = body(exchange);
+        Map<String, UiFiles.UiSnapshot> snapshots = uiFiles.apply(
+                stringMap(request.getAsJsonObject("expectedHashes")),
+                stringMap(request.getAsJsonObject("documents")));
+        LiveLanguageDeployment.LiveResult live = liveDeployment.deployUi(snapshots.values());
+        json(exchange, 200, Map.of("ok", true, "ui", snapshots.values(), "live", live));
+    }
+
+    private void itemTexture(HttpExchange exchange, String requested) throws IOException {
+        String material = requested.toLowerCase(java.util.Locale.ROOT);
+        if (!MATERIAL.matcher(material).matches()) {
+            text(exchange, 400, "Matériau invalide", "text/plain; charset=utf-8");
+            return;
+        }
+        Path jar = minecraftClientJar();
+        if (jar == null) {
+            text(exchange, 404, "Assets Minecraft 26.2 indisponibles", "text/plain; charset=utf-8");
+            return;
+        }
+        byte[] cached = itemTextureCache.get(material);
+        if (cached != null) {
+            png(exchange, cached);
+            return;
+        }
+        try (ZipFile zip = new ZipFile(jar.toFile())) {
+            var entry = zip.getEntry("assets/minecraft/textures/item/" + material + ".png");
+            if (entry == null) entry = zip.getEntry("assets/minecraft/textures/block/" + material + ".png");
+            if (entry == null) {
+                text(exchange, 404, "Texture indisponible", "text/plain; charset=utf-8");
+                return;
+            }
+            byte[] content = zip.getInputStream(entry).readAllBytes();
+            itemTextureCache.put(material, content);
+            png(exchange, content);
+        }
+    }
+
+    private static void png(HttpExchange exchange, byte[] content) throws IOException {
+        exchange.getResponseHeaders().set("Content-Type", "image/png");
+        exchange.getResponseHeaders().set("Cache-Control", "private, max-age=86400");
+        exchange.sendResponseHeaders(200, content.length);
+        exchange.getResponseBody().write(content);
+    }
+
+    private static Path minecraftClientJar() {
+        String configured = System.getenv("TROPICUBE_MINECRAFT_CLIENT_JAR");
+        if (configured != null && Files.isRegularFile(Path.of(configured))) return Path.of(configured);
+        String appData = System.getenv("APPDATA");
+        Path root = appData == null ? Path.of(System.getProperty("user.home"), ".minecraft")
+                : Path.of(appData, ".minecraft");
+        Path direct = root.resolve(Path.of("versions", "26.2", "26.2.jar"));
+        return Files.isRegularFile(direct) ? direct : null;
     }
 
     private void staticFile(HttpExchange exchange) throws IOException {

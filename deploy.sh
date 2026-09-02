@@ -141,9 +141,9 @@ sync_language_directory() {
 }
 
 if $only_images; then
-  artifact_is_fresh "$core_jar" tropicube-core tropicube-docker-api
-  artifact_is_fresh "$lobby_jar" tropicube-lobby tropicube-core tropicube-docker-api
-  artifact_is_fresh "$sheepwars_jar" tropicube-sheepwars tropicube-core tropicube-docker-api
+  artifact_is_fresh "$core_jar" tropicube-core tropicube-language-api tropicube-docker-api
+  artifact_is_fresh "$lobby_jar" tropicube-lobby tropicube-core tropicube-language-api tropicube-docker-api
+  artifact_is_fresh "$sheepwars_jar" tropicube-sheepwars tropicube-core tropicube-language-api tropicube-docker-api
   artifact_is_fresh "$velocity_jar" tropicube-velocity tropicube-docker-api
 fi
 

@@ -118,8 +118,8 @@ public class GameSettingsMenu implements Listener {
     public void open(Player player) { openMain(player); }
 
     private void openMain(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 27,
-                Component.text(LangHelper.get(player, "sw.settings-main-title"), NamedTextColor.DARK_AQUA));
+        Inventory inv = Bukkit.createInventory(null, LangHelper.menuSize("game-settings"),
+                LangHelper.menuTitle(player, "game-settings"));
         NetworkMenuStyle.frame(inv);
         inv.setItem(10, new ItemBuilder(Material.PINK_WOOL)
                 .name(Component.text(LangHelper.get(player, "sw.settings-sheep-name"), NamedTextColor.LIGHT_PURPLE)
@@ -180,8 +180,8 @@ public class GameSettingsMenu implements Listener {
     }
 
     private void openSheepPage(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 54,
-                Component.text(LangHelper.get(player, "sw.settings-sheep-title"), NamedTextColor.LIGHT_PURPLE));
+        Inventory inv = Bukkit.createInventory(null, LangHelper.menuSize("sheep-settings"),
+                LangHelper.menuTitle(player, "sheep-settings"));
         NetworkMenuStyle.frame(inv);
         SheepType[] types = SheepType.values();
         for (int i = 0; i < types.length && i < SHEEP_SLOTS.length; i++)
@@ -193,8 +193,8 @@ public class GameSettingsMenu implements Listener {
     }
 
     private void openKitsPage(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 27,
-                Component.text(LangHelper.get(player, "sw.settings-kits-title"), NamedTextColor.RED));
+        Inventory inv = Bukkit.createInventory(null, LangHelper.menuSize("kit-settings"),
+                LangHelper.menuTitle(player, "kit-settings"));
         NetworkMenuStyle.frame(inv);
         PlayerKit[] dps     = PlayerKit.getKitsForClass(PlayerClass.DPS);
         PlayerKit[] tank    = PlayerKit.getKitsForClass(PlayerClass.TANK);
@@ -211,8 +211,8 @@ public class GameSettingsMenu implements Listener {
     }
 
     private void openClassesPage(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 27,
-                Component.text(LangHelper.get(player, "sw.settings-classes-title"), NamedTextColor.RED));
+        Inventory inv = Bukkit.createInventory(null, LangHelper.menuSize("class-settings"),
+                LangHelper.menuTitle(player, "class-settings"));
         NetworkMenuStyle.frame(inv);
         // Ignore PlayerClass.NONE and display only playable classes.
         PlayerClass[] allClasses = PlayerClass.values();
@@ -224,8 +224,8 @@ public class GameSettingsMenu implements Listener {
     }
 
     private void openOptionsPage(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 27,
-                Component.text(LangHelper.get(player, "sw.settings-options-title"), NamedTextColor.YELLOW));
+        Inventory inv = Bukkit.createInventory(null, LangHelper.menuSize("option-settings"),
+                LangHelper.menuTitle(player, "option-settings"));
         NetworkMenuStyle.frame(inv);
         FileConfiguration cfg = plugin.getConfig();
 
@@ -293,8 +293,8 @@ public class GameSettingsMenu implements Listener {
     }
 
     private void openDropRatesPage(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 54,
-                Component.text(LangHelper.get(player, "sw.settings-drop-rates-title"), NamedTextColor.LIGHT_PURPLE));
+        Inventory inv = Bukkit.createInventory(null, LangHelper.menuSize("drop-rates"),
+                LangHelper.menuTitle(player, "drop-rates"));
         NetworkMenuStyle.frame(inv);
         SheepType[] types = SheepType.values();
         for (int i = 0; i < types.length; i++) {

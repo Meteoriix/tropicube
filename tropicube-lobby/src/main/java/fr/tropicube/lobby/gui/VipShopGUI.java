@@ -47,7 +47,8 @@ public class VipShopGUI {
 
     public static Inventory build(Player player, double balance, String currentGrade) {
         Holder holder = new Holder(View.HOME);
-        Inventory inv = Bukkit.createInventory(holder, 27, LangHelper.component(player, "lobby.shop-title"));
+        Inventory inv = Bukkit.createInventory(holder, LangHelper.menuSize("vip-shop-home"),
+                LangHelper.menuTitle(player, "vip-shop-home"));
         holder.setInventory(inv);
         NetworkMenuStyle.frame(inv);
         inv.setItem(4, new ItemBuilder(Material.GOLD_INGOT)
@@ -63,7 +64,8 @@ public class VipShopGUI {
     public static Inventory buildGrades(Player player, double balance, String currentGrade) {
         int size = 54;
         Holder holder = new Holder(View.GRADES);
-        Inventory inv = Bukkit.createInventory(holder, size, LangHelper.component(player, "lobby.vip-shop-title"));
+        Inventory inv = Bukkit.createInventory(holder, LangHelper.menuSize("vip-shop-grades"),
+                LangHelper.menuTitle(player, "vip-shop-grades"));
         holder.setInventory(inv);
 
         NetworkMenuStyle.frame(inv);

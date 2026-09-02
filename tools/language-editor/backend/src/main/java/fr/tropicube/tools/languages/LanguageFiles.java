@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 /** Discovers, reads and validates editable language resources below a repository root. */
 final class LanguageFiles {
     static final List<String> LANGUAGES = List.of("fr", "en", "de", "es");
-    private static final Pattern PLACEHOLDER = Pattern.compile("\\{\\d+}");
+    private static final Pattern PLACEHOLDER = Pattern.compile("\\{(?:\\d+|[a-z][a-z0-9_]*)}");
     private static final Pattern TAG = Pattern.compile("(?<!\\\\)<([^<>]+)>");
     private static final TagResolver STANDARD_TAGS = StandardTags.defaults();
     private static final Set<String> PROJECT_TAGS = Set.of("sw", "tc");

@@ -23,6 +23,8 @@ import fr.tropicube.sheepwars.menu.WhitelistMenu;
 import fr.tropicube.sheepwars.player.PlayerDataManager;
 import fr.tropicube.sheepwars.scoreboard.ScoreboardManager;
 import fr.tropicube.sheepwars.sheep.SheepManager;
+import fr.tropicube.core.ui.MenuTemplateRegistry;
+import fr.tropicube.core.ui.UiReloadParticipant;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -52,6 +54,7 @@ public final class TropicubeSheepwars extends JavaPlugin {
     private KitMasteryCatalog kitMasteryCatalog;
     private SeasonRewardCatalog seasonRewardCatalog;
     private volatile boolean shuttingDown;
+    private MenuTemplateRegistry menuTemplates;
 
     @Override
     public void onEnable() {
@@ -127,6 +130,9 @@ public final class TropicubeSheepwars extends JavaPlugin {
         this.sheepManager = new SheepManager(this);
 
         this.scoreboardManager = new ScoreboardManager(this);
+        this.menuTemplates = new MenuTemplateRegistry(this);
+        getServer().getServicesManager().register(UiReloadParticipant.class, menuTemplates, this,
+                org.bukkit.plugin.ServicePriority.Normal);
 
         this.classKitMenu = new ClassKitSelectionMenu(this);
         this.teamMenu = new TeamSelectionMenu(this);
@@ -153,6 +159,8 @@ public final class TropicubeSheepwars extends JavaPlugin {
 
         gameManager.loadGame();
     }
+
+    public MenuTemplateRegistry getMenuTemplates() { return menuTemplates; }
 
     private void handlePlayerIdentityEvent(String message) {
         if (!message.startsWith("NICK_APPLY:") && !message.startsWith("NICK_RESET:")

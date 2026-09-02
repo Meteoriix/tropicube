@@ -20,7 +20,7 @@ flowchart LR
 
 Velocity est l'unique point d'entrée public. Le plugin `tropicube-velocity` maintient un catalogue d'instances, restaure celles qui existent encore après son redémarrage, crée les conteneurs nécessaires et les enregistre dynamiquement auprès du proxy. Les serveurs Paper exécutent `TropicubeCore` et leur plugin spécialisé.
 
-L'éditeur local conserve les ressources Maven comme source de vérité et leurs miroirs Docker comme source de build. Après une validation réussie, il découvre les conteneurs actifs avec le client Docker, prépare les quatre fichiers dans leur espace temporaire, les remplace avant tout rechargement puis appelle par RCON interne la commande console `languageeditorreload`. Core publie son nouveau catalogue immuable en une seule affectation afin que les lectures concurrentes ne voient jamais un chargement partiel. Une erreur live n'annule pas les sources déjà validées et est remontée dans l'interface conteneur par conteneur.
+L'éditeur local conserve les ressources Maven comme source de vérité et leurs miroirs Docker comme source de build. Il partage le rendu des placeholders nommés via `tropicube-language-api`. Après validation, il installe langues et manifestes d'interface dans les conteneurs, puis appelle `languageeditorreload` par RCON. Core publie chaque ensemble sous une nouvelle génération Redis (`runtime-ui:generation:<id>:*`) et ne remplace `runtime-ui:active` qu'après les fichiers et leur manifeste de hashes. Une nouvelle instance vérifie puis restaure cette génération avant de charger ses gestionnaires.
 
 Deux réseaux Docker séparent les flux :
 
@@ -53,6 +53,10 @@ Le MOTD de l'unique entrée publique Velocity affiche une accroche et les types 
 Si un arrêt Docker échoue alors que le conteneur reste actif, Velocity restaure l'état jouable antérieur dans son registre et dans Redis. Le Lobby exclut `STOPPING`, `STOPPED` et `ERROR` de ses listes et de ses totaux ; ses menus ne comptent ainsi que les instances en démarrage ou dans un état de jeu actif.
 
 ## Responsabilités des modules
+
+### `tropicube-language-api`
+
+Bibliothèque Java pure partagée par Core et Velocity. Elle distingue les valeurs texte, toujours échappées, des composants Adventure riches explicitement autorisés et conserve la lecture des placeholders positionnels pendant leur migration.
 
 ### `tropicube-docker-api`
 

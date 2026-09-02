@@ -62,8 +62,8 @@ public class ClassKitSelectionMenu implements Listener {
     // ── Menu opening ───────────────────────────────────────────────────────
 
     public void openClassMenu(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 9,
-                LangHelper.component(player, "sw.class-menu-title"));
+        Inventory inv = Bukkit.createInventory(null, LangHelper.menuSize("class-selector"),
+                LangHelper.menuTitle(player, "class-selector"));
         NetworkMenuStyle.fill(inv);
 
         GamePlayer gp = plugin.getGameManager().getPlayer(player);
@@ -82,8 +82,8 @@ public class ClassKitSelectionMenu implements Listener {
     }
 
     private void openKitMenu(Player player, PlayerClass playerClass) {
-        Inventory inv = Bukkit.createInventory(null, 9,
-                LangHelper.component(player, "sw.kit-menu-title", className(player, playerClass)));
+        Inventory inv = Bukkit.createInventory(null, LangHelper.menuSize("kit-selector"),
+                LangHelper.menuTitle(player, "kit-selector", className(player, playerClass)));
         NetworkMenuStyle.fill(inv);
 
         GamePlayer gp = plugin.getGameManager().getPlayer(player);

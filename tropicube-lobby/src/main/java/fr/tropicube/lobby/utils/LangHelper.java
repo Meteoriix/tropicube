@@ -1,7 +1,9 @@
 package fr.tropicube.lobby.utils;
 
+import fr.tropicube.language.PlaceholderValues;
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.core.util.MessageStyle;
+import fr.tropicube.lobby.TropicubeLobby;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -32,6 +34,12 @@ public final class LangHelper {
         return get(player.getUniqueId(), key, args);
     }
 
+    public static String get(Player player, String key, PlaceholderValues placeholders) {
+        TropicubeCore core = getCore();
+        if (core == null) return "<tc><red>Clé de traduction indisponible : <white>" + key;
+        return core.getLanguageManager().get(player.getUniqueId(), key, placeholders);
+    }
+
     public static String get(UUID uuid, String key, Object... args) {
         TropicubeCore core = getCore();
         if (core == null) return "<tc><red>Clé de traduction indisponible : <white>" + key;
@@ -44,12 +52,28 @@ public final class LangHelper {
         return component(player.getUniqueId(), key, args);
     }
 
+    public static Component component(Player player, String key, PlaceholderValues placeholders) {
+        TropicubeCore core = getCore();
+        if (core == null) return MessageStyle.component("<tc><red>Clé de traduction indisponible : <white>" + key);
+        return core.getLanguageManager().getComponent(player.getUniqueId(), key, placeholders);
+    }
+
     public static Component component(UUID uuid, String key, Object... args) {
         TropicubeCore core = getCore();
         if (core == null) return MessageStyle.component("<tc><red>Clé de traduction indisponible : <white>" + key);
         return uuid == null
                 ? core.getLanguageManager().getComponentForLang("fr", key, args)
                 : core.getLanguageManager().getComponent(uuid, key, args);
+    }
+
+    /** Resolves a menu title through the hot-reloadable Lobby manifest. */
+    public static Component menuTitle(Player player, String menuId, Object... arguments) {
+        return component(player, TropicubeLobby.getInstance().getMenuTemplates().menu(menuId).titleKey(), arguments);
+    }
+
+    /** Returns the inventory size declared by a hot-reloadable Lobby menu. */
+    public static int menuSize(String menuId) {
+        return TropicubeLobby.getInstance().getMenuTemplates().menu(menuId).rows() * 9;
     }
 
     /**

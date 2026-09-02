@@ -70,7 +70,7 @@ public final class PlayerCenterMenu implements Listener {
     }
 
     public void openHome(Player player) {
-        Inventory inventory = Bukkit.createInventory(null, 54, message(player, "center.title"));
+        Inventory inventory = Bukkit.createInventory(null, menuSize("profile-home"), menuTitle(player, "profile-home"));
         NetworkMenuStyle.frame(inventory);
         inventory.setItem(13, playerHead(player, "center.profile", "center.profile-lore",
                 "center.profile-action", "PROFILE"));
@@ -107,8 +107,8 @@ public final class PlayerCenterMenu implements Listener {
                         online.sendMessage(message(online, "general.operation-failed"));
                         return;
                     }
-                    Inventory inventory = Bukkit.createInventory(null, 54,
-                            message(online, "center.notifications-title", result.page() + 1, result.unread()));
+                    Inventory inventory = Bukkit.createInventory(null, menuSize("profile-notifications"),
+                            menuTitle(online, "profile-notifications", result.page() + 1, result.unread()));
                     NetworkMenuStyle.frame(inventory);
                     for (int slot = 0; slot < result.notifications().size(); slot++) {
                         NotificationService.Notification notification = result.notifications().get(slot);
@@ -155,8 +155,8 @@ public final class PlayerCenterMenu implements Listener {
                     Player online = Bukkit.getPlayer(playerId);
                     if (online == null) return;
                     if (error != null || profile == null) { online.sendMessage(message(online, "general.operation-failed")); return; }
-                    Inventory inventory = Bukkit.createInventory(null, 54,
-                            message(online, "center.profile-menu-title", profile.username()));
+                    Inventory inventory = Bukkit.createInventory(null, menuSize("profile-details"),
+                            menuTitle(online, "profile-details", profile.username()));
                     NetworkMenuStyle.frame(inventory);
                     inventory.setItem(4, playerHead(online, "center.profile-identity",
                             "center.profile-identity-lore", "NONE", profile.username()));
@@ -208,7 +208,8 @@ public final class PlayerCenterMenu implements Listener {
                     Player online = Bukkit.getPlayer(playerId);
                     if (online == null) return;
                     if (error != null) { online.sendMessage(message(online, "general.operation-failed")); return; }
-                    Inventory inventory = Bukkit.createInventory(null, 54, message(online, "center.missions-title"));
+                    Inventory inventory = Bukkit.createInventory(null, menuSize("profile-missions"),
+                            menuTitle(online, "profile-missions"));
                     NetworkMenuStyle.frame(inventory);
                     for (int index = 0; index < missions.size(); index++) {
                         MissionService.Assignment assignment = missions.get(index);
@@ -259,7 +260,8 @@ public final class PlayerCenterMenu implements Listener {
                     Player online = Bukkit.getPlayer(playerId);
                     if (online == null) return;
                     if (error != null) { online.sendMessage(message(online, "general.operation-failed")); return; }
-                    Inventory inventory = Bukkit.createInventory(null, 54, message(online, "center.guilds-title"));
+                    Inventory inventory = Bukkit.createInventory(null, menuSize("profile-guilds"),
+                            menuTitle(online, "profile-guilds"));
                     NetworkMenuStyle.frame(inventory);
                     for (int index = 0; index < Math.min(20, page.ranking().size()); index++) {
                         var value = page.ranking().get(index);
@@ -411,6 +413,14 @@ public final class PlayerCenterMenu implements Listener {
 
     private Component message(Player player, String key, Object... args) {
         return plugin.getLanguageManager().getComponent(player.getUniqueId(), key, args);
+    }
+
+    private int menuSize(String id) {
+        return plugin.getMenuTemplates().menu(id).rows() * 9;
+    }
+
+    private Component menuTitle(Player player, String id, Object... args) {
+        return message(player, plugin.getMenuTemplates().menu(id).titleKey(), args);
     }
     private String messageText(Player player, String key, Object... args) {
         return plugin.getLanguageManager().get(player.getUniqueId(), key, args);

@@ -24,6 +24,8 @@ import fr.tropicube.core.progression.MissionCatalog;
 import fr.tropicube.core.progression.MissionService;
 import fr.tropicube.core.progression.NetworkProgressionService;
 import fr.tropicube.core.guild.GuildService;
+import fr.tropicube.core.ui.RuntimeUiBundle;
+import fr.tropicube.core.ui.MenuTemplateRegistry;
 import org.bukkit.GameRules;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -77,6 +79,8 @@ public class TropicubeCore extends JavaPlugin {
     private MissionService missionService;
     private ProfileService profileService;
     private GuildService guildService;
+    private RuntimeUiBundle runtimeUiBundle;
+    private MenuTemplateRegistry menuTemplates;
 
     /**
      * Called by Paper when activating the plugin.
@@ -102,6 +106,9 @@ public class TropicubeCore extends JavaPlugin {
 
         // Initializing Redis; stop the plugin on failure
         if (!initRedis()) return;
+
+        runtimeUiBundle = new RuntimeUiBundle(this);
+        runtimeUiBundle.restore();
 
         // Initializes all business managers
         if (!initManagers()) return;
@@ -178,6 +185,10 @@ public class TropicubeCore extends JavaPlugin {
         try {
             languageManager  = new LanguageManager(this);
             languageManager.initialize();
+
+            menuTemplates = new MenuTemplateRegistry(this);
+            getServer().getServicesManager().register(fr.tropicube.core.ui.UiReloadParticipant.class,
+                    menuTemplates, this, org.bukkit.plugin.ServicePriority.Normal);
 
             permissionManager = new PermissionManager(this, databaseManager);
             permissionManager.initialize();
@@ -392,6 +403,8 @@ public class TropicubeCore extends JavaPlugin {
 
     public DatabaseManager getDatabaseManager()     { return databaseManager; }
     public RedisManager getRedisManager()           { return redisManager; }
+    public RuntimeUiBundle getRuntimeUiBundle()     { return runtimeUiBundle; }
+    public MenuTemplateRegistry getMenuTemplates()  { return menuTemplates; }
     public EconomyManager getEconomyManager()       { return economyManager; }
     public PermissionManager getPermissionManager() { return permissionManager; }
     public LanguageManager getLanguageManager()     { return languageManager; }
