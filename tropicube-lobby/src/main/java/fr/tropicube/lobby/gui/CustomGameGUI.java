@@ -102,9 +102,7 @@ public class CustomGameGUI {
         if (showStop) {
             inv.setItem(STOP_SLOT, new ItemBuilder(Material.TNT)
                     .name(LangHelper.get(player, "lobby.host-stop-name"))
-                    .lore(LangHelper.get(player, "lobby.host-stop-lore1"),
-                          "",
-                          LangHelper.get(player, "lobby.host-stop-lore2"))
+                    .lore(LangHelper.get(player, "lobby.host-stop-lore"))
                     .build());
         }
 

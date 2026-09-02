@@ -185,8 +185,7 @@ public class ServerSelectorGUI {
         if (filter != Filter.CUSTOM) {
             inv.setItem(SLOT_BEST, new ItemBuilder(Material.NETHER_STAR)
                     .name(LangHelper.get(player, "lobby.server-best"))
-                    .lore(LangHelper.get(player, "lobby.server-best-lore1"),
-                          LangHelper.get(player, "lobby.server-best-lore2"))
+                    .lore(LangHelper.get(player, "lobby.server-best-lore"))
                     .build());
         }
         inv.setItem(SLOT_CLOSE, ItemBuilder.closeButton(player));

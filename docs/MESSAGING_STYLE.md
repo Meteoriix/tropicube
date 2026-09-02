@@ -41,3 +41,5 @@ Les valeurs dynamiques ne doivent contenir ni secret ni donnée sensible. Un nou
 Chaque clé existe en `fr`, `en`, `de` et `es`, avec les mêmes placeholders positionnels. Les ressources embarquées et leurs copies Docker doivent rester identiques. Les tests contrôlent le YAML, la parité des clés et placeholders, la validité MiniMessage et l'absence des anciens préfixes décoratifs.
 
 Les chevrons qui décrivent un paramètre de commande ne sont pas des balises : dans une chaîne YAML entre guillemets doubles, écrire `\\<joueur>` pour obtenir `<joueur>` à l'écran. Les codes couleur hérités `§` sont interdits ; les couleurs et décorations passent exclusivement par MiniMessage.
+
+Les textes multiligne, notamment les lores, restent dans une clé unique et utilisent `<br>` sans espaces entre leurs lignes. `<newline>` est accepté comme alias explicite et `<br><br>` représente une ligne vide. Les validations suivent directement les balises de `StandardTags.defaults()` fournies par la version Adventure du projet, auxquelles s'ajoutent `<tc>` et `<sw>`.

@@ -192,7 +192,7 @@ Fichier : `dockerfiles/configs/TropicubeLobby/config.yml`.
 - `auto-replay.batch-size` fixe le nombre de parties automatiques avant une nouvelle confirmation (`5`, borné entre 1 et 100) ;
 - `server-types` définit les icônes Material ou HeadDatabase ;
 - `vip-shop.entries` associe grade, icône, nom et prix catalogue croissant ; le prix d'une montée en grade est la différence entre le grade ciblé et le grade déjà acheté ;
-- `lang-selector.languages` configure codes, têtes et textes de présentation.
+- `lang-selector.languages` configure codes, têtes et textes de présentation ; chaque entrée utilise une clé `lore` MiniMessage unique et `<br>` pour ses sauts de ligne. Les anciennes entrées `lore1`/`lore2` restent lues et fusionnées en mémoire pendant la migration.
 
 Le `grade-key` d'une entrée doit exister dans Core et ne peut apparaître qu'une fois. Les prix doivent être strictement croissants. L'onglet Grades sépare les avantages réellement actifs (`lobby.shop-active-<grade>`) des promesses non implémentées (`lobby.shop-soon-<grade>`) dans les quatre langues ; une fonctionnalité ne doit passer dans la première section qu'après validation de son comportement effectif.
 

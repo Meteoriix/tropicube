@@ -36,6 +36,14 @@ class LanguageFilesTest {
     }
 
     @Test
+    void acceptsEveryStandardMiniMessageTagIncludingLineBreaks() {
+        String text = "message: \"<gray>Ligne 1<br><newline><gradient:red:blue>Line 2</gradient>\"\n";
+        Map<String, String> documents = new LinkedHashMap<>();
+        for (String language : LanguageFiles.LANGUAGES) documents.put(language, text);
+        assertTrue(new LanguageFiles(java.nio.file.Path.of(".")).validate(documents).isEmpty());
+    }
+
+    @Test
     void rejectsDuplicateKeys() {
         Map<String, String> documents = new LinkedHashMap<>();
         for (String language : LanguageFiles.LANGUAGES) documents.put(language, "message: one\nmessage: two\n");

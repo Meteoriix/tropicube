@@ -44,6 +44,10 @@ export function value(document: Document, key: string): string | string[] {
   return String(isScalar(found) ? found.value ?? '' : found ?? '');
 }
 
+export function serialize(document: Document): string {
+  return document.toString({ lineWidth: 0, doubleQuotedAsJSON: true });
+}
+
 export function filterKeys(documents: LanguageDocuments, search: string, mode: SearchMode): string[] {
   const keys = flatten(documents.fr);
   const query = normalizeSearch(search);

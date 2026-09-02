@@ -7,6 +7,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.bukkit.plugin.Plugin;
+import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
@@ -27,12 +29,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class YamlResourcesTest {
     private static final List<String> LANGUAGES = List.of("fr", "en", "es", "de");
-    private static final Set<String> ALLOWED_MINI_MESSAGE_TAGS = Set.of(
-            "aqua", "b", "blue", "bold", "click", "dark_aqua", "dark_blue", "dark_gray",
-            "dark_green", "dark_purple", "dark_red", "gold", "gray", "green", "italic",
-            "light_purple", "obfuscated", "red", "reset", "strikethrough", "sw", "tc",
-            "u", "underlined", "white", "yellow"
-    );
+    private static final TagResolver STANDARD_MINI_MESSAGE_TAGS = StandardTags.defaults();
+    private static final Set<String> PROJECT_MINI_MESSAGE_TAGS = Set.of("sw", "tc");
     private static final Pattern MINI_MESSAGE_TAG = Pattern.compile("(?<!\\\\)<([^<>]+)>");
     private static final Pattern POSITIONAL_PLACEHOLDER = Pattern.compile("\\{\\d+}");
 
@@ -156,8 +154,9 @@ class YamlResourcesTest {
                         String name = token.startsWith("/") ? token.substring(1) : token;
                         int argumentSeparator = name.indexOf(':');
                         if (argumentSeparator >= 0) name = name.substring(0, argumentSeparator);
-                        assertTrue(name.matches("#[0-9a-fA-F]{6}")
-                                        || ALLOWED_MINI_MESSAGE_TAGS.contains(name.toLowerCase(Locale.ROOT)),
+                        String normalizedName = name.toLowerCase(Locale.ROOT);
+                        assertTrue(STANDARD_MINI_MESSAGE_TAGS.has(normalizedName)
+                                        || PROJECT_MINI_MESSAGE_TAGS.contains(normalizedName),
                                 () -> "Balise MiniMessage inconnue ou littéral non échappé pour "
                                         + language + ": " + key + " (<" + token + ">)");
                     }

@@ -10,9 +10,16 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 - Ajout d'un éditeur web local des langues avec aperçu MiniMessage contextuel, traduction LibreTranslate contrôlée, glossaire et écritures atomiques des quatre langues.
 - L'éditeur de langues permet désormais de choisir une recherche par clé ou par texte dans les quatre traductions.
+- Les lanceurs Windows et Linux de l'éditeur le démarrent désormais dans un processus indépendant et proposent les actions `start`, `status`, `stop` et `foreground` sans monopoliser le terminal.
+
+#### Modifié
+
+- Les lores auparavant répartis entre des clés numérotées sont regroupés dans une clé unique utilisant `<br>` ; le sélecteur de langue suit la même convention dans sa configuration.
 
 #### Corrigé
 
+- L'éditeur et les tests de ressources reconnaissent désormais toutes les balises MiniMessage standard de la version Adventure configurée, notamment `<br>` et `<newline>`.
+- L'éditeur ne replie plus les longues chaînes YAML sur plusieurs lignes physiques, ce qui préserve leur compatibilité avec la fusion de configuration au déploiement.
 - Les symboles Unicode décoratifs, notamment `▶`, sont désormais conservés à l'identique dans les traductions anglaises, allemandes et espagnoles proposées par l'éditeur de langues.
 - Le serveur de l'éditeur termine désormais correctement les réponses des fichiers statiques, afin que l'interface charge sans rester en attente.
 - La validation d'une traduction anglaise conserve désormais simultanément les propositions allemande et espagnole au lieu d'écraser l'allemand.

@@ -50,13 +50,12 @@ public class LanguageSelectorGUI {
                 String code        = (String) m.get("code");
                 String headId      = (String) m.get("head-id");
                 String displayName = (String) m.get("display-name");
-                Object raw1 = m.get("lore1"); String lore1 = raw1 instanceof String s1 ? s1 : "";
-                Object raw2 = m.get("lore2"); String lore2 = raw2 instanceof String s2 ? s2 : "";
+                String lore = languageLore(m);
                 if (code == null || headId == null) continue;
                 ItemStack icon = hdbapi == null ? null : hdbapi.getItemHead(headId);
                 if (icon == null) icon = new ItemStack(Material.PLAYER_HEAD);
                 entries.add(new LanguageEntry(code, displayName != null ? displayName : code,
-                        icon, lore1, lore2));
+                        icon, lore));
             }
             if (!entries.isEmpty()) LANGUAGES = Collections.unmodifiableList(entries);
         } catch (Exception _) {}
@@ -95,7 +94,7 @@ public class LanguageSelectorGUI {
             String changeLabel  = LangHelper.get(player, "lobby.lang-change");
             ItemBuilder ib = new ItemBuilder(lang.itemStack())
                     .name((isCurrent ? "<green>✔ " : "") + lang.displayName())
-                    .lore(lang.lore1(), lang.lore2(), "",
+                    .lore(lang.lore(), "",
                           isCurrent ? currentLabel : changeLabel);
             if (isCurrent) ib.glow();
             inv.setItem(LANG_SLOTS[i], ib.build());
@@ -118,6 +117,14 @@ public class LanguageSelectorGUI {
         return LangHelper.getPlayerLang(player.getUniqueId());
     }
 
-    public record LanguageEntry(String code, String displayName, ItemStack itemStack,
-                                String lore1, String lore2) {}
+    static String languageLore(Map<?, ?> entry) {
+        Object configured = entry.get("lore");
+        if (configured instanceof String lore) return lore;
+        String firstLine = entry.get("lore1") instanceof String line ? line : "";
+        String secondLine = entry.get("lore2") instanceof String line ? line : "";
+        if (firstLine.isEmpty()) return secondLine;
+        return secondLine.isEmpty() ? firstLine : firstLine + "<br>" + secondLine;
+    }
+
+    public record LanguageEntry(String code, String displayName, ItemStack itemStack, String lore) {}
 }

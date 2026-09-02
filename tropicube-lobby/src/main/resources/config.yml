@@ -69,7 +69,7 @@ vip-shop:
 # ──────────────────────────────────────────────────────────────────────────────
 # Language selector — icons and labels displayed in the /lang menu.
 # head-id: HeadDatabase identifier of the player head to display.
-#  display-name / lore1 / lore2 : texte MiniMessage.
+# display-name / lore : texte MiniMessage ; utiliser <br> pour séparer les lignes du lore.
 # The order of the list determines the order of display in the menu.
 # ──────────────────────────────────────────────────────────────────────────────
 lang-selector:
@@ -77,20 +77,16 @@ lang-selector:
     - code: "fr"
       head-id: "51737"
       display-name: "<white>Français"
-      lore1: "<blue>■<white>■<red>■ <dark_gray>FR <gray>— <aqua>Français"
-      lore2: "<gray>Cliquez pour jouer en français."
+      lore: "<blue>■<white>■<red>■ <dark_gray>FR <gray>— <aqua>Français<br><gray>Cliquez pour jouer en français."
     - code: "en"
       head-id: "55849"
       display-name: "<white>English"
-      lore1: "<dark_blue>■<white>■<red>■ <dark_gray>EN <gray>— <aqua>English"
-      lore2: "<gray>Click to play in English."
+      lore: "<dark_blue>■<white>■<red>■ <dark_gray>EN <gray>— <aqua>English<br><gray>Click to play in English."
     - code: "es"
       head-id: "58336"
       display-name: "<white>Español"
-      lore1: "<red>■<yellow>■<red>■ <dark_gray>ES <gray>— <aqua>Español"
-      lore2: "<gray>Haz clic para jugar en español."
+      lore: "<red>■<yellow>■<red>■ <dark_gray>ES <gray>— <aqua>Español<br><gray>Haz clic para jugar en español."
     - code: "de"
       head-id: "522"
       display-name: "<white>Deutsch"
-      lore1: "<dark_gray>■<red>■<yellow>■ <dark_gray>DE <gray>— <aqua>Deutsch"
-      lore2: "<gray>Klicken Sie, um auf Deutsch zu spielen."
+      lore: "<dark_gray>■<red>■<yellow>■ <dark_gray>DE <gray>— <aqua>Deutsch<br><gray>Klicken Sie, um auf Deutsch zu spielen."

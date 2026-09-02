@@ -41,3 +41,5 @@ Dynamic values must not expose secrets or sensitive data. New contexts stay shor
 Every key exists in `fr`, `en`, `de`, and `es` with identical positional placeholders. Bundled resources and Docker copies remain identical. Tests validate YAML, key and placeholder parity, MiniMessage syntax, and the absence of legacy decorative prefixes.
 
 Angle brackets that describe command arguments are not tags: inside a double-quoted YAML string, write `\\<player>` to render `<player>`. Legacy `§` color codes are forbidden; all colors and decorations must use MiniMessage.
+
+Multi-line text, especially lore, stays in one key and uses `<br>` without spaces between lines. `<newline>` is accepted as the explicit alias, and `<br><br>` represents a blank line. Validation follows the tags exposed by `StandardTags.defaults()` in the project's Adventure version, plus `<tc>` and `<sw>`.

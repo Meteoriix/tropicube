@@ -1,5 +1,7 @@
 package fr.tropicube.tools.languages;
 
+import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
@@ -26,11 +28,8 @@ final class LanguageFiles {
     static final List<String> LANGUAGES = List.of("fr", "en", "de", "es");
     private static final Pattern PLACEHOLDER = Pattern.compile("\\{\\d+}");
     private static final Pattern TAG = Pattern.compile("(?<!\\\\)<([^<>]+)>");
-    private static final Set<String> ALLOWED_TAGS = Set.of(
-            "aqua", "b", "blue", "bold", "click", "dark_aqua", "dark_blue", "dark_gray",
-            "dark_green", "dark_purple", "dark_red", "gold", "gray", "green", "italic",
-            "light_purple", "obfuscated", "red", "reset", "strikethrough", "sw", "tc",
-            "u", "underlined", "white", "yellow");
+    private static final TagResolver STANDARD_TAGS = StandardTags.defaults();
+    private static final Set<String> PROJECT_TAGS = Set.of("sw", "tc");
 
     private final Path repository;
     private final Yaml yaml = safeYaml();
@@ -173,7 +172,8 @@ final class LanguageFiles {
                     String name = matcher.group(1).replaceFirst("^/", "");
                     int separator = name.indexOf(':');
                     if (separator >= 0) name = name.substring(0, separator);
-                    if (!name.matches("#[0-9a-fA-F]{6}") && !ALLOWED_TAGS.contains(name.toLowerCase())) {
+                    String normalizedName = name.toLowerCase(Locale.ROOT);
+                    if (!STANDARD_TAGS.has(normalizedName) && !PROJECT_TAGS.contains(normalizedName)) {
                         diagnostics.add(new Diagnostic(language, key, "unknown-tag", "Balise inconnue <" + name + ">"));
                     }
                 }

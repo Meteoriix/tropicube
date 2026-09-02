@@ -453,9 +453,7 @@ public class GameSettingsMenu implements Listener {
                 .name(Component.text(LangHelper.get(player, "sw.settings-random-kits-name"), NamedTextColor.AQUA)
                         .decoration(TextDecoration.ITALIC, false))
                 .lore(
-                    Component.text(LangHelper.get(player, "sw.settings-random-kits-lore1"), NamedTextColor.GRAY)
-                            .decoration(TextDecoration.ITALIC, false),
-                    Component.text(LangHelper.get(player, "sw.settings-random-kits-lore2"), NamedTextColor.GRAY)
+                    LangHelper.component(player, "sw.settings-random-kits-lore").color(NamedTextColor.GRAY)
                             .decoration(TextDecoration.ITALIC, false),
                     Component.empty(),
                     toggleLine(player, enabled)
@@ -468,9 +466,7 @@ public class GameSettingsMenu implements Listener {
                 .name(Component.text(LangHelper.get(player, "sw.settings-auto-start-name"), NamedTextColor.AQUA)
                         .decoration(TextDecoration.ITALIC, false))
                 .lore(
-                        Component.text(LangHelper.get(player, "sw.settings-auto-start-lore1"), NamedTextColor.GRAY)
-                                .decoration(TextDecoration.ITALIC, false),
-                        Component.text(LangHelper.get(player, "sw.settings-auto-start-lore2"), NamedTextColor.GRAY)
+                        LangHelper.component(player, "sw.settings-auto-start-lore").color(NamedTextColor.GRAY)
                                 .decoration(TextDecoration.ITALIC, false),
                         Component.empty(),
                         toggleLine(player, enabled)
@@ -483,9 +479,7 @@ public class GameSettingsMenu implements Listener {
                 .name(Component.text(LangHelper.get(player, "sw.settings-map-vote-name"), NamedTextColor.AQUA)
                         .decoration(TextDecoration.ITALIC, false))
                 .lore(
-                        Component.text(LangHelper.get(player, "sw.settings-map-vote-lore1"), NamedTextColor.GRAY)
-                                .decoration(TextDecoration.ITALIC, false),
-                        Component.text(LangHelper.get(player, "sw.settings-map-vote-lore2"), NamedTextColor.GRAY)
+                        LangHelper.component(player, "sw.settings-map-vote-lore").color(NamedTextColor.GRAY)
                                 .decoration(TextDecoration.ITALIC, false),
                         Component.empty(),
                         toggleLine(player, enabled)

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { parse, stringify } from 'yaml';
-import { Diagnostic, documents, FileSnapshot, filterKeys, flatten, inferContext, Locale, locales, rename, SearchMode, setValue, StateSet, value, withTranslations } from './model';
+import { Diagnostic, documents, FileSnapshot, filterKeys, flatten, inferContext, Locale, locales, rename, SearchMode, serialize, setValue, StateSet, value, withTranslations } from './model';
 import './styles.css';
 
 type Docs = ReturnType<typeof documents>;
@@ -107,7 +107,7 @@ function App() {
 
   const validate = async () => {
     if (!docs) return false;
-    const payload = { documents: Object.fromEntries(locales.map(locale => [locale, docs[locale].toString()])) };
+    const payload = { documents: Object.fromEntries(locales.map(locale => [locale, serialize(docs[locale])])) };
     const result = await api<{diagnostics: Diagnostic[]}>('/api/validate', { method: 'POST', body: JSON.stringify(payload) });
     setDiagnostics(result.diagnostics); setNotice(result.diagnostics.length ? `${result.diagnostics.length} erreur(s)` : 'Validation réussie');
     return result.diagnostics.length === 0;
@@ -118,7 +118,7 @@ function App() {
     const result = await api<{files: Record<Locale, FileSnapshot>}>('/api/apply', { method: 'POST', body: JSON.stringify({
       set: sets[setIndex].set,
       expectedHashes: Object.fromEntries(locales.map(locale => [locale, snapshots[locale].hash])),
-      documents: Object.fromEntries(locales.map(locale => [locale, docs[locale].toString()])),
+      documents: Object.fromEntries(locales.map(locale => [locale, serialize(docs[locale])])),
     }) });
     setSnapshots(result.files); setDocs(documents(result.files)); setNotice('Quatre langues et copies Docker enregistrées');
   };
@@ -177,7 +177,7 @@ function App() {
     <div className="workspace">
       <aside>{keys.map(key => <button className={key === selected ? 'active' : ''} key={key} onClick={() => setSelected(key)}>{key}</button>)}</aside>
       <section className="editor">
-        {raw ? <textarea className="raw" value={docs.fr.toString()} onChange={event => mutate(copy => { copy.fr = documents({ ...snapshots, fr: { ...snapshots.fr, content: event.target.value } }).fr; })} /> : <>
+        {raw ? <textarea className="raw" value={serialize(docs.fr)} onChange={event => mutate(copy => { copy.fr = documents({ ...snapshots, fr: { ...snapshots.fr, content: event.target.value } }).fr; })} /> : <>
           <div className="keyline"><h2>{selected}</h2><button onClick={renameKey}>Renommer</button><button className="danger" onClick={deleteKey}>Supprimer</button></div>
           <label>Français</label><textarea value={Array.isArray(current) ? current.join('\n') : current} onChange={event => editFrench(event.target.value)} />
           <div className="translations">

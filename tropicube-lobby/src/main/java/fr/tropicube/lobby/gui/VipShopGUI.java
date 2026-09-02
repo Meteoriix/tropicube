@@ -70,8 +70,7 @@ public class VipShopGUI {
 
         inv.setItem(4, new ItemBuilder(Material.GOLD_INGOT)
                 .name(LangHelper.get(player, "lobby.vip-banner-name"))
-                .lore(LangHelper.get(player, "lobby.vip-banner-lore1"),
-                      LangHelper.get(player, "lobby.vip-banner-lore2"),
+                .lore(LangHelper.get(player, "lobby.vip-banner-lore"),
                       "",
                       LangHelper.get(player, "lobby.vip-banner-balance", formatCoins((int) balance)))
                 .glow().build());

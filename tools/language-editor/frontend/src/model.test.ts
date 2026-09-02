@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { documents, filterKeys, flatten, inferContext, rename, setValue, value, withTranslations } from './model';
+import { documents, filterKeys, flatten, inferContext, rename, serialize, setValue, value, withTranslations } from './model';
 import { parseDocument } from 'yaml';
 
 describe('language model', () => {
@@ -43,5 +43,14 @@ describe('language model', () => {
     expect(filterKeys(current, 'second line', 'text')).toEqual(['menu.lore']);
     expect(filterKeys(current, 'title', 'text')).toEqual([]);
     expect(filterKeys(current, '', 'text')).toEqual(['menu.title', 'menu.lore']);
+  });
+
+  it('serializes long quoted values without wrapping them across physical lines', () => {
+    const document = parseDocument('# comment\nmessage: "Une phrase volontairement longue qui doit rester sur une seule ligne afin de rester compatible avec les outils de déploiement\\nSeconde ligne logique"\n');
+
+    const yaml = serialize(document);
+
+    expect(yaml).toContain('# comment');
+    expect(yaml).toContain('message: "Une phrase volontairement longue qui doit rester sur une seule ligne afin de rester compatible avec les outils de déploiement\\nSeconde ligne logique"');
   });
 });

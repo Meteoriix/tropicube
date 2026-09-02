@@ -319,26 +319,21 @@ public class PlayerLobbyListener implements Listener {
         player.getInventory().setItem(SLOT_SERVERS,
                 new ItemBuilder(serversIcon)
                         .name(LangHelper.get(player, "lobby.hotbar-servers-name"))
-                        .lore(LangHelper.get(player, "lobby.hotbar-servers-lore1"),
-                                "",
-                                LangHelper.get(player, "lobby.hotbar-servers-lore2"))
+                        .lore(LangHelper.get(player, "lobby.hotbar-servers-lore"))
                         .customModelData(1001)
                         .glow().build());
 
         player.getInventory().setItem(SLOT_VIP,
                 new ItemBuilder(vipIcon)
                         .name(LangHelper.get(player, "lobby.hotbar-vip-name"))
-                        .lore(LangHelper.get(player, "lobby.hotbar-vip-lore1"),
-                                "",
-                                LangHelper.get(player, "lobby.hotbar-vip-lore2"))
+                        .lore(LangHelper.get(player, "lobby.hotbar-vip-lore"))
                         .customModelData(1003)
                         .glow().build());
 
         player.getInventory().setItem(SLOT_SOCIAL,
                 new ItemBuilder(socialIcon)
                         .name(LangHelper.get(player, "social.hotbar-name"))
-                        .lore(LangHelper.get(player, "social.hotbar-lore1"), "",
-                                LangHelper.get(player, "social.hotbar-lore2"))
+                        .lore(LangHelper.get(player, "social.hotbar-lore"))
                         .customModelData(1005)
                         .glow().build());
 

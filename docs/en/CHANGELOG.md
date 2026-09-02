@@ -10,9 +10,16 @@ This document records functional, technical, and operational changes. Entries ar
 
 - Added a local web language editor with contextual MiniMessage previews, reviewed LibreTranslate workflow, glossary, and atomic four-language writes.
 - The language editor can now search either by key or by text across all four translations.
+- The Windows and Linux editor launchers now start an independent process and provide `start`, `status`, `stop`, and `foreground` actions without occupying the terminal.
+
+#### Changed
+
+- Lore previously split across numbered keys now uses one key with `<br>` line breaks; the language selector configuration follows the same convention.
 
 #### Fixed
 
+- The editor and resource tests now recognize every standard MiniMessage tag from the configured Adventure version, including `<br>` and `<newline>`.
+- The editor no longer wraps long YAML strings across physical lines, keeping them compatible with deployment-time configuration merging.
 - Decorative Unicode symbols, including `▶`, are now preserved unchanged in the language editor's proposed English, German, and Spanish translations.
 - The editor server now completes static-file responses correctly, so the interface loads without hanging.
 - Approving an English translation now retains both the German and Spanish proposals instead of overwriting German.

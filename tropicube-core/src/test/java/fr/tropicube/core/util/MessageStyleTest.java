@@ -46,6 +46,12 @@ class MessageStyleTest {
     }
 
     @Test
+    void rendersBothMiniMessageLineBreakAliases() {
+        assertEquals("Première\nDeuxième\nTroisième",
+                MessageStyle.plain("<gray>Première<br>Deuxième<newline>Troisième"));
+    }
+
+    @Test
     void limitsPlayerChatFormattingToAuthorizedVisualTags() {
         String ordinary = MessageStyle.prepareChat("<red>Texte &a vert", false);
         assertEquals("<red>Texte  vert", PlainTextComponentSerializer.plainText()

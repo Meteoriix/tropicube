@@ -19,6 +19,7 @@ Desktop.ini
 **/node_modules/
 tools/language-editor/frontend/dist/
 tools/language-editor/frontend/*.tsbuildinfo
+tools/language-editor/.runtime/
 *.log
 hs_err_pid*
 replay_pid*
