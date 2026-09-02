@@ -20,6 +20,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 #### Fixed
 
+- Lore line breaks are now converted into actual item rows in Core, Lobby, and SheepWars, including blank rows, instead of displaying an unknown control glyph.
 - The editor and resource tests now recognize every standard MiniMessage tag from the configured Adventure version, including `<br>` and `<newline>`.
 - The editor no longer wraps long YAML strings across physical lines, keeping them compatible with deployment-time configuration merging.
 - Decorative Unicode symbols, including `▶`, are now preserved unchanged in the language editor's proposed English, German, and Spanish translations.

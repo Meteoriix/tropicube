@@ -42,4 +42,4 @@ Every key exists in `fr`, `en`, `de`, and `es` with identical positional placeho
 
 Angle brackets that describe command arguments are not tags: inside a double-quoted YAML string, write `\\<player>` to render `<player>`. Legacy `§` color codes are forbidden; all colors and decorations must use MiniMessage.
 
-Multi-line text, especially lore, stays in one key and uses `<br>` without spaces between lines. `<newline>` is accepted as the explicit alias, and `<br><br>` represents a blank line. Validation follows the tags exposed by `StandardTags.defaults()` in the project's Adventure version, plus `<tc>` and `<sw>`.
+Multi-line text, especially lore, stays in one key and uses `<br>` without spaces between lines. `<newline>` is accepted as the explicit alias, and `<br><br>` represents a blank line. Before item assignment, the shared `ComponentLines` utility expands these breaks into distinct lore components because the Minecraft client does not render a newline control character correctly inside one lore entry. Validation follows the tags exposed by `StandardTags.defaults()` in the project's Adventure version, plus `<tc>` and `<sw>`.

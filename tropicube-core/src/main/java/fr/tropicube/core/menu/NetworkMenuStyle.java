@@ -1,5 +1,6 @@
 package fr.tropicube.core.menu;
 
+import fr.tropicube.core.util.ComponentLines;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
@@ -34,7 +35,9 @@ public final class NetworkMenuStyle {
         ItemStack item = new ItemStack(material);
         item.editMeta(meta -> {
             meta.displayName(clean(name));
-            if (lore.length > 0) meta.lore(List.of(lore).stream().map(NetworkMenuStyle::clean).toList());
+            if (lore.length > 0) meta.lore(ComponentLines.splitAll(List.of(lore)).stream()
+                    .map(NetworkMenuStyle::clean)
+                    .toList());
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         });
         return item;
@@ -46,7 +49,9 @@ public final class NetworkMenuStyle {
         SkullMeta meta = (SkullMeta) item.getItemMeta();
         meta.setPlayerProfile(player.getPlayerProfile());
         meta.displayName(clean(name));
-        if (lore.length > 0) meta.lore(List.of(lore).stream().map(NetworkMenuStyle::clean).toList());
+        if (lore.length > 0) meta.lore(ComponentLines.splitAll(List.of(lore)).stream()
+                .map(NetworkMenuStyle::clean)
+                .toList());
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         item.setItemMeta(meta);
         return item;

@@ -1,5 +1,6 @@
 package fr.tropicube.lobby.utils;
 
+import fr.tropicube.core.util.ComponentLines;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.kyori.adventure.text.Component;
@@ -16,7 +17,6 @@ import org.bukkit.inventory.meta.components.CustomModelDataComponent;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Fluid builder to create ItemStacks for GUIs.
@@ -52,12 +52,16 @@ public class ItemBuilder {
     public ItemBuilder lore(String... lines) {
         meta.lore(Arrays.stream(lines)
                 .map(this::parseLore)
-                .collect(Collectors.toList()));
+                .flatMap(component -> ComponentLines.split(component).stream())
+                .toList());
         return this;
     }
 
     public ItemBuilder lore(List<String> lines) {
-        meta.lore(lines.stream().map(this::parseLore).collect(Collectors.toList()));
+        meta.lore(lines.stream()
+                .map(this::parseLore)
+                .flatMap(component -> ComponentLines.split(component).stream())
+                .toList());
         return this;
     }
 

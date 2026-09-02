@@ -20,6 +20,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 #### Corrigé
 
+- Les sauts de ligne des lores sont désormais convertis en véritables lignes d'item dans Core, Lobby et SheepWars, y compris les lignes vides, au lieu d'afficher un glyphe de contrôle inconnu.
 - L'éditeur et les tests de ressources reconnaissent désormais toutes les balises MiniMessage standard de la version Adventure configurée, notamment `<br>` et `<newline>`.
 - L'éditeur ne replie plus les longues chaînes YAML sur plusieurs lignes physiques, ce qui préserve leur compatibilité avec la fusion de configuration au déploiement.
 - Les symboles Unicode décoratifs, notamment `▶`, sont désormais conservés à l'identique dans les traductions anglaises, allemandes et espagnoles proposées par l'éditeur de langues.

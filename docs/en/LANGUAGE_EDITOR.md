@@ -31,7 +31,7 @@ docker compose --env-file .env.example --profile language-editor up -d libretran
 
 French is first translated to English for review. Once approved, German and Spanish are generated directly from French. MiniMessage tags, placeholders, commands, glossary terms, and decorative Unicode symbols such as `▶`, `⚠`, or `🌴` are kept out of translatable text and preserved in their original positions. The editor remains available for drafting when the service is offline.
 
-Validation recognizes every tag supplied by `StandardTags.defaults()` in the project's Adventure version, plus the internal `<tc>` and `<sw>` tags. In structured mode, Enter inserts a line break directly and the editor stores it as the MiniMessage `<br>` tag (`<newline>` remains accepted as its long alias), including blank lines. In raw YAML mode, write `<br>` without spaces. Multi-line lore uses one key with lines separated by `<br>`.
+Validation recognizes every tag supplied by `StandardTags.defaults()` in the project's Adventure version, plus the internal `<tc>` and `<sw>` tags. In structured mode, Enter inserts a line break directly and the editor stores it as the MiniMessage `<br>` tag (`<newline>` remains accepted as its long alias), including blank lines. In raw YAML mode, write `<br>` without spaces. Multi-line lore uses one key with lines separated by `<br>`. When an item is rendered, Core, Lobby, and SheepWars convert both these tags and line breaks already stored in YAML into distinct Minecraft lore rows; double breaks remain blank rows and are never sent to the client as control glyphs.
 
 Serialization keeps each YAML string on one physical line regardless of length so that it remains compatible with the deployment scripts' configuration merge.
 

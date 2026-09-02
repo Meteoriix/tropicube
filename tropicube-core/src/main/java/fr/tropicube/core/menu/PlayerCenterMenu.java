@@ -3,6 +3,7 @@ package fr.tropicube.core.menu;
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.core.network.NotificationService;
 import fr.tropicube.core.progression.MissionService;
+import fr.tropicube.core.util.ComponentLines;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Bukkit;
@@ -115,12 +116,12 @@ public final class PlayerCenterMenu implements Listener {
                         ItemStack entry = new ItemStack(material);
                         var meta = entry.getItemMeta();
                         meta.itemName(message(online, notification.messageKey(), notification.arguments().toArray()));
-                        meta.lore(List.of(message(online, "center.notification-category",
+                        meta.lore(ComponentLines.splitAll(List.of(message(online, "center.notification-category",
                                         localizedValue(online, "center.notification-category-value-",
                                                 notification.category())),
                                 message(online, notification.action().type() == NotificationService.ActionType.NONE
                                         ? "center.notification-read" : "center.notification-action"),
-                                message(online, "center.notification-delete")));
+                                message(online, "center.notification-delete"))));
                         meta.getPersistentDataContainer().set(idKey, PersistentDataType.LONG, notification.id());
                         entry.setItemMeta(meta);
                         inventory.setItem(9 + slot, entry);

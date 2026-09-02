@@ -1,5 +1,6 @@
 package fr.tropicube.sheepwars.util;
 
+import fr.tropicube.core.util.ComponentLines;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -37,7 +38,7 @@ public class ItemBuilder {
     public ItemBuilder lore(List<Component> lore) {
         ItemMeta meta = itemStack.getItemMeta();
         if (meta != null) {
-            meta.lore(lore);
+            meta.lore(ComponentLines.splitAll(lore));
             itemStack.setItemMeta(meta);
         }
         return this;
