@@ -47,7 +47,7 @@ New APIs accept named placeholders such as `{player}`, `{balance}`, or `{countdo
 - four sources and their Docker mirrors are replaced together, with rollback on failure;
 - after saving, validated files are copied to Velocity or every active Paper instance, then the internal `languageeditorreload` command reloads languages only;
 - the status bar distinguishes an available Docker daemon from a partial or failed live synchronization without rolling back files that were already saved.
-- the Scoreboards tab groups variants, previews all fifteen Minecraft lines, and can add, remove, or reorder them;
+- the Scoreboards tab groups variants, edits the title in all four languages, previews its actual MiniMessage rendering with placeholder samples, and can add, remove, or reorder all fifteen Minecraft lines;
 - the Menus tab renders the inventory grid, required buttons, dynamic regions, and localized item properties;
 - manifest drafts support undo/redo, drag and drop, and a summary before applying changes.
 

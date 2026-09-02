@@ -28,6 +28,7 @@ function App() {
   const [selectedUi, setSelectedUi] = useState('');
   const [selectedVariant, setSelectedVariant] = useState('');
   const [surfacePreview, setSurfacePreview] = useState<ComponentNode[]>([]);
+  const [scoreboardTitlePreview, setScoreboardTitlePreview] = useState<ComponentNode | null>(null);
   const [selectedButton, setSelectedButton] = useState('');
   const [setIndex, setSetIndex] = useState(0);
   const [docs, setDocs] = useState<Docs | null>(null);
@@ -98,17 +99,25 @@ function App() {
   const selectedSurface = surfaces.find(surface => surface.identity === selectedUi);
 
   useEffect(() => {
-    if (!docs || !selectedSurface || mode !== 'scoreboards') { setSurfacePreview([]); return; }
+    if (!docs || !selectedSurface || mode !== 'scoreboards') {
+      setScoreboardTitlePreview(null); setSurfacePreview([]); return;
+    }
     const variant = selectedSurface.definition.variants?.[selectedVariant];
     if (!variant) return;
-    Promise.all((variant.lines || []).map(async (line: any) => {
-      if (line.blank) return { text: '\n' } as ComponentNode;
-      const translated = value(docs.fr, line.key);
-      const message = Array.isArray(translated) ? translated.join('\n') : translated;
+    const render = (message: string) => {
       const placeholders: Record<string, string> = {};
       for (const match of message.matchAll(/\{([a-z][a-z0-9_]*|\d+)}/g)) placeholders[match[1]] = placeholderSample(match[1]);
       return api<ComponentNode>('/api/preview', { method: 'POST', body: JSON.stringify({ message, placeholders }) });
-    })).then(setSurfacePreview).catch(error => setNotice(error.message));
+    };
+    const title = editableValue(value(docs.fr, selectedSurface.definition['title-key']));
+    Promise.all([render(title), Promise.all((variant.lines || []).map(async (line: any) => {
+      if (line.blank) return { text: '\n' } as ComponentNode;
+      const translated = value(docs.fr, line.key);
+      const message = Array.isArray(translated) ? translated.join('\n') : translated;
+      return render(message);
+    }))]).then(([renderedTitle, renderedLines]) => {
+      setScoreboardTitlePreview(renderedTitle); setSurfacePreview(renderedLines);
+    }).catch(error => setNotice(error.message));
   }, [docs, selectedSurface, selectedVariant, mode]);
 
   const mutate = (fn: (copy: Docs) => void) => {
@@ -194,21 +203,44 @@ function App() {
   };
 
   const applyUi = async () => {
-    const documents = Object.fromEntries(uiSnapshots.map(file => [file.id, stringify(uiDocuments[file.id], { lineWidth: 0 })]));
+    if (!docs || !snapshots) return;
+    const uiSerialized = Object.fromEntries(uiSnapshots.map(file => [file.id, stringify(uiDocuments[file.id], { lineWidth: 0 })]));
     for (const file of uiSnapshots) {
-      const validation = await api<{errors: string[]}>('/api/ui/validate', { method: 'POST', body: JSON.stringify({ type: file.type, content: documents[file.id] }) });
+      const validation = await api<{errors: string[]}>('/api/ui/validate', { method: 'POST', body: JSON.stringify({ type: file.type, content: uiSerialized[file.id] }) });
       if (validation.errors.length) { setNotice(validation.errors.join(' · ')); return; }
     }
     const changed = uiSnapshots.filter(file => JSON.stringify(parse(file.content)) !== JSON.stringify(uiDocuments[file.id]));
-    if (!changed.length) { setNotice('Aucune modification à appliquer'); return; }
-    if (!window.confirm(`Appliquer et recharger ${changed.length} manifeste(s) ?\n\n${changed.map(file => `• ${file.id}`).join('\n')}`)) return;
-    const result = await api<{ui: UiSnapshot[]; live: LiveResult}>('/api/ui/apply', { method: 'POST', body: JSON.stringify({
-      expectedHashes: Object.fromEntries(uiSnapshots.map(file => [file.id, file.hash])), documents,
-    }) });
-    setUiSnapshots(result.ui); setUiDocuments(Object.fromEntries(result.ui.map(file => [file.id, parse(file.content)])));
+    const languagesChanged = locales.some(locale => JSON.stringify(docs[locale].toJSON()) !== JSON.stringify(parse(snapshots[locale].content)));
+    if (!changed.length && !languagesChanged) { setNotice('Aucune modification à appliquer'); return; }
+    const summary = [...changed.map(file => `• ${file.id}`), ...(languagesChanged ? ['• titres traduits'] : [])];
+    if (!window.confirm(`Appliquer et recharger ${summary.length} modification(s) ?\n\n${summary.join('\n')}`)) return;
+    let updatedContainers = 0;
+    let liveErrors: string[] = [];
+    let liveAvailable = false;
+    if (languagesChanged) {
+      if (!(await validate())) return;
+      const languageResult = await api<{files: Record<Locale, FileSnapshot>; live: LiveResult}>('/api/apply', { method: 'POST', body: JSON.stringify({
+        set: sets[setIndex].set,
+        expectedHashes: Object.fromEntries(locales.map(locale => [locale, snapshots[locale].hash])),
+        documents: Object.fromEntries(locales.map(locale => [locale, serialize(docs[locale])])),
+      }) });
+      setSnapshots(languageResult.files); setDocs(documents(languageResult.files));
+      liveAvailable ||= languageResult.live.available;
+      updatedContainers = Math.max(updatedContainers, languageResult.live.updatedContainers);
+      liveErrors.push(...languageResult.live.errors);
+    }
+    if (changed.length) {
+      const result = await api<{ui: UiSnapshot[]; live: LiveResult}>('/api/ui/apply', { method: 'POST', body: JSON.stringify({
+        expectedHashes: Object.fromEntries(uiSnapshots.map(file => [file.id, file.hash])), documents: uiSerialized,
+      }) });
+      setUiSnapshots(result.ui); setUiDocuments(Object.fromEntries(result.ui.map(file => [file.id, parse(file.content)])));
+      liveAvailable ||= result.live.available;
+      updatedContainers = Math.max(updatedContainers, result.live.updatedContainers);
+      liveErrors.push(...result.live.errors);
+    }
     setUiHistory([]); setUiFuture([]);
-    setLive({ available: result.live.available && !result.live.errors.length, message: result.live.errors.length ? result.live.errors.join(' · ') : 'Jeu synchronisé' });
-    setNotice(result.live.updatedContainers ? `Interfaces rechargées dans ${result.live.updatedContainers} serveur(s)` : 'Interfaces enregistrées ; aucun serveur actif');
+    setLive({ available: liveAvailable && !liveErrors.length, message: liveErrors.length ? liveErrors.join(' · ') : 'Jeu synchronisé' });
+    setNotice(updatedContainers ? `Interfaces rechargées dans ${updatedContainers} serveur(s)` : 'Interfaces enregistrées ; aucun serveur actif');
   };
 
   const validateUi = async () => {
@@ -282,7 +314,7 @@ function App() {
       <aside>{mode === 'texts' ? keys.map(key => <button className={key === selected ? 'active' : ''} key={key} onClick={() => setSelected(key)}>{key}</button>)
         : surfaces.map(surface => <button className={surface.identity === selectedUi ? 'active' : ''} key={surface.identity} onClick={() => { setSelectedUi(surface.identity); setSelectedVariant(Object.keys(surface.definition.variants || {})[0] || ''); }}>{surface.file.module}<small>{surface.id}</small></button>)}</aside>
       <section className="editor">
-        {mode === 'scoreboards' && selectedSurface ? <ScoreboardEditor surface={selectedSurface} variant={selectedVariant} setVariant={setSelectedVariant} mutate={mutateUi} />
+        {mode === 'scoreboards' && selectedSurface ? <ScoreboardEditor surface={selectedSurface} variant={selectedVariant} setVariant={setSelectedVariant} mutate={mutateUi} docs={docs} mutateLanguages={mutate} />
         : mode === 'menus' && selectedSurface ? <MenuEditor surface={selectedSurface} selectedButton={selectedButton} setSelectedButton={setSelectedButton} mutate={mutateUi} />
         : raw ? <textarea className="raw" value={serialize(docs.fr)} onChange={event => mutate(copy => { copy.fr = documents({ ...snapshots, fr: { ...snapshots.fr, content: event.target.value } }).fr; })} /> : <>
           <div className="keyline"><h2>{selected}</h2><button onClick={renameKey}>Renommer</button><button className="danger" onClick={deleteKey}>Supprimer</button></div>
@@ -298,7 +330,7 @@ function App() {
         </>}
       </section>
       <section className="preview"><div className="preview-head"><b>Aperçu</b>{mode === 'texts' && <select value={context} onChange={event => { setContext(event.target.value); updateEntry({ context: event.target.value }); }}>{['chat','title','subtitle','actionbar','inventory','lore','scoreboard','tablist'].map(item => <option key={item}>{item}</option>)}</select>}</div>
-        {mode === 'scoreboards' ? <div className="scoreboard-full"><strong>{selectedSurface && docs ? editableValue(value(docs.fr, selectedSurface.definition['title-key'])) : ''}</strong>{surfacePreview.map((line,index) => <div key={index}><Rendered node={line} /></div>)}</div>
+        {mode === 'scoreboards' ? <div className="scoreboard-full"><strong><Rendered node={scoreboardTitlePreview} /></strong>{surfacePreview.map((line,index) => <div key={index}><Rendered node={line} /></div>)}</div>
         : mode === 'menus' && selectedSurface ? <MenuPreview surface={selectedSurface} selectedButton={selectedButton} docs={docs} />
         : <div className={`frame ${context}`}><Rendered node={preview} /></div>}
         {mode === 'texts' && <>
@@ -311,13 +343,18 @@ function App() {
   </main>;
 }
 
-function ScoreboardEditor({ surface, variant, setVariant, mutate }: { surface: any; variant: string; setVariant: (value: string) => void; mutate: (fn: (copy: Record<string, any>) => void) => void }) {
+function ScoreboardEditor({ surface, variant, setVariant, mutate, docs, mutateLanguages }: { surface: any; variant: string; setVariant: (value: string) => void; mutate: (fn: (copy: Record<string, any>) => void) => void; docs: Docs; mutateLanguages: (fn: (copy: Docs) => void) => void }) {
   const definition = surface.definition;
   const lines: any[] = definition.variants?.[variant]?.lines || [];
   const updateLines = (next: any[]) => mutate(copy => { copy[surface.file.id].scoreboards[surface.id].variants[variant].lines = next; });
   const move = (index: number, delta: number) => { const next = [...lines]; const target = index + delta; if (target < 0 || target >= next.length) return; [next[index], next[target]] = [next[target], next[index]]; updateLines(next); };
   return <div className="surface-editor"><div className="keyline"><h2>{surface.id}</h2><select value={variant} onChange={event => setVariant(event.target.value)}>{Object.keys(definition.variants || {}).map(item => <option key={item}>{item}</option>)}</select></div>
     <label>Clé du titre</label><input value={definition['title-key']} onChange={event => mutate(copy => { copy[surface.file.id].scoreboards[surface.id]['title-key'] = event.target.value; })} />
+    <div className="title-translations">{locales.map(locale => {
+      const titleKey = definition['title-key'];
+      const currentTitle = value(docs[locale], titleKey);
+      return <label key={locale}>{locale.toUpperCase()}<textarea rows={2} value={editableValue(currentTitle)} onChange={event => mutateLanguages(copy => setValue(copy[locale], titleKey, valueFromEditor(currentTitle, event.target.value)))} /></label>;
+    })}</div>
     <div className="line-list">{lines.map((line,index) => <div className="line-row" draggable key={index} onDragStart={event => event.dataTransfer.setData('text/plain',String(index))} onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); const from=Number(event.dataTransfer.getData('text/plain')); if (Number.isInteger(from) && from !== index) move(from,index-from); }}><span title="Glisser pour déplacer">↕ {index + 1}</span>{line.blank ? <i>Ligne vide</i> : <input value={line.key} onChange={event => { const next = [...lines]; next[index] = { key: event.target.value }; updateLines(next); }} />}<button onClick={() => move(index,-1)}>↑</button><button onClick={() => move(index,1)}>↓</button><button className="danger" onClick={() => updateLines(lines.filter((_,i) => i !== index))}>×</button></div>)}</div>
     <div className="surface-actions"><button disabled={lines.length >= 15} onClick={() => { const key = window.prompt('Clé de traduction de la nouvelle ligne'); if (key) updateLines([...lines,{key}]); }}>+ Texte</button><button disabled={lines.length >= 15} onClick={() => updateLines([...lines,{blank:true}])}>+ Ligne vide</button><span>{lines.length}/15 lignes</span></div>
   </div>;

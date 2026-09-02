@@ -47,7 +47,7 @@ Les nouvelles API acceptent des placeholders nommés comme `{player}`, `{balance
 - les quatre sources et leurs miroirs Docker sont remplacés ensemble, avec rollback sur erreur ;
 - après l'enregistrement, les fichiers validés sont copiés dans Velocity ou dans toutes les instances Paper actives, puis la commande interne `languageeditorreload` recharge uniquement les langues ;
 - la barre d'état distingue Docker disponible d'une synchronisation live partielle ou impossible, sans annuler les fichiers déjà enregistrés.
-- l'onglet Scoreboards regroupe les variantes d'un même scoreboard, affiche les quinze lignes Minecraft et permet de les ajouter, retirer ou réordonner ;
+- l'onglet Scoreboards regroupe les variantes d'un même scoreboard, permet d'éditer son titre dans les quatre langues, affiche son rendu MiniMessage réel avec des exemples de placeholders, puis permet d'ajouter, retirer ou réordonner ses quinze lignes Minecraft ;
 - l'onglet Menus affiche la grille de l'inventaire, les boutons requis, les zones dynamiques et les propriétés localisées des items ;
 - les brouillons de manifestes disposent d'un historique annuler/rétablir, du glisser-déposer et d'un récapitulatif avant application.
 

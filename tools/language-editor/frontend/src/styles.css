@@ -68,6 +68,8 @@ details code { display: block; padding: 6px; white-space: pre-wrap; }
 .scoreboard-full { margin: 50px 0 0 70px; min-height: 300px; padding: 10px 8px; color: white; background: #111d; border-left: 4px solid #0008; font-family: Monocraft, Consolas, monospace; text-shadow: 2px 2px #000; white-space: pre-wrap; }
 .scoreboard-full strong { display: block; text-align: center; margin-bottom: 4px; }
 .scoreboard-full > div { min-height: 21px; text-align: right; }
+.title-translations { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.title-translations textarea { min-height: 52px; font-family: Monocraft, Consolas, monospace; }
 .empty-editor { color: #86a8ab; }
 .menu-properties { display: grid; grid-template-columns: 1fr 100px 140px; gap: 8px; }
 .menu-properties label, .button-editor label { margin-top: 8px; }
