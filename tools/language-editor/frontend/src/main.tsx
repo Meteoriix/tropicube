@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { parse, stringify } from 'yaml';
-import { Diagnostic, documents, FileSnapshot, flatten, inferContext, LanguageSet, Locale, locales, rename, setValue, StateSet, value } from './model';
+import { Diagnostic, documents, FileSnapshot, flatten, inferContext, LanguageSet, Locale, locales, rename, setValue, StateSet, value, withTranslations } from './model';
 import './styles.css';
 
 type Docs = ReturnType<typeof documents>;
@@ -74,7 +74,7 @@ function App() {
 
   const editFrench = (text: string) => mutate(copy => setValue(copy.fr, selected, Array.isArray(current) ? text.split('\n') : text));
 
-  const translateLocale = async (target: Locale) => {
+  const requestTranslation = async (target: Locale): Promise<string | string[] | undefined> => {
     if (!docs || target === 'fr') return;
     const source = value(docs.fr, selected);
     const items = Array.isArray(source) ? source : [source];
@@ -85,14 +85,22 @@ function App() {
       const result = await api<{translatedText: string}>('/api/translate', { method: 'POST', body: JSON.stringify({ text, target, glossary }) });
       translated.push(result.translatedText);
     }
-    mutate(copy => setValue(copy[target], selected, Array.isArray(source) ? translated : translated[0]));
+    return Array.isArray(source) ? translated : translated[0];
+  };
+
+  const translateLocale = async (target: Locale) => {
+    const translated = await requestTranslation(target);
+    if (translated === undefined) return;
+    setDocs(currentDocs => currentDocs ? withTranslations(currentDocs, selected, { [target]: translated }) : currentDocs);
+    setEnglishApproved(false);
     setNotice(`${target.toUpperCase()} généré`);
   };
 
   const approveEnglish = async () => {
+    const [german, spanish] = await Promise.all([requestTranslation('de'), requestTranslation('es')]);
+    if (german === undefined || spanish === undefined) return;
+    setDocs(currentDocs => currentDocs ? withTranslations(currentDocs, selected, { de: german, es: spanish }) : currentDocs);
     setEnglishApproved(true);
-    await translateLocale('de');
-    await translateLocale('es');
     setNotice('Anglais approuvé, allemand et espagnol générés');
   };
 

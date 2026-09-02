@@ -7,9 +7,20 @@ export interface FileSnapshot { content: string; hash: string }
 export interface LanguageSet { id: string; sourceDirectory: string; mirrorDirectory?: string }
 export interface StateSet { set: LanguageSet; files: Record<Locale, FileSnapshot> }
 export interface Diagnostic { language: Locale; key: string; code: string; message: string }
+export type LanguageDocuments = Record<Locale, Document>;
 
-export function documents(files: Record<Locale, FileSnapshot>): Record<Locale, Document> {
-  return Object.fromEntries(locales.map(locale => [locale, parseDocument(files[locale].content)])) as Record<Locale, Document>;
+export function documents(files: Record<Locale, FileSnapshot>): LanguageDocuments {
+  return Object.fromEntries(locales.map(locale => [locale, parseDocument(files[locale].content)])) as LanguageDocuments;
+}
+
+export function withTranslations(current: LanguageDocuments, key: string,
+                                 translations: Partial<Record<Locale, string | string[]>>): LanguageDocuments {
+  const copy = Object.fromEntries(locales.map(locale => [locale, current[locale].clone()])) as LanguageDocuments;
+  for (const locale of locales) {
+    const translation = translations[locale];
+    if (translation !== undefined) setValue(copy[locale], key, translation);
+  }
+  return copy;
 }
 
 export function flatten(document: Document): string[] {

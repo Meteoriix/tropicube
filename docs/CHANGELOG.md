@@ -13,6 +13,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 #### Corrigé
 
 - Le serveur de l'éditeur termine désormais correctement les réponses des fichiers statiques, afin que l'interface charge sans rester en attente.
+- La validation d'une traduction anglaise conserve désormais simultanément les propositions allemande et espagnole au lieu d'écraser l'allemand.
 - Le nom du profil dans la hotbar sépare désormais correctement son icône de son libellé dans les quatre langues.
 
 ### 2026-08-28
