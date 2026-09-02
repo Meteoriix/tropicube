@@ -34,6 +34,7 @@ class YamlResourcesTest {
     private static final Set<String> PROJECT_MINI_MESSAGE_TAGS = Set.of("sw", "tc");
     private static final Pattern MINI_MESSAGE_TAG = Pattern.compile("(?<!\\\\)<([^<>]+)>");
     private static final Pattern PLACEHOLDER = Pattern.compile("\\{(?:\\d+|[a-z][a-z0-9_]*)}");
+    private static final Pattern POSITIONAL_PLACEHOLDER = Pattern.compile("\\{\\d+}");
 
     @TempDir
     Path temporaryDirectory;
@@ -98,6 +99,19 @@ class YamlResourcesTest {
     void translationsKeepTheSamePlaceholders() {
         assertLanguagePlaceholdersMatch(Path.of("src/main/resources/languages"));
         assertLanguagePlaceholdersMatch(Path.of("../tropicube-velocity/src/main/resources/languages"));
+    }
+
+    @Test
+    void bundledLanguagesOnlyUseNamedPlaceholders() throws Exception {
+        for (Path directory : List.of(
+                Path.of("src/main/resources/languages"),
+                Path.of("../tropicube-velocity/src/main/resources/languages"))) {
+            for (String language : LANGUAGES) {
+                Path file = directory.resolve(language + ".yml");
+                assertFalse(POSITIONAL_PLACEHOLDER.matcher(Files.readString(file)).find(),
+                        () -> "Placeholder positionnel restant dans " + file);
+            }
+        }
     }
 
     @Test
@@ -344,7 +358,8 @@ class YamlResourcesTest {
                     Path.of("src/main/resources/languages", language + ".yml"));
             for (String key : keys) {
                 assertTrue(values.containsKey(key), () -> key + " manquant en " + language);
-                assertFalse(String.valueOf(values.get(key)).contains("_"),
+                String visibleText = PLACEHOLDER.matcher(String.valueOf(values.get(key))).replaceAll("");
+                assertFalse(visibleText.contains("_"),
                         () -> "Identifiant brut dans " + key + " en " + language);
             }
         }

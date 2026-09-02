@@ -51,4 +51,16 @@ class TemplateRendererTest {
         assertThrows(IllegalArgumentException.class,
                 () -> PlaceholderValues.of("Not-valid", "value"));
     }
+
+    @Test
+    void adaptsPositionalCallersUsingDeclaredPlaceholderOrder() {
+        PlaceholderValues values = PlaceholderValues.ordered(
+                "{player} a {balance} pièces ({player})", "Nathan", 42);
+
+        assertEquals(Set.of("player", "balance"), values.asMap().keySet());
+        assertEquals(List.of("player", "balance"),
+                TemplateRenderer.orderedPlaceholders("{player} a {balance} pièces ({player})"));
+        assertThrows(IllegalArgumentException.class,
+                () -> PlaceholderValues.ordered("{player}", "Nathan", 42));
+    }
 }

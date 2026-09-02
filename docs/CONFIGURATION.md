@@ -228,7 +228,7 @@ La section `gameplay-balance` est validée au démarrage. Une valeur manquante, 
 
 ## Langues
 
-Core et Velocity prennent en charge `fr`, `en`, `es` et `de`. Les textes utilisent MiniMessage et les paramètres positionnels `{0}`, `{1}`, etc. Pour ajouter une clé :
+Core et Velocity prennent en charge `fr`, `en`, `es` et `de`. Les textes utilisent MiniMessage et exclusivement des placeholders nommés en `lower_snake_case`, par exemple `{player}`, `{balance}` ou `{countdown}`. Pour ajouter une clé :
 
 Les balises internes `<tc>` et `<sw>` insèrent respectivement les marques réseau et SheepWars. Leur usage est défini dans la [charte des messages](MESSAGING_STYLE.md) ; elles sont réservées aux notifications autonomes et ne doivent pas être ajoutées aux contenus compacts d'interface.
 

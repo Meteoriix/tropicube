@@ -35,7 +35,7 @@ Validation recognizes every tag supplied by `StandardTags.defaults()` in the pro
 
 Serialization keeps each YAML string on one physical line regardless of length so that it remains compatible with the deployment scripts' configuration merge.
 
-New APIs accept named placeholders such as `{player}`, `{balance}`, or `{countdown}`. Legacy positional forms such as `{0}` remain readable during migration. Plain values are escaped before MiniMessage insertion; only explicitly rich components preserve styling.
+All resources use named placeholders such as `{player}`, `{balance}`, or `{countdown}`. The internal adapter maps legacy Java call arguments in declaration order while consumers migrate, without reintroducing positional placeholders in language files. Plain values are escaped before MiniMessage insertion; only explicitly rich components preserve styling.
 
 ## Editing and safety
 

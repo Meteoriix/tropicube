@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 /** Calls LibreTranslate while keeping MiniMessage and project tokens outside translated segments. */
 final class TranslationService {
     private static final Pattern PROTECTED = Pattern.compile(
-            "(?<!\\\\)<[^<>]+>|\\\\<[^<>]+>|\\{\\d+}|/[a-zA-Z0-9_:-]+|"
+            "(?<!\\\\)<[^<>]+>|\\\\<[^<>]+>|\\{(?:[a-z][a-z0-9_]*|\\d+)}|/[a-zA-Z0-9_:-]+|"
                     + "[a-zA-Z0-9_.-]+\\.[a-zA-Z0-9_.-]+|\\p{S}[\\p{M}\\u200D\\p{S}]*");
     private final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(3)).build();
     private final Gson gson = new Gson();

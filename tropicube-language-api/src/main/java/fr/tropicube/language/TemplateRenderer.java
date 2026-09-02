@@ -6,6 +6,7 @@ import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -55,10 +56,15 @@ public final class TemplateRenderer {
     }
 
     public static Set<String> placeholders(String template) {
+        return Set.copyOf(orderedPlaceholders(template));
+    }
+
+    /** Returns distinct placeholders in their first-occurrence order. */
+    public static List<String> orderedPlaceholders(String template) {
         Matcher matcher = NAMED.matcher(Objects.requireNonNull(template, "template"));
         Set<String> result = new LinkedHashSet<>();
         while (matcher.find()) result.add(matcher.group(1));
-        return Set.copyOf(result);
+        return List.copyOf(result);
     }
 
     private static Component asComponent(PlaceholderValue value) {

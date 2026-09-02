@@ -35,7 +35,7 @@ La validation reconnaît toutes les balises fournies par `StandardTags.defaults(
 
 La sérialisation conserve chaque chaîne YAML sur une seule ligne physique, quelle que soit sa longueur, afin de rester compatible avec la fusion de configuration des scripts de déploiement.
 
-Les nouvelles API acceptent des placeholders nommés comme `{player}`, `{balance}` ou `{countdown}`. Les anciennes formes positionnelles `{0}` restent lisibles pendant la migration. Une valeur texte est échappée avant son insertion MiniMessage ; seul un composant explicitement riche conserve son style.
+Toutes les ressources utilisent des placeholders nommés comme `{player}`, `{balance}` ou `{countdown}`. L'adaptateur interne des anciens appels Java les associe dans leur ordre déclaré pendant la migration des consommateurs, sans réintroduire de placeholder positionnel dans les fichiers de langue. Une valeur texte est échappée avant son insertion MiniMessage ; seul un composant explicitement riche conserve son style.
 
 ## Édition et sécurité
 

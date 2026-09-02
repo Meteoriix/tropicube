@@ -155,15 +155,21 @@ public class ScoreboardManager implements UiReloadParticipant {
                 if (gp.getTeam() == null || !gp.isAlive()) {
                     player.sendPlayerListHeaderAndFooter(
                             LangHelper.component(player, "sw.tab-header"),
-                            LangHelper.component(player, "sw.tab-footer-spectator", red, blue,
-                                    formatTime(plugin.getGameManager().getGameTime())));
+                            LangHelper.component(player, "sw.tab-footer-spectator", PlaceholderValues.builder()
+                                    .put("red_players", red)
+                                    .put("blue_players", blue)
+                                    .put("time", formatTime(plugin.getGameManager().getGameTime()))
+                                    .build()));
                 } else {
                     String teamName = localizedTeamName(player, gp.getTeam());
                     player.sendPlayerListHeaderAndFooter(
                             LangHelper.component(player, "sw.tab-header"),
-                            LangHelper.component(player, "sw.tab-footer",
-                                    teamName, red, blue,
-                                    formatTime(plugin.getGameManager().getGameTime())));
+                            LangHelper.component(player, "sw.tab-footer", PlaceholderValues.builder()
+                                    .putComponent("team", MessageStyle.component(teamName))
+                                    .put("red_players", red)
+                                    .put("blue_players", blue)
+                                    .put("time", formatTime(plugin.getGameManager().getGameTime()))
+                                    .build()));
                 }
             }
             case ENDING, ENDED -> player.sendPlayerListHeaderAndFooter(

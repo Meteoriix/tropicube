@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class LanguageFilesTest {
     @Test
     void validatesMatchingKeysListsAndPlaceholders() {
-        String french = "menu:\n  title: \"<gold>Bonjour {0}\"\n  lore:\n    - \"<gray>Ligne {1}\"\n";
+        String french = "menu:\n  title: \"<gold>Bonjour {player}\"\n  lore:\n    - \"<gray>Ligne {description}\"\n";
         Map<String, String> documents = new LinkedHashMap<>();
         for (String language : LanguageFiles.LANGUAGES) documents.put(language, french);
         assertTrue(new LanguageFiles(java.nio.file.Path.of(".")).validate(documents).isEmpty());
@@ -20,10 +20,10 @@ class LanguageFilesTest {
     @Test
     void reportsPlaceholderAndKeyDrift() {
         Map<String, String> documents = new LinkedHashMap<>();
-        documents.put("fr", "message: \"Bonjour {0}\"\n");
+        documents.put("fr", "message: \"Bonjour {player}\"\n");
         documents.put("en", "message: \"Hello\"\n");
-        documents.put("de", "other: \"Hallo {0}\"\n");
-        documents.put("es", "message: \"Hola {0}\"\n");
+        documents.put("de", "other: \"Hallo {player}\"\n");
+        documents.put("es", "message: \"Hola {player}\"\n");
         var diagnostics = new LanguageFiles(java.nio.file.Path.of(".")).validate(documents);
         assertEquals(2, diagnostics.size());
     }

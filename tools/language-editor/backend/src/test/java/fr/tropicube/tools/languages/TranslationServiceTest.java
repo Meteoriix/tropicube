@@ -31,10 +31,10 @@ class TranslationServiceTest {
         try {
             URI endpoint = URI.create("http://127.0.0.1:" + server.getAddress().getPort() + "/translate");
             String result = new TranslationService(endpoint, "").translate(
-                    "<tc><green>Bonjour Tropicube {0}, utilise /play", "en", Map.of("Tropicube", "Tropicube"));
-            assertEquals("<tc><green>translated Tropicube {0}translated /play", result);
+                    "<tc><green>Bonjour Tropicube {player}, utilise /play", "en", Map.of("Tropicube", "Tropicube"));
+            assertEquals("<tc><green>translated Tropicube {player}translated /play", result);
             assertTrue(requests.stream().noneMatch(body -> body.contains("<tc>")
-                    || body.contains("Tropicube") || body.contains("{0}") || body.contains("/play")));
+                    || body.contains("Tropicube") || body.contains("{player}") || body.contains("/play")));
         } finally {
             server.stop(0);
         }

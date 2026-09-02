@@ -18,6 +18,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 #### Changed
 
+- The remaining positional placeholders in Core and Velocity resources now use stable names shared by all four languages and their Docker copies.
 - Scoreboard titles can now be edited in all four languages, and their preview applies the actual MiniMessage formatting and sample placeholders.
 - The language editor's structured view now accepts natural line breaks with Enter and preserves them as MiniMessage `<br>` tags.
 - Lore previously split across numbered keys now uses one key with `<br>` line breaks; the language selector configuration follows the same convention.

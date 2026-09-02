@@ -27,7 +27,7 @@ public final class LangHelper {
 
     /**
      * Resolves {@code key} in player language and replaces settings
-     * positional {@code {0}}, {@code {1}}, etc. A visible key is returned
+     * named placeholders. A visible key is returned
      * if TropicubeCore is unavailable in order to make the error diagnosable.
      */
     public static String get(Player player, String key, Object... args) {

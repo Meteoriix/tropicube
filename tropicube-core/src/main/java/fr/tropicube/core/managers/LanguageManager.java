@@ -76,10 +76,7 @@ public class LanguageManager {
 
         if (msg == null) return "<tc><red>Clé de traduction manquante : <white>" + key;
 
-        for (int i = 0; i < args.length; i++) {
-            msg = msg.replace("{" + i + "}", String.valueOf(args[i]));
-        }
-        return msg;
+        return args.length == 0 ? msg : MessageStyle.miniMessage(msg, PlaceholderValues.ordered(msg, args));
     }
 
     /** Returns localized MiniMessage with safely rendered named placeholders. */
@@ -105,10 +102,7 @@ public class LanguageManager {
         YamlConfiguration config = languages.getOrDefault(lang, languages.get(defaultLanguage));
         if (config == null) return key;
         String msg = config.getString(key, key);
-        for (int i = 0; i < args.length; i++) {
-            msg = msg.replace("{" + i + "}", String.valueOf(args[i]));
-        }
-        return msg;
+        return args.length == 0 ? msg : MessageStyle.miniMessage(msg, PlaceholderValues.ordered(msg, args));
     }
 
     /** Returns localized MiniMessage for an explicit language with named placeholders. */

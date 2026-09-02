@@ -18,6 +18,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 #### Modifié
 
+- Les derniers placeholders positionnels des ressources Core et Velocity ont été migrés vers des noms stables, identiques dans les quatre langues et leurs copies Docker.
 - Les titres des scoreboards sont désormais éditables dans les quatre langues et leur aperçu applique réellement le formatage MiniMessage et les placeholders d'exemple.
 - La vue structurée de l'éditeur de langues permet désormais d'insérer naturellement des sauts de ligne avec Entrée, puis les conserve sous forme de balises MiniMessage `<br>`.
 - Les lores auparavant répartis entre des clés numérotées sont regroupés dans une clé unique utilisant `<br>` ; le sélecteur de langue suit la même convention dans sa configuration.

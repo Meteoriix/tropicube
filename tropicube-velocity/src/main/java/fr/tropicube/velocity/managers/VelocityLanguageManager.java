@@ -101,8 +101,7 @@ public class VelocityLanguageManager {
 
     private String format(String lang, String key, Object... args) {
         String msg = raw(lang, key);
-        for (int i = 0; i < args.length; i++) msg = msg.replace("{" + i + "}", String.valueOf(args[i]));
-        return msg;
+        return args.length == 0 ? msg : MessageStyle.miniMessage(msg, PlaceholderValues.ordered(msg, args));
     }
 
     private String raw(String lang, String key) {

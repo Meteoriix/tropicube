@@ -26,6 +26,25 @@ public final class PlaceholderValues {
         return new Builder();
     }
 
+    /**
+     * Adapts positional callers to a named template using the placeholders' declared order.
+     * This exists only while callers migrate to explicit names; language resources must keep
+     * the same placeholder order in every locale.
+     */
+    public static PlaceholderValues ordered(String template, Object... arguments) {
+        Objects.requireNonNull(arguments, "arguments");
+        var names = TemplateRenderer.orderedPlaceholders(template);
+        if (arguments.length > names.size()) {
+            throw new IllegalArgumentException("Trop d'arguments pour le modèle : " + arguments.length
+                    + " reçus, " + names.size() + " attendus");
+        }
+        Builder builder = builder();
+        for (int index = 0; index < arguments.length; index++) {
+            builder.put(names.get(index), arguments[index]);
+        }
+        return builder.build();
+    }
+
     public static PlaceholderValues of(String name, Object value) {
         return builder().put(name, value).build();
     }
