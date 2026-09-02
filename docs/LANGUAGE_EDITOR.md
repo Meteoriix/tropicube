@@ -49,6 +49,7 @@ Toutes les ressources utilisent des placeholders nommés comme `{player}`, `{bal
 - la barre d'état distingue Docker disponible d'une synchronisation live partielle ou impossible, sans annuler les fichiers déjà enregistrés.
 - l'onglet Scoreboards regroupe les variantes d'un même scoreboard, permet d'éditer son titre dans les quatre langues, affiche son rendu MiniMessage réel avec des exemples de placeholders, puis permet d'ajouter, retirer ou réordonner ses quinze lignes Minecraft ;
 - l'onglet Menus affiche la grille de l'inventaire, les boutons requis, les zones dynamiques et les propriétés localisées des items ;
+- l'onglet Placeholders inventorie automatiquement tous les placeholders nommés de Core et Velocity, permet de les rechercher et affiche chaque module et clé de traduction qui les utilise ;
 - les brouillons de manifestes disposent d'un historique annuler/rétablir, du glisser-déposer et d'un récapitulatif avant application.
 
 La synchronisation live utilise exclusivement le client Docker local, des conteneurs Tropicube actifs et leur RCON interne. Elle ne publie aucun port supplémentaire et ne lit aucun mot de passe. `TROPICUBE_DOCKER_COMMAND` permet de remplacer le nom de l'exécutable `docker`. Une première livraison de cette version reste nécessaire pour installer le moteur. Les applications suivantes ne nécessitent plus de rebuild : Core publie une génération complète et hashée dans Redis, et toute nouvelle instance la restaure avant d'initialiser ses langues et interfaces.

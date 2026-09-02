@@ -4,6 +4,12 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+### 2026-09-03
+
+#### Added
+
+- The editor now provides a Placeholders tab that groups names used throughout language resources and lists their consuming keys and modules.
+
 ### 2026-09-02
 
 #### Added

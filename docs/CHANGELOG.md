@@ -4,6 +4,12 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-09-03
+
+#### Ajouté
+
+- L'éditeur propose un onglet Placeholders qui regroupe les noms utilisés dans toutes les langues et indique leurs clés et modules consommateurs.
+
 ### 2026-09-02
 
 #### Ajouté

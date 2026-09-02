@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { documents, editableValue, filterKeys, flatten, inferContext, rename, serialize, setValue, value, valueFromEditor, withTranslations } from './model';
+import { collectPlaceholders, documents, editableValue, filterKeys, flatten, inferContext, rename, serialize, setValue, value, valueFromEditor, withTranslations } from './model';
 import { parseDocument } from 'yaml';
 
 describe('language model', () => {
@@ -64,5 +64,19 @@ describe('language model', () => {
   it('keeps each textarea line as a distinct YAML list item', () => {
     expect(valueFromEditor(['Première ligne'], 'Première ligne\nSeconde ligne'))
       .toEqual(['Première ligne', 'Seconde ligne']);
+  });
+
+  it('lists and deduplicates named placeholders across language sets', () => {
+    const files = (content: string) => Object.fromEntries(['fr', 'en', 'de', 'es']
+      .map(locale => [locale, { content, hash: locale }])) as any;
+    const placeholders = collectPlaceholders([
+      { set: { id: 'core', sourceDirectory: 'core' }, files: files('one: "{player} {balance} {player}"\n') },
+      { set: { id: 'velocity', sourceDirectory: 'velocity' }, files: files('two: "{player}"\n') },
+    ]);
+
+    expect(placeholders.map(entry => entry.name)).toEqual(['balance', 'player']);
+    expect(placeholders.find(entry => entry.name === 'player')?.references).toEqual([
+      { set: 'core', key: 'one' }, { set: 'velocity', key: 'two' },
+    ]);
   });
 });

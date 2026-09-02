@@ -90,4 +90,15 @@ details code { display: block; padding: 6px; white-space: pre-wrap; }
 .menu-preview .inventory-grid { margin-top: 4px; }
 .item-tooltip { margin: 8px; padding: 10px; color: white; background: #100010ee; border: 2px solid #2d0a54; text-shadow: 1px 1px #000; }
 .item-tooltip p { white-space: pre-wrap; color: #aaa; }
+.placeholder-count { color: #86a8ab; font-size: 13px; }
+.placeholder-editor > p { color: #9eb8bb; }
+.placeholder-editor h3 { margin-top: 26px; color: #fff; }
+.placeholder-references { display: grid; gap: 7px; }
+.placeholder-references > div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid #29494d; border-radius: 7px; background: #0c1c1f; }
+.placeholder-references strong { overflow-wrap: anywhere; }
+.placeholder-references small { flex: none; color: #718e91; }
+.placeholder-card { display: grid; gap: 10px; margin-top: 45px; padding: 20px; border: 1px solid #29494d; border-radius: 10px; background: #0c1c1f; }
+.placeholder-card code { color: #5df0ed; font-size: 20px; overflow-wrap: anywhere; }
+.placeholder-card span, .placeholder-card small { color: #86a8ab; }
+.placeholder-card strong { color: #fff; font-size: 18px; }
 @media (max-width: 1300px) { .workspace { grid-template-columns: 230px minmax(460px, 1fr) 330px; } }

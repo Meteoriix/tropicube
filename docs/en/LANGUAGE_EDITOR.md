@@ -49,6 +49,7 @@ All resources use named placeholders such as `{player}`, `{balance}`, or `{count
 - the status bar distinguishes an available Docker daemon from a partial or failed live synchronization without rolling back files that were already saved.
 - the Scoreboards tab groups variants, edits the title in all four languages, previews its actual MiniMessage rendering with placeholder samples, and can add, remove, or reorder all fifteen Minecraft lines;
 - the Menus tab renders the inventory grid, required buttons, dynamic regions, and localized item properties;
+- the Placeholders tab automatically inventories every named Core and Velocity placeholder, supports search, and lists every module and translation key that uses it;
 - manifest drafts support undo/redo, drag and drop, and a summary before applying changes.
 
 Live synchronization exclusively uses the local Docker client, active Tropicube containers, and their internal RCON service. It does not publish an additional port or read a password. `TROPICUBE_DOCKER_COMMAND` overrides the default executable. This version must be delivered once to install the engine. Later applications need no image rebuild: Core publishes a complete hashed generation to Redis and new instances restore it before initializing languages and interfaces.

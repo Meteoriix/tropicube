@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { parse, stringify } from 'yaml';
-import { Diagnostic, documents, editableValue, FileSnapshot, filterKeys, flatten, inferContext, Locale, locales, rename, SearchMode, serialize, setValue, StateSet, value, valueFromEditor, withTranslations } from './model';
+import { collectPlaceholders, Diagnostic, documents, editableValue, FileSnapshot, filterKeys, flatten, inferContext, Locale, locales, PlaceholderSummary, rename, SearchMode, serialize, setValue, StateSet, value, valueFromEditor, withTranslations } from './model';
 import './styles.css';
 
 type Docs = ReturnType<typeof documents>;
@@ -9,7 +9,7 @@ type ComponentNode = { text?: string; color?: string; bold?: boolean; italic?: b
 type LiveStatus = { available: boolean; message: string };
 type LiveResult = { available: boolean; updatedContainers: number; containers: string[]; errors: string[] };
 type UiSnapshot = { id: string; module: string; type: 'scoreboards' | 'menus'; sourcePath: string; mirrorPath?: string; content: string; hash: string };
-type EditorMode = 'texts' | 'scoreboards' | 'menus';
+type EditorMode = 'texts' | 'scoreboards' | 'menus' | 'placeholders';
 
 async function api<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(path, options);
@@ -30,6 +30,7 @@ function App() {
   const [surfacePreview, setSurfacePreview] = useState<ComponentNode[]>([]);
   const [scoreboardTitlePreview, setScoreboardTitlePreview] = useState<ComponentNode | null>(null);
   const [selectedButton, setSelectedButton] = useState('');
+  const [selectedPlaceholder, setSelectedPlaceholder] = useState('');
   const [setIndex, setSetIndex] = useState(0);
   const [docs, setDocs] = useState<Docs | null>(null);
   const [snapshots, setSnapshots] = useState<Record<Locale, FileSnapshot> | null>(null);
@@ -59,10 +60,15 @@ function App() {
     setSnapshots(sets[setIndex].files);
     const parsed = documents(sets[setIndex].files);
     setDocs(parsed);
-    setSelected(flatten(parsed.fr)[0] || '');
+    const availableKeys = flatten(parsed.fr);
+    setSelected(currentKey => availableKeys.includes(currentKey) ? currentKey : availableKeys[0] || '');
   }, [sets, setIndex]);
 
   const keys = useMemo(() => docs ? filterKeys(docs, search, searchMode) : [], [docs, search, searchMode]);
+  const placeholders = useMemo(() => collectPlaceholders(sets), [sets]);
+  const filteredPlaceholders = useMemo(() => placeholders.filter(entry =>
+    entry.name.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+    || entry.references.some(reference => `${reference.set} ${reference.key}`.toLocaleLowerCase().includes(search.toLocaleLowerCase()))), [placeholders, search]);
   const surfaces = useMemo(() => uiSnapshots.flatMap(file => Object.keys(uiDocuments[file.id]?.[file.type] || {})
     .map(id => ({ file, id, identity: `${file.id}/${id}`, definition: uiDocuments[file.id][file.type][id] })))
     .filter(surface => mode === 'texts' || surface.file.type === mode), [uiSnapshots, uiDocuments, mode]);
@@ -86,7 +92,7 @@ function App() {
   }, [docs, selected, catalog, setIndex, sets]);
 
   useEffect(() => {
-    if (mode === 'texts') return;
+    if (mode === 'texts' || mode === 'placeholders') return;
     const coreIndex = sets.findIndex(entry => entry.set.id === 'tropicube-core');
     if (coreIndex >= 0 && coreIndex !== setIndex) setSetIndex(coreIndex);
     if (!surfaces.some(surface => surface.identity === selectedUi)) {
@@ -96,7 +102,15 @@ function App() {
     }
   }, [mode, surfaces, selectedUi, sets, setIndex]);
 
+  useEffect(() => {
+    if (mode !== 'placeholders') return;
+    if (!filteredPlaceholders.some(entry => entry.name === selectedPlaceholder)) {
+      setSelectedPlaceholder(filteredPlaceholders[0]?.name || '');
+    }
+  }, [mode, filteredPlaceholders, selectedPlaceholder]);
+
   const selectedSurface = surfaces.find(surface => surface.identity === selectedUi);
+  const placeholder = placeholders.find(entry => entry.name === selectedPlaceholder);
 
   useEffect(() => {
     if (!docs || !selectedSurface || mode !== 'scoreboards') {
@@ -174,6 +188,7 @@ function App() {
       documents: Object.fromEntries(locales.map(locale => [locale, serialize(docs[locale])])),
     }) });
     setSnapshots(result.files); setDocs(documents(result.files));
+    setSets(currentSets => currentSets.map((entry, index) => index === setIndex ? { ...entry, files: result.files } : entry));
     setLive({ available: result.live.available && !result.live.errors.length, message: result.live.errors.length ? result.live.errors.join(' · ') : 'Jeu synchronisé' });
     if (result.live.updatedContainers > 0 && !result.live.errors.length) {
       setNotice(`Enregistré et rechargé dans ${result.live.updatedContainers} serveur(s)`);
@@ -225,6 +240,7 @@ function App() {
         documents: Object.fromEntries(locales.map(locale => [locale, serialize(docs[locale])])),
       }) });
       setSnapshots(languageResult.files); setDocs(documents(languageResult.files));
+      setSets(currentSets => currentSets.map((entry, index) => index === setIndex ? { ...entry, files: languageResult.files } : entry));
       liveAvailable ||= languageResult.live.available;
       updatedContainers = Math.max(updatedContainers, languageResult.live.updatedContainers);
       liveErrors.push(...languageResult.live.errors);
@@ -293,12 +309,12 @@ function App() {
     <header><div><strong>TROPICUBE</strong><span>Éditeur de langues</span></div><div className="actions">
       <span className={provider ? 'status ok' : 'status'}>{provider ? 'LibreTranslate prêt' : 'Traduction hors ligne'}</span>
       <span title={live.message} className={live.available ? 'status ok' : 'status'}>{live.available ? 'Jeu connecté' : 'Jeu hors ligne'}</span>
-      <button onClick={mode === 'texts' ? validate : validateUi}>Valider</button><button className="primary" onClick={mode === 'texts' ? apply : applyUi}>Appliquer</button>
+      {mode !== 'placeholders' && <><button onClick={mode === 'texts' ? validate : validateUi}>Valider</button><button className="primary" onClick={mode === 'texts' ? apply : applyUi}>Appliquer</button></>}
     </div></header>
     <section className="toolbar">
-      <div className="mode-tabs">{(['texts','scoreboards','menus'] as EditorMode[]).map(item => <button className={mode === item ? 'active' : ''} key={item} onClick={() => setMode(item)}>{item === 'texts' ? 'Textes' : item === 'scoreboards' ? 'Scoreboards' : 'Menus'}</button>)}</div>
+      <div className="mode-tabs">{(['texts','scoreboards','menus','placeholders'] as EditorMode[]).map(item => <button className={mode === item ? 'active' : ''} key={item} onClick={() => { setMode(item); setSearch(''); }}>{item === 'texts' ? 'Textes' : item === 'scoreboards' ? 'Scoreboards' : item === 'menus' ? 'Menus' : `Placeholders (${placeholders.length})`}</button>)}</div>
       {mode === 'texts' && <select value={setIndex} onChange={event => setSetIndex(Number(event.target.value))}>{sets.map((entry, index) => <option key={entry.set.id} value={index}>{entry.set.id}</option>)}</select>}
-      {mode !== 'texts' && <><button disabled={!uiHistory.length} onClick={undoUi}>Annuler</button><button disabled={!uiFuture.length} onClick={redoUi}>Rétablir</button></>}
+      {(mode === 'scoreboards' || mode === 'menus') && <><button disabled={!uiHistory.length} onClick={undoUi}>Annuler</button><button disabled={!uiFuture.length} onClick={redoUi}>Rétablir</button></>}
       {mode === 'texts' && <>
       <select aria-label="Type de recherche" value={searchMode} onChange={event => setSearchMode(event.target.value as SearchMode)}>
         <option value="key">Clé</option><option value="text">Texte</option>
@@ -308,13 +324,16 @@ function App() {
         value={search} onChange={event => setSearch(event.target.value)} />
       <button onClick={createKey}>+ Clé</button><button onClick={() => setRaw(!raw)}>{raw ? 'Édition structurée' : 'YAML français'}</button>
       </>}
+      {mode === 'placeholders' && <input aria-label="Rechercher un placeholder" placeholder="Rechercher un placeholder, un module ou une clé…" value={search} onChange={event => setSearch(event.target.value)} />}
       <span className="notice">{notice}</span>
     </section>
     <div className="workspace">
       <aside>{mode === 'texts' ? keys.map(key => <button className={key === selected ? 'active' : ''} key={key} onClick={() => setSelected(key)}>{key}</button>)
+        : mode === 'placeholders' ? filteredPlaceholders.map(entry => <button className={entry.name === selectedPlaceholder ? 'active' : ''} key={entry.name} onClick={() => setSelectedPlaceholder(entry.name)}>{`{${entry.name}}`}<small>{entry.references.length} clé(s)</small></button>)
         : surfaces.map(surface => <button className={surface.identity === selectedUi ? 'active' : ''} key={surface.identity} onClick={() => { setSelectedUi(surface.identity); setSelectedVariant(Object.keys(surface.definition.variants || {})[0] || ''); }}>{surface.file.module}<small>{surface.id}</small></button>)}</aside>
       <section className="editor">
-        {mode === 'scoreboards' && selectedSurface ? <ScoreboardEditor surface={selectedSurface} variant={selectedVariant} setVariant={setSelectedVariant} mutate={mutateUi} docs={docs} mutateLanguages={mutate} />
+        {mode === 'placeholders' ? <PlaceholderEditor placeholder={placeholder} />
+        : mode === 'scoreboards' && selectedSurface ? <ScoreboardEditor surface={selectedSurface} variant={selectedVariant} setVariant={setSelectedVariant} mutate={mutateUi} docs={docs} mutateLanguages={mutate} />
         : mode === 'menus' && selectedSurface ? <MenuEditor surface={selectedSurface} selectedButton={selectedButton} setSelectedButton={setSelectedButton} mutate={mutateUi} />
         : raw ? <textarea className="raw" value={serialize(docs.fr)} onChange={event => mutate(copy => { copy.fr = documents({ ...snapshots, fr: { ...snapshots.fr, content: event.target.value } }).fr; })} /> : <>
           <div className="keyline"><h2>{selected}</h2><button onClick={renameKey}>Renommer</button><button className="danger" onClick={deleteKey}>Supprimer</button></div>
@@ -330,7 +349,8 @@ function App() {
         </>}
       </section>
       <section className="preview"><div className="preview-head"><b>Aperçu</b>{mode === 'texts' && <select value={context} onChange={event => { setContext(event.target.value); updateEntry({ context: event.target.value }); }}>{['chat','title','subtitle','actionbar','inventory','lore','scoreboard','tablist'].map(item => <option key={item}>{item}</option>)}</select>}</div>
-        {mode === 'scoreboards' ? <div className="scoreboard-full"><strong><Rendered node={scoreboardTitlePreview} /></strong>{surfacePreview.map((line,index) => <div key={index}><Rendered node={line} /></div>)}</div>
+        {mode === 'placeholders' ? <PlaceholderPreview placeholder={placeholder} />
+        : mode === 'scoreboards' ? <div className="scoreboard-full"><strong><Rendered node={scoreboardTitlePreview} /></strong>{surfacePreview.map((line,index) => <div key={index}><Rendered node={line} /></div>)}</div>
         : mode === 'menus' && selectedSurface ? <MenuPreview surface={selectedSurface} selectedButton={selectedButton} docs={docs} />
         : <div className={`frame ${context}`}><Rendered node={preview} /></div>}
         {mode === 'texts' && <>
@@ -341,6 +361,21 @@ function App() {
       </section>
     </div>
   </main>;
+}
+
+function PlaceholderEditor({ placeholder }: { placeholder?: PlaceholderSummary }) {
+  if (!placeholder) return <p className="empty-editor">Aucun placeholder ne correspond à la recherche.</p>;
+  const modules = [...new Set(placeholder.references.map(reference => reference.set))];
+  return <div className="placeholder-editor"><div className="keyline"><h2>{`{${placeholder.name}}`}</h2><span className="placeholder-count">{placeholder.references.length} clé(s)</span></div>
+    <p>Présent dans {modules.length} module(s) : {modules.join(', ')}.</p>
+    <h3>Clés de traduction</h3>
+    <div className="placeholder-references">{placeholder.references.map(reference => <div key={`${reference.set}:${reference.key}`}><strong>{reference.key}</strong><small>{reference.set}</small></div>)}</div>
+  </div>;
+}
+
+function PlaceholderPreview({ placeholder }: { placeholder?: PlaceholderSummary }) {
+  if (!placeholder) return <div className="placeholder-card empty-editor">Aucun résultat</div>;
+  return <div className="placeholder-card"><code>{`{${placeholder.name}}`}</code><span>Exemple</span><strong>{placeholderSample(placeholder.name)}</strong><small>Valeur texte échappée avant insertion MiniMessage</small></div>;
 }
 
 function ScoreboardEditor({ surface, variant, setVariant, mutate, docs, mutateLanguages }: { surface: any; variant: string; setVariant: (value: string) => void; mutate: (fn: (copy: Record<string, any>) => void) => void; docs: Docs; mutateLanguages: (fn: (copy: Docs) => void) => void }) {
