@@ -744,7 +744,7 @@ guild:
   usage: "<tc><yellow>Usage: /guild info|create \\<name> \\<tag>|invite|accept|leave|kick|promote|demote|transfer|ranking"
 
 center:
-  profile-hotbar-name: "<gold>⛏Profile"
+  profile-hotbar-name: "<gold>⛏ Profile"
   profile-hotbar-lore: "<gray>Profile, settings and progress. <yellow>▶ Right click: open"
   title: "<dark_aqua>Profile <dark_gray>• Home"
   profile: "<gold>Full profile"

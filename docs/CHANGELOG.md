@@ -13,6 +13,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 #### Corrigé
 
 - Le serveur de l'éditeur termine désormais correctement les réponses des fichiers statiques, afin que l'interface charge sans rester en attente.
+- Le nom du profil dans la hotbar sépare désormais correctement son icône de son libellé dans les quatre langues.
 
 ### 2026-08-28
 

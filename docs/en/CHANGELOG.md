@@ -13,6 +13,7 @@ This document records functional, technical, and operational changes. Entries ar
 #### Fixed
 
 - The editor server now completes static-file responses correctly, so the interface loads without hanging.
+- The profile hotbar name now correctly separates its icon from its label in all four languages.
 
 ### 2026-08-28
 
