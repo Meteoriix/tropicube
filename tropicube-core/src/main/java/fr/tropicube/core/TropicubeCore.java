@@ -267,6 +267,7 @@ public class TropicubeCore extends JavaPlugin {
 
             // --- General administration ---
             Objects.requireNonNull(getCommand("coreadmin")).setExecutor(new TropicubeAdminPaperCommand(this));
+            Objects.requireNonNull(getCommand("languageeditorreload")).setExecutor(new LanguageEditorReloadCommand(this));
             var helpCommand = new HelpCommand(this);
             Objects.requireNonNull(getCommand("help")).setExecutor(helpCommand);
             Objects.requireNonNull(getCommand("help")).setTabCompleter(helpCommand);

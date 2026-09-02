@@ -277,6 +277,10 @@ public class TropicubeVelocity {
                 new TropiAdminCommand(tropiServerManager, languageManager)
         );
         server.getCommandManager().register(
+                server.getCommandManager().metaBuilder("languageeditorreload").build(),
+                new LanguageEditorReloadCommand(this, server, languageManager)
+        );
+        server.getCommandManager().register(
                 server.getCommandManager().metaBuilder("server").build(),
                 new ServerSelectorCommand(this, tropiServerManager, languageManager)
         );

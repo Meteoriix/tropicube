@@ -4,7 +4,7 @@ L'éditeur de langues Tropicube est une application web locale destinée aux res
 
 ## Démarrage
 
-Java 25, Node.js 24 et npm sont requis. Sous Windows, lancer `.\language-editor.ps1`. Sous Linux ou macOS, lancer `./language-editor.sh`. Le script construit l'application, la démarre dans un processus indépendant, ouvre le navigateur et rend ensuite le terminal. Fermer le terminal n'arrête donc pas l'éditeur.
+Java 25, Node.js 24, npm et le client Docker sont requis. Sous Windows, lancer `.\language-editor.ps1`. Sous Linux ou macOS, lancer `./language-editor.sh`. Le script construit l'application, la démarre dans un processus indépendant, ouvre le navigateur et rend ensuite le terminal. Fermer le terminal n'arrête donc pas l'éditeur.
 
 Les commandes de cycle de vie sont identiques sur les deux plateformes :
 
@@ -42,7 +42,11 @@ La sérialisation conserve chaque chaîne YAML sur une seule ligne physique, que
 - les aperçus couvrent chat, titres, actionbar, inventaires, lores, scoreboard et tablist ;
 - la validation contrôle YAML, parité des clés, placeholders et balises autorisées ;
 - une écriture est refusée si un fichier a changé depuis son ouverture ;
-- les quatre sources et leurs miroirs Docker sont remplacés ensemble, avec rollback sur erreur.
+- les quatre sources et leurs miroirs Docker sont remplacés ensemble, avec rollback sur erreur ;
+- après l'enregistrement, les fichiers validés sont copiés dans Velocity ou dans toutes les instances Paper actives, puis la commande interne `languageeditorreload` recharge uniquement les langues ;
+- la barre d'état distingue Docker disponible d'une synchronisation live partielle ou impossible, sans annuler les fichiers déjà enregistrés.
+
+La synchronisation live utilise exclusivement le client Docker local, des conteneurs Tropicube actifs et leur RCON interne. Elle ne publie aucun port supplémentaire et ne lit aucun mot de passe. `TROPICUBE_DOCKER_COMMAND` permet de remplacer le nom de l'exécutable `docker`. Une première livraison de cette version reste nécessaire pour installer la commande interne dans Core et Velocity et activer le RCON de Velocity ; les changements de textes suivants ne nécessitent plus de rebuild d'image ni de déploiement. Une instance créée après une édition récupère les langues de son image jusqu'à la prochaine action **Appliquer** de l'éditeur.
 
 Le catalogue versionné `tools/language-editor/catalog.yml` contient le glossaire, les corrections de contexte et les exemples de placeholders. Les traductions automatiques restent des propositions : relire au minimum l'anglais et vérifier en jeu les interfaces sensibles à la largeur du texte.
 

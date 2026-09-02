@@ -126,6 +126,9 @@ commands:
     usage: /coreadmin <reload|info>
     permission: tropicube.admin
     aliases: [ tropiadmin, ca ]
+  languageeditorreload:
+    description: "Recharge les langues depuis l'éditeur local"
+    usage: /languageeditorreload
   help:
     description: "Affiche les commandes Tropicube disponibles"
     usage: /help [general|games|social|profile|staff]

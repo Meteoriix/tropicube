@@ -1,0 +1,179 @@
+package fr.tropicube.tools.languages;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+/** Copies validated translations to running Tropicube containers and reloads them through local RCON. */
+final class LiveLanguageDeployment {
+    private static final Duration COMMAND_TIMEOUT = Duration.ofSeconds(30);
+    private static final int MAX_OUTPUT_CHARACTERS = 16_384;
+
+    private final Path repository;
+    private final CommandRunner runner;
+    private final String dockerCommand;
+
+    LiveLanguageDeployment(Path repository) {
+        this(repository, new ProcessCommandRunner(),
+                System.getenv().getOrDefault("TROPICUBE_DOCKER_COMMAND", "docker"));
+    }
+
+    LiveLanguageDeployment(Path repository, CommandRunner runner, String dockerCommand) {
+        this.repository = repository.toAbsolutePath().normalize();
+        this.runner = runner;
+        this.dockerCommand = dockerCommand;
+    }
+
+    LiveStatus status() {
+        CommandResult result = run(List.of(dockerCommand, "version", "--format", "{{.Server.Version}}"));
+        return new LiveStatus(result.success(), result.success()
+                ? "Docker disponible"
+                : "Docker indisponible : " + result.summary());
+    }
+
+    LiveResult deploy(LanguageFiles.LanguageSet set) {
+        Target target = Target.forSet(set.id());
+        if (target == null) {
+            return new LiveResult(false, 0, List.of(),
+                    List.of("Le module " + set.id() + " ne possède pas de cible de jeu live"));
+        }
+        LiveStatus status = status();
+        if (!status.available()) return new LiveResult(false, 0, List.of(), List.of(status.message()));
+
+        CommandResult listed = run(target.listCommand(dockerCommand));
+        if (!listed.success()) {
+            return new LiveResult(true, 0, List.of(),
+                    List.of("Impossible de lister les conteneurs : " + listed.summary()));
+        }
+
+        List<String> containers = listed.output().lines().map(String::trim)
+                .filter(name -> !name.isEmpty()).distinct().toList();
+        if (containers.isEmpty()) {
+            return new LiveResult(true, 0, List.of(), List.of("Aucun conteneur actif pour " + set.id()));
+        }
+
+        Path sourceDirectory = resolve(set.sourceDirectory());
+        List<String> updated = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
+        for (String container : containers) {
+            try {
+                synchronize(container, sourceDirectory, target);
+                updated.add(container);
+            } catch (IllegalStateException failure) {
+                errors.add(container + " : " + failure.getMessage());
+            }
+        }
+        return new LiveResult(true, updated.size(), List.copyOf(updated), List.copyOf(errors));
+    }
+
+    private void synchronize(String container, Path sourceDirectory, Target target) {
+        String token = UUID.randomUUID().toString().replace("-", "").toLowerCase(Locale.ROOT);
+        String prefix = "/tmp/tropicube-language-editor-" + token;
+        try {
+            for (String language : LanguageFiles.LANGUAGES) {
+                Path source = sourceDirectory.resolve(language + ".yml");
+                requireSuccess(run(List.of(dockerCommand, "cp", source.toString(),
+                        container + ":" + prefix + "-" + language + ".yml")), "copie de " + language + ".yml");
+            }
+            requireSuccess(run(List.of(dockerCommand, "exec", container, "sh", "-c",
+                    installScript(prefix, target.directory()))), "installation atomique des langues");
+            requireSuccess(run(List.of(dockerCommand, "exec", container, "rcon-cli", "languageeditorreload")),
+                    "rechargement en jeu");
+        } finally {
+            run(List.of(dockerCommand, "exec", container, "sh", "-c", "rm -f " + prefix + "-*.yml"));
+        }
+    }
+
+    private static String installScript(String prefix, String directory) {
+        StringBuilder script = new StringBuilder("set -eu; mkdir -p '").append(directory).append("'; ");
+        for (String language : LanguageFiles.LANGUAGES) {
+            script.append("cp '").append(prefix).append('-').append(language).append(".yml' '")
+                    .append(directory).append('/').append(language).append(".yml.next'; ");
+        }
+        for (String language : LanguageFiles.LANGUAGES) {
+            script.append("mv '").append(directory).append('/').append(language).append(".yml.next' '")
+                    .append(directory).append('/').append(language).append(".yml'; ");
+        }
+        return script.toString();
+    }
+
+    private Path resolve(String relative) {
+        Path resolved = repository.resolve(relative).normalize();
+        if (!resolved.startsWith(repository)) throw new IllegalArgumentException("Chemin de langues hors dépôt");
+        return resolved;
+    }
+
+    private CommandResult run(List<String> command) {
+        try {
+            return runner.run(command, repository, COMMAND_TIMEOUT);
+        } catch (IOException exception) {
+            return new CommandResult(-1, exception.getMessage() == null ? exception.getClass().getSimpleName() : exception.getMessage());
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            return new CommandResult(-1, "commande interrompue");
+        }
+    }
+
+    private static void requireSuccess(CommandResult result, String operation) {
+        if (!result.success()) throw new IllegalStateException(operation + " impossible : " + result.summary());
+    }
+
+    record LiveStatus(boolean available, String message) {}
+    record LiveResult(boolean available, int updatedContainers, List<String> containers, List<String> errors) {}
+
+    private record Target(String directory, List<String> filters) {
+        static Target forSet(String id) {
+            return switch (id) {
+                case "tropicube-core" -> new Target("/data/plugins/TropicubeCore/languages",
+                        List.of("--filter", "label=fr.tropicube.dynamic=true", "--filter", "name=^/tropicube-"));
+                case "tropicube-velocity" -> new Target("/server/plugins/tropicube-velocity/languages",
+                        List.of("--filter", "name=^/tropicube-velocity$"));
+                default -> null;
+            };
+        }
+
+        List<String> listCommand(String dockerCommand) {
+            List<String> command = new ArrayList<>(List.of(dockerCommand, "ps"));
+            command.addAll(filters);
+            command.addAll(List.of("--format", "{{.Names}}"));
+            return command;
+        }
+    }
+
+    interface CommandRunner {
+        CommandResult run(List<String> command, Path workingDirectory, Duration timeout)
+                throws IOException, InterruptedException;
+    }
+
+    record CommandResult(int exitCode, String output) {
+        boolean success() { return exitCode == 0; }
+        String summary() {
+            String normalized = output == null ? "" : output.strip().replaceAll("\\s+", " ");
+            if (normalized.length() > MAX_OUTPUT_CHARACTERS) normalized = normalized.substring(0, MAX_OUTPUT_CHARACTERS);
+            return normalized.isEmpty() ? "code " + exitCode : normalized;
+        }
+    }
+
+    private static final class ProcessCommandRunner implements CommandRunner {
+        @Override
+        public CommandResult run(List<String> command, Path workingDirectory, Duration timeout)
+                throws IOException, InterruptedException {
+            Process process = new ProcessBuilder(command).directory(workingDirectory.toFile())
+                    .redirectErrorStream(true).start();
+            boolean completed = process.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS);
+            if (!completed) {
+                process.destroyForcibly();
+                process.waitFor();
+                return new CommandResult(-1, "délai de " + timeout.toSeconds() + " s dépassé");
+            }
+            byte[] bytes = process.getInputStream().readNBytes(MAX_OUTPUT_CHARACTERS * 4);
+            return new CommandResult(process.exitValue(), new String(bytes, StandardCharsets.UTF_8));
+        }
+    }
+}

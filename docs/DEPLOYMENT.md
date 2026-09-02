@@ -179,6 +179,8 @@ Exemples :
 
 Compose démarre ou vérifie automatiquement Redis, MySQL et `docker-proxy` grâce aux dépendances de santé. Par défaut, l'arrêt de l'ancien Velocity supprime les backends dynamiques et leurs volumes de données éphémères avant le redémarrage. Le `/server` de Velocity est un `tmpfs` initialisé depuis l'image : son contenu disparaît à l'arrêt et le JAR fraîchement construit ne peut pas être masqué par un ancien volume. Lors de la première migration, les scripts suppriment précisément l'ancien volume anonyme détecté sur ce chemin. Les futures instances utilisent les nouvelles images `latest`.
 
+Le RCON de Velocity est activé uniquement dans son conteneur pour permettre le rechargement des langues par l'éditeur local ; son port n'est pas publié sur l'hôte. Les commandes dédiées `languageeditorreload` de Core et Velocity refusent les joueurs. Après une première livraison de ces commandes, l'éditeur copie les YAML validés et les recharge sans reconstruire les images.
+
 Pour conserver exceptionnellement les parties actives pendant un redéploiement, régler auparavant `shutdown.stop-dynamic-servers: false` dans la configuration Velocity déployée. Le nouveau proxy restaurera alors les backends encore actifs. Cette option ne doit pas être utilisée pour un arrêt complet.
 
 Le build compile aussi le squelette `tropicube-fallenkingdoms`, mais aucun artefact de ce module n'est distribué ou incorporé à une image tant qu'il ne constitue pas un plugin complet.

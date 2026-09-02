@@ -6,6 +6,8 @@ import './styles.css';
 
 type Docs = ReturnType<typeof documents>;
 type ComponentNode = { text?: string; color?: string; bold?: boolean; italic?: boolean; underlined?: boolean; strikethrough?: boolean; extra?: ComponentNode[] };
+type LiveStatus = { available: boolean; message: string };
+type LiveResult = { available: boolean; updatedContainers: number; containers: string[]; errors: string[] };
 
 async function api<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(path, options);
@@ -27,6 +29,7 @@ function App() {
   const [preview, setPreview] = useState<ComponentNode | null>(null);
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
   const [provider, setProvider] = useState(false);
+  const [live, setLive] = useState<LiveStatus>({ available: false, message: 'Jeu hors ligne' });
   const [englishApproved, setEnglishApproved] = useState(false);
   const [catalog, setCatalog] = useState<any>({ glossary: {}, entries: {} });
   const [catalogText, setCatalogText] = useState('');
@@ -34,8 +37,8 @@ function App() {
   const [notice, setNotice] = useState('Chargement…');
 
   useEffect(() => {
-    Promise.all([api<{sets: StateSet[]; catalog: string}>('/api/state'), api<{available: boolean}>('/api/translation/status')])
-      .then(([state, status]) => { setSets(state.sets); setCatalog(parse(state.catalog)); setCatalogText(state.catalog); setProvider(status.available); setNotice('Prêt'); })
+    Promise.all([api<{sets: StateSet[]; catalog: string; live: LiveStatus}>('/api/state'), api<{available: boolean}>('/api/translation/status')])
+      .then(([state, status]) => { setSets(state.sets); setCatalog(parse(state.catalog)); setCatalogText(state.catalog); setProvider(status.available); setLive(state.live); setNotice('Prêt'); })
       .catch(error => setNotice(error.message));
   }, []);
 
@@ -115,12 +118,18 @@ function App() {
 
   const apply = async () => {
     if (!docs || !snapshots || !(await validate())) return;
-    const result = await api<{files: Record<Locale, FileSnapshot>}>('/api/apply', { method: 'POST', body: JSON.stringify({
+    const result = await api<{files: Record<Locale, FileSnapshot>; live: LiveResult}>('/api/apply', { method: 'POST', body: JSON.stringify({
       set: sets[setIndex].set,
       expectedHashes: Object.fromEntries(locales.map(locale => [locale, snapshots[locale].hash])),
       documents: Object.fromEntries(locales.map(locale => [locale, serialize(docs[locale])])),
     }) });
-    setSnapshots(result.files); setDocs(documents(result.files)); setNotice('Quatre langues et copies Docker enregistrées');
+    setSnapshots(result.files); setDocs(documents(result.files));
+    setLive({ available: result.live.available && !result.live.errors.length, message: result.live.errors.length ? result.live.errors.join(' · ') : 'Jeu synchronisé' });
+    if (result.live.updatedContainers > 0 && !result.live.errors.length) {
+      setNotice(`Enregistré et rechargé dans ${result.live.updatedContainers} serveur(s)`);
+    } else if (result.live.errors.length) {
+      setNotice(`Enregistré, mise à jour en jeu incomplète : ${result.live.errors.join(' · ')}`);
+    } else setNotice('Enregistré ; aucun serveur actif à recharger');
   };
 
   const createKey = () => {
@@ -161,6 +170,7 @@ function App() {
   return <main>
     <header><div><strong>TROPICUBE</strong><span>Éditeur de langues</span></div><div className="actions">
       <span className={provider ? 'status ok' : 'status'}>{provider ? 'LibreTranslate prêt' : 'Traduction hors ligne'}</span>
+      <span title={live.message} className={live.available ? 'status ok' : 'status'}>{live.available ? 'Jeu connecté' : 'Jeu hors ligne'}</span>
       <button onClick={validate}>Valider</button><button className="primary" onClick={apply}>Appliquer</button>
     </div></header>
     <section className="toolbar">

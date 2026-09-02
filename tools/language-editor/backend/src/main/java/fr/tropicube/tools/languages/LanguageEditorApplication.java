@@ -34,12 +34,14 @@ public final class LanguageEditorApplication {
     private final Gson gson = new Gson();
     private final Path repository;
     private final LanguageFiles files;
+    private final LiveLanguageDeployment liveDeployment;
     private final TranslationService translations = new TranslationService();
     private final MiniMessage miniMessage;
 
     private LanguageEditorApplication(Path repository) {
         this.repository = repository;
         this.files = new LanguageFiles(repository);
+        this.liveDeployment = new LiveLanguageDeployment(repository);
         Component network = prefix("TROPICUBE", NamedTextColor.GOLD);
         Component sheepwars = prefix("SHEEPWARS", NamedTextColor.AQUA);
         this.miniMessage = MiniMessage.builder().tags(TagResolver.builder()
@@ -105,7 +107,8 @@ public final class LanguageEditorApplication {
         }).toList();
         Path catalog = repository.resolve("tools/language-editor/catalog.yml");
         json(exchange, 200, Map.of("sets", sets, "catalog",
-                Files.exists(catalog) ? Files.readString(catalog) : "version: 1\n"));
+                Files.exists(catalog) ? Files.readString(catalog) : "version: 1\n",
+                "live", liveDeployment.status()));
     }
 
     private void preview(HttpExchange exchange) throws IOException {
@@ -141,7 +144,8 @@ public final class LanguageEditorApplication {
         LanguageFiles.LanguageSet set = gson.fromJson(request.get("set"), LanguageFiles.LanguageSet.class);
         files.apply(set, stringMap(request.getAsJsonObject("expectedHashes")),
                 stringMap(request.getAsJsonObject("documents")));
-        json(exchange, 200, Map.of("ok", true, "files", files.read(set)));
+        LiveLanguageDeployment.LiveResult live = liveDeployment.deploy(set);
+        json(exchange, 200, Map.of("ok", true, "files", files.read(set), "live", live));
     }
 
     private void usages(HttpExchange exchange) throws IOException {

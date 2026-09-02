@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class LanguageManager {
 
     private final TropicubeCore plugin;
-    private final Map<String, YamlConfiguration> languages = new HashMap<>();
+    private volatile Map<String, YamlConfiguration> languages = Map.of();
     private final Map<UUID, String> playerLanguages = new ConcurrentHashMap<>();
     private volatile String defaultLanguage;
 
@@ -43,15 +43,21 @@ public class LanguageManager {
     public void initialize() {
         String configuredDefault = plugin.getConfig().getString("language.default", "fr");
         defaultLanguage = SUPPORTED_LANGUAGES.contains(configuredDefault) ? configuredDefault : "fr";
+        languages = loadFiles();
+    }
+
+    private Map<String, YamlConfiguration> loadFiles() {
+        Map<String, YamlConfiguration> loaded = new HashMap<>();
         for (String lang : SUPPORTED_LANGUAGES) {
             File file = new File(plugin.getDataFolder(), "languages/" + lang + ".yml");
             if (file.exists()) {
-                languages.put(lang, YamlConfiguration.loadConfiguration(file));
+                loaded.put(lang, YamlConfiguration.loadConfiguration(file));
                 plugin.getLogger().info(MessageStyle.log("tc", "LANG", "<gray>Langue chargée : " + lang));
             } else {
                 plugin.getLogger().warning(MessageStyle.log("tc", "LANG", "<yellow>Fichier langue manquant : " + lang + ".yml"));
             }
         }
+        return Map.copyOf(loaded);
     }
 
     /** Returns the raw MiniMessage text in the player's language, with its settings overridden. */
@@ -149,8 +155,12 @@ public class LanguageManager {
     }
 
     public void reload() {
-        languages.clear();
         initialize();
+    }
+
+    /** Reloads only language files and atomically publishes the new immutable catalog. */
+    public void reloadFiles() {
+        languages = loadFiles();
     }
 
     public Map<String, YamlConfiguration> getLanguages() { return Collections.unmodifiableMap(languages); }

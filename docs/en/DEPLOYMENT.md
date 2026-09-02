@@ -42,6 +42,8 @@ node docs-site/validate.mjs
 
 The Maven build creates normal and shaded plugin JARs under each module's `target/` directory. Deployment scripts copy the runtime artifacts into the Docker build contexts. During `process-resources`, Core and Velocity also copy their `src/main/resources/languages/*.yml` files to the matching directories under `dockerfiles/configs`. These embedded files are the source of truth; direct edits to Docker language copies are overwritten. Deployment repeats and verifies the exact copy, including in `OnlyImages` mode. A red build must never be deployed.
 
+Velocity RCON is enabled only inside its container for local editor language reloads; its port is not published on the host. The dedicated Core and Velocity `languageeditorreload` commands reject players. After these commands have been delivered once, the editor copies validated YAML files and reloads them without rebuilding images.
+
 ## Windows workflow
 
 ```powershell

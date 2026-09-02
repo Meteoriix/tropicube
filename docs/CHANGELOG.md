@@ -8,6 +8,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 #### Ajouté
 
+- L'éditeur de langues synchronise désormais chaque enregistrement validé avec les conteneurs Core ou Velocity actifs et recharge les textes en jeu sans rebuild d'image.
 - Ajout d'un éditeur web local des langues avec aperçu MiniMessage contextuel, traduction LibreTranslate contrôlée, glossaire et écritures atomiques des quatre langues.
 - L'éditeur de langues permet désormais de choisir une recherche par clé ou par texte dans les quatre traductions.
 - Les lanceurs Windows et Linux de l'éditeur le démarrent désormais dans un processus indépendant et proposent les actions `start`, `status`, `stop` et `foreground` sans monopoliser le terminal.

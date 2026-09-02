@@ -20,6 +20,8 @@ flowchart LR
 
 Velocity est l'unique point d'entrée public. Le plugin `tropicube-velocity` maintient un catalogue d'instances, restaure celles qui existent encore après son redémarrage, crée les conteneurs nécessaires et les enregistre dynamiquement auprès du proxy. Les serveurs Paper exécutent `TropicubeCore` et leur plugin spécialisé.
 
+L'éditeur local conserve les ressources Maven comme source de vérité et leurs miroirs Docker comme source de build. Après une validation réussie, il découvre les conteneurs actifs avec le client Docker, prépare les quatre fichiers dans leur espace temporaire, les remplace avant tout rechargement puis appelle par RCON interne la commande console `languageeditorreload`. Core publie son nouveau catalogue immuable en une seule affectation afin que les lectures concurrentes ne voient jamais un chargement partiel. Une erreur live n'annule pas les sources déjà validées et est remontée dans l'interface conteneur par conteneur.
+
 Deux réseaux Docker séparent les flux :
 
 - `tropicube-net` relie Velocity, Redis, MySQL et les serveurs de jeu ;

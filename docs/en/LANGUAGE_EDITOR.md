@@ -4,7 +4,7 @@ The Tropicube language editor is a local web application for Core, Velocity, and
 
 ## Starting the editor
 
-Java 25, Node.js 24, and npm are required. Run `.\language-editor.ps1` on Windows or `./language-editor.sh` on Linux and macOS. The script builds the application, starts it as an independent process, opens the browser, and then releases the terminal. Closing the terminal therefore does not stop the editor.
+Java 25, Node.js 24, npm, and the Docker client are required. Run `.\language-editor.ps1` on Windows or `./language-editor.sh` on Linux and macOS. The script builds the application, starts it as an independent process, opens the browser, and then releases the terminal. Closing the terminal therefore does not stop the editor.
 
 The same lifecycle commands are available on both platforms:
 
@@ -42,7 +42,11 @@ Serialization keeps each YAML string on one physical line regardless of length s
 - previews cover chat, titles, actionbar, inventories, lore, scoreboard, and tablist;
 - validation checks YAML, key parity, placeholders, and allowed tags;
 - writes are rejected when a file changed after it was opened;
-- four sources and their Docker mirrors are replaced together, with rollback on failure.
+- four sources and their Docker mirrors are replaced together, with rollback on failure;
+- after saving, validated files are copied to Velocity or every active Paper instance, then the internal `languageeditorreload` command reloads languages only;
+- the status bar distinguishes an available Docker daemon from a partial or failed live synchronization without rolling back files that were already saved.
+
+Live synchronization exclusively uses the local Docker client, active Tropicube containers, and their internal RCON service. It does not publish an additional port or read a password. `TROPICUBE_DOCKER_COMMAND` overrides the default `docker` executable name. This version must be delivered once to install the internal Core and Velocity command and enable Velocity RCON; subsequent text changes require neither an image rebuild nor a deployment. An instance created after an edit uses the languages in its image until the editor's next **Apply** action.
 
 The versioned `tools/language-editor/catalog.yml` stores the glossary, context overrides, and placeholder samples. Machine translations remain proposals: review at least English and verify width-sensitive interfaces in game.
 
