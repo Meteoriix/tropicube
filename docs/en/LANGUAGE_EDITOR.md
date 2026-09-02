@@ -18,7 +18,7 @@ docker compose --env-file .env.example --profile language-editor up -d libretran
 
 `LIBRETRANSLATE_URL` defaults to `http://127.0.0.1:5000`. `LIBRETRANSLATE_API_KEY` selects a protected external instance and must never be committed.
 
-French is first translated to English for review. Once approved, German and Spanish are generated directly from French. MiniMessage tags, placeholders, commands, and glossary terms are not sent as translatable text. The editor remains available for drafting when the service is offline.
+French is first translated to English for review. Once approved, German and Spanish are generated directly from French. MiniMessage tags, placeholders, commands, glossary terms, and decorative Unicode symbols such as `▶`, `⚠`, or `🌴` are kept out of translatable text and preserved in their original positions. The editor remains available for drafting when the service is offline.
 
 ## Editing and safety
 

@@ -39,4 +39,34 @@ class TranslationServiceTest {
             server.stop(0);
         }
     }
+
+    @Test
+    void preservesUnicodeSymbolsInEveryTargetLanguage() throws Exception {
+        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        List<String> requests = new ArrayList<>();
+        server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
+        server.createContext("/translate", exchange -> {
+            requests.add(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+            byte[] response = "{\"translatedText\":\"translation\"}".getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, response.length);
+            exchange.getResponseBody().write(response);
+            exchange.close();
+        });
+        server.start();
+        try {
+            URI endpoint = URI.create("http://127.0.0.1:" + server.getAddress().getPort() + "/translate");
+            TranslationService service = new TranslationService(endpoint, "");
+            for (String target : List.of("en", "de", "es")) {
+                assertEquals("▶ translation ⚠ 🌴", service.translate("▶ Bonjour ⚠ 🌴", target, Map.of()));
+            }
+            assertEquals(3, requests.size());
+            assertTrue(requests.stream().noneMatch(body -> body.contains("▶")
+                    || body.contains("⚠") || body.contains("🌴")));
+            assertTrue(requests.stream().anyMatch(body -> body.contains("\"target\":\"en\"")));
+            assertTrue(requests.stream().anyMatch(body -> body.contains("\"target\":\"de\"")));
+            assertTrue(requests.stream().anyMatch(body -> body.contains("\"target\":\"es\"")));
+        } finally {
+            server.stop(0);
+        }
+    }
 }
