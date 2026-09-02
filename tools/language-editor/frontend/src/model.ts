@@ -1,6 +1,7 @@
 import { Document, isMap, isScalar, isSeq, parseDocument } from 'yaml';
 
 export type Locale = 'fr' | 'en' | 'de' | 'es';
+export type SearchMode = 'key' | 'text';
 export const locales: Locale[] = ['fr', 'en', 'de', 'es'];
 
 export interface FileSnapshot { content: string; hash: string }
@@ -41,6 +42,25 @@ export function value(document: Document, key: string): string | string[] {
   const found = document.getIn(key.split('.'), true);
   if (isSeq(found)) return found.items.map(item => String(isScalar(item) ? item.value ?? '' : item));
   return String(isScalar(found) ? found.value ?? '' : found ?? '');
+}
+
+export function filterKeys(documents: LanguageDocuments, search: string, mode: SearchMode): string[] {
+  const keys = flatten(documents.fr);
+  const query = normalizeSearch(search);
+  if (!query) return keys;
+
+  return keys.filter(key => {
+    if (mode === 'key') return normalizeSearch(key).includes(query);
+    return locales.some(locale => {
+      const translation = value(documents[locale], key);
+      const text = Array.isArray(translation) ? translation.join('\n') : translation;
+      return normalizeSearch(text).includes(query);
+    });
+  });
+}
+
+function normalizeSearch(text: string): string {
+  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase();
 }
 
 export function setValue(document: Document, key: string, next: string | string[]) {

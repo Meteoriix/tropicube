@@ -22,7 +22,7 @@ Le français est traduit vers l'anglais pour revue. Après approbation, l'allema
 
 ## Édition et sécurité
 
-- la vue structurée permet de chercher, créer, renommer et supprimer une clé ;
+- la vue structurée permet de chercher par clé ou dans le texte des quatre langues, puis de créer, renommer et supprimer une clé ;
 - le mode YAML français convient aux changements groupés ;
 - les aperçus couvrent chat, titres, actionbar, inventaires, lores, scoreboard et tablist ;
 - la validation contrôle YAML, parité des clés, placeholders et balises autorisées ;

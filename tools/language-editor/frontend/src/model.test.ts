@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { documents, flatten, inferContext, rename, setValue, value, withTranslations } from './model';
+import { documents, filterKeys, flatten, inferContext, rename, setValue, value, withTranslations } from './model';
 import { parseDocument } from 'yaml';
 
 describe('language model', () => {
@@ -28,5 +28,20 @@ describe('language model', () => {
     expect(value(translated.es, 'menu.title')).toBe('Español');
     expect(value(translated.en, 'menu.title')).toBe('en');
     expect(value(current.de, 'menu.title')).toBe('de');
+  });
+
+  it('searches either keys or text across every language', () => {
+    const current = documents(Object.fromEntries([
+      ['fr', { content: 'menu:\n  title: "Équipe"\n  lore:\n    - "Première ligne"\n    - "Seconde ligne"\n', hash: 'fr' }],
+      ['en', { content: 'menu:\n  title: "Team"\n  lore:\n    - "First line"\n    - "Second line"\n', hash: 'en' }],
+      ['de', { content: 'menu:\n  title: "Mannschaft"\n  lore:\n    - "Erste Zeile"\n    - "Zweite Zeile"\n', hash: 'de' }],
+      ['es', { content: 'menu:\n  title: "Equipo"\n  lore:\n    - "Primera línea"\n    - "Segunda línea"\n', hash: 'es' }],
+    ]) as Parameters<typeof documents>[0]);
+
+    expect(filterKeys(current, 'TITLE', 'key')).toEqual(['menu.title']);
+    expect(filterKeys(current, 'equipe', 'text')).toEqual(['menu.title']);
+    expect(filterKeys(current, 'second line', 'text')).toEqual(['menu.lore']);
+    expect(filterKeys(current, 'title', 'text')).toEqual([]);
+    expect(filterKeys(current, '', 'text')).toEqual(['menu.title', 'menu.lore']);
   });
 });

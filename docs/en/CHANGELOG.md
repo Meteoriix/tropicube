@@ -9,6 +9,7 @@ This document records functional, technical, and operational changes. Entries ar
 #### Added
 
 - Added a local web language editor with contextual MiniMessage previews, reviewed LibreTranslate workflow, glossary, and atomic four-language writes.
+- The language editor can now search either by key or by text across all four translations.
 
 #### Fixed
 

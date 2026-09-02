@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { parse, stringify } from 'yaml';
-import { Diagnostic, documents, FileSnapshot, flatten, inferContext, LanguageSet, Locale, locales, rename, setValue, StateSet, value, withTranslations } from './model';
+import { Diagnostic, documents, FileSnapshot, filterKeys, flatten, inferContext, Locale, locales, rename, SearchMode, setValue, StateSet, value, withTranslations } from './model';
 import './styles.css';
 
 type Docs = ReturnType<typeof documents>;
@@ -21,6 +21,7 @@ function App() {
   const [snapshots, setSnapshots] = useState<Record<Locale, FileSnapshot> | null>(null);
   const [selected, setSelected] = useState('');
   const [search, setSearch] = useState('');
+  const [searchMode, setSearchMode] = useState<SearchMode>('key');
   const [raw, setRaw] = useState(false);
   const [context, setContext] = useState('chat');
   const [preview, setPreview] = useState<ComponentNode | null>(null);
@@ -46,7 +47,7 @@ function App() {
     setSelected(flatten(parsed.fr)[0] || '');
   }, [sets, setIndex]);
 
-  const keys = useMemo(() => docs ? flatten(docs.fr).filter(key => key.toLowerCase().includes(search.toLowerCase())) : [], [docs, search]);
+  const keys = useMemo(() => docs ? filterKeys(docs, search, searchMode) : [], [docs, search, searchMode]);
   const current = docs && selected ? value(docs.fr, selected) : '';
   const placeholderIds = useMemo(() => Array.from(new Set((Array.isArray(current) ? current.join('\n') : current).match(/\{\d+}/g) || [])).map(token => token.slice(1, -1)), [current]);
 
@@ -164,7 +165,12 @@ function App() {
     </div></header>
     <section className="toolbar">
       <select value={setIndex} onChange={event => setSetIndex(Number(event.target.value))}>{sets.map((entry, index) => <option key={entry.set.id} value={index}>{entry.set.id}</option>)}</select>
-      <input placeholder="Rechercher une clé ou un texte…" value={search} onChange={event => setSearch(event.target.value)} />
+      <select aria-label="Type de recherche" value={searchMode} onChange={event => setSearchMode(event.target.value as SearchMode)}>
+        <option value="key">Clé</option><option value="text">Texte</option>
+      </select>
+      <input aria-label={searchMode === 'key' ? 'Rechercher par clé' : 'Rechercher par texte'}
+        placeholder={searchMode === 'key' ? 'Rechercher une clé…' : 'Rechercher dans les traductions…'}
+        value={search} onChange={event => setSearch(event.target.value)} />
       <button onClick={createKey}>+ Clé</button><button onClick={() => setRaw(!raw)}>{raw ? 'Édition structurée' : 'YAML français'}</button>
       <span className="notice">{notice}</span>
     </section>

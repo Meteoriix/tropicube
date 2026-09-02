@@ -22,7 +22,7 @@ French is first translated to English for review. Once approved, German and Span
 
 ## Editing and safety
 
-- the structured view can search, create, rename, and delete keys;
+- the structured view can search by key or within all four languages' text, then create, rename, and delete keys;
 - raw French YAML mode supports bulk changes;
 - previews cover chat, titles, actionbar, inventories, lore, scoreboard, and tablist;
 - validation checks YAML, key parity, placeholders, and allowed tags;

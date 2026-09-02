@@ -9,6 +9,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 #### Ajouté
 
 - Ajout d'un éditeur web local des langues avec aperçu MiniMessage contextuel, traduction LibreTranslate contrôlée, glossaire et écritures atomiques des quatre langues.
+- L'éditeur de langues permet désormais de choisir une recherche par clé ou par texte dans les quatre traductions.
 
 #### Corrigé
 
