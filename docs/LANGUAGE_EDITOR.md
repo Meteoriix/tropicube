@@ -31,7 +31,7 @@ docker compose --env-file .env.example --profile language-editor up -d libretran
 
 Le français est traduit vers l'anglais pour revue. Après approbation, l'allemand et l'espagnol sont générés directement depuis le français. Les balises MiniMessage, placeholders, commandes, termes du glossaire et symboles Unicode décoratifs tels que `▶`, `⚠` ou `🌴` ne sont pas envoyés comme texte traduisible et sont conservés à leur position d'origine. Une indisponibilité du service n'empêche pas de préparer un brouillon.
 
-La validation reconnaît toutes les balises fournies par `StandardTags.defaults()` dans la version Adventure du projet, ainsi que les balises internes `<tc>` et `<sw>`. Écrire `<br>` sans espaces pour insérer un saut de ligne (`<newline>` est son alias long). Un lore composé de plusieurs lignes doit utiliser une seule clé et séparer ses lignes avec `<br>` ; deux balises consécutives, `<br><br>`, conservent une ligne vide.
+La validation reconnaît toutes les balises fournies par `StandardTags.defaults()` dans la version Adventure du projet, ainsi que les balises internes `<tc>` et `<sw>`. Dans la vue structurée, la touche Entrée insère directement un saut de ligne et l'éditeur l'enregistre sous la forme MiniMessage `<br>` (`<newline>` reste accepté comme alias long). Une ligne vide est donc conservée. Dans le mode YAML brut, écrire `<br>` sans espaces. Un lore composé de plusieurs lignes doit utiliser une seule clé et séparer ses lignes avec `<br>`.
 
 La sérialisation conserve chaque chaîne YAML sur une seule ligne physique, quelle que soit sa longueur, afin de rester compatible avec la fusion de configuration des scripts de déploiement.
 

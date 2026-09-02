@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { documents, filterKeys, flatten, inferContext, rename, serialize, setValue, value, withTranslations } from './model';
+import { documents, editableValue, filterKeys, flatten, inferContext, rename, serialize, setValue, value, valueFromEditor, withTranslations } from './model';
 import { parseDocument } from 'yaml';
 
 describe('language model', () => {
@@ -52,5 +52,17 @@ describe('language model', () => {
 
     expect(yaml).toContain('# comment');
     expect(yaml).toContain('message: "Une phrase volontairement longue qui doit rester sur une seule ligne afin de rester compatible avec les outils de déploiement\\nSeconde ligne logique"');
+  });
+
+  it('edits MiniMessage line breaks as natural textarea line breaks', () => {
+    expect(editableValue('Première ligne<br><br>Troisième ligne')).toBe('Première ligne\n\nTroisième ligne');
+    expect(editableValue('Première ligne<newline>Seconde ligne')).toBe('Première ligne\nSeconde ligne');
+    expect(valueFromEditor('Texte', 'Première ligne\r\n\r\nTroisième ligne'))
+      .toBe('Première ligne<br><br>Troisième ligne');
+  });
+
+  it('keeps each textarea line as a distinct YAML list item', () => {
+    expect(valueFromEditor(['Première ligne'], 'Première ligne\nSeconde ligne'))
+      .toEqual(['Première ligne', 'Seconde ligne']);
   });
 });

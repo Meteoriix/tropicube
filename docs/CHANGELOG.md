@@ -14,6 +14,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 #### Modifié
 
+- La vue structurée de l'éditeur de langues permet désormais d'insérer naturellement des sauts de ligne avec Entrée, puis les conserve sous forme de balises MiniMessage `<br>`.
 - Les lores auparavant répartis entre des clés numérotées sont regroupés dans une clé unique utilisant `<br>` ; le sélecteur de langue suit la même convention dans sa configuration.
 
 #### Corrigé

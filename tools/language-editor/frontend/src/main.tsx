@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { parse, stringify } from 'yaml';
-import { Diagnostic, documents, FileSnapshot, filterKeys, flatten, inferContext, Locale, locales, rename, SearchMode, serialize, setValue, StateSet, value, withTranslations } from './model';
+import { Diagnostic, documents, editableValue, FileSnapshot, filterKeys, flatten, inferContext, Locale, locales, rename, SearchMode, serialize, setValue, StateSet, value, valueFromEditor, withTranslations } from './model';
 import './styles.css';
 
 type Docs = ReturnType<typeof documents>;
@@ -73,7 +73,7 @@ function App() {
     fn(copy); setDocs(copy); setEnglishApproved(false);
   };
 
-  const editFrench = (text: string) => mutate(copy => setValue(copy.fr, selected, Array.isArray(current) ? text.split('\n') : text));
+  const editFrench = (text: string) => mutate(copy => setValue(copy.fr, selected, valueFromEditor(current, text)));
 
   const requestTranslation = async (target: Locale): Promise<string | string[] | undefined> => {
     if (!docs || target === 'fr') return;
@@ -179,11 +179,12 @@ function App() {
       <section className="editor">
         {raw ? <textarea className="raw" value={serialize(docs.fr)} onChange={event => mutate(copy => { copy.fr = documents({ ...snapshots, fr: { ...snapshots.fr, content: event.target.value } }).fr; })} /> : <>
           <div className="keyline"><h2>{selected}</h2><button onClick={renameKey}>Renommer</button><button className="danger" onClick={deleteKey}>Supprimer</button></div>
-          <label>Français</label><textarea value={Array.isArray(current) ? current.join('\n') : current} onChange={event => editFrench(event.target.value)} />
+          <label>Français</label><textarea value={editableValue(current)} onChange={event => editFrench(event.target.value)} />
+          <p className="edit-hint">Entrée insère un saut de ligne dans le texte.</p>
           <div className="translations">
             {(['en','de','es'] as Locale[]).map(locale => <div key={locale}><div className="locale"><b>{locale.toUpperCase()}</b>{locale === 'en' && <button disabled={!provider} onClick={() => translateLocale('en')}>Proposer</button>}</div>
-              <textarea value={Array.isArray(value(docs[locale], selected)) ? (value(docs[locale], selected) as string[]).join('\n') : value(docs[locale], selected) as string}
-                onChange={event => mutate(copy => setValue(copy[locale], selected, Array.isArray(current) ? event.target.value.split('\n') : event.target.value))} /></div>)}
+              <textarea value={editableValue(value(docs[locale], selected))}
+                onChange={event => mutate(copy => setValue(copy[locale], selected, valueFromEditor(current, event.target.value)))} /></div>)}
           </div>
           <button className="approve" disabled={!provider || englishApproved} onClick={approveEnglish}>Valider l’anglais et générer DE/ES</button>
           <details><summary>{usages.length} usage(s) détecté(s)</summary>{usages.map((usage, index) => <code key={index}>{usage.file}:{usage.line} — {usage.text}</code>)}</details>

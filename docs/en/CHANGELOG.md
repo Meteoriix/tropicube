@@ -14,6 +14,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 #### Changed
 
+- The language editor's structured view now accepts natural line breaks with Enter and preserves them as MiniMessage `<br>` tags.
 - Lore previously split across numbered keys now uses one key with `<br>` line breaks; the language selector configuration follows the same convention.
 
 #### Fixed

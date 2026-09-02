@@ -28,6 +28,7 @@ aside button.active { color: #5df0ed; background: #163438; }
 label { display: block; color: #5ce4e2; margin: 16px 0 6px; font-size: 13px; font-weight: 700; text-transform: uppercase; }
 textarea { width: 100%; min-height: 105px; resize: vertical; padding: 12px; color: #f0f8f8; border: 1px solid #29494d; border-radius: 8px; background: #0c1c1f; font-family: Consolas, monospace; line-height: 1.5; }
 textarea:focus, input:focus { outline: 2px solid #28bfc3; outline-offset: -1px; }
+.edit-hint { margin: 5px 0 0; color: #86a8ab; font-size: 12px; }
 .raw { height: calc(100vh - 165px); }
 .translations { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
 .locale { justify-content: space-between; height: 38px; }

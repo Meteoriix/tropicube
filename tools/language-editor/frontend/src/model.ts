@@ -44,6 +44,17 @@ export function value(document: Document, key: string): string | string[] {
   return String(isScalar(found) ? found.value ?? '' : found ?? '');
 }
 
+export function editableValue(current: string | string[]): string {
+  if (Array.isArray(current)) return current.join('\n');
+  return current.replace(/<(?:br|newline)>/gi, '\n');
+}
+
+export function valueFromEditor(current: string | string[], edited: string): string | string[] {
+  const normalized = edited.replace(/\r\n?/g, '\n');
+  if (Array.isArray(current)) return normalized.split('\n');
+  return normalized.replace(/\n/g, '<br>');
+}
+
 export function serialize(document: Document): string {
   return document.toString({ lineWidth: 0, doubleQuotedAsJSON: true });
 }
