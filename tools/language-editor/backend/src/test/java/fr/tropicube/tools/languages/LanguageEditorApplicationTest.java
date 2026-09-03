@@ -49,7 +49,7 @@ class LanguageEditorApplicationTest {
             HttpRequest request = HttpRequest.newBuilder(address).timeout(Duration.ofSeconds(2))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString("""
-                            {"message":"<gold><bold>{server}</bold></gold>","placeholders":{"server":"<red>Tropicube"}}
+                            {"message":"<gold><bold>{server}</bold> {players}</gold>","placeholders":{"server":"<red>Tropicube","players":"42"}}
                             """))
                     .build();
 
@@ -60,6 +60,9 @@ class LanguageEditorApplicationTest {
             assertTrue(response.body().contains("\"color\":\"gold\""));
             assertTrue(response.body().contains("\"bold\":true"));
             assertTrue(response.body().contains("Tropicube"));
+            assertTrue(response.body().contains("42"));
+            assertTrue(!response.body().contains("{server}"));
+            assertTrue(!response.body().contains("{players}"));
             assertTrue(!response.body().contains("\"color\":\"red\""));
         } finally {
             server.stop(0);

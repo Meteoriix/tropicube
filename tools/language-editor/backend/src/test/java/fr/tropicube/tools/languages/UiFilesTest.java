@@ -38,6 +38,22 @@ class UiFilesTest {
         assertFalse(files.validate("menus", "version: 1\nmenus:\n  main:\n    title-key: title\n    rows: 1\n    buttons:\n      bad: {slot: 0, material: STONE, action: 'say hello'}\n").isEmpty());
     }
 
+    @Test
+    void discoversAndValidatesTablists() throws Exception {
+        Path source = repository.resolve("tropicube-lobby/src/main/resources/tablists.yml");
+        Files.createDirectories(source.getParent());
+        String valid = "version: 1\ntablists:\n  lobby:\n    variants:\n      default:\n"
+                + "        header-key: lobby.tab-header\n        footer-key: lobby.tab-footer\n";
+        Files.writeString(source, valid);
+
+        UiFiles files = new UiFiles(repository);
+
+        assertEquals("tablists", files.readAll().getFirst().type());
+        assertTrue(files.validate("tablists", valid).isEmpty());
+        assertFalse(files.validate("tablists", valid.replace("footer-key: lobby.tab-footer", "footer-key: ''"))
+                .isEmpty());
+    }
+
     private static String scoreboard(String title) {
         return "version: 1\nscoreboards:\n  lobby:\n    title-key: " + title
                 + "\n    variants:\n      idle:\n        lines:\n          - {key: line}\n";

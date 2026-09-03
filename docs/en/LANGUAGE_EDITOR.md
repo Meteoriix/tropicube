@@ -1,6 +1,6 @@
 # Language editor
 
-The Tropicube language editor is a local web application for Core, Lobby, SheepWars, and Velocity MiniMessage resources and interfaces. It discovers languages plus `scoreboards.yml` and `menus.yml` manifests, treats French as the source, and maintains their Docker mirrors.
+The Tropicube language editor is a local web application for Core, Lobby, SheepWars, and Velocity MiniMessage resources and interfaces. It discovers languages plus `scoreboards.yml`, `tablists.yml`, and `menus.yml` manifests, treats French as the source, and maintains their Docker mirrors.
 
 ## Starting the editor
 
@@ -47,7 +47,8 @@ All resources use named placeholders such as `{player}`, `{balance}`, or `{count
 - four sources and their Docker mirrors are replaced together, with rollback on failure;
 - after saving, validated files are copied to Velocity or every active Paper instance, then the internal `languageeditorreload` command reloads languages only;
 - the status bar distinguishes an available Docker daemon from a partial or failed live synchronization without rolling back files that were already saved.
-- the Scoreboards tab groups variants, edits the title in all four languages, previews its actual MiniMessage rendering with placeholder samples, and can add, remove, or reorder all fifteen Minecraft lines;
+- the Scoreboards tab groups variants, edits the title and every line in all four languages, previews their MiniMessage rendering with placeholder sample values, and can add, remove, or reorder all fifteen Minecraft lines;
+- the Tablists tab groups Lobby and SheepWars by state variant, edits headers and footers in all four languages, and previews the complete layout around sample players;
 - the Menus tab renders the inventory grid, required buttons, dynamic regions, and localized item properties;
 - the Placeholders tab automatically inventories every named Core and Velocity placeholder, supports search, and lists every module and translation key that uses it;
 - manifest drafts support undo/redo, drag and drop, and a summary before applying changes.

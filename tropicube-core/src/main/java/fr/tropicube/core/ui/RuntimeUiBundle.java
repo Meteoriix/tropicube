@@ -95,8 +95,10 @@ public final class RuntimeUiBundle {
         result.put("core/menus.yml", plugins.resolve("TropicubeCore/menus.yml"));
         result.put("lobby/menus.yml", plugins.resolve("TropicubeLobby/menus.yml"));
         result.put("lobby/scoreboards.yml", plugins.resolve("TropicubeLobby/scoreboards.yml"));
+        result.put("lobby/tablists.yml", plugins.resolve("TropicubeLobby/tablists.yml"));
         result.put("sheepwars/menus.yml", plugins.resolve("TropicubeSheepwars/menus.yml"));
         result.put("sheepwars/scoreboards.yml", plugins.resolve("TropicubeSheepwars/scoreboards.yml"));
+        result.put("sheepwars/tablists.yml", plugins.resolve("TropicubeSheepwars/tablists.yml"));
         return result;
     }
 

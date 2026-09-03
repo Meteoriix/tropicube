@@ -1,6 +1,6 @@
 # Éditeur de langues
 
-L'éditeur de langues Tropicube est une application web locale destinée aux ressources MiniMessage et aux interfaces de Core, Lobby, SheepWars et Velocity. Il découvre les langues ainsi que les manifestes `scoreboards.yml` et `menus.yml`, utilise le français comme source et maintient leurs copies Docker.
+L'éditeur de langues Tropicube est une application web locale destinée aux ressources MiniMessage et aux interfaces de Core, Lobby, SheepWars et Velocity. Il découvre les langues ainsi que les manifestes `scoreboards.yml`, `tablists.yml` et `menus.yml`, utilise le français comme source et maintient leurs copies Docker.
 
 ## Démarrage
 
@@ -47,7 +47,8 @@ Toutes les ressources utilisent des placeholders nommés comme `{player}`, `{bal
 - les quatre sources et leurs miroirs Docker sont remplacés ensemble, avec rollback sur erreur ;
 - après l'enregistrement, les fichiers validés sont copiés dans Velocity ou dans toutes les instances Paper actives, puis la commande interne `languageeditorreload` recharge uniquement les langues ;
 - la barre d'état distingue Docker disponible d'une synchronisation live partielle ou impossible, sans annuler les fichiers déjà enregistrés.
-- l'onglet Scoreboards regroupe les variantes d'un même scoreboard, permet d'éditer son titre dans les quatre langues, affiche son rendu MiniMessage réel avec des exemples de placeholders, puis permet d'ajouter, retirer ou réordonner ses quinze lignes Minecraft ;
+- l'onglet Scoreboards regroupe les variantes d'un même scoreboard, permet d'éditer son titre et chacune de ses lignes dans les quatre langues, affiche leur rendu MiniMessage avec les valeurs d'exemple des placeholders, puis permet d'ajouter, retirer ou réordonner ses quinze lignes Minecraft ;
+- l'onglet Tablists regroupe Lobby et SheepWars par variante d'état, édite en-tête et pied dans les quatre langues et prévisualise l'ensemble autour de joueurs d'exemple ;
 - l'onglet Menus affiche la grille de l'inventaire, les boutons requis, les zones dynamiques et les propriétés localisées des items ;
 - l'onglet Placeholders inventorie automatiquement tous les placeholders nommés de Core et Velocity, permet de les rechercher et affiche chaque module et clé de traduction qui les utilise ;
 - les brouillons de manifestes disposent d'un historique annuler/rétablir, du glisser-déposer et d'un récapitulatif avant application.

@@ -8,7 +8,12 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 #### Ajouté
 
+- L'éditeur propose une vue Tablists pour modifier en quatre langues et prévisualiser les en-têtes et pieds du Lobby et des états SheepWars ; chaque ligne de scoreboard est désormais éditable au même endroit que sa disposition.
 - L'éditeur propose un onglet Placeholders qui regroupe les noms utilisés dans toutes les langues et indique leurs clés et modules consommateurs.
+
+#### Modifié
+
+- Le Lobby renseigne désormais le placeholder `{instance_number}` de son scoreboard au lieu de l'afficher littéralement ; les aperçus automatisés vérifient également le remplacement de plusieurs placeholders.
 
 ### 2026-09-02
 

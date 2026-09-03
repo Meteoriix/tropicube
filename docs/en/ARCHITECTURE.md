@@ -4,7 +4,7 @@
 
 Tropicube separates proxy orchestration, shared network services, lobby presentation, and game-specific rules. Velocity is the only public player entry point. Paper backends are created dynamically and communicate through Redis without becoming directly accessible from the Internet.
 
-The local editor keeps Maven resources as the source of truth and Docker mirrors as the build source, with named rendering shared through `tropicube-language-api`. After validation it installs languages and UI manifests, then invokes `languageeditorreload` through internal RCON. Core writes each set under a new Redis generation (`runtime-ui:generation:<id>:*`) and changes `runtime-ui:active` only after all files and their hash manifest exist. New instances verify and restore that generation before loading managers.
+The local editor keeps Maven resources as the source of truth and Docker mirrors as the build source, with named rendering shared through `tropicube-language-api`. Menu, scoreboard, and tablist layouts live in versioned module-owned manifests. After validation the editor installs languages and manifests, then invokes `languageeditorreload` through internal RCON. Core writes each set under a new Redis generation (`runtime-ui:generation:<id>:*`) and changes `runtime-ui:active` only after all files and their hash manifest exist. New instances verify and restore that generation before loading managers.
 
 ## Maven modules
 

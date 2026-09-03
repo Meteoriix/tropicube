@@ -155,6 +155,20 @@ class YamlResourcesTest {
                 }
             }
         }
+        for (Path manifest : List.of(Path.of("../tropicube-lobby/src/main/resources/tablists.yml"),
+                Path.of("../tropicube-sheepwars/src/main/resources/tablists.yml"))) {
+            YamlConfiguration yaml = YamlConfiguration.loadConfiguration(manifest.toFile());
+            ConfigurationSection tablists = yaml.getConfigurationSection("tablists");
+            assertNotNull(tablists);
+            for (String id : tablists.getKeys(false)) {
+                ConfigurationSection variants = tablists.getConfigurationSection(id + ".variants");
+                assertNotNull(variants);
+                for (String variant : variants.getKeys(false)) {
+                    assertTranslationKey(translations, manifest, variants.getString(variant + ".header-key"));
+                    assertTranslationKey(translations, manifest, variants.getString(variant + ".footer-key"));
+                }
+            }
+        }
     }
 
     private static void assertTranslationKey(Map<String, Object> translations, Path manifest, String key) {
@@ -447,6 +461,17 @@ class YamlResourcesTest {
         assertLanguagesMatch(
                 Path.of("../tropicube-velocity/src/main/resources/languages"),
                 Path.of("../dockerfiles/configs/TropicubeVelocity/languages"));
+    }
+
+    @Test
+    void deployedTablistsMatchBundledFiles() {
+        for (String module : List.of("Lobby", "Sheepwars")) {
+            Path bundled = Path.of("../tropicube-" + module.toLowerCase(Locale.ROOT)
+                    + "/src/main/resources/tablists.yml");
+            Path deployed = Path.of("../dockerfiles/configs/Tropicube" + module + "/tablists.yml");
+            assertDoesNotThrow(() -> assertEquals(-1L, Files.mismatch(bundled, deployed),
+                    () -> "Copie Docker différente pour " + module + "/tablists.yml"));
+        }
     }
 
     @Test

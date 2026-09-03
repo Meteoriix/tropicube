@@ -64,7 +64,7 @@
                         <outputDirectory>${project.basedir}/../dockerfiles/configs/TropicubeSheepwars</outputDirectory>
                         <changeDetection>content</changeDetection>
                         <resources><resource><directory>${project.basedir}/src/main/resources</directory>
-                            <includes><include>menus.yml</include><include>scoreboards.yml</include></includes>
+                            <includes><include>menus.yml</include><include>scoreboards.yml</include><include>tablists.yml</include></includes>
                         </resource></resources>
                     </configuration>
                 </execution></executions>

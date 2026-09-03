@@ -1,0 +1,7 @@
+version: 1
+tablists:
+  lobby:
+    variants:
+      default:
+        header-key: lobby.tab-header
+        footer-key: lobby.tab-footer

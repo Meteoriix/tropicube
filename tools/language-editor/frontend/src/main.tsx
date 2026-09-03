@@ -8,8 +8,8 @@ type Docs = ReturnType<typeof documents>;
 type ComponentNode = { text?: string; color?: string; bold?: boolean; italic?: boolean; underlined?: boolean; strikethrough?: boolean; extra?: ComponentNode[] };
 type LiveStatus = { available: boolean; message: string };
 type LiveResult = { available: boolean; updatedContainers: number; containers: string[]; errors: string[] };
-type UiSnapshot = { id: string; module: string; type: 'scoreboards' | 'menus'; sourcePath: string; mirrorPath?: string; content: string; hash: string };
-type EditorMode = 'texts' | 'scoreboards' | 'menus' | 'placeholders';
+type UiSnapshot = { id: string; module: string; type: 'scoreboards' | 'tablists' | 'menus'; sourcePath: string; mirrorPath?: string; content: string; hash: string };
+type EditorMode = 'texts' | 'scoreboards' | 'tablists' | 'menus' | 'placeholders';
 
 async function api<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(path, options);
@@ -29,6 +29,7 @@ function App() {
   const [selectedVariant, setSelectedVariant] = useState('');
   const [surfacePreview, setSurfacePreview] = useState<ComponentNode[]>([]);
   const [scoreboardTitlePreview, setScoreboardTitlePreview] = useState<ComponentNode | null>(null);
+  const [tablistPreview, setTablistPreview] = useState<{ header: ComponentNode; footer: ComponentNode } | null>(null);
   const [selectedButton, setSelectedButton] = useState('');
   const [selectedPlaceholder, setSelectedPlaceholder] = useState('');
   const [setIndex, setSetIndex] = useState(0);
@@ -132,6 +133,27 @@ function App() {
     }))]).then(([renderedTitle, renderedLines]) => {
       setScoreboardTitlePreview(renderedTitle); setSurfacePreview(renderedLines);
     }).catch(error => setNotice(error.message));
+  }, [docs, selectedSurface, selectedVariant, mode]);
+
+  useEffect(() => {
+    if (!docs || !selectedSurface || mode !== 'tablists') {
+      setTablistPreview(null);
+      return;
+    }
+    const variant = selectedSurface.definition.variants?.[selectedVariant];
+    if (!variant) return;
+    const renderKey = (key: string) => {
+      const translated = value(docs.fr, key);
+      const message = Array.isArray(translated) ? translated.join('\n') : translated;
+      const placeholders: Record<string, string> = {};
+      for (const match of message.matchAll(/\{([a-z][a-z0-9_]*|\d+)}/g)) {
+        placeholders[match[1]] = placeholderSample(match[1]);
+      }
+      return api<ComponentNode>('/api/preview', { method: 'POST', body: JSON.stringify({ message, placeholders }) });
+    };
+    Promise.all([renderKey(variant['header-key']), renderKey(variant['footer-key'])])
+      .then(([header, footer]) => setTablistPreview({ header, footer }))
+      .catch(error => setNotice(error.message));
   }, [docs, selectedSurface, selectedVariant, mode]);
 
   const mutate = (fn: (copy: Docs) => void) => {
@@ -312,9 +334,9 @@ function App() {
       {mode !== 'placeholders' && <><button onClick={mode === 'texts' ? validate : validateUi}>Valider</button><button className="primary" onClick={mode === 'texts' ? apply : applyUi}>Appliquer</button></>}
     </div></header>
     <section className="toolbar">
-      <div className="mode-tabs">{(['texts','scoreboards','menus','placeholders'] as EditorMode[]).map(item => <button className={mode === item ? 'active' : ''} key={item} onClick={() => { setMode(item); setSearch(''); }}>{item === 'texts' ? 'Textes' : item === 'scoreboards' ? 'Scoreboards' : item === 'menus' ? 'Menus' : `Placeholders (${placeholders.length})`}</button>)}</div>
+      <div className="mode-tabs">{(['texts','scoreboards','tablists','menus','placeholders'] as EditorMode[]).map(item => <button className={mode === item ? 'active' : ''} key={item} onClick={() => { setMode(item); setSearch(''); }}>{item === 'texts' ? 'Textes' : item === 'scoreboards' ? 'Scoreboards' : item === 'tablists' ? 'Tablists' : item === 'menus' ? 'Menus' : `Placeholders (${placeholders.length})`}</button>)}</div>
       {mode === 'texts' && <select value={setIndex} onChange={event => setSetIndex(Number(event.target.value))}>{sets.map((entry, index) => <option key={entry.set.id} value={index}>{entry.set.id}</option>)}</select>}
-      {(mode === 'scoreboards' || mode === 'menus') && <><button disabled={!uiHistory.length} onClick={undoUi}>Annuler</button><button disabled={!uiFuture.length} onClick={redoUi}>Rétablir</button></>}
+      {(mode === 'scoreboards' || mode === 'tablists' || mode === 'menus') && <><button disabled={!uiHistory.length} onClick={undoUi}>Annuler</button><button disabled={!uiFuture.length} onClick={redoUi}>Rétablir</button></>}
       {mode === 'texts' && <>
       <select aria-label="Type de recherche" value={searchMode} onChange={event => setSearchMode(event.target.value as SearchMode)}>
         <option value="key">Clé</option><option value="text">Texte</option>
@@ -334,6 +356,7 @@ function App() {
       <section className="editor">
         {mode === 'placeholders' ? <PlaceholderEditor placeholder={placeholder} />
         : mode === 'scoreboards' && selectedSurface ? <ScoreboardEditor surface={selectedSurface} variant={selectedVariant} setVariant={setSelectedVariant} mutate={mutateUi} docs={docs} mutateLanguages={mutate} />
+        : mode === 'tablists' && selectedSurface ? <TablistEditor surface={selectedSurface} variant={selectedVariant} setVariant={setSelectedVariant} mutate={mutateUi} docs={docs} mutateLanguages={mutate} />
         : mode === 'menus' && selectedSurface ? <MenuEditor surface={selectedSurface} selectedButton={selectedButton} setSelectedButton={setSelectedButton} mutate={mutateUi} />
         : raw ? <textarea className="raw" value={serialize(docs.fr)} onChange={event => mutate(copy => { copy.fr = documents({ ...snapshots, fr: { ...snapshots.fr, content: event.target.value } }).fr; })} /> : <>
           <div className="keyline"><h2>{selected}</h2><button onClick={renameKey}>Renommer</button><button className="danger" onClick={deleteKey}>Supprimer</button></div>
@@ -351,6 +374,7 @@ function App() {
       <section className="preview"><div className="preview-head"><b>Aperçu</b>{mode === 'texts' && <select value={context} onChange={event => { setContext(event.target.value); updateEntry({ context: event.target.value }); }}>{['chat','title','subtitle','actionbar','inventory','lore','scoreboard','tablist'].map(item => <option key={item}>{item}</option>)}</select>}</div>
         {mode === 'placeholders' ? <PlaceholderPreview placeholder={placeholder} />
         : mode === 'scoreboards' ? <div className="scoreboard-full"><strong><Rendered node={scoreboardTitlePreview} /></strong>{surfacePreview.map((line,index) => <div key={index}><Rendered node={line} /></div>)}</div>
+        : mode === 'tablists' ? <div className="tablist-full"><div className="tablist-header"><Rendered node={tablistPreview?.header || null} /></div><div className="tablist-players">Nathan<span>42 ms</span><br />Alex<span>58 ms</span><br />Sam<span>71 ms</span></div><div className="tablist-footer"><Rendered node={tablistPreview?.footer || null} /></div></div>
         : mode === 'menus' && selectedSurface ? <MenuPreview surface={selectedSurface} selectedButton={selectedButton} docs={docs} />
         : <div className={`frame ${context}`}><Rendered node={preview} /></div>}
         {mode === 'texts' && <>
@@ -361,6 +385,22 @@ function App() {
       </section>
     </div>
   </main>;
+}
+
+function TablistEditor({ surface, variant, setVariant, mutate, docs, mutateLanguages }: { surface: any; variant: string; setVariant: (value: string) => void; mutate: (fn: (copy: Record<string, any>) => void) => void; docs: Docs; mutateLanguages: (fn: (copy: Docs) => void) => void }) {
+  const definition = surface.definition;
+  const selected = definition.variants?.[variant];
+  if (!selected) return <p className="empty-editor">Aucune variante de tablist.</p>;
+  const updateKey = (field: 'header-key' | 'footer-key', key: string) => mutate(copy => { copy[surface.file.id].tablists[surface.id].variants[variant][field] = key; });
+  return <div className="surface-editor tablist-editor"><div className="keyline"><h2>{surface.id}</h2><select value={variant} onChange={event => setVariant(event.target.value)}>{Object.keys(definition.variants || {}).map(item => <option key={item}>{item}</option>)}</select></div>
+    {(['header-key', 'footer-key'] as const).map(field => <section key={field}><label>{field === 'header-key' ? 'Clé de l’en-tête' : 'Clé du pied'}</label><input value={selected[field]} onChange={event => updateKey(field, event.target.value)} />
+      <div className="tablist-translations">{locales.map(locale => {
+        const translationKey = selected[field];
+        const currentText = value(docs[locale], translationKey);
+        return <label key={locale}>{locale.toUpperCase()}<textarea value={editableValue(currentText)} onChange={event => mutateLanguages(copy => setValue(copy[locale], translationKey, valueFromEditor(currentText, event.target.value)))} /></label>;
+      })}</div>
+    </section>)}
+  </div>;
 }
 
 function PlaceholderEditor({ placeholder }: { placeholder?: PlaceholderSummary }) {
@@ -379,18 +419,24 @@ function PlaceholderPreview({ placeholder }: { placeholder?: PlaceholderSummary 
 }
 
 function ScoreboardEditor({ surface, variant, setVariant, mutate, docs, mutateLanguages }: { surface: any; variant: string; setVariant: (value: string) => void; mutate: (fn: (copy: Record<string, any>) => void) => void; docs: Docs; mutateLanguages: (fn: (copy: Docs) => void) => void }) {
+  const [editingLine, setEditingLine] = useState<number | null>(null);
   const definition = surface.definition;
   const lines: any[] = definition.variants?.[variant]?.lines || [];
   const updateLines = (next: any[]) => mutate(copy => { copy[surface.file.id].scoreboards[surface.id].variants[variant].lines = next; });
-  const move = (index: number, delta: number) => { const next = [...lines]; const target = index + delta; if (target < 0 || target >= next.length) return; [next[index], next[target]] = [next[target], next[index]]; updateLines(next); };
-  return <div className="surface-editor"><div className="keyline"><h2>{surface.id}</h2><select value={variant} onChange={event => setVariant(event.target.value)}>{Object.keys(definition.variants || {}).map(item => <option key={item}>{item}</option>)}</select></div>
+  const move = (index: number, delta: number) => { const next = [...lines]; const target = index + delta; if (target < 0 || target >= next.length) return; [next[index], next[target]] = [next[target], next[index]]; updateLines(next); setEditingLine(null); };
+  return <div className="surface-editor"><div className="keyline"><h2>{surface.id}</h2><select value={variant} onChange={event => { setEditingLine(null); setVariant(event.target.value); }}>{Object.keys(definition.variants || {}).map(item => <option key={item}>{item}</option>)}</select></div>
     <label>Clé du titre</label><input value={definition['title-key']} onChange={event => mutate(copy => { copy[surface.file.id].scoreboards[surface.id]['title-key'] = event.target.value; })} />
     <div className="title-translations">{locales.map(locale => {
       const titleKey = definition['title-key'];
       const currentTitle = value(docs[locale], titleKey);
       return <label key={locale}>{locale.toUpperCase()}<textarea rows={2} value={editableValue(currentTitle)} onChange={event => mutateLanguages(copy => setValue(copy[locale], titleKey, valueFromEditor(currentTitle, event.target.value)))} /></label>;
     })}</div>
-    <div className="line-list">{lines.map((line,index) => <div className="line-row" draggable key={index} onDragStart={event => event.dataTransfer.setData('text/plain',String(index))} onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); const from=Number(event.dataTransfer.getData('text/plain')); if (Number.isInteger(from) && from !== index) move(from,index-from); }}><span title="Glisser pour déplacer">↕ {index + 1}</span>{line.blank ? <i>Ligne vide</i> : <input value={line.key} onChange={event => { const next = [...lines]; next[index] = { key: event.target.value }; updateLines(next); }} />}<button onClick={() => move(index,-1)}>↑</button><button onClick={() => move(index,1)}>↓</button><button className="danger" onClick={() => updateLines(lines.filter((_,i) => i !== index))}>×</button></div>)}</div>
+    <div className="line-list">{lines.map((line,index) => <div className="line-row" draggable key={index} onDragStart={event => event.dataTransfer.setData('text/plain',String(index))} onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); const from=Number(event.dataTransfer.getData('text/plain')); if (Number.isInteger(from) && from !== index) move(from,index-from); }}><span title="Glisser pour déplacer">↕ {index + 1}</span>{line.blank ? <i>Ligne vide</i> : <input value={line.key} onChange={event => { const next = [...lines]; next[index] = { key: event.target.value }; updateLines(next); }} />}{line.blank ? <span /> : <button title="Éditer le texte" onClick={() => setEditingLine(editingLine === index ? null : index)}>✎</button>}<button onClick={() => move(index,-1)}>↑</button><button onClick={() => move(index,1)}>↓</button><button className="danger" onClick={() => { updateLines(lines.filter((_,i) => i !== index)); setEditingLine(null); }}>×</button>
+      {!line.blank && editingLine === index && <div className="scoreboard-line-translations">{locales.map(locale => {
+        const currentText = value(docs[locale], line.key);
+        return <label key={locale}>{locale.toUpperCase()}<textarea value={editableValue(currentText)} onChange={event => mutateLanguages(copy => setValue(copy[locale], line.key, valueFromEditor(currentText, event.target.value)))} /></label>;
+      })}</div>}
+    </div>)}</div>
     <div className="surface-actions"><button disabled={lines.length >= 15} onClick={() => { const key = window.prompt('Clé de traduction de la nouvelle ligne'); if (key) updateLines([...lines,{key}]); }}>+ Texte</button><button disabled={lines.length >= 15} onClick={() => updateLines([...lines,{blank:true}])}>+ Ligne vide</button><span>{lines.length}/15 lignes</span></div>
   </div>;
 }

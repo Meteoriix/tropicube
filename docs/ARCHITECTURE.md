@@ -20,7 +20,7 @@ flowchart LR
 
 Velocity est l'unique point d'entrée public. Le plugin `tropicube-velocity` maintient un catalogue d'instances, restaure celles qui existent encore après son redémarrage, crée les conteneurs nécessaires et les enregistre dynamiquement auprès du proxy. Les serveurs Paper exécutent `TropicubeCore` et leur plugin spécialisé.
 
-L'éditeur local conserve les ressources Maven comme source de vérité et leurs miroirs Docker comme source de build. Il partage le rendu des placeholders nommés via `tropicube-language-api`. Après validation, il installe langues et manifestes d'interface dans les conteneurs, puis appelle `languageeditorreload` par RCON. Core publie chaque ensemble sous une nouvelle génération Redis (`runtime-ui:generation:<id>:*`) et ne remplace `runtime-ui:active` qu'après les fichiers et leur manifeste de hashes. Une nouvelle instance vérifie puis restaure cette génération avant de charger ses gestionnaires.
+L'éditeur local conserve les ressources Maven comme source de vérité et leurs miroirs Docker comme source de build. Il partage le rendu des placeholders nommés via `tropicube-language-api`. Les dispositions des menus, scoreboards et tablists résident dans des manifestes versionnés propres à leur module. Après validation, l'éditeur installe langues et manifestes dans les conteneurs, puis appelle `languageeditorreload` par RCON. Core publie chaque ensemble sous une nouvelle génération Redis (`runtime-ui:generation:<id>:*`) et ne remplace `runtime-ui:active` qu'après les fichiers et leur manifeste de hashes. Une nouvelle instance vérifie puis restaure cette génération avant de charger ses gestionnaires.
 
 Deux réseaux Docker séparent les flux :
 

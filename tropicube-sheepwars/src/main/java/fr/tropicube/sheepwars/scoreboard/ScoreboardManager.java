@@ -8,6 +8,7 @@ import fr.tropicube.sheepwars.player.PlayerClass;
 import fr.tropicube.sheepwars.util.LangHelper;
 import fr.tropicube.sheepwars.util.PlayerDisplayName;
 import fr.tropicube.core.ui.ScoreboardTemplate;
+import fr.tropicube.core.ui.TablistTemplate;
 import fr.tropicube.core.ui.UiReloadParticipant;
 import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.language.PlaceholderValues;
@@ -30,6 +31,7 @@ public class ScoreboardManager implements UiReloadParticipant {
     private final TropicubeSheepwars plugin;
     private final Map<UUID, Scoreboard> boards = new HashMap<>();
     private volatile ScoreboardTemplate template;
+    private volatile TablistTemplate tablistTemplate;
 
     public ScoreboardManager(TropicubeSheepwars plugin) {
         this.plugin = plugin;
@@ -141,44 +143,41 @@ public class ScoreboardManager implements UiReloadParticipant {
 
     private void updateTablist(Player player, GamePlayer gp, GameState state) {
         switch (state) {
-            case WAITING -> player.sendPlayerListHeaderAndFooter(
-                    LangHelper.component(player, "sw.tab-header"),
-                    LangHelper.component(player, "sw.tab-footer-waiting",
-                            plugin.getGameManager().getPlayers().size()));
-            case STARTING -> player.sendPlayerListHeaderAndFooter(
-                    LangHelper.component(player, "sw.tab-header"),
-                    LangHelper.component(player, "sw.tab-footer-starting",
-                            plugin.getGameManager().getCountdown()));
+            case WAITING -> sendTablist(player, "waiting", PlaceholderValues.builder()
+                    .put("tab_footer_waiting", plugin.getGameManager().getPlayers().size()).build());
+            case STARTING -> sendTablist(player, "starting", PlaceholderValues.builder()
+                    .put("tab_footer_starting", plugin.getGameManager().getCountdown()).build());
             case PLAYING -> {
                 int red  = plugin.getGameManager().getAliveTeamPlayers(GameTeam.RED).size();
                 int blue = plugin.getGameManager().getAliveTeamPlayers(GameTeam.BLUE).size();
                 if (gp.getTeam() == null || !gp.isAlive()) {
-                    player.sendPlayerListHeaderAndFooter(
-                            LangHelper.component(player, "sw.tab-header"),
-                            LangHelper.component(player, "sw.tab-footer-spectator", PlaceholderValues.builder()
-                                    .put("red_players", red)
-                                    .put("blue_players", blue)
-                                    .put("time", formatTime(plugin.getGameManager().getGameTime()))
-                                    .build()));
+                    sendTablist(player, "playing_spectator", PlaceholderValues.builder()
+                            .put("red_players", red)
+                            .put("blue_players", blue)
+                            .put("time", formatTime(plugin.getGameManager().getGameTime()))
+                            .build());
                 } else {
                     String teamName = localizedTeamName(player, gp.getTeam());
-                    player.sendPlayerListHeaderAndFooter(
-                            LangHelper.component(player, "sw.tab-header"),
-                            LangHelper.component(player, "sw.tab-footer", PlaceholderValues.builder()
-                                    .putComponent("team", MessageStyle.component(teamName))
-                                    .put("red_players", red)
-                                    .put("blue_players", blue)
-                                    .put("time", formatTime(plugin.getGameManager().getGameTime()))
-                                    .build()));
+                    sendTablist(player, "playing_alive", PlaceholderValues.builder()
+                            .putComponent("team", MessageStyle.component(teamName))
+                            .put("red_players", red)
+                            .put("blue_players", blue)
+                            .put("time", formatTime(plugin.getGameManager().getGameTime()))
+                            .build());
                 }
             }
-            case ENDING, ENDED -> player.sendPlayerListHeaderAndFooter(
-                    LangHelper.component(player, "sw.tab-header"),
-                    LangHelper.component(player, "sw.tab-footer-ending"));
+            case ENDING, ENDED -> sendTablist(player, "ending", PlaceholderValues.empty());
             default -> player.sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
         }
 
         applyPlayerListName(player, gp);
+    }
+
+    private void sendTablist(Player player, String variantName, PlaceholderValues placeholders) {
+        TablistTemplate.Variant variant = tablistTemplate.variant(variantName);
+        player.sendPlayerListHeaderAndFooter(
+                LangHelper.component(player, variant.headerKey(), placeholders),
+                LangHelper.component(player, variant.footerKey(), placeholders));
     }
 
     private String localizedTeamName(Player player, GameTeam team) {
@@ -237,7 +236,11 @@ public class ScoreboardManager implements UiReloadParticipant {
     @Override
     public Runnable prepareReload() {
         ScoreboardTemplate prepared = ScoreboardTemplate.load(plugin, "scoreboards.yml", "sheepwars");
-        return () -> template = prepared;
+        TablistTemplate preparedTablist = TablistTemplate.load(plugin, "tablists.yml", "sheepwars");
+        return () -> {
+            template = prepared;
+            tablistTemplate = preparedTablist;
+        };
     }
 
     @Override

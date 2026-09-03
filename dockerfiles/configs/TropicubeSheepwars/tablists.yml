@@ -1,0 +1,19 @@
+version: 1
+tablists:
+  sheepwars:
+    variants:
+      waiting:
+        header-key: sw.tab-header
+        footer-key: sw.tab-footer-waiting
+      starting:
+        header-key: sw.tab-header
+        footer-key: sw.tab-footer-starting
+      playing_alive:
+        header-key: sw.tab-header
+        footer-key: sw.tab-footer
+      playing_spectator:
+        header-key: sw.tab-header
+        footer-key: sw.tab-footer-spectator
+      ending:
+        header-key: sw.tab-header
+        footer-key: sw.tab-footer-ending

@@ -15,9 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Discovers and validates versioned scoreboard and menu manifests owned by each Paper module. */
+/** Discovers and validates versioned scoreboard, tablist, and menu manifests owned by each Paper module. */
 final class UiFiles {
-    private static final Set<String> NAMES = Set.of("scoreboards.yml", "menus.yml");
+    private static final Set<String> NAMES = Set.of("scoreboards.yml", "tablists.yml", "menus.yml");
     private static final java.util.regex.Pattern IDENTIFIER = java.util.regex.Pattern.compile("[a-z][a-z0-9_-]*");
     private static final java.util.regex.Pattern MATERIAL = java.util.regex.Pattern.compile("[A-Z][A-Z0-9_]*");
 
@@ -62,10 +62,36 @@ final class UiFiles {
             errors.add("La section " + type + " doit contenir au moins une définition");
         } else if ("scoreboards".equals(type)) {
             validateScoreboards(entries, errors);
+        } else if ("tablists".equals(type)) {
+            validateTablists(entries, errors);
         } else {
             validateMenus(entries, errors);
         }
         return List.copyOf(errors);
+    }
+
+    private static void validateTablists(Map<?, ?> tablists, List<String> errors) {
+        tablists.forEach((id, raw) -> {
+            if (!(raw instanceof Map<?, ?> tablist)) {
+                errors.add(id + " doit être un objet");
+                return;
+            }
+            if (!(tablist.get("variants") instanceof Map<?, ?> variants) || variants.isEmpty()) {
+                errors.add(id + ".variants est requis");
+                return;
+            }
+            variants.forEach((variantId, rawVariant) -> {
+                if (!(rawVariant instanceof Map<?, ?> variant)) {
+                    errors.add(id + "." + variantId + " doit être un objet");
+                    return;
+                }
+                for (String key : List.of("header-key", "footer-key")) {
+                    if (!(variant.get(key) instanceof String text) || text.isBlank()) {
+                        errors.add(id + "." + variantId + "." + key + " est requis");
+                    }
+                }
+            });
+        });
     }
 
     Map<String, UiSnapshot> apply(Map<String, String> expectedHashes, Map<String, String> documents) throws IOException {

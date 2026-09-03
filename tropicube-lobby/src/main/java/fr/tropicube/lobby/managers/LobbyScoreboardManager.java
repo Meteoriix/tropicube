@@ -3,6 +3,7 @@ package fr.tropicube.lobby.managers;
 import fr.tropicube.lobby.TropicubeLobby;
 import fr.tropicube.lobby.utils.LangHelper;
 import fr.tropicube.core.ui.ScoreboardTemplate;
+import fr.tropicube.core.ui.TablistTemplate;
 import fr.tropicube.core.ui.UiReloadParticipant;
 import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.language.PlaceholderValues;
@@ -29,6 +30,7 @@ public class LobbyScoreboardManager implements UiReloadParticipant {
     private final Map<UUID, QueueSnapshot> queueSnapshots = new ConcurrentHashMap<>();
     private final Set<UUID> queueRefreshes = ConcurrentHashMap.newKeySet();
     private volatile ScoreboardTemplate template;
+    private volatile TablistTemplate tablistTemplate;
 
     public LobbyScoreboardManager(TropicubeLobby plugin) {
         this.plugin = plugin;
@@ -64,7 +66,8 @@ public class LobbyScoreboardManager implements UiReloadParticipant {
                 .putComponent("profile", MessageStyle.component(formattedName))
                 .put("balance", balance)
                 .put("online_players", networkPlayers)
-                .put("visible_games", visibleGames);
+                .put("visible_games", visibleGames)
+                .put("instance_number", System.getenv().getOrDefault("INSTANCE_ID", Bukkit.getServer().getName()));
         if (queued) {
             values.putComponent("queue", MessageStyle.component(LangHelper.get(player, queue.labelKey())))
                     .put("reserved_players", queue.reservedPlayers())
@@ -88,12 +91,14 @@ public class LobbyScoreboardManager implements UiReloadParticipant {
     }
 
     public void updateTablist(Player player) {
+        TablistTemplate.Variant tablist = tablistTemplate.variant("default");
         player.playerListName(LangHelper.getFormattedNameComponent(player));
         player.sendPlayerListHeaderAndFooter(
-                LangHelper.component(player, "lobby.tab-header"),
-                LangHelper.component(player, "lobby.tab-footer",
-                        Bukkit.getOnlinePlayers().size(),
-                        Bukkit.getMaxPlayers()));
+                LangHelper.component(player, tablist.headerKey(), PlaceholderValues.empty()),
+                LangHelper.component(player, tablist.footerKey(), PlaceholderValues.builder()
+                        .put("online_players", Bukkit.getOnlinePlayers().size())
+                        .put("max_players", Bukkit.getMaxPlayers())
+                        .build()));
     }
 
     public void updateAll() {
@@ -133,7 +138,11 @@ public class LobbyScoreboardManager implements UiReloadParticipant {
     @Override
     public Runnable prepareReload() {
         ScoreboardTemplate prepared = ScoreboardTemplate.load(plugin, "scoreboards.yml", "lobby");
-        return () -> template = prepared;
+        TablistTemplate preparedTablist = TablistTemplate.load(plugin, "tablists.yml", "lobby");
+        return () -> {
+            template = prepared;
+            tablistTemplate = preparedTablist;
+        };
     }
 
     @Override
