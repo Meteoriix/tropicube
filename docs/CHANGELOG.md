@@ -15,6 +15,9 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 #### Modifié
 
+- Les 291 placeholders issus de la migration positionnelle ont été regroupés en 139 noms métier canoniques ; l'éditeur fournit une description précise et un exemple lisible pour chacun.
+- La saisie française régénère automatiquement EN, DE et ES après une courte temporisation dans les éditeurs de textes, scoreboards et tablists ; les boutons de proposition et d'approbation intermédiaire ont été supprimés.
+- L'interface de l'éditeur clarifie l'état de la traduction automatique, améliore les retours de focus et s'adapte aux fenêtres plus étroites.
 - Le scoreboard du Lobby affiche désormais `{instance_name}` plutôt que l'identifiant technique de l'instance.
 - Le Lobby renseigne désormais le placeholder `{instance_number}` de son scoreboard au lieu de l'afficher littéralement ; les aperçus automatisés vérifient également le remplacement de plusieurs placeholders.
 

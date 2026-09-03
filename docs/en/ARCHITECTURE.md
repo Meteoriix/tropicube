@@ -20,7 +20,7 @@ The local editor keeps Maven resources as the source of truth and Docker mirrors
 
 Game modules may depend on Core and Docker API, but they must never depend on another game's business classes.
 
-Core and Velocity enrich every localized rendering with `{instance_name}`. Paper resolves it from the instance environment, while the proxy resolves it from the player's current connection; the shared language API excludes that runtime value when mapping any remaining positional arguments.
+Each placeholder name represents one business meaning and is reused by translations receiving the same information. Core and Velocity enrich every localized rendering with `{instance_name}`. Paper resolves it from the instance environment, while the proxy resolves it from the player's current connection; the shared language API excludes that runtime value when mapping any remaining positional arguments.
 
 ## Runtime topology
 

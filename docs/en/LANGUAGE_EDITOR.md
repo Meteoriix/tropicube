@@ -29,13 +29,13 @@ docker compose --env-file .env.example --profile language-editor up -d libretran
 
 `LIBRETRANSLATE_URL` defaults to `http://127.0.0.1:5000`. `LIBRETRANSLATE_API_KEY` selects a protected external instance and must never be committed.
 
-French is first translated to English for review. Once approved, German and Spanish are generated directly from French. MiniMessage tags, placeholders, commands, glossary terms, and decorative Unicode symbols such as `▶`, `⚠`, or `🌴` are kept out of translatable text and preserved in their original positions. The editor remains available for drafting when the service is offline.
+In structured text, scoreboard, and tablist editing, every French change automatically schedules English, German, and Spanish regeneration after 800 ms without typing. All three translations are produced directly from French, remain manually editable, and a stale response cannot overwrite newer input. MiniMessage tags, placeholders, commands, glossary terms, and decorative Unicode symbols such as `▶`, `⚠`, or `🌴` are kept out of translatable text and preserved in their original positions. The editor remains available for drafting while the service is offline, with that state shown below the French field.
 
 Validation recognizes every tag supplied by `StandardTags.defaults()` in the project's Adventure version, plus the internal `<tc>` and `<sw>` tags. In structured mode, Enter inserts a line break directly and the editor stores it as the MiniMessage `<br>` tag (`<newline>` remains accepted as its long alias), including blank lines. In raw YAML mode, write `<br>` without spaces. Multi-line lore uses one key with lines separated by `<br>`. When an item is rendered, Core, Lobby, and SheepWars convert both these tags and line breaks already stored in YAML into distinct Minecraft lore rows; double breaks remain blank rows and are never sent to the client as control glyphs.
 
 Serialization keeps each YAML string on one physical line regardless of length so that it remains compatible with the deployment scripts' configuration merge.
 
-All resources use named placeholders such as `{player}`, `{balance}`, or `{countdown}`. The global `{instance_name}` placeholder returns the visible name of the current Paper instance (`SERVER_NAME`) or, for a player-targeted Velocity message, the name of the server the player is connected to. The internal adapter skips this global placeholder when mapping remaining legacy Java arguments in declaration order, without reintroducing positional placeholders in language files. Plain values are escaped before MiniMessage insertion; only explicitly rich components preserve styling.
+All resources use canonical named placeholders such as `{player}`, `{balance}`, or `{countdown}`. Locations receiving the same information reuse the same name; legacy names derived from translation keys have been consolidated, while distinct data uses explicit names such as `{instance_id}`, `{notification_id}`, or `{request_id}`. The global `{instance_name}` placeholder returns the visible name of the current Paper instance (`SERVER_NAME`) or, for a player-targeted Velocity message, the name of the server the player is connected to. The internal adapter skips this global placeholder when mapping remaining legacy Java arguments in declaration order, without reintroducing positional placeholders in language files. Plain values are escaped before MiniMessage insertion; only explicitly rich components preserve styling.
 
 ## Editing and safety
 
@@ -50,7 +50,7 @@ All resources use named placeholders such as `{player}`, `{balance}`, or `{count
 - the Scoreboards tab groups variants, edits the title and every line in all four languages, previews their MiniMessage rendering with placeholder sample values, and can add, remove, or reorder all fifteen Minecraft lines;
 - the Tablists tab groups Lobby and SheepWars by state variant, edits headers and footers in all four languages, and previews the complete layout around sample players;
 - the Menus tab renders the inventory grid, required buttons, dynamic regions, and localized item properties;
-- the Placeholders tab automatically inventories every named Core and Velocity placeholder, describes the dynamic information supplied by each one, supports search, and lists every module and translation key that uses it;
+- the Placeholders tab automatically inventories every canonical named Core and Velocity placeholder, precisely describes the business information supplied by each one, supports search, and lists every module and translation key that uses it;
 - while editing structured text, the compact bottom-right picker searches the same placeholders, displays their descriptions, and inserts the selected token at the cursor;
 - manifest drafts support undo/redo, drag and drop, and a summary before applying changes.
 

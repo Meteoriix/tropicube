@@ -34,6 +34,7 @@ class YamlResourcesTest {
     private static final Set<String> PROJECT_MINI_MESSAGE_TAGS = Set.of("sw", "tc");
     private static final Pattern MINI_MESSAGE_TAG = Pattern.compile("(?<!\\\\)<([^<>]+)>");
     private static final Pattern PLACEHOLDER = Pattern.compile("\\{(?:\\d+|[a-z][a-z0-9_]*)}");
+    private static final Pattern NAMED_PLACEHOLDER = Pattern.compile("\\{([a-z][a-z0-9_]*)}");
     private static final Pattern POSITIONAL_PLACEHOLDER = Pattern.compile("\\{\\d+}");
 
     @TempDir
@@ -112,6 +113,30 @@ class YamlResourcesTest {
                         () -> "Placeholder positionnel restant dans " + file);
             }
         }
+    }
+
+    @Test
+    void bundledLanguagesUseTheCanonicalPlaceholderCatalog() throws Exception {
+        Set<String> placeholders = new HashSet<>();
+        for (Path file : List.of(
+                Path.of("src/main/resources/languages/fr.yml"),
+                Path.of("../tropicube-velocity/src/main/resources/languages/fr.yml"))) {
+            var matcher = NAMED_PLACEHOLDER.matcher(Files.readString(file));
+            while (matcher.find()) placeholders.add(matcher.group(1));
+        }
+
+        assertEquals(139, placeholders.size(),
+                "Le catalogue canonique doit évoluer explicitement avec les descriptions de l’éditeur");
+        assertTrue(Set.of(
+                "friend_accepted",
+                "vip_bought",
+                "admin_info_container",
+                "tab_footer_waiting",
+                "tab_footer_starting",
+                "capacity",
+                "friends"
+        ).stream().noneMatch(placeholders::contains),
+                "Les anciens alias ne doivent pas être réintroduits");
     }
 
     @Test

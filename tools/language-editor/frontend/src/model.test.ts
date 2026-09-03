@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { collectPlaceholders, describePlaceholder, documents, editableValue, filterKeys, flatten, inferContext, rename, serialize, setValue, value, valueFromEditor, withTranslations } from './model';
+import { collectPlaceholders, describePlaceholder, documents, editableValue, filterKeys, flatten, inferContext, PLACEHOLDER_DESCRIPTIONS, rename, serialize, setValue, value, valueFromEditor, withTranslations } from './model';
 import { parseDocument } from 'yaml';
 
 describe('language model', () => {
@@ -80,7 +80,10 @@ describe('language model', () => {
     ]);
     expect(placeholders.find(entry => entry.name === 'balance')?.description).toContain('Solde actuel');
     expect(describePlaceholder('instance_name', [])).toContain('Nom visible');
+    expect(Object.keys(PLACEHOLDER_DESCRIPTIONS)).toHaveLength(139);
+    expect(Object.values(PLACEHOLDER_DESCRIPTIONS).every(description =>
+      !description.includes('Contenu dynamique associé au champ'))).toBe(true);
     expect(describePlaceholder('custom_value', [{ set: 'core', key: 'one' }]))
-      .toBe('Contenu dynamique associé au champ « custom value » dans la traduction « one ».');
+      .toBe('Description métier manquante pour {custom_value}, utilisé par « one ».');
   });
 });

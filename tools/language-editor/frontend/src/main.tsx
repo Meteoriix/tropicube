@@ -10,6 +10,9 @@ type LiveStatus = { available: boolean; message: string };
 type LiveResult = { available: boolean; updatedContainers: number; containers: string[]; errors: string[] };
 type UiSnapshot = { id: string; module: string; type: 'scoreboards' | 'tablists' | 'menus'; sourcePath: string; mirrorPath?: string; content: string; hash: string };
 type EditorMode = 'texts' | 'scoreboards' | 'tablists' | 'menus' | 'placeholders';
+type TranslationJob = { key: string; source: string | string[]; revision: number };
+type TranslationPhase = 'idle' | 'waiting' | 'translating' | 'done' | 'error' | 'offline';
+type EditLocalized = (locale: Locale, key: string, currentValue: string | string[], text: string) => void;
 
 async function api<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(path, options);
@@ -46,12 +49,15 @@ function App() {
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
   const [provider, setProvider] = useState(false);
   const [live, setLive] = useState<LiveStatus>({ available: false, message: 'Jeu hors ligne' });
-  const [englishApproved, setEnglishApproved] = useState(false);
+  const [translationJob, setTranslationJob] = useState<TranslationJob | null>(null);
+  const [translationPhase, setTranslationPhase] = useState<TranslationPhase>('idle');
   const [catalog, setCatalog] = useState<any>({ glossary: {}, entries: {} });
   const [catalogText, setCatalogText] = useState('');
   const [usages, setUsages] = useState<any[]>([]);
   const [notice, setNotice] = useState('Chargement…');
   const frenchEditor = useRef<HTMLTextAreaElement>(null);
+  const translationRevision = useRef(0);
+  const translationBusy = translationPhase === 'waiting' || translationPhase === 'translating';
 
   useEffect(() => {
     Promise.all([api<{sets: StateSet[]; ui: UiSnapshot[]; catalog: string; live: LiveStatus}>('/api/state'), api<{available: boolean}>('/api/translation/status')])
@@ -61,6 +67,9 @@ function App() {
 
   useEffect(() => {
     if (!sets[setIndex]) return;
+    translationRevision.current += 1;
+    setTranslationJob(null);
+    setTranslationPhase('idle');
     setSnapshots(sets[setIndex].files);
     const parsed = documents(sets[setIndex].files);
     setDocs(parsed);
@@ -169,10 +178,73 @@ function App() {
   const mutate = (fn: (copy: Docs) => void) => {
     if (!docs) return;
     const copy = Object.fromEntries(locales.map(locale => [locale, docs[locale].clone()])) as Docs;
-    fn(copy); setDocs(copy); setEnglishApproved(false);
+    fn(copy); setDocs(copy);
   };
 
-  const editFrench = (text: string) => mutate(copy => setValue(copy.fr, selected, valueFromEditor(current, text)));
+  const queueTranslation = (key: string, source: string | string[]) => {
+    const revision = ++translationRevision.current;
+    if (!provider) {
+      setTranslationJob(null);
+      setTranslationPhase('offline');
+      setNotice('Texte français modifié · traduction automatique hors ligne');
+      return;
+    }
+    setTranslationJob({ key, source, revision });
+    setTranslationPhase('waiting');
+    setNotice('Traduction automatique programmée…');
+  };
+
+  const editLocalized: EditLocalized = (locale, key, currentValue, text) => {
+    const next = valueFromEditor(currentValue, text);
+    mutate(copy => setValue(copy[locale], key, next));
+    if (locale === 'fr') queueTranslation(key, next);
+    else {
+      translationRevision.current += 1;
+      setTranslationJob(null);
+      setTranslationPhase('idle');
+    }
+  };
+
+  const editFrench = (text: string) => editLocalized('fr', selected, current, text);
+
+  useEffect(() => {
+    if (!translationJob || !provider) return;
+    const timer = window.setTimeout(async () => {
+      const { key, source, revision } = translationJob;
+      setTranslationPhase('translating');
+      setNotice('Traduction automatique de EN, DE et ES…');
+      const translate = async (target: Locale): Promise<string | string[]> => {
+        const glossary: Record<string, string> = {};
+        for (const [term, translations] of Object.entries<any>(catalog.glossary || {})) {
+          glossary[term] = translations[target] || term;
+        }
+        const items = Array.isArray(source) ? source : [source];
+        const translated = await Promise.all(items.map(async text => {
+          const result = await api<{translatedText: string}>('/api/translate', {
+            method: 'POST', body: JSON.stringify({ text, target, glossary })
+          });
+          return result.translatedText;
+        }));
+        return Array.isArray(source) ? translated : translated[0];
+      };
+      try {
+        const [en, de, es] = await Promise.all([
+          translate('en'), translate('de'), translate('es')
+        ]);
+        if (translationRevision.current !== revision) return;
+        setDocs(currentDocs => currentDocs ? withTranslations(currentDocs, key, { en, de, es }) : currentDocs);
+        setTranslationJob(null);
+        setTranslationPhase('done');
+        setNotice('Traductions EN, DE et ES actualisées');
+      } catch (error) {
+        if (translationRevision.current !== revision) return;
+        setTranslationJob(null);
+        setTranslationPhase('error');
+        setNotice(`Traduction automatique impossible : ${(error as Error).message}`);
+      }
+    }, 800);
+    return () => window.clearTimeout(timer);
+  }, [translationJob, provider, catalog]);
 
   const insertPlaceholder = (name: string) => {
     const editor = frenchEditor.current;
@@ -186,36 +258,6 @@ function App() {
       frenchEditor.current?.setSelectionRange(start + token.length, start + token.length);
     });
     setNotice(`${token} inséré`);
-  };
-
-  const requestTranslation = async (target: Locale): Promise<string | string[] | undefined> => {
-    if (!docs || target === 'fr') return;
-    const source = value(docs.fr, selected);
-    const items = Array.isArray(source) ? source : [source];
-    const glossary: Record<string, string> = {};
-    for (const [term, translations] of Object.entries<any>(catalog.glossary || {})) glossary[term] = translations[target] || term;
-    const translated: string[] = [];
-    for (const text of items) {
-      const result = await api<{translatedText: string}>('/api/translate', { method: 'POST', body: JSON.stringify({ text, target, glossary }) });
-      translated.push(result.translatedText);
-    }
-    return Array.isArray(source) ? translated : translated[0];
-  };
-
-  const translateLocale = async (target: Locale) => {
-    const translated = await requestTranslation(target);
-    if (translated === undefined) return;
-    setDocs(currentDocs => currentDocs ? withTranslations(currentDocs, selected, { [target]: translated }) : currentDocs);
-    setEnglishApproved(false);
-    setNotice(`${target.toUpperCase()} généré`);
-  };
-
-  const approveEnglish = async () => {
-    const [german, spanish] = await Promise.all([requestTranslation('de'), requestTranslation('es')]);
-    if (german === undefined || spanish === undefined) return;
-    setDocs(currentDocs => currentDocs ? withTranslations(currentDocs, selected, { de: german, es: spanish }) : currentDocs);
-    setEnglishApproved(true);
-    setNotice('Anglais approuvé, allemand et espagnol générés');
   };
 
   const validate = async () => {
@@ -328,12 +370,14 @@ function App() {
     if (!docs) return;
     const key = window.prompt('Nouveau nom complet', selected);
     if (!key || key === selected) return;
+    translationRevision.current += 1; setTranslationJob(null); setTranslationPhase('idle');
     mutate(copy => locales.forEach(locale => rename(copy[locale], selected, key)));
     setSelected(key);
   };
 
   const deleteKey = () => {
     if (!docs || !window.confirm(`Supprimer ${selected} dans les quatre langues ?`)) return;
+    translationRevision.current += 1; setTranslationJob(null); setTranslationPhase('idle');
     mutate(copy => locales.forEach(locale => copy[locale].deleteIn(selected.split('.'))));
     setSelected('');
   };
@@ -355,7 +399,7 @@ function App() {
     <header><div><strong>TROPICUBE</strong><span>Éditeur de langues</span></div><div className="actions">
       <span className={provider ? 'status ok' : 'status'}>{provider ? 'LibreTranslate prêt' : 'Traduction hors ligne'}</span>
       <span title={live.message} className={live.available ? 'status ok' : 'status'}>{live.available ? 'Jeu connecté' : 'Jeu hors ligne'}</span>
-      {mode !== 'placeholders' && <><button onClick={mode === 'texts' ? validate : validateUi}>Valider</button><button className="primary" onClick={mode === 'texts' ? apply : applyUi}>Appliquer</button></>}
+      {mode !== 'placeholders' && <><button onClick={mode === 'texts' ? validate : validateUi}>Valider</button><button className="primary" disabled={translationBusy} title={translationBusy ? 'Attendez la fin de la traduction automatique' : undefined} onClick={mode === 'texts' ? apply : applyUi}>Appliquer</button></>}
     </div></header>
     <section className="toolbar">
       <div className="mode-tabs">{(['texts','scoreboards','tablists','menus','placeholders'] as EditorMode[]).map(item => <button className={mode === item ? 'active' : ''} key={item} onClick={() => { setMode(item); setSearch(''); }}>{item === 'texts' ? 'Textes' : item === 'scoreboards' ? 'Scoreboards' : item === 'tablists' ? 'Tablists' : item === 'menus' ? 'Menus' : `Placeholders (${placeholders.length})`}</button>)}</div>
@@ -379,19 +423,22 @@ function App() {
         : surfaces.map(surface => <button className={surface.identity === selectedUi ? 'active' : ''} key={surface.identity} onClick={() => { setSelectedUi(surface.identity); setSelectedVariant(Object.keys(surface.definition.variants || {})[0] || ''); }}>{surface.file.module}<small>{surface.id}</small></button>)}</aside>
       <section className="editor">
         {mode === 'placeholders' ? <PlaceholderEditor placeholder={placeholder} />
-        : mode === 'scoreboards' && selectedSurface ? <ScoreboardEditor surface={selectedSurface} variant={selectedVariant} setVariant={setSelectedVariant} mutate={mutateUi} docs={docs} mutateLanguages={mutate} />
-        : mode === 'tablists' && selectedSurface ? <TablistEditor surface={selectedSurface} variant={selectedVariant} setVariant={setSelectedVariant} mutate={mutateUi} docs={docs} mutateLanguages={mutate} />
+        : mode === 'scoreboards' && selectedSurface ? <ScoreboardEditor surface={selectedSurface} variant={selectedVariant} setVariant={setSelectedVariant} mutate={mutateUi} docs={docs} editLocalized={editLocalized} />
+        : mode === 'tablists' && selectedSurface ? <TablistEditor surface={selectedSurface} variant={selectedVariant} setVariant={setSelectedVariant} mutate={mutateUi} docs={docs} editLocalized={editLocalized} />
         : mode === 'menus' && selectedSurface ? <MenuEditor surface={selectedSurface} selectedButton={selectedButton} setSelectedButton={setSelectedButton} mutate={mutateUi} />
-        : raw ? <textarea className="raw" value={serialize(docs.fr)} onChange={event => mutate(copy => { copy.fr = documents({ ...snapshots, fr: { ...snapshots.fr, content: event.target.value } }).fr; })} /> : <>
+        : raw ? <textarea className="raw" value={serialize(docs.fr)} onChange={event => { translationRevision.current += 1; setTranslationJob(null); setTranslationPhase('idle'); mutate(copy => { copy.fr = documents({ ...snapshots, fr: { ...snapshots.fr, content: event.target.value } }).fr; }); }} /> : <>
           <div className="keyline"><h2>{selected}</h2><button onClick={renameKey}>Renommer</button><button className="danger" onClick={deleteKey}>Supprimer</button></div>
           <label>Français</label><textarea ref={frenchEditor} value={editableValue(current)} onChange={event => editFrench(event.target.value)} />
-          <p className="edit-hint">Entrée insère un saut de ligne dans le texte.</p>
-          <div className="translations">
-            {(['en','de','es'] as Locale[]).map(locale => <div key={locale}><div className="locale"><b>{locale.toUpperCase()}</b>{locale === 'en' && <button disabled={!provider} onClick={() => translateLocale('en')}>Proposer</button>}</div>
-              <textarea value={editableValue(value(docs[locale], selected))}
-                onChange={event => mutate(copy => setValue(copy[locale], selected, valueFromEditor(current, event.target.value)))} /></div>)}
+          <div className={`translation-flow ${provider ? translationPhase : 'offline'}`}><span />
+            <div><strong>{!provider ? 'Traduction hors ligne' : translationPhase === 'waiting' ? 'Traduction programmée' : translationPhase === 'translating' ? 'Traduction en cours' : translationPhase === 'done' ? 'Traductions actualisées' : translationPhase === 'error' ? 'Échec de la traduction' : 'Traduction automatique active'}</strong>
+              <small>{provider ? 'EN, DE et ES sont régénérés depuis le français après 800 ms sans frappe.' : 'Le français reste modifiable ; démarrez LibreTranslate pour actualiser EN, DE et ES.'}</small></div>
           </div>
-          <button className="approve" disabled={!provider || englishApproved} onClick={approveEnglish}>Valider l’anglais et générer DE/ES</button>
+          <p className="edit-hint">Entrée insère un saut de ligne. Les traductions restent modifiables manuellement.</p>
+          <div className="translations">
+            {(['en','de','es'] as Locale[]).map(locale => <div key={locale}><div className="locale"><b>{locale.toUpperCase()}</b><small>Automatique</small></div>
+              <textarea value={editableValue(value(docs[locale], selected))}
+                onChange={event => editLocalized(locale, selected, value(docs[locale], selected), event.target.value)} /></div>)}
+          </div>
           <details><summary>{usages.length} usage(s) détecté(s)</summary>{usages.map((usage, index) => <code key={index}>{usage.file}:{usage.line} — {usage.text}</code>)}</details>
         </>}
       </section>
@@ -418,7 +465,7 @@ function App() {
   </main>;
 }
 
-function TablistEditor({ surface, variant, setVariant, mutate, docs, mutateLanguages }: { surface: any; variant: string; setVariant: (value: string) => void; mutate: (fn: (copy: Record<string, any>) => void) => void; docs: Docs; mutateLanguages: (fn: (copy: Docs) => void) => void }) {
+function TablistEditor({ surface, variant, setVariant, mutate, docs, editLocalized }: { surface: any; variant: string; setVariant: (value: string) => void; mutate: (fn: (copy: Record<string, any>) => void) => void; docs: Docs; editLocalized: EditLocalized }) {
   const definition = surface.definition;
   const selected = definition.variants?.[variant];
   if (!selected) return <p className="empty-editor">Aucune variante de tablist.</p>;
@@ -428,7 +475,7 @@ function TablistEditor({ surface, variant, setVariant, mutate, docs, mutateLangu
       <div className="tablist-translations">{locales.map(locale => {
         const translationKey = selected[field];
         const currentText = value(docs[locale], translationKey);
-        return <label key={locale}>{locale.toUpperCase()}<textarea value={editableValue(currentText)} onChange={event => mutateLanguages(copy => setValue(copy[locale], translationKey, valueFromEditor(currentText, event.target.value)))} /></label>;
+        return <label key={locale}>{locale.toUpperCase()}<textarea value={editableValue(currentText)} onChange={event => editLocalized(locale, translationKey, currentText, event.target.value)} /></label>;
       })}</div>
     </section>)}
   </div>;
@@ -450,7 +497,7 @@ function PlaceholderPreview({ placeholder }: { placeholder?: PlaceholderSummary 
   return <div className="placeholder-card"><code>{`{${placeholder.name}}`}</code><p>{placeholder.description}</p><span>Exemple</span><strong>{placeholderSample(placeholder.name)}</strong><small>Valeur texte échappée avant insertion MiniMessage</small></div>;
 }
 
-function ScoreboardEditor({ surface, variant, setVariant, mutate, docs, mutateLanguages }: { surface: any; variant: string; setVariant: (value: string) => void; mutate: (fn: (copy: Record<string, any>) => void) => void; docs: Docs; mutateLanguages: (fn: (copy: Docs) => void) => void }) {
+function ScoreboardEditor({ surface, variant, setVariant, mutate, docs, editLocalized }: { surface: any; variant: string; setVariant: (value: string) => void; mutate: (fn: (copy: Record<string, any>) => void) => void; docs: Docs; editLocalized: EditLocalized }) {
   const [editingLine, setEditingLine] = useState<number | null>(null);
   const definition = surface.definition;
   const lines: any[] = definition.variants?.[variant]?.lines || [];
@@ -461,12 +508,12 @@ function ScoreboardEditor({ surface, variant, setVariant, mutate, docs, mutateLa
     <div className="title-translations">{locales.map(locale => {
       const titleKey = definition['title-key'];
       const currentTitle = value(docs[locale], titleKey);
-      return <label key={locale}>{locale.toUpperCase()}<textarea rows={2} value={editableValue(currentTitle)} onChange={event => mutateLanguages(copy => setValue(copy[locale], titleKey, valueFromEditor(currentTitle, event.target.value)))} /></label>;
+      return <label key={locale}>{locale.toUpperCase()}<textarea rows={2} value={editableValue(currentTitle)} onChange={event => editLocalized(locale, titleKey, currentTitle, event.target.value)} /></label>;
     })}</div>
     <div className="line-list">{lines.map((line,index) => <div className="line-row" draggable key={index} onDragStart={event => event.dataTransfer.setData('text/plain',String(index))} onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); const from=Number(event.dataTransfer.getData('text/plain')); if (Number.isInteger(from) && from !== index) move(from,index-from); }}><span title="Glisser pour déplacer">↕ {index + 1}</span>{line.blank ? <i>Ligne vide</i> : <input value={line.key} onChange={event => { const next = [...lines]; next[index] = { key: event.target.value }; updateLines(next); }} />}{line.blank ? <span /> : <button title="Éditer le texte" onClick={() => setEditingLine(editingLine === index ? null : index)}>✎</button>}<button onClick={() => move(index,-1)}>↑</button><button onClick={() => move(index,1)}>↓</button><button className="danger" onClick={() => { updateLines(lines.filter((_,i) => i !== index)); setEditingLine(null); }}>×</button>
       {!line.blank && editingLine === index && <div className="scoreboard-line-translations">{locales.map(locale => {
         const currentText = value(docs[locale], line.key);
-        return <label key={locale}>{locale.toUpperCase()}<textarea value={editableValue(currentText)} onChange={event => mutateLanguages(copy => setValue(copy[locale], line.key, valueFromEditor(currentText, event.target.value)))} /></label>;
+        return <label key={locale}>{locale.toUpperCase()}<textarea value={editableValue(currentText)} onChange={event => editLocalized(locale, line.key, currentText, event.target.value)} /></label>;
       })}</div>}
     </div>)}</div>
     <div className="surface-actions"><button disabled={lines.length >= 15} onClick={() => { const key = window.prompt('Clé de traduction de la nouvelle ligne'); if (key) updateLines([...lines,{key}]); }}>+ Texte</button><button disabled={lines.length >= 15} onClick={() => updateLines([...lines,{blank:true}])}>+ Ligne vide</button><span>{lines.length}/15 lignes</span></div>
@@ -526,8 +573,23 @@ function materialAbbreviation(material: string): string {
 }
 
 function placeholderSample(name: string): string {
-  const samples: Record<string,string> = { profile:'[VIP] Nathan', balance:'12 450', online_players:'128', visible_games:'7', instance_name:'Lobby-7f42a1b3', queue:'Ranked 4v4', reserved_players:'6', capacity:'8', wait_seconds:'42', current_players:'12', max_players:'16', min_players:'8', map:'Archipel', countdown:'10', time:'08:42', red_players:'5', blue_players:'6', team:'Rouge', player_class:'Support', kills:'3', sheep_thrown:'14' };
-  return samples[name] || `Valeur ${name}`;
+  const samples: Record<string,string> = {
+    player:'Nathan', profile:'[VIP] Nathan', balance:'12 450', amount:'500', price:'2 500',
+    online_players:'128', visible_games:'7', instance_name:'Lobby-7f42a1b3', instance_id:'91d6…e04b',
+    instance_number:'3', server:'SheepWars-7f42a1b3', server_type:'SheepWars', queue:'Ranked 4v4',
+    reserved_players:'6', current_players:'12', max_players:'16', min_players:'8', position:'4',
+    map:'Archipel', countdown:'10', time:'08:42', red_players:'5', blue_players:'6', team:'Rouge',
+    player_class:'Support', kit:'Archer', kills:'3', sheep_thrown:'14', grade:'Champion',
+    game_mode:'Ranked 4v4', language:'Français', nickname:'TropiNathan', reason:'Comportement inapproprié',
+    server_status:'EN ATTENTE', template_status:'ACTIF', current_setting:'Amis uniquement', visibility:'Équipe',
+    mission_description:'Remporter 3 parties', mission_status:'EN COURS', match_result:'Victoire',
+    database_status:'Connectée', rcon_status:'Disponible', whitelist_status:'Activée'
+  };
+  if (samples[name]) return samples[name];
+  if (/(count|players|games|wins|votes|warnings|level|number|size|groups|placements|tokens)$/.test(name)) return '3';
+  if (/(seconds|minutes|hours|days|duration|expiration|deadline|time)$/.test(name)) return '30';
+  if (/(status|visibility|enabled|privacy|auto_replay|global_chat|contextual_help)$/.test(name)) return 'Activé';
+  return 'Exemple';
 }
 
 function Rendered({ node }: { node: ComponentNode | null }) {

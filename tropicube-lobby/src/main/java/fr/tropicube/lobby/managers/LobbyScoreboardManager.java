@@ -71,7 +71,7 @@ public class LobbyScoreboardManager implements UiReloadParticipant {
         if (queued) {
             values.putComponent("queue", MessageStyle.component(LangHelper.get(player, queue.labelKey())))
                     .put("reserved_players", queue.reservedPlayers())
-                    .put("capacity", queue.capacity())
+                    .put("max_players", queue.capacity())
                     .put("wait_seconds", queue.waitSeconds());
         }
         PlaceholderValues resolvedValues = values.build();

@@ -144,9 +144,9 @@ public class ScoreboardManager implements UiReloadParticipant {
     private void updateTablist(Player player, GamePlayer gp, GameState state) {
         switch (state) {
             case WAITING -> sendTablist(player, "waiting", PlaceholderValues.builder()
-                    .put("tab_footer_waiting", plugin.getGameManager().getPlayers().size()).build());
+                    .put("current_players", plugin.getGameManager().getPlayers().size()).build());
             case STARTING -> sendTablist(player, "starting", PlaceholderValues.builder()
-                    .put("tab_footer_starting", plugin.getGameManager().getCountdown()).build());
+                    .put("countdown", plugin.getGameManager().getCountdown()).build());
             case PLAYING -> {
                 int red  = plugin.getGameManager().getAliveTeamPlayers(GameTeam.RED).size();
                 int blue = plugin.getGameManager().getAliveTeamPlayers(GameTeam.BLUE).size();
