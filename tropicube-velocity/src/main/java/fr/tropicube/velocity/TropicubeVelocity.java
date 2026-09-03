@@ -193,7 +193,7 @@ public class TropicubeVelocity {
 
     private void initLanguageManager() {
         String defaultLang = config.node("language", "default").getString("fr");
-        languageManager = new VelocityLanguageManager(dataDirectory, redisManager, logger, defaultLang);
+        languageManager = new VelocityLanguageManager(dataDirectory, redisManager, logger, defaultLang, server);
         logger.info(MessageStyle.log("PROXY", "<gray>Gestionnaire de langue initialisé."));
     }
 

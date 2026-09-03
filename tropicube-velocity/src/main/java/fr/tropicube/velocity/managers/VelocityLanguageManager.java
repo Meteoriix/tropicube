@@ -2,6 +2,7 @@ package fr.tropicube.velocity.managers;
 
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.ProxyServer;
 import fr.tropicube.docker.client.RedisManager;
 import fr.tropicube.language.PlaceholderValues;
 import fr.tropicube.velocity.util.MessageStyle;
@@ -17,7 +18,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Loads proxy translations and resolves each player's language via Redis. */
+/** Loads proxy translations and resolves player language and current-instance placeholders. */
 public class VelocityLanguageManager {
 
     public static final List<String> SUPPORTED = List.of("fr", "en", "es", "de");
@@ -25,14 +26,17 @@ public class VelocityLanguageManager {
     private volatile Map<String, ConfigurationNode> languages = Map.of();
     private final Map<UUID, String> playerLangs = new ConcurrentHashMap<>();
     private final RedisManager redisManager;
+    private final ProxyServer proxyServer;
     private final Path dataDir;
     private final Logger logger;
     private final String defaultLang;
 
-    public VelocityLanguageManager(Path dataDir, RedisManager redisManager, Logger logger, String defaultLang) {
+    public VelocityLanguageManager(Path dataDir, RedisManager redisManager, Logger logger, String defaultLang,
+                                   ProxyServer proxyServer) {
         this.dataDir = dataDir;
         this.redisManager = redisManager;
         this.logger = logger;
+        this.proxyServer = proxyServer;
         this.defaultLang = SUPPORTED.contains(defaultLang) ? defaultLang : "fr";
         loadLanguages();
         subscribeToLangChanges();
@@ -81,27 +85,31 @@ public class VelocityLanguageManager {
     }
 
     public String get(UUID uuid, String key, Object... args) {
-        return format(playerLangs.getOrDefault(uuid, defaultLang), key, args);
+        return format(uuid, playerLangs.getOrDefault(uuid, defaultLang), key, args);
     }
 
     public String get(UUID uuid, String key, PlaceholderValues placeholders) {
-        return MessageStyle.miniMessage(raw(playerLangs.getOrDefault(uuid, defaultLang), key), placeholders);
+        return MessageStyle.miniMessage(raw(playerLangs.getOrDefault(uuid, defaultLang), key),
+                withGlobals(uuid, placeholders));
     }
 
     public String get(CommandSource source, String key, Object... args) {
         if (source instanceof Player p) return get(p.getUniqueId(), key, args);
-        return format(defaultLang, key, args);
+        return format(null, defaultLang, key, args);
     }
 
     public String get(CommandSource source, String key, PlaceholderValues placeholders) {
         String language = source instanceof Player player
                 ? playerLangs.getOrDefault(player.getUniqueId(), defaultLang) : defaultLang;
-        return MessageStyle.miniMessage(raw(language, key), placeholders);
+        UUID playerId = source instanceof Player player ? player.getUniqueId() : null;
+        return MessageStyle.miniMessage(raw(language, key), withGlobals(playerId, placeholders));
     }
 
-    private String format(String lang, String key, Object... args) {
+    private String format(UUID playerId, String lang, String key, Object... args) {
         String msg = raw(lang, key);
-        return args.length == 0 ? msg : MessageStyle.miniMessage(msg, PlaceholderValues.ordered(msg, args));
+        PlaceholderValues globals = globalPlaceholders(playerId);
+        if (args.length == 0 && !containsGlobalPlaceholder(msg, globals)) return msg;
+        return MessageStyle.miniMessage(msg, PlaceholderValues.ordered(msg, globals, args));
     }
 
     private String raw(String lang, String key) {
@@ -121,7 +129,8 @@ public class VelocityLanguageManager {
     }
 
     public Component getComponent(UUID uuid, String key, PlaceholderValues placeholders) {
-        return MessageStyle.component(raw(playerLangs.getOrDefault(uuid, defaultLang), key), placeholders);
+        return MessageStyle.component(raw(playerLangs.getOrDefault(uuid, defaultLang), key),
+                withGlobals(uuid, placeholders));
     }
 
     public Component getComponent(CommandSource source, String key, Object... args) {
@@ -131,7 +140,27 @@ public class VelocityLanguageManager {
     public Component getComponent(CommandSource source, String key, PlaceholderValues placeholders) {
         String language = source instanceof Player player
                 ? playerLangs.getOrDefault(player.getUniqueId(), defaultLang) : defaultLang;
-        return MessageStyle.component(raw(language, key), placeholders);
+        UUID playerId = source instanceof Player player ? player.getUniqueId() : null;
+        return MessageStyle.component(raw(language, key), withGlobals(playerId, placeholders));
+    }
+
+    private PlaceholderValues globalPlaceholders(UUID playerId) {
+        String instanceName = playerId == null ? "Velocity" : proxyServer.getPlayer(playerId)
+                .flatMap(Player::getCurrentServer)
+                .map(connection -> connection.getServerInfo().getName())
+                .orElse("Velocity");
+        return PlaceholderValues.of("instance_name", instanceName);
+    }
+
+    private PlaceholderValues withGlobals(UUID playerId, PlaceholderValues placeholders) {
+        PlaceholderValues.Builder merged = PlaceholderValues.builder();
+        placeholders.asMap().forEach(merged::putValue);
+        globalPlaceholders(playerId).asMap().forEach(merged::putValue);
+        return merged.build();
+    }
+
+    private boolean containsGlobalPlaceholder(String message, PlaceholderValues globals) {
+        return globals.asMap().keySet().stream().anyMatch(name -> message.contains("{" + name + "}"));
     }
 
     public void loadPlayerLanguage(UUID uuid) {

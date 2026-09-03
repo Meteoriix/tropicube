@@ -114,6 +114,7 @@ export function describePlaceholder(name: string, references: PlaceholderReferen
     min_players: 'Nombre minimal de joueurs requis.',
     visible_games: 'Nombre de parties visibles et accessibles au joueur.',
     instance_number: 'Identifiant de l’instance serveur actuelle.',
+    instance_name: 'Nom visible de l’instance serveur sur laquelle se trouve le joueur.',
     map: 'Nom de la carte actuellement sélectionnée.',
     team: 'Nom localisé de l’équipe du joueur.',
     player_class: 'Nom localisé de la classe choisie par le joueur.',

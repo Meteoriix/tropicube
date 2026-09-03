@@ -228,7 +228,7 @@ La section `gameplay-balance` est validée au démarrage. Une valeur manquante, 
 
 ## Langues
 
-Core et Velocity prennent en charge `fr`, `en`, `es` et `de`. Les textes utilisent MiniMessage et exclusivement des placeholders nommés en `lower_snake_case`, par exemple `{player}`, `{balance}` ou `{countdown}`. Pour ajouter une clé :
+Core et Velocity prennent en charge `fr`, `en`, `es` et `de`. Les textes utilisent MiniMessage et exclusivement des placeholders nommés en `lower_snake_case`, par exemple `{player}`, `{balance}` ou `{countdown}`. `{instance_name}` est fourni automatiquement : Core lit le nom visible injecté dans `SERVER_NAME`, avec repli sur `INSTANCE_ID` puis le nom Paper, tandis que Velocity lit le serveur actuellement associé au joueur. Pour ajouter une clé :
 
 Les balises internes `<tc>` et `<sw>` insèrent respectivement les marques réseau et SheepWars. Leur usage est défini dans la [charte des messages](MESSAGING_STYLE.md) ; elles sont réservées aux notifications autonomes et ne doivent pas être ajoutées aux contenus compacts d'interface.
 

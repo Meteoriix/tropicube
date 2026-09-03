@@ -19,4 +19,12 @@ class LanguageManagerTest {
         assertEquals("en", LanguageManager.resolveClientLanguage(""));
         assertEquals("en", LanguageManager.resolveClientLanguage(null));
     }
+
+    @Test
+    void resolvesTheVisibleInstanceNameWithSafeFallbacks() {
+        assertEquals("SheepWars-7f42a1b3",
+                LanguageManager.resolveInstanceName("SheepWars-7f42a1b3", "uuid", "server"));
+        assertEquals("uuid", LanguageManager.resolveInstanceName(" ", "uuid", "server"));
+        assertEquals("server", LanguageManager.resolveInstanceName(null, "", "server"));
+    }
 }

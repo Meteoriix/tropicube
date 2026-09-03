@@ -526,7 +526,7 @@ function materialAbbreviation(material: string): string {
 }
 
 function placeholderSample(name: string): string {
-  const samples: Record<string,string> = { profile:'[VIP] Nathan', balance:'12 450', online_players:'128', visible_games:'7', queue:'Ranked 4v4', reserved_players:'6', capacity:'8', wait_seconds:'42', current_players:'12', max_players:'16', min_players:'8', map:'Archipel', countdown:'10', time:'08:42', red_players:'5', blue_players:'6', team:'Rouge', player_class:'Support', kills:'3', sheep_thrown:'14' };
+  const samples: Record<string,string> = { profile:'[VIP] Nathan', balance:'12 450', online_players:'128', visible_games:'7', instance_name:'Lobby-7f42a1b3', queue:'Ranked 4v4', reserved_players:'6', capacity:'8', wait_seconds:'42', current_players:'12', max_players:'16', min_players:'8', map:'Archipel', countdown:'10', time:'08:42', red_players:'5', blue_players:'6', team:'Rouge', player_class:'Support', kills:'3', sheep_thrown:'14' };
   return samples[name] || `Valeur ${name}`;
 }
 

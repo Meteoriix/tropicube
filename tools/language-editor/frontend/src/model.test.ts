@@ -79,6 +79,7 @@ describe('language model', () => {
       { set: 'core', key: 'one' }, { set: 'velocity', key: 'two' },
     ]);
     expect(placeholders.find(entry => entry.name === 'balance')?.description).toContain('Solde actuel');
+    expect(describePlaceholder('instance_name', [])).toContain('Nom visible');
     expect(describePlaceholder('custom_value', [{ set: 'core', key: 'one' }]))
       .toBe('Contenu dynamique associé au champ « custom value » dans la traduction « one ».');
   });

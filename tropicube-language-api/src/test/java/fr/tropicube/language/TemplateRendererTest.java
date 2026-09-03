@@ -62,5 +62,12 @@ class TemplateRendererTest {
                 TemplateRenderer.orderedPlaceholders("{player} a {balance} pièces ({player})"));
         assertThrows(IllegalArgumentException.class,
                 () -> PlaceholderValues.ordered("{player}", "Nathan", 42));
+
+        PlaceholderValues withGlobal = PlaceholderValues.ordered(
+                "{instance_name}: {player} possède {balance}",
+                PlaceholderValues.of("instance_name", "Lobby-1"), "Nathan", 42);
+        assertEquals(Set.of("instance_name", "player", "balance"), withGlobal.asMap().keySet());
+        assertEquals("Lobby-1: Nathan possède 42", PLAIN.serialize(TemplateRenderer.component(MINI_MESSAGE,
+                "{instance_name}: {player} possède {balance}", withGlobal)));
     }
 }

@@ -56,7 +56,7 @@ Si un arrêt Docker échoue alors que le conteneur reste actif, Velocity restaur
 
 ### `tropicube-language-api`
 
-Bibliothèque Java pure partagée par Core et Velocity. Elle distingue les valeurs texte, toujours échappées, des composants Adventure riches explicitement autorisés et conserve la lecture des placeholders positionnels pendant leur migration.
+Bibliothèque Java pure partagée par Core et Velocity. Elle distingue les valeurs texte, toujours échappées, des composants Adventure riches explicitement autorisés et conserve la lecture des placeholders positionnels pendant leur migration. Core et Velocity enrichissent chaque rendu avec `{instance_name}` : la valeur provient respectivement de l'environnement de l'instance Paper et de la connexion courante du joueur au proxy, sans décaler l'association des arguments positionnels restants.
 
 ### `tropicube-docker-api`
 

@@ -11,9 +11,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Language system manager.
- * Each player can choose their interface language.
- * Supported languages: fr, en, es, de
+ * Loads Paper translations, tracks each player's language and supplies placeholders shared by
+ * every localized message. Supported languages are French, English, Spanish and German.
  */
 public class LanguageManager {
 
@@ -21,6 +20,7 @@ public class LanguageManager {
     private volatile Map<String, YamlConfiguration> languages = Map.of();
     private final Map<UUID, String> playerLanguages = new ConcurrentHashMap<>();
     private volatile String defaultLanguage;
+    private final PlaceholderValues globalPlaceholders;
 
     public static final List<String> SUPPORTED_LANGUAGES = List.of("fr", "en", "es", "de");
 
@@ -39,6 +39,9 @@ public class LanguageManager {
     public LanguageManager(TropicubeCore plugin) {
         this.plugin = plugin;
         this.defaultLanguage = "fr";
+        this.globalPlaceholders = PlaceholderValues.of("instance_name",
+                resolveInstanceName(System.getenv("SERVER_NAME"), System.getenv("INSTANCE_ID"),
+                        plugin.getServer().getName()));
     }
 
     public void initialize() {
@@ -76,12 +79,12 @@ public class LanguageManager {
 
         if (msg == null) return "<tc><red>Clé de traduction manquante : <white>" + key;
 
-        return args.length == 0 ? msg : MessageStyle.miniMessage(msg, PlaceholderValues.ordered(msg, args));
+        return render(msg, args);
     }
 
     /** Returns localized MiniMessage with safely rendered named placeholders. */
     public String get(UUID uuid, String key, PlaceholderValues placeholders) {
-        return MessageStyle.miniMessage(raw(uuid, key), placeholders);
+        return MessageStyle.miniMessage(raw(uuid, key), withGlobals(placeholders));
     }
 
     /** Returns a YAML list in the player's language, with fallback to the default language. */
@@ -94,7 +97,7 @@ public class LanguageManager {
             YamlConfiguration fallback = languages.get(defaultLanguage);
             if (fallback != null) list = fallback.getStringList(key);
         }
-        return list;
+        return list.stream().map(message -> render(message)).toList();
     }
 
     /** Returns raw MiniMessage text for explicit language. */
@@ -102,12 +105,12 @@ public class LanguageManager {
         YamlConfiguration config = languages.getOrDefault(lang, languages.get(defaultLanguage));
         if (config == null) return key;
         String msg = config.getString(key, key);
-        return args.length == 0 ? msg : MessageStyle.miniMessage(msg, PlaceholderValues.ordered(msg, args));
+        return render(msg, args);
     }
 
     /** Returns localized MiniMessage for an explicit language with named placeholders. */
     public String getForLang(String lang, String key, PlaceholderValues placeholders) {
-        return MessageStyle.miniMessage(rawForLang(lang, key), placeholders);
+        return MessageStyle.miniMessage(rawForLang(lang, key), withGlobals(placeholders));
     }
 
     /** Returns a localized Adventure component for the player. */
@@ -117,7 +120,7 @@ public class LanguageManager {
 
     /** Returns a localized component with safely rendered named placeholders. */
     public Component getComponent(UUID uuid, String key, PlaceholderValues placeholders) {
-        return MessageStyle.component(raw(uuid, key), placeholders);
+        return MessageStyle.component(raw(uuid, key), withGlobals(placeholders));
     }
 
     /** Returns an Adventure component in an explicit language. */
@@ -127,7 +130,29 @@ public class LanguageManager {
 
     /** Returns a localized component in an explicit language with named placeholders. */
     public Component getComponentForLang(String lang, String key, PlaceholderValues placeholders) {
-        return MessageStyle.component(rawForLang(lang, key), placeholders);
+        return MessageStyle.component(rawForLang(lang, key), withGlobals(placeholders));
+    }
+
+    private PlaceholderValues withGlobals(PlaceholderValues placeholders) {
+        PlaceholderValues.Builder merged = PlaceholderValues.builder();
+        placeholders.asMap().forEach(merged::putValue);
+        globalPlaceholders.asMap().forEach(merged::putValue);
+        return merged.build();
+    }
+
+    private String render(String message, Object... arguments) {
+        if (arguments.length == 0 && !containsGlobalPlaceholder(message)) return message;
+        return MessageStyle.miniMessage(message, PlaceholderValues.ordered(message, globalPlaceholders, arguments));
+    }
+
+    private boolean containsGlobalPlaceholder(String message) {
+        return globalPlaceholders.asMap().keySet().stream().anyMatch(name -> message.contains("{" + name + "}"));
+    }
+
+    static String resolveInstanceName(String serverName, String instanceId, String fallbackName) {
+        if (serverName != null && !serverName.isBlank()) return serverName;
+        if (instanceId != null && !instanceId.isBlank()) return instanceId;
+        return fallbackName;
     }
 
     private String raw(UUID uuid, String key) {

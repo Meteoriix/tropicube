@@ -599,7 +599,7 @@ lobby:
   sb-games: "<green>🐑 Spiele</green> <dark_gray>•</dark_gray> <white>{visible_games}</white>"
   sb-title: "<gold><bold>🌴 TROPICUBE</bold></gold>"
   sb-server-label: "<green>⛵</green> <gray>Aktueller Server</gray>"
-  sb-server-value: "  <green>{instance_number}</green>"
+  sb-server-value: "  <green>{instance_name}</green>"
   sb-action-play: "<green>▶ Warteschlangen <dark_gray>: <white>Keine"
   sb-queue: "<gold>⏳ Warteschlange</gold> <dark_gray>•</dark_gray> <white>{queue}</white>"
   sb-queue-state: "  <gray>{reserved_players}/{capacity} Spieler • Wartezeit {wait_seconds}s"

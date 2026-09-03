@@ -11,7 +11,7 @@ The local editor keeps Maven resources as the source of truth and Docker mirrors
 | Module | Main contracts |
 |---|---|
 | Docker API | `ServerTemplate`, `ServerInstance`, Redis access, Docker lifecycle, shared nick and access-level payloads |
-| Language API | Safe named and legacy positional MiniMessage placeholder rendering |
+| Language API | Safe named and legacy positional MiniMessage placeholder rendering; runtime defaults do not consume positional arguments |
 | Velocity | Dynamic registration, routing, queues, health checks, nick profiles, and proxy commands |
 | Core | SQL profiles, economy, cosmetic grades, VIP/mod levels, localization, moderation, and Paper-side nick application |
 | Lobby | Server catalogs, menus, custom game creation, reconnect and replay entry points |
@@ -19,6 +19,8 @@ The local editor keeps Maven resources as the source of truth and Docker mirrors
 | Fallen Kingdoms | Empty implementation slot governed by the separate design and technical specification |
 
 Game modules may depend on Core and Docker API, but they must never depend on another game's business classes.
+
+Core and Velocity enrich every localized rendering with `{instance_name}`. Paper resolves it from the instance environment, while the proxy resolves it from the player's current connection; the shared language API excludes that runtime value when mapping any remaining positional arguments.
 
 ## Runtime topology
 

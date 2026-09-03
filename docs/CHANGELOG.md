@@ -8,12 +8,14 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 #### Ajouté
 
+- Le placeholder global `{instance_name}` expose dans tous les textes le nom visible de l'instance Paper courante ou du serveur auquel le joueur est connecté côté Velocity.
 - L'éditeur propose une vue Tablists pour modifier en quatre langues et prévisualiser les en-têtes et pieds du Lobby et des états SheepWars ; chaque ligne de scoreboard est désormais éditable au même endroit que sa disposition.
 - L'éditeur propose un onglet Placeholders qui regroupe les noms utilisés dans toutes les langues et indique leurs clés et modules consommateurs.
 - Chaque placeholder affiche désormais une description de sa valeur dynamique ; un sélecteur compact permet de les rechercher et de les insérer au curseur pendant l'édition d'un texte.
 
 #### Modifié
 
+- Le scoreboard du Lobby affiche désormais `{instance_name}` plutôt que l'identifiant technique de l'instance.
 - Le Lobby renseigne désormais le placeholder `{instance_number}` de son scoreboard au lieu de l'afficher littéralement ; les aperçus automatisés vérifient également le remplacement de plusieurs placeholders.
 
 ### 2026-09-02

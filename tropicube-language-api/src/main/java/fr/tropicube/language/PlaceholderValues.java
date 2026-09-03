@@ -32,13 +32,26 @@ public final class PlaceholderValues {
      * the same placeholder order in every locale.
      */
     public static PlaceholderValues ordered(String template, Object... arguments) {
+        return ordered(template, EMPTY, arguments);
+    }
+
+    /**
+     * Adapts positional arguments while preserving values supplied independently by the runtime.
+     * Placeholders present in {@code defaults} do not consume an argument, regardless of their
+     * position in the localized template.
+     */
+    public static PlaceholderValues ordered(String template, PlaceholderValues defaults, Object... arguments) {
         Objects.requireNonNull(arguments, "arguments");
-        var names = TemplateRenderer.orderedPlaceholders(template);
+        Objects.requireNonNull(defaults, "defaults");
+        var names = TemplateRenderer.orderedPlaceholders(template).stream()
+                .filter(name -> !defaults.values.containsKey(name))
+                .toList();
         if (arguments.length > names.size()) {
             throw new IllegalArgumentException("Trop d'arguments pour le modèle : " + arguments.length
                     + " reçus, " + names.size() + " attendus");
         }
         Builder builder = builder();
+        defaults.values.forEach(builder::putValue);
         for (int index = 0; index < arguments.length; index++) {
             builder.put(names.get(index), arguments[index]);
         }
