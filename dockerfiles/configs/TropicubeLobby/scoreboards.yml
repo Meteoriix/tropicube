@@ -6,16 +6,17 @@ scoreboards:
       idle:
         lines:
           - key: lobby.sb-separator
+          - blank: true
           - key: lobby.sb-profile
           - key: lobby.sb-profile-value
-          - blank: true
           - key: lobby.sb-balance
-          - key: lobby.sb-network-online
-          - key: lobby.sb-games
+          - blank: true
           - key: lobby.sb-action-play
           - blank: true
-          - key: lobby.sb-server-label
+          - key: lobby.sb-network
+          - key: lobby.sb-network-online
           - key: lobby.sb-server-value
+          - blank: true
           - key: lobby.sb-separator
       queued:
         lines:

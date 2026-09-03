@@ -15,6 +15,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 #### Changed
 
+- The Lobby scoreboard now presents the player's grade, queue, network, and current instance separately; the SheepWars waiting scoreboard hides the redundant minimum-player line.
 - The global `{player_grade}` placeholder now exposes the recipient player's MiniMessage-formatted grade without their username in Core and Velocity rendering and in the editor catalog.
 - The 291 placeholders produced by the positional migration have been consolidated into 139 canonical business names; the editor provides a precise description and readable example for each one.
 - French input now regenerates EN, DE, and ES automatically after a short debounce in text, scoreboard, and tablist editors; proposal and intermediate approval buttons were removed.

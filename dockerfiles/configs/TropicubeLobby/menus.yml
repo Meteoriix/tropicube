@@ -5,125 +5,546 @@ menus:
     rows: 3
     frame: network
     buttons:
-      status: { slot: 13, material: CLOCK, name-key: lobby.custom-game-pending-name, lore-key: lobby.custom-game-pending-lore, action: none, required: true }
-      stop: { slot: 22, material: TNT, name-key: lobby.host-stop-name, lore-key: lobby.host-stop-lore, action: stop_host }
-      close: { slot: 26, material: BARRIER, name-key: lobby.close-button, lore-key: lobby.close-button-lore, action: close, required: true }
+      status:
+        slot: 13
+        material: CLOCK
+        name-key: lobby.custom-game-pending-name
+        lore-key: lobby.custom-game-pending-lore
+        action: none
+        required: true
+      stop:
+        slot: 22
+        material: TNT
+        name-key: lobby.host-stop-name
+        lore-key: lobby.host-stop-lore
+        action: stop_host
+      close:
+        slot: 26
+        material: BARRIER
+        name-key: lobby.close-button
+        lore-key: lobby.close-button-lore
+        action: close
+        required: true
     dynamic-regions:
-      templates: { slots: [7,9,11,13,15,17,19], template-action: create_game, preview-count: 4 }
+      templates:
+        slots:
+          - 7
+          - 9
+          - 11
+          - 13
+          - 15
+          - 17
+          - 19
+        template-action: create_game
+        preview-count: 4
   custom-game-type:
     title-key: lobby.custom-game-title
     rows: 3
     frame: network
     buttons:
-      public: { slot: 11, material: GRASS_BLOCK, name-key: lobby.custom-game-privacy-public, lore-key: lobby.custom-game-public, action: public_game, required: true }
-      private: { slot: 15, material: OAK_DOOR, name-key: lobby.custom-game-privacy-private, lore-key: lobby.custom-game-private, action: private_game, required: true }
-      close: { slot: 26, material: BARRIER, name-key: lobby.close-button, lore-key: lobby.close-button-lore, action: close, required: true }
+      public:
+        slot: 11
+        material: GRASS_BLOCK
+        name-key: lobby.custom-game-privacy-public
+        lore-key: lobby.custom-game-public
+        action: public_game
+        required: true
+      private:
+        slot: 15
+        material: OAK_DOOR
+        name-key: lobby.custom-game-privacy-private
+        lore-key: lobby.custom-game-private
+        action: private_game
+        required: true
+      close:
+        slot: 26
+        material: BARRIER
+        name-key: lobby.close-button
+        lore-key: lobby.close-button-lore
+        action: close
+        required: true
   friend-requests:
     title-key: social.requests-title
     rows: 6
     frame: network
     buttons:
-      incoming: { slot: 3, material: LIME_DYE, name-key: social.requests-incoming-title, action: show_incoming, required: true }
-      sent: { slot: 5, material: LIGHT_BLUE_DYE, name-key: social.requests-sent-title, action: show_sent, required: true }
-      back: { slot: 45, material: ARROW, name-key: lobby.back-button, lore-key: lobby.back-button-lore, action: back, required: true }
-      previous: { slot: 48, material: ARROW, name-key: lobby.server-prev-page, action: previous_page }
-      next: { slot: 50, material: ARROW, name-key: lobby.server-next-page, action: next_page }
-      close: { slot: 53, material: BARRIER, name-key: lobby.close-button, lore-key: lobby.close-button-lore, action: close, required: true }
+      incoming:
+        slot: 3
+        material: LIME_DYE
+        name-key: social.requests-incoming-title
+        action: show_incoming
+        required: true
+      sent:
+        slot: 5
+        material: LIGHT_BLUE_DYE
+        name-key: social.requests-sent-title
+        action: show_sent
+        required: true
+      back:
+        slot: 45
+        material: ARROW
+        name-key: lobby.back-button
+        lore-key: lobby.back-button-lore
+        action: back
+        required: true
+      previous:
+        slot: 48
+        material: ARROW
+        name-key: lobby.server-prev-page
+        action: previous_page
+      next:
+        slot: 50
+        material: ARROW
+        name-key: lobby.server-next-page
+        action: next_page
+      close:
+        slot: 53
+        material: BARRIER
+        name-key: lobby.close-button
+        lore-key: lobby.close-button-lore
+        action: close
+        required: true
     dynamic-regions:
-      incoming-requests: { slots: [10,11,12,19,20,21,28,29,30,37,38,39], template-action: request, preview-count: 3 }
-      sent-requests: { slots: [14,15,16,23,24,25,32,33,34,41,42,43], template-action: request, preview-count: 3 }
+      incoming-requests:
+        slots:
+          - 10
+          - 11
+          - 12
+          - 19
+          - 20
+          - 21
+          - 28
+          - 29
+          - 30
+          - 37
+          - 38
+          - 39
+        template-action: request
+        preview-count: 3
+      sent-requests:
+        slots:
+          - 14
+          - 15
+          - 16
+          - 23
+          - 24
+          - 25
+          - 32
+          - 33
+          - 34
+          - 41
+          - 42
+          - 43
+        template-action: request
+        preview-count: 3
   language-selector:
     title-key: lobby.lang-selector-title
     rows: 3
     frame: network
     buttons:
-      close: { slot: 22, material: BARRIER, name-key: lobby.close-button, lore-key: lobby.close-button-lore, action: close, required: true }
+      close:
+        slot: 22
+        material: BARRIER
+        name-key: lobby.close-button
+        lore-key: lobby.close-button-lore
+        action: close
+        required: true
     dynamic-regions:
-      languages: { slots: [10,12,14,16], template-action: select_language, preview-count: 4 }
+      languages:
+        slots:
+          - 10
+          - 12
+          - 14
+          - 16
+        template-action: select_language
+        preview-count: 4
   party-invites:
     title-key: social.party-requests-title
     rows: 6
     frame: network
     buttons:
-      incoming: { slot: 3, material: LIME_DYE, name-key: social.party-requests-incoming-title, action: show_incoming, required: true }
-      sent: { slot: 5, material: LIGHT_BLUE_DYE, name-key: social.party-requests-sent-title, action: show_sent, required: true }
-      back: { slot: 45, material: ARROW, name-key: lobby.back-button, lore-key: lobby.back-button-lore, action: back, required: true }
-      close: { slot: 53, material: BARRIER, name-key: lobby.close-button, lore-key: lobby.close-button-lore, action: close, required: true }
+      incoming:
+        slot: 3
+        material: LIME_DYE
+        name-key: social.party-requests-incoming-title
+        action: show_incoming
+        required: true
+      sent:
+        slot: 5
+        material: LIGHT_BLUE_DYE
+        name-key: social.party-requests-sent-title
+        action: show_sent
+        required: true
+      back:
+        slot: 45
+        material: ARROW
+        name-key: lobby.back-button
+        lore-key: lobby.back-button-lore
+        action: back
+        required: true
+      close:
+        slot: 53
+        material: BARRIER
+        name-key: lobby.close-button
+        lore-key: lobby.close-button-lore
+        action: close
+        required: true
     dynamic-regions:
-      incoming-invites: { slots: [10,11,12,19,20,21,28,29,30,37,38,39], template-action: invitation, preview-count: 3 }
-      sent-invites: { slots: [14,15,16,23,24,25,32,33,34,41,42,43], template-action: invitation, preview-count: 3 }
+      incoming-invites:
+        slots:
+          - 10
+          - 11
+          - 12
+          - 19
+          - 20
+          - 21
+          - 28
+          - 29
+          - 30
+          - 37
+          - 38
+          - 39
+        template-action: invitation
+        preview-count: 3
+      sent-invites:
+        slots:
+          - 14
+          - 15
+          - 16
+          - 23
+          - 24
+          - 25
+          - 32
+          - 33
+          - 34
+          - 41
+          - 42
+          - 43
+        template-action: invitation
+        preview-count: 3
   ranked-selector:
     title-key: lobby.ranked-title
     rows: 3
     frame: network
     buttons:
-      cancel: { slot: 22, material: RED_DYE, name-key: lobby.ranked-cancel-name, lore-key: lobby.ranked-cancel-lore, action: cancel_queue }
-      back: { slot: 18, material: ARROW, name-key: lobby.back-button, lore-key: lobby.back-button-lore, action: back, required: true }
-      close: { slot: 26, material: BARRIER, name-key: lobby.close-button, lore-key: lobby.close-button-lore, action: close, required: true }
+      cancel:
+        slot: 22
+        material: RED_DYE
+        name-key: lobby.ranked-cancel-name
+        lore-key: lobby.ranked-cancel-lore
+        action: cancel_queue
+      back:
+        slot: 18
+        material: ARROW
+        name-key: lobby.back-button
+        lore-key: lobby.back-button-lore
+        action: back
+        required: true
+      close:
+        slot: 26
+        material: BARRIER
+        name-key: lobby.close-button
+        lore-key: lobby.close-button-lore
+        action: close
+        required: true
     dynamic-regions:
-      modes: { slots: [11,15], template-action: join_ranked, preview-count: 2 }
+      modes:
+        slots:
+          - 11
+          - 15
+        template-action: join_ranked
+        preview-count: 2
   server-selector:
     title-key: lobby.server-selector-title
     rows: 6
     frame: network
     buttons:
-      previous: { slot: 45, material: ARROW, name-key: lobby.server-prev-page, action: previous_page }
-      best: { slot: 48, material: NETHER_STAR, name-key: lobby.server-best, lore-key: lobby.server-best-lore, action: join_best }
-      filter: { slot: 47, material: HOPPER, name-key: lobby.server-filter-name, action: change_filter }
-      back: { slot: 49, material: ARROW, name-key: lobby.back-button, lore-key: lobby.back-button-lore, action: back, required: true }
-      close: { slot: 50, material: BARRIER, name-key: lobby.close-button, lore-key: lobby.close-button-lore, action: close, required: true }
-      next: { slot: 53, material: ARROW, name-key: lobby.server-next-page, action: next_page }
+      previous:
+        slot: 45
+        material: ARROW
+        name-key: lobby.server-prev-page
+        action: previous_page
+      best:
+        slot: 48
+        material: NETHER_STAR
+        name-key: lobby.server-best
+        lore-key: lobby.server-best-lore
+        action: join_best
+      filter:
+        slot: 47
+        material: HOPPER
+        name-key: lobby.server-filter-name
+        action: change_filter
+      back:
+        slot: 49
+        material: ARROW
+        name-key: lobby.back-button
+        lore-key: lobby.back-button-lore
+        action: back
+        required: true
+      close:
+        slot: 50
+        material: BARRIER
+        name-key: lobby.close-button
+        lore-key: lobby.close-button-lore
+        action: close
+        required: true
+      next:
+        slot: 53
+        material: ARROW
+        name-key: lobby.server-next-page
+        action: next_page
     dynamic-regions:
-      servers: { slots: [10,11,12,13,14,15,16,19,20,21,22,23,24,25,28,29,30,31,32,33,34,37,38,39,40,41,42,43], template-action: join_server, preview-count: 7 }
+      servers:
+        slots:
+          - 10
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15
+          - 16
+          - 19
+          - 20
+          - 21
+          - 22
+          - 23
+          - 24
+          - 25
+          - 28
+          - 29
+          - 30
+          - 31
+          - 32
+          - 33
+          - 34
+          - 37
+          - 38
+          - 39
+          - 40
+          - 41
+          - 42
+          - 43
+        template-action: join_server
+        preview-count: 7
   server-type-selector:
     title-key: lobby.type-selector-title
     rows: 4
     frame: network
     buttons:
-      custom: { slot: 31, material: COMMAND_BLOCK, name-key: lobby.selector-custom-name, lore-key: lobby.selector-custom-lore, action: open_custom }
-      close: { slot: 35, material: BARRIER, name-key: lobby.close-button, lore-key: lobby.close-button-lore, action: close, required: true }
+      custom:
+        slot: 31
+        material: COMMAND_BLOCK
+        name-key: lobby.selector-custom-name
+        lore-key: lobby.selector-custom-lore
+        action: open_custom
+      close:
+        slot: 35
+        material: BARRIER
+        name-key: lobby.close-button
+        lore-key: lobby.close-button-lore
+        action: close
+        required: true
     dynamic-regions:
-      types: { slots: [1,2,3,4,5,6,7,9,10,11,12,13,14,15,16,17,19,20,21,22,23,24,25], template-action: select_type, preview-count: 3 }
+      types:
+        slots:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 9
+          - 10
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15
+          - 16
+          - 17
+          - 19
+          - 20
+          - 21
+          - 22
+          - 23
+          - 24
+          - 25
+        template-action: select_type
+        preview-count: 3
   settings:
     title-key: lobby.settings-title
     rows: 3
     frame: network
     buttons:
-      language: { slot: 10, material: PLAYER_HEAD, name-key: lobby.settings-language-name, lore-key: lobby.settings-language-lore, action: language }
-      profile: { slot: 11, material: NAME_TAG, name-key: lobby.settings-profile-name, lore-key: lobby.settings-profile-lore, action: profile_visibility }
-      messages: { slot: 12, material: WRITABLE_BOOK, name-key: lobby.settings-messages-name, lore-key: lobby.settings-messages-lore, action: message_privacy }
-      global-chat: { slot: 13, material: LIME_DYE, name-key: lobby.settings-global-chat-name, lore-key: lobby.settings-global-chat-help, action: global_chat }
-      visibility: { slot: 14, material: ENDER_EYE, name-key: lobby.settings-visibility-name, lore-key: lobby.settings-visibility-lore, action: visibility }
-      auto-replay: { slot: 15, material: LIME_DYE, name-key: lobby.settings-auto-replay-name, lore-key: lobby.settings-auto-replay-help, action: auto_replay }
-      hints: { slot: 16, material: LIME_DYE, name-key: lobby.settings-hints-name, lore-key: lobby.settings-hints-help, action: hints }
-      effects: { slot: 22, material: FIREWORK_ROCKET, name-key: lobby.settings-effects-name, lore-key: lobby.settings-effects-help, action: effects }
-      close: { slot: 26, material: BARRIER, name-key: lobby.close-button, lore-key: lobby.close-button-lore, action: close, required: true }
+      language:
+        slot: 10
+        material: PLAYER_HEAD
+        name-key: lobby.settings-language-name
+        lore-key: lobby.settings-language-lore
+        action: language
+      profile:
+        slot: 11
+        material: NAME_TAG
+        name-key: lobby.settings-profile-name
+        lore-key: lobby.settings-profile-lore
+        action: profile_visibility
+      messages:
+        slot: 12
+        material: WRITABLE_BOOK
+        name-key: lobby.settings-messages-name
+        lore-key: lobby.settings-messages-lore
+        action: message_privacy
+      global-chat:
+        slot: 13
+        material: LIME_DYE
+        name-key: lobby.settings-global-chat-name
+        lore-key: lobby.settings-global-chat-help
+        action: global_chat
+      visibility:
+        slot: 14
+        material: ENDER_EYE
+        name-key: lobby.settings-visibility-name
+        lore-key: lobby.settings-visibility-lore
+        action: visibility
+      auto-replay:
+        slot: 15
+        material: LIME_DYE
+        name-key: lobby.settings-auto-replay-name
+        lore-key: lobby.settings-auto-replay-help
+        action: auto_replay
+      hints:
+        slot: 16
+        material: LIME_DYE
+        name-key: lobby.settings-hints-name
+        lore-key: lobby.settings-hints-help
+        action: hints
+      effects:
+        slot: 22
+        material: FIREWORK_ROCKET
+        name-key: lobby.settings-effects-name
+        lore-key: lobby.settings-effects-help
+        action: effects
+      close:
+        slot: 26
+        material: BARRIER
+        name-key: lobby.close-button
+        lore-key: lobby.close-button-lore
+        action: close
+        required: true
   social:
     title-key: social.menu-title
     rows: 6
     frame: network
     buttons:
-      friends: { slot: 3, material: PLAYER_HEAD, name-key: social.menu-friends, action: friends, required: true }
-      party: { slot: 5, material: PLAYER_HEAD, name-key: social.menu-party, action: party, required: true }
-      requests: { slot: 49, material: WRITABLE_BOOK, name-key: social.menu-requests, lore-key: social.menu-requests-count, action: requests }
-      close: { slot: 53, material: BARRIER, name-key: lobby.close-button, lore-key: lobby.close-button-lore, action: close, required: true }
+      friends:
+        slot: 3
+        material: PLAYER_HEAD
+        name-key: social.menu-friends
+        action: friends
+        required: true
+      party:
+        slot: 5
+        material: PLAYER_HEAD
+        name-key: social.menu-party
+        action: party
+        required: true
+      requests:
+        slot: 49
+        material: WRITABLE_BOOK
+        name-key: social.menu-requests
+        lore-key: social.menu-requests-count
+        action: requests
+      close:
+        slot: 53
+        material: BARRIER
+        name-key: lobby.close-button
+        lore-key: lobby.close-button-lore
+        action: close
+        required: true
     dynamic-regions:
-      entries: { slots: [10,11,12,13,14,15,16,19,20,21,22,23,24,25,28,29,30,31,32,33,34], template-action: social_entry, preview-count: 7 }
+      entries:
+        slots:
+          - 10
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15
+          - 16
+          - 19
+          - 20
+          - 21
+          - 22
+          - 23
+          - 24
+          - 25
+          - 28
+          - 29
+          - 30
+          - 31
+          - 32
+          - 33
+          - 34
+        template-action: social_entry
+        preview-count: 7
   vip-shop-home:
     title-key: lobby.shop-title
     rows: 3
     frame: network
     buttons:
-      balance: { slot: 4, material: GOLD_INGOT, name-key: lobby.shop-home-name, lore-key: lobby.vip-banner-balance, action: none, required: true }
-      grades: { slot: 13, material: NAME_TAG, name-key: lobby.shop-grades-tab, lore-key: lobby.shop-grades-tab-lore, action: grades }
-      close: { slot: 26, material: BARRIER, name-key: lobby.close-button, lore-key: lobby.close-button-lore, action: close, required: true }
+      balance:
+        slot: 4
+        material: GOLD_INGOT
+        name-key: lobby.shop-home-name
+        lore-key: lobby.vip-banner-balance
+        action: none
+        required: true
+      grades:
+        slot: 13
+        material: NAME_TAG
+        name-key: lobby.shop-grades-tab
+        lore-key: lobby.shop-grades-tab-lore
+        action: grades
+      close:
+        slot: 26
+        material: BARRIER
+        name-key: lobby.close-button
+        lore-key: lobby.close-button-lore
+        action: close
+        required: true
   vip-shop-grades:
     title-key: lobby.vip-shop-title
     rows: 6
     frame: network
     buttons:
-      banner: { slot: 4, material: GOLD_INGOT, name-key: lobby.vip-banner-name, lore-key: lobby.vip-banner-lore, action: none, required: true }
-      back: { slot: 45, material: ARROW, name-key: lobby.back-button, lore-key: lobby.back-button-lore, action: back, required: true }
-      close: { slot: 53, material: BARRIER, name-key: lobby.close-button, lore-key: lobby.close-button-lore, action: close, required: true }
+      banner:
+        slot: 4
+        material: GOLD_INGOT
+        name-key: lobby.vip-banner-name
+        lore-key: lobby.vip-banner-lore
+        action: none
+        required: true
+      back:
+        slot: 45
+        material: ARROW
+        name-key: lobby.back-button
+        lore-key: lobby.back-button-lore
+        action: back
+        required: true
+      close:
+        slot: 53
+        material: BARRIER
+        name-key: lobby.close-button
+        lore-key: lobby.close-button-lore
+        action: close
+        required: true
     dynamic-regions:
-      grades: { slots: [11,13,15], template-action: buy_grade, preview-count: 3 }
+      grades:
+        slots:
+          - 11
+          - 13
+          - 15
+        template-action: buy_grade
+        preview-count: 3

@@ -15,6 +15,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 #### Modifié
 
+- Le scoreboard du Lobby présente désormais séparément le grade du joueur, la file, le réseau et l'instance courante ; le scoreboard d'attente SheepWars masque la ligne redondante du minimum de joueurs.
 - Le placeholder global `{player_grade}` expose désormais le grade MiniMessage du joueur destinataire sans inclure son pseudo, dans les rendus Core comme Velocity et dans le catalogue de l'éditeur.
 - Les 291 placeholders issus de la migration positionnelle ont été regroupés en 139 noms métier canoniques ; l'éditeur fournit une description précise et un exemple lisible pour chacun.
 - La saisie française régénère automatiquement EN, DE et ES après une courte temporisation dans les éditeurs de textes, scoreboards et tablists ; les boutons de proposition et d'approbation intermédiaire ont été supprimés.

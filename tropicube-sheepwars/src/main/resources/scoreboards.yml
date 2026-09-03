@@ -8,7 +8,6 @@ scoreboards:
           - key: sw.sb-separator
           - key: sw.sb-waiting
           - key: sw.sb-players
-          - key: sw.sb-min-players
           - key: sw.sb-map
           - key: sw.sb-separator
           - key: sw.sb-your-team
