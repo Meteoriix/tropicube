@@ -10,6 +10,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 - The editor now provides a Tablists view to edit and preview Lobby and SheepWars-state headers and footers in all four languages; each scoreboard line can now be edited alongside its layout.
 - The editor now provides a Placeholders tab that groups names used throughout language resources and lists their consuming keys and modules.
+- Every placeholder now displays a description of its dynamic value; a compact picker can search and insert them at the cursor while editing text.
 
 #### Changed
 

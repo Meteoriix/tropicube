@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { collectPlaceholders, documents, editableValue, filterKeys, flatten, inferContext, rename, serialize, setValue, value, valueFromEditor, withTranslations } from './model';
+import { collectPlaceholders, describePlaceholder, documents, editableValue, filterKeys, flatten, inferContext, rename, serialize, setValue, value, valueFromEditor, withTranslations } from './model';
 import { parseDocument } from 'yaml';
 
 describe('language model', () => {
@@ -78,5 +78,8 @@ describe('language model', () => {
     expect(placeholders.find(entry => entry.name === 'player')?.references).toEqual([
       { set: 'core', key: 'one' }, { set: 'velocity', key: 'two' },
     ]);
+    expect(placeholders.find(entry => entry.name === 'balance')?.description).toContain('Solde actuel');
+    expect(describePlaceholder('custom_value', [{ set: 'core', key: 'one' }]))
+      .toBe('Contenu dynamique associé au champ « custom value » dans la traduction « one ».');
   });
 });

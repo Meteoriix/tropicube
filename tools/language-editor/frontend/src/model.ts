@@ -9,7 +9,7 @@ export interface LanguageSet { id: string; sourceDirectory: string; mirrorDirect
 export interface StateSet { set: LanguageSet; files: Record<Locale, FileSnapshot> }
 export interface Diagnostic { language: Locale; key: string; code: string; message: string }
 export interface PlaceholderReference { set: string; key: string }
-export interface PlaceholderSummary { name: string; references: PlaceholderReference[] }
+export interface PlaceholderSummary { name: string; description: string; references: PlaceholderReference[] }
 export type LanguageDocuments = Record<Locale, Document>;
 
 export function documents(files: Record<Locale, FileSnapshot>): LanguageDocuments {
@@ -93,9 +93,52 @@ export function collectPlaceholders(sets: StateSet[]): PlaceholderSummary[] {
     }
   }
   return [...found.entries()]
-    .map(([name, references]) => ({ name, references: references.sort((left, right) =>
-      left.set.localeCompare(right.set) || left.key.localeCompare(right.key)) }))
+    .map(([name, references]) => {
+      const sortedReferences = references.sort((left, right) =>
+        left.set.localeCompare(right.set) || left.key.localeCompare(right.key));
+      return { name, description: describePlaceholder(name, sortedReferences), references: sortedReferences };
+    })
     .sort((left, right) => left.name.localeCompare(right.name));
+}
+
+/** Provides a durable French explanation for known and newly introduced placeholder names. */
+export function describePlaceholder(name: string, references: PlaceholderReference[]): string {
+  const exact: Record<string, string> = {
+    player: 'Pseudo ou identité visible du joueur concerné.',
+    profile: 'Profil formaté du joueur, avec son grade visible.',
+    balance: 'Solde actuel du joueur en TropiCoins.',
+    amount: 'Montant concerné par l’action.',
+    online_players: 'Nombre de joueurs actuellement connectés au réseau.',
+    current_players: 'Nombre de joueurs présents dans la partie ou la file.',
+    max_players: 'Capacité maximale de joueurs.',
+    min_players: 'Nombre minimal de joueurs requis.',
+    visible_games: 'Nombre de parties visibles et accessibles au joueur.',
+    instance_number: 'Identifiant de l’instance serveur actuelle.',
+    map: 'Nom de la carte actuellement sélectionnée.',
+    team: 'Nom localisé de l’équipe du joueur.',
+    player_class: 'Nom localisé de la classe choisie par le joueur.',
+    queue: 'Nom localisé de la file d’attente active.',
+    reserved_players: 'Nombre de places actuellement réservées dans la file.',
+    capacity: 'Capacité totale de la partie ou de la file.',
+    wait_seconds: 'Temps d’attente écoulé, en secondes.',
+    countdown: 'Temps restant avant le démarrage.',
+    time: 'Durée ou temps restant, déjà formaté pour l’affichage.',
+    red_players: 'Nombre de joueurs encore actifs dans l’équipe rouge.',
+    blue_players: 'Nombre de joueurs encore actifs dans l’équipe bleue.',
+    kills: 'Nombre d’éliminations réalisées par le joueur.',
+    sheep_thrown: 'Nombre de moutons lancés par le joueur.',
+  };
+  if (exact[name]) return exact[name];
+  const readable = name.replaceAll('_', ' ');
+  if (/(count|total|number|players|warnings|votes|pages|requests)/.test(name)) return `Nombre dynamique correspondant à « ${readable} ».`;
+  if (/(player|member|owner|leader|moderator|sender|target|friend)/.test(name)) return `Identité de joueur associée à « ${readable} ».`;
+  if (/(time|duration|delay|seconds|minutes|hours|days|expiration|cooldown)/.test(name)) return `Durée dynamique correspondant à « ${readable} ».`;
+  if (/(amount|balance|price|cost|coins|reward|rating|experience|xp)/.test(name)) return `Valeur numérique correspondant à « ${readable} ».`;
+  if (/(map|team|class|kit|game|server|instance|queue|rank|grade|level|status|state|reason|message|command)/.test(name)) return `Libellé ou valeur dynamique correspondant à « ${readable} ».`;
+  const firstReference = references[0];
+  return firstReference
+    ? `Contenu dynamique associé au champ « ${readable} » dans la traduction « ${firstReference.key} ».`
+    : `Valeur dynamique correspondant à « ${readable} ».`;
 }
 
 function normalizeSearch(text: string): string {

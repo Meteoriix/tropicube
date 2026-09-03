@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { parse, stringify } from 'yaml';
 import { collectPlaceholders, Diagnostic, documents, editableValue, FileSnapshot, filterKeys, flatten, inferContext, Locale, locales, PlaceholderSummary, rename, SearchMode, serialize, setValue, StateSet, value, valueFromEditor, withTranslations } from './model';
@@ -32,6 +32,8 @@ function App() {
   const [tablistPreview, setTablistPreview] = useState<{ header: ComponentNode; footer: ComponentNode } | null>(null);
   const [selectedButton, setSelectedButton] = useState('');
   const [selectedPlaceholder, setSelectedPlaceholder] = useState('');
+  const [placeholderPickerOpen, setPlaceholderPickerOpen] = useState(false);
+  const [placeholderPickerSearch, setPlaceholderPickerSearch] = useState('');
   const [setIndex, setSetIndex] = useState(0);
   const [docs, setDocs] = useState<Docs | null>(null);
   const [snapshots, setSnapshots] = useState<Record<Locale, FileSnapshot> | null>(null);
@@ -49,6 +51,7 @@ function App() {
   const [catalogText, setCatalogText] = useState('');
   const [usages, setUsages] = useState<any[]>([]);
   const [notice, setNotice] = useState('Chargement…');
+  const frenchEditor = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     Promise.all([api<{sets: StateSet[]; ui: UiSnapshot[]; catalog: string; live: LiveStatus}>('/api/state'), api<{available: boolean}>('/api/translation/status')])
@@ -69,7 +72,14 @@ function App() {
   const placeholders = useMemo(() => collectPlaceholders(sets), [sets]);
   const filteredPlaceholders = useMemo(() => placeholders.filter(entry =>
     entry.name.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+    || entry.description.toLocaleLowerCase().includes(search.toLocaleLowerCase())
     || entry.references.some(reference => `${reference.set} ${reference.key}`.toLocaleLowerCase().includes(search.toLocaleLowerCase()))), [placeholders, search]);
+  const pickerPlaceholders = useMemo(() => {
+    const query = placeholderPickerSearch.toLocaleLowerCase();
+    return placeholders.filter(entry => entry.name.toLocaleLowerCase().includes(query)
+      || entry.description.toLocaleLowerCase().includes(query)
+      || entry.references.some(reference => `${reference.set} ${reference.key}`.toLocaleLowerCase().includes(query)));
+  }, [placeholders, placeholderPickerSearch]);
   const surfaces = useMemo(() => uiSnapshots.flatMap(file => Object.keys(uiDocuments[file.id]?.[file.type] || {})
     .map(id => ({ file, id, identity: `${file.id}/${id}`, definition: uiDocuments[file.id][file.type][id] })))
     .filter(surface => mode === 'texts' || surface.file.type === mode), [uiSnapshots, uiDocuments, mode]);
@@ -163,6 +173,20 @@ function App() {
   };
 
   const editFrench = (text: string) => mutate(copy => setValue(copy.fr, selected, valueFromEditor(current, text)));
+
+  const insertPlaceholder = (name: string) => {
+    const editor = frenchEditor.current;
+    const source = editableValue(current);
+    const start = editor?.selectionStart ?? source.length;
+    const end = editor?.selectionEnd ?? start;
+    const token = `{${name}}`;
+    editFrench(source.slice(0, start) + token + source.slice(end));
+    requestAnimationFrame(() => {
+      frenchEditor.current?.focus();
+      frenchEditor.current?.setSelectionRange(start + token.length, start + token.length);
+    });
+    setNotice(`${token} inséré`);
+  };
 
   const requestTranslation = async (target: Locale): Promise<string | string[] | undefined> => {
     if (!docs || target === 'fr') return;
@@ -351,7 +375,7 @@ function App() {
     </section>
     <div className="workspace">
       <aside>{mode === 'texts' ? keys.map(key => <button className={key === selected ? 'active' : ''} key={key} onClick={() => setSelected(key)}>{key}</button>)
-        : mode === 'placeholders' ? filteredPlaceholders.map(entry => <button className={entry.name === selectedPlaceholder ? 'active' : ''} key={entry.name} onClick={() => setSelectedPlaceholder(entry.name)}>{`{${entry.name}}`}<small>{entry.references.length} clé(s)</small></button>)
+        : mode === 'placeholders' ? filteredPlaceholders.map(entry => <button title={entry.description} className={entry.name === selectedPlaceholder ? 'active' : ''} key={entry.name} onClick={() => setSelectedPlaceholder(entry.name)}>{`{${entry.name}}`}<small>{entry.references.length} clé(s)</small></button>)
         : surfaces.map(surface => <button className={surface.identity === selectedUi ? 'active' : ''} key={surface.identity} onClick={() => { setSelectedUi(surface.identity); setSelectedVariant(Object.keys(surface.definition.variants || {})[0] || ''); }}>{surface.file.module}<small>{surface.id}</small></button>)}</aside>
       <section className="editor">
         {mode === 'placeholders' ? <PlaceholderEditor placeholder={placeholder} />
@@ -360,7 +384,7 @@ function App() {
         : mode === 'menus' && selectedSurface ? <MenuEditor surface={selectedSurface} selectedButton={selectedButton} setSelectedButton={setSelectedButton} mutate={mutateUi} />
         : raw ? <textarea className="raw" value={serialize(docs.fr)} onChange={event => mutate(copy => { copy.fr = documents({ ...snapshots, fr: { ...snapshots.fr, content: event.target.value } }).fr; })} /> : <>
           <div className="keyline"><h2>{selected}</h2><button onClick={renameKey}>Renommer</button><button className="danger" onClick={deleteKey}>Supprimer</button></div>
-          <label>Français</label><textarea value={editableValue(current)} onChange={event => editFrench(event.target.value)} />
+          <label>Français</label><textarea ref={frenchEditor} value={editableValue(current)} onChange={event => editFrench(event.target.value)} />
           <p className="edit-hint">Entrée insère un saut de ligne dans le texte.</p>
           <div className="translations">
             {(['en','de','es'] as Locale[]).map(locale => <div key={locale}><div className="locale"><b>{locale.toUpperCase()}</b>{locale === 'en' && <button disabled={!provider} onClick={() => translateLocale('en')}>Proposer</button>}</div>
@@ -384,6 +408,13 @@ function App() {
         </>}
       </section>
     </div>
+    {mode === 'texts' && !raw && <div className="placeholder-picker">
+      {placeholderPickerOpen && <section className="placeholder-picker-panel"><div className="placeholder-picker-head"><b>Placeholders disponibles</b><button aria-label="Fermer les placeholders" onClick={() => setPlaceholderPickerOpen(false)}>×</button></div>
+        <input aria-label="Rechercher dans les placeholders disponibles" placeholder="Rechercher…" value={placeholderPickerSearch} onChange={event => setPlaceholderPickerSearch(event.target.value)} />
+        <div className="placeholder-picker-list">{pickerPlaceholders.map(entry => <button key={entry.name} title={`Insérer {${entry.name}}`} onClick={() => insertPlaceholder(entry.name)}><code>{`{${entry.name}}`}</code><span>{entry.description}</span></button>)}</div>
+      </section>}
+      <button className="placeholder-picker-toggle" aria-expanded={placeholderPickerOpen} onClick={() => setPlaceholderPickerOpen(open => !open)}>{'{ }'} Placeholders</button>
+    </div>}
   </main>;
 }
 
@@ -407,6 +438,7 @@ function PlaceholderEditor({ placeholder }: { placeholder?: PlaceholderSummary }
   if (!placeholder) return <p className="empty-editor">Aucun placeholder ne correspond à la recherche.</p>;
   const modules = [...new Set(placeholder.references.map(reference => reference.set))];
   return <div className="placeholder-editor"><div className="keyline"><h2>{`{${placeholder.name}}`}</h2><span className="placeholder-count">{placeholder.references.length} clé(s)</span></div>
+    <p className="placeholder-description">{placeholder.description}</p>
     <p>Présent dans {modules.length} module(s) : {modules.join(', ')}.</p>
     <h3>Clés de traduction</h3>
     <div className="placeholder-references">{placeholder.references.map(reference => <div key={`${reference.set}:${reference.key}`}><strong>{reference.key}</strong><small>{reference.set}</small></div>)}</div>
@@ -415,7 +447,7 @@ function PlaceholderEditor({ placeholder }: { placeholder?: PlaceholderSummary }
 
 function PlaceholderPreview({ placeholder }: { placeholder?: PlaceholderSummary }) {
   if (!placeholder) return <div className="placeholder-card empty-editor">Aucun résultat</div>;
-  return <div className="placeholder-card"><code>{`{${placeholder.name}}`}</code><span>Exemple</span><strong>{placeholderSample(placeholder.name)}</strong><small>Valeur texte échappée avant insertion MiniMessage</small></div>;
+  return <div className="placeholder-card"><code>{`{${placeholder.name}}`}</code><p>{placeholder.description}</p><span>Exemple</span><strong>{placeholderSample(placeholder.name)}</strong><small>Valeur texte échappée avant insertion MiniMessage</small></div>;
 }
 
 function ScoreboardEditor({ surface, variant, setVariant, mutate, docs, mutateLanguages }: { surface: any; variant: string; setVariant: (value: string) => void; mutate: (fn: (copy: Record<string, any>) => void) => void; docs: Docs; mutateLanguages: (fn: (copy: Docs) => void) => void }) {

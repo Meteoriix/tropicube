@@ -111,5 +111,17 @@ details code { display: block; padding: 6px; white-space: pre-wrap; }
 .placeholder-card { display: grid; gap: 10px; margin-top: 45px; padding: 20px; border: 1px solid #29494d; border-radius: 10px; background: #0c1c1f; }
 .placeholder-card code { color: #5df0ed; font-size: 20px; overflow-wrap: anywhere; }
 .placeholder-card span, .placeholder-card small { color: #86a8ab; }
+.placeholder-card p { margin: 0; color: #c7dbdc; line-height: 1.45; }
 .placeholder-card strong { color: #fff; font-size: 18px; }
+.placeholder-description { padding: 10px 12px; border-left: 3px solid #42e0df; background: #10272a; color: #dcebec !important; }
+.placeholder-picker { position: fixed; right: 18px; bottom: 18px; z-index: 20; display: grid; justify-items: end; gap: 8px; }
+.placeholder-picker-toggle { color: #062022; background: #42e0df; border-color: #42e0df; font-weight: 700; box-shadow: 0 5px 20px #0008; }
+.placeholder-picker-panel { width: 380px; max-height: min(560px, calc(100vh - 170px)); display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: 9px; padding: 12px; border: 1px solid #3c676b; border-radius: 10px; background: #0c1b1ef7; box-shadow: 0 12px 38px #000c; }
+.placeholder-picker-head { display: flex; align-items: center; justify-content: space-between; }
+.placeholder-picker-head button { padding: 3px 8px; }
+.placeholder-picker-panel > input { width: 100%; }
+.placeholder-picker-list { min-height: 80px; overflow: auto; display: grid; align-content: start; gap: 4px; }
+.placeholder-picker-list button { display: grid; gap: 3px; padding: 8px 9px; text-align: left; }
+.placeholder-picker-list code { color: #5df0ed; font-weight: 700; }
+.placeholder-picker-list span { color: #9eb8bb; font-size: 12px; line-height: 1.35; }
 @media (max-width: 1300px) { .workspace { grid-template-columns: 230px minmax(460px, 1fr) 330px; } }

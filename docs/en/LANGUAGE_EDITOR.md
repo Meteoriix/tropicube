@@ -50,7 +50,8 @@ All resources use named placeholders such as `{player}`, `{balance}`, or `{count
 - the Scoreboards tab groups variants, edits the title and every line in all four languages, previews their MiniMessage rendering with placeholder sample values, and can add, remove, or reorder all fifteen Minecraft lines;
 - the Tablists tab groups Lobby and SheepWars by state variant, edits headers and footers in all four languages, and previews the complete layout around sample players;
 - the Menus tab renders the inventory grid, required buttons, dynamic regions, and localized item properties;
-- the Placeholders tab automatically inventories every named Core and Velocity placeholder, supports search, and lists every module and translation key that uses it;
+- the Placeholders tab automatically inventories every named Core and Velocity placeholder, describes the dynamic information supplied by each one, supports search, and lists every module and translation key that uses it;
+- while editing structured text, the compact bottom-right picker searches the same placeholders, displays their descriptions, and inserts the selected token at the cursor;
 - manifest drafts support undo/redo, drag and drop, and a summary before applying changes.
 
 Live synchronization exclusively uses the local Docker client, active Tropicube containers, and their internal RCON service. It does not publish an additional port or read a password. `TROPICUBE_DOCKER_COMMAND` overrides the default executable. This version must be delivered once to install the engine. Later applications need no image rebuild: Core publishes a complete hashed generation to Redis and new instances restore it before initializing languages and interfaces.
