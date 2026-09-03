@@ -11,6 +11,7 @@ export interface Diagnostic { language: Locale; key: string; code: string; messa
 export interface PlaceholderReference { set: string; key: string }
 export interface PlaceholderSummary { name: string; description: string; references: PlaceholderReference[] }
 export type LanguageDocuments = Record<Locale, Document>;
+const GLOBAL_PLACEHOLDERS = ['player_grade'] as const;
 
 export function documents(files: Record<Locale, FileSnapshot>): LanguageDocuments {
   return Object.fromEntries(locales.map(locale => [locale, parseDocument(files[locale].content)])) as LanguageDocuments;
@@ -78,7 +79,7 @@ export function filterKeys(documents: LanguageDocuments, search: string, mode: S
 
 /** Collects every named placeholder once per translation key across all language sets. */
 export function collectPlaceholders(sets: StateSet[]): PlaceholderSummary[] {
-  const found = new Map<string, PlaceholderReference[]>();
+  const found = new Map<string, PlaceholderReference[]>(GLOBAL_PLACEHOLDERS.map(name => [name, []]));
   for (const state of sets) {
     const french = parseDocument(state.files.fr.content);
     for (const key of flatten(french)) {
@@ -182,6 +183,7 @@ export const PLACEHOLDER_DESCRIPTIONS: Record<string, string> = {
     percentage: 'Pourcentage effectif associé au poids configuré.',
     placements: 'Nombre de parties de placement restantes ou réalisées.',
     player: 'Pseudo ou identité visible du joueur concerné.',
+    player_grade: 'Grade MiniMessage formaté du joueur destinataire, sans son pseudo.',
     player_class: 'Nom localisé de la classe choisie par le joueur.',
     port: 'Port interne attribué à l’instance serveur.',
     position: 'Position actuelle du joueur dans la file d’attente.',

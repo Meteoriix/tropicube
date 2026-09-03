@@ -74,13 +74,16 @@ describe('language model', () => {
       { set: { id: 'velocity', sourceDirectory: 'velocity' }, files: files('two: "{player}"\n') },
     ]);
 
-    expect(placeholders.map(entry => entry.name)).toEqual(['balance', 'player']);
+    expect(placeholders.map(entry => entry.name)).toEqual(['balance', 'player', 'player_grade']);
     expect(placeholders.find(entry => entry.name === 'player')?.references).toEqual([
       { set: 'core', key: 'one' }, { set: 'velocity', key: 'two' },
     ]);
     expect(placeholders.find(entry => entry.name === 'balance')?.description).toContain('Solde actuel');
     expect(describePlaceholder('instance_name', [])).toContain('Nom visible');
-    expect(Object.keys(PLACEHOLDER_DESCRIPTIONS)).toHaveLength(139);
+    expect(placeholders.find(entry => entry.name === 'player_grade')).toMatchObject({
+      description: 'Grade MiniMessage formaté du joueur destinataire, sans son pseudo.', references: [],
+    });
+    expect(Object.keys(PLACEHOLDER_DESCRIPTIONS)).toHaveLength(140);
     expect(Object.values(PLACEHOLDER_DESCRIPTIONS).every(description =>
       !description.includes('Contenu dynamique associé au champ'))).toBe(true);
     expect(describePlaceholder('custom_value', [{ set: 'core', key: 'one' }]))

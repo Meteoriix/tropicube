@@ -18,13 +18,15 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Loads proxy translations and resolves player language and current-instance placeholders. */
+/** Loads proxy translations and resolves player language, current-instance and grade placeholders. */
 public class VelocityLanguageManager {
 
     public static final List<String> SUPPORTED = List.of("fr", "en", "es", "de");
+    private static final String DEFAULT_GRADE_DISPLAY = "<gray><bold>JOUEUR</bold></gray>";
 
     private volatile Map<String, ConfigurationNode> languages = Map.of();
     private final Map<UUID, String> playerLangs = new ConcurrentHashMap<>();
+    private final Map<UUID, String> playerGradeDisplays = new ConcurrentHashMap<>();
     private final RedisManager redisManager;
     private final ProxyServer proxyServer;
     private final Path dataDir;
@@ -71,16 +73,21 @@ public class VelocityLanguageManager {
 
     private void subscribeToLangChanges() {
         redisManager.subscribeToPlayerEvents(msg -> {
-            if (!msg.startsWith("LANG_CHANGED:")) return;
-            String rest = msg.substring("LANG_CHANGED:".length());
-            int sep = rest.lastIndexOf(':');
-            if (sep < 0) return;
-            String uuidStr = rest.substring(0, sep);
-            String lang = rest.substring(sep + 1);
-            try {
-                UUID uuid = UUID.fromString(uuidStr);
-                if (SUPPORTED.contains(lang)) playerLangs.put(uuid, lang);
-            } catch (IllegalArgumentException ignored) {}
+            if (msg.startsWith("LANG_CHANGED:")) {
+                String rest = msg.substring("LANG_CHANGED:".length());
+                int sep = rest.lastIndexOf(':');
+                if (sep < 0) return;
+                try {
+                    UUID uuid = UUID.fromString(rest.substring(0, sep));
+                    String lang = rest.substring(sep + 1);
+                    if (SUPPORTED.contains(lang)) playerLangs.put(uuid, lang);
+                } catch (IllegalArgumentException ignored) {}
+            } else if (msg.startsWith("GRADE_CHANGED:") || msg.startsWith("GRADE_LOADED:")) {
+                try {
+                    UUID uuid = UUID.fromString(msg.substring(msg.indexOf(':') + 1));
+                    loadPlayerGradeDisplay(uuid);
+                } catch (IllegalArgumentException ignored) {}
+            }
         });
     }
 
@@ -149,7 +156,12 @@ public class VelocityLanguageManager {
                 .flatMap(Player::getCurrentServer)
                 .map(connection -> connection.getServerInfo().getName())
                 .orElse("Velocity");
-        return PlaceholderValues.of("instance_name", instanceName);
+        PlaceholderValues.Builder placeholders = PlaceholderValues.builder().put("instance_name", instanceName);
+        if (playerId != null) {
+            String gradeDisplay = playerGradeDisplays.getOrDefault(playerId, DEFAULT_GRADE_DISPLAY);
+            placeholders.putComponent("player_grade", MessageStyle.component(gradeDisplay));
+        }
+        return placeholders.build();
     }
 
     private PlaceholderValues withGlobals(UUID playerId, PlaceholderValues placeholders) {
@@ -166,10 +178,18 @@ public class VelocityLanguageManager {
     public void loadPlayerLanguage(UUID uuid) {
         String lang = redisManager.getPlayerLanguage(uuid.toString());
         playerLangs.put(uuid, lang != null && SUPPORTED.contains(lang) ? lang : defaultLang);
+        loadPlayerGradeDisplay(uuid);
+    }
+
+    private void loadPlayerGradeDisplay(UUID uuid) {
+        String gradeDisplay = redisManager.getPlayerGradeDisplay(uuid.toString());
+        if (gradeDisplay == null || gradeDisplay.isBlank()) playerGradeDisplays.remove(uuid);
+        else playerGradeDisplays.put(uuid, gradeDisplay);
     }
 
     public void unloadPlayer(UUID uuid) {
         playerLangs.remove(uuid);
+        playerGradeDisplays.remove(uuid);
     }
 
     public void reload() {

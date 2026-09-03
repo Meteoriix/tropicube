@@ -37,6 +37,8 @@ class RedisManagerTest {
             assertThrows(IllegalArgumentException.class, () -> manager.set("key", "value", 0));
             assertThrows(IllegalArgumentException.class,
                     () -> manager.reserveUnlessBlocked("reservation", "owner", "value", 0));
+            assertThrows(IllegalArgumentException.class,
+                    () -> manager.setPlayerGradeDisplay(UUID.randomUUID().toString(), " "));
         } finally {
             manager.close();
         }

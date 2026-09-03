@@ -481,6 +481,20 @@ public class RedisManager {
         return redis().get(KEY_PREFIX + "player:lang:" + playerUuid);
     }
 
+    /** Caches the player's MiniMessage-formatted grade for proxy-side language placeholders. TTL: 24h. */
+    public void setPlayerGradeDisplay(String playerUuid, String gradeDisplay) {
+        requireText(playerUuid, "playerUuid");
+        requireText(gradeDisplay, "gradeDisplay");
+        redis().set(KEY_PREFIX + "player:grade-display:" + playerUuid, gradeDisplay,
+                SetParams.setParams().ex(86400L));
+    }
+
+    /** Returns the player's MiniMessage-formatted grade, or null when it has not been cached yet. */
+    public String getPlayerGradeDisplay(String playerUuid) {
+        requireText(playerUuid, "playerUuid");
+        return redis().get(KEY_PREFIX + "player:grade-display:" + playerUuid);
+    }
+
     /** Removes player language from Redis (called at logout).*/
     public void removePlayerLanguage(String playerUuid) {
         requireText(playerUuid, "playerUuid");

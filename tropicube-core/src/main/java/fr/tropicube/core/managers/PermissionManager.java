@@ -82,7 +82,7 @@ public class PermissionManager {
                         setGrade(uuid, "JOUEUR", -1, null, "GRADE_EXPIRY");
                         return;
                     }
-                    playerGrades.put(uuid, grade);
+                    cacheGradeDisplay(uuid, grade);
                     playerGradeExpiries.put(uuid, expiry);
                     PlayerAccessProfile profile = new PlayerAccessProfile(r.getInt(3), r.getInt(4), r.getLong(5));
                     accessProfiles.put(uuid, profile);
@@ -170,6 +170,16 @@ public class PermissionManager {
         return gradeRegistry.getOrDefault(getGrade(uuid), gradeRegistry.get("JOUEUR"));
     }
 
+    /** Returns the configured grade prefix only, without a username and without performing SQL. */
+    public String getCachedGradeDisplay(UUID uuid) {
+        Grade grade = gradeRegistry.getOrDefault(playerGrades.get(uuid), gradeRegistry.get("JOUEUR"));
+        return formatGradeDisplay(grade);
+    }
+
+    static String formatGradeDisplay(Grade grade) {
+        return grade == null ? "" : grade.prefix().strip();
+    }
+
     public void setGrade(UUID uuid, String gradeName, long durationSeconds) {
         setGrade(uuid, gradeName, durationSeconds, null, "COMMAND_GRADE");
     }
@@ -228,7 +238,7 @@ public class PermissionManager {
         } catch (SQLException error) {
             throw new DatabaseManager.DatabaseOperationException("Impossible de modifier le profil d'accès", error);
         }
-        playerGrades.put(uuid, newGrade);
+        cacheGradeDisplay(uuid, newGrade);
         if (requestedGrade != null) playerGradeExpiries.put(uuid, expiry);
         accessProfiles.put(uuid, updated);
         publishProfile(uuid, updated, true);
@@ -256,6 +266,12 @@ public class PermissionManager {
     private void publishProfile(UUID uuid, PlayerAccessProfile profile, boolean event) {
         plugin.getRedisManager().setPersistent(PlayerAccessProfile.key(uuid), profile.serialize());
         if (event) plugin.getRedisManager().publishPlayerEvent("ACCESS_CHANGED", uuid + ":" + profile.serialize());
+    }
+
+    private void cacheGradeDisplay(UUID uuid, String gradeName) {
+        playerGrades.put(uuid, gradeName);
+        String display = formatGradeDisplay(gradeRegistry.get(gradeName));
+        if (!display.isBlank()) plugin.getRedisManager().setPlayerGradeDisplay(uuid.toString(), display);
     }
 
     /** Refreshes local state after a purchase transaction committed a complete profile. */

@@ -579,7 +579,7 @@ function placeholderSample(name: string): string {
     instance_number:'3', server:'SheepWars-7f42a1b3', server_type:'SheepWars', queue:'Ranked 4v4',
     reserved_players:'6', current_players:'12', max_players:'16', min_players:'8', position:'4',
     map:'Archipel', countdown:'10', time:'08:42', red_players:'5', blue_players:'6', team:'Rouge',
-    player_class:'Support', kit:'Archer', kills:'3', sheep_thrown:'14', grade:'Champion',
+    player_class:'Support', kit:'Archer', kills:'3', sheep_thrown:'14', grade:'Champion', player_grade:'VIP',
     game_mode:'Ranked 4v4', language:'Français', nickname:'TropiNathan', reason:'Comportement inapproprié',
     server_status:'EN ATTENTE', template_status:'ACTIF', current_setting:'Amis uniquement', visibility:'Équipe',
     mission_description:'Remporter 3 parties', mission_status:'EN COURS', match_result:'Victoire',
