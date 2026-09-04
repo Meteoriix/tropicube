@@ -97,7 +97,7 @@ public class LanguageSelectorGUI {
                     .name((isCurrent ? "<green>✔ " : "") + lang.displayName())
                     .lore(lang.lore(), "",
                           isCurrent ? currentLabel : changeLabel);
-            if (isCurrent) ib.glow();
+            if (isCurrent) ib.glow(player);
             inv.setItem(LANG_SLOTS[i], ib.build());
         }
 

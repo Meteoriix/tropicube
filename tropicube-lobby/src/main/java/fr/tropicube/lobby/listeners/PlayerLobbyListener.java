@@ -321,21 +321,21 @@ public class PlayerLobbyListener implements Listener {
                         .name(LangHelper.get(player, "lobby.hotbar-servers-name"))
                         .lore(LangHelper.get(player, "lobby.hotbar-servers-lore"))
                         .customModelData(1001)
-                        .glow().build());
+                        .glow(player).build());
 
         player.getInventory().setItem(SLOT_VIP,
                 new ItemBuilder(vipIcon)
                         .name(LangHelper.get(player, "lobby.hotbar-vip-name"))
                         .lore(LangHelper.get(player, "lobby.hotbar-vip-lore"))
                         .customModelData(1003)
-                        .glow().build());
+                        .glow(player).build());
 
         player.getInventory().setItem(SLOT_SOCIAL,
                 new ItemBuilder(socialIcon)
                         .name(LangHelper.get(player, "social.hotbar-name"))
                         .lore(LangHelper.get(player, "social.hotbar-lore"))
                         .customModelData(1005)
-                        .glow().build());
+                        .glow(player).build());
 
         if (Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core) {
             player.getInventory().setItem(SLOT_PROFILE,

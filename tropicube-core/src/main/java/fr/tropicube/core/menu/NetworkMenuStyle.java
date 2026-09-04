@@ -27,7 +27,7 @@ public final class NetworkMenuStyle {
 
     /** Fills decorative background slots only when the viewer uses Java Edition. */
     public static void fill(Inventory inventory, Player player) {
-        if (!isBedrockClient(player.getName(), player.getClientBrandName())) {
+        if (!isBedrockClient(player)) {
             fill(inventory);
         }
     }
@@ -45,9 +45,14 @@ public final class NetworkMenuStyle {
      * harder to navigate, while empty slots let actionable items remain immediately visible.
      */
     public static void frame(Inventory inventory, Player player) {
-        if (!isBedrockClient(player.getName(), player.getClientBrandName())) {
+        if (!isBedrockClient(player)) {
             frame(inventory);
         }
+    }
+
+    /** Returns whether this player is connected through Geyser/Floodgate. */
+    public static boolean isBedrockClient(Player player) {
+        return isBedrockClient(player.getName(), player.getClientBrandName());
     }
 
     static boolean isBedrockClient(String username, String clientBrand) {

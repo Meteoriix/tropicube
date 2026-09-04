@@ -64,7 +64,7 @@ public final class RankedSelectorGUI {
                                             stats.reservedPlayers(), stats.capacity(), stats.oldestWaitSeconds()),
                             "",
                             LangHelper.get(player, "lobby.ranked-click"));
-            inventory.setItem(slot, item.glow().build());
+            inventory.setItem(slot, item.glow(player).build());
         }
         String active = plugin.getLobbyServerManager().getActiveMatchmaking(player.getUniqueId()).orElse(null);
         if (active != null) {

@@ -157,7 +157,7 @@ public final class SocialGUI {
 
     private static ItemStack navigationItem(Player player, String headId, String nameKey, boolean active) {
         ItemBuilder item = new ItemBuilder(headDatabaseIcon(headId)).name(LangHelper.get(player, nameKey));
-        if (active) item.glow();
+        if (active) item.glow(player);
         return item.build();
     }
 

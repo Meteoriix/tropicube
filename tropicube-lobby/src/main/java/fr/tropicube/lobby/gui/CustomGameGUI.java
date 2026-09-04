@@ -124,7 +124,7 @@ public class CustomGameGUI {
                         "",
                         LangHelper.get(player, "lobby.custom-game-create-click")
                 )
-                .glow()
+                .glow(player)
                 .build();
     }
 

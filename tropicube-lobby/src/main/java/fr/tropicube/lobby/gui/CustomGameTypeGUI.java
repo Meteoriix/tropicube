@@ -57,7 +57,7 @@ public class CustomGameTypeGUI {
                         "",
                         LangHelper.get(player, "lobby.custom-game-type-click")
                 )
-                .glow()
+                .glow(player)
                 .build();
     }
 
@@ -69,7 +69,7 @@ public class CustomGameTypeGUI {
                         "",
                         LangHelper.get(player, "lobby.custom-game-type-click")
                 )
-                .glow()
+                .glow(player)
                 .build();
     }
 }

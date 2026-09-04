@@ -1,5 +1,6 @@
 package fr.tropicube.lobby.utils;
 
+import fr.tropicube.core.menu.NetworkMenuStyle;
 import fr.tropicube.core.util.ComponentLines;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
@@ -65,9 +66,12 @@ public class ItemBuilder {
         return this;
     }
 
-    public ItemBuilder glow() {
-        meta.addEnchant(Enchantment.LUCK_OF_THE_SEA, 1, true);
-        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+    /** Adds the decorative Java glint while avoiding Bedrock's visible enchantment rendering. */
+    public ItemBuilder glow(Player viewer) {
+        if (!NetworkMenuStyle.isBedrockClient(viewer)) {
+            meta.addEnchant(Enchantment.LUCK_OF_THE_SEA, 1, true);
+            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        }
         return this;
     }
 

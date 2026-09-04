@@ -53,7 +53,7 @@ public class VipShopGUI {
         NetworkMenuStyle.frame(inv, player);
         inv.setItem(4, new ItemBuilder(Material.GOLD_INGOT)
                 .name(LangHelper.get(player, "lobby.shop-home-name"))
-                .lore(LangHelper.get(player, "lobby.vip-banner-balance", formatCoins((int) balance))).glow().build());
+                .lore(LangHelper.get(player, "lobby.vip-banner-balance", formatCoins((int) balance))).glow(player).build());
         inv.setItem(HOME_GRADES_SLOT, new ItemBuilder(Material.NAME_TAG)
                 .name(LangHelper.get(player, "lobby.shop-grades-tab"))
                 .lore(LangHelper.get(player, "lobby.shop-grades-tab-lore")).build());
@@ -75,7 +75,7 @@ public class VipShopGUI {
                 .lore(LangHelper.get(player, "lobby.vip-banner-lore"),
                       "",
                       LangHelper.get(player, "lobby.vip-banner-balance", formatCoins((int) balance)))
-                .glow().build());
+                .glow(player).build());
 
         List<ShopEntry> entries = loadEntries(player);
 
@@ -93,7 +93,7 @@ public class VipShopGUI {
             ItemBuilder ib = new ItemBuilder(entry.material())
                     .name(entry.displayName() + " <gray>- <yellow>" + formatCoins(upgradePrice) + " <gold>⬡")
                     .lore(actionLore);
-            if (owned) ib.glow();
+            if (owned) ib.glow(player);
             inv.setItem(GRADE_SLOTS[i], ib.build());
 
             String normalized = entry.gradeKey().toLowerCase().replace('_', '-');

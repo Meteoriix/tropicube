@@ -254,7 +254,7 @@ public class ServerSelectorGUI {
                 .name(namePrefix + LangHelper.get(player, "lobby.server-instance-name",
                         s.templateName(), Math.floorMod(s.id().hashCode(), 10_000)))
                 .lore(lore.toArray(new String[0]));
-        if (s.isJoinable()) ib.glow();
+        if (s.isJoinable()) ib.glow(player);
         return ib;
     }
 

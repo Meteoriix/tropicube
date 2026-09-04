@@ -14,6 +14,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 #### Corrigé
 
 - Les clients Bedrock reçoivent des menus allégés sans vitres décoratives ainsi que le pack intégré Geyser obligatoire ; les onze icônes HeadDatabase employées par Tropicube sont préenregistrées et ne retombent plus sur une tête de Steve.
+- Les faux enchantements utilisés comme scintillement décoratif dans les menus et la hotbar ne sont plus ajoutés pour les clients Bedrock ; les enchantements de gameplay restent inchangés.
 
 ### 2026-09-03
 

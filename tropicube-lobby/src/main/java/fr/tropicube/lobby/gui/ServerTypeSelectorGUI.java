@@ -93,7 +93,7 @@ public class ServerTypeSelectorGUI {
                 ? new ItemBuilder(Material.COMMAND_BLOCK)
                         .name(LangHelper.get(player, "lobby.selector-custom-name"))
                         .lore(LangHelper.get(player, "lobby.selector-custom-lore"), "",
-                                LangHelper.get(player, "lobby.selector-custom-click")).glow().build()
+                                LangHelper.get(player, "lobby.selector-custom-click")).glow(player).build()
                 : new ItemBuilder(Material.IRON_DOOR)
                         .name(LangHelper.get(player, "lobby.selector-custom-locked-name"))
                         .lore(LangHelper.get(player, "lobby.selector-custom-locked-lore")).build());
@@ -131,7 +131,7 @@ public class ServerTypeSelectorGUI {
                         LangHelper.get(player, "lobby.type-lore-right-click"),
                         LangHelper.get(player, "lobby.type-lore-shift-left-click")
                 );
-        if (onlineServers > 0) ib.glow();
+        if (onlineServers > 0) ib.glow(player);
         return ib.build();
     }
 
