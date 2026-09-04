@@ -17,11 +17,14 @@ class SocialServiceTest {
                 "social.friend-request-received", new Object[]{"Player_1"});
         SocialService.InvitationAction party = SocialService.invitationAction(
                 "social.party-invite-received", new Object[]{"Leader"});
+        SocialService.InvitationAction bedrock = SocialService.invitationAction(
+                "social.friend-request-received", new Object[]{".Bedrock_User"});
 
         assertEquals("/friend accept Player_1", friend.command());
         assertEquals("social.friend-request-accept-hover", friend.hoverKey());
         assertEquals("/party accept Leader", party.command());
         assertEquals("social.party-invite-accept-hover", party.hoverKey());
+        assertEquals("/friend accept .Bedrock_User", bedrock.command());
     }
 
     @Test

@@ -16,7 +16,7 @@ ENV PATH=/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
 
 WORKDIR /server
 
-EXPOSE 25565 25577
+EXPOSE 25565 25577 19132/udp
 
 HEALTHCHECK --start-period=10s CMD /usr/bin/health.sh
 
@@ -24,7 +24,21 @@ COPY --chown=1000:1000 dockerfiles/configs/Velocity                           /o
 
 COPY --chown=1000:1000 dockerfiles/configs/TropicubeVelocity                  /opt/tropicube/server/plugins/tropicube-velocity/
 
+COPY --chown=1000:1000 dockerfiles/configs/Geyser-Velocity                    /opt/tropicube/server/plugins/Geyser-Velocity/
+
+COPY --chown=1000:1000 dockerfiles/configs/floodgate                          /opt/tropicube/server/plugins/floodgate/
+
 COPY --chown=1000:1000 dockerfiles/plugins/velocity                           /opt/tropicube/server/plugins/
+
+# Official proxy plugins pinned to immutable builds and verified by BuildKit
+# before they enter the image. Third-party JARs remain outside Git.
+ADD --chown=1000:1000 --chmod=0644 --checksum=sha256:28d796e67b466fd9832eb12d0b4a1b72a5046caae1fb6c67099f2a5d14423571 \
+    https://download.geysermc.org/v2/projects/geyser/versions/2.11.2/builds/1234/downloads/velocity \
+    /opt/tropicube/server/plugins/Geyser-Velocity.jar
+
+ADD --chown=1000:1000 --chmod=0644 --checksum=sha256:f5867ad79b90d38abcc72755a685428fbcf423b52c9830a39ffed5203de6936a \
+    https://download.geysermc.org/v2/projects/floodgate/versions/2.2.5/builds/140/downloads/velocity \
+    /opt/tropicube/server/plugins/floodgate-velocity.jar
 
 COPY --chmod=755 dockerfiles/velocity-entrypoint.sh                            /usr/local/bin/tropicube-velocity-entrypoint
 

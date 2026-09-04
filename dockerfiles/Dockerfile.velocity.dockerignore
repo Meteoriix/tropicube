@@ -6,6 +6,10 @@
 !dockerfiles/configs/Velocity/**
 !dockerfiles/configs/TropicubeVelocity/
 !dockerfiles/configs/TropicubeVelocity/**
+!dockerfiles/configs/Geyser-Velocity/
+!dockerfiles/configs/Geyser-Velocity/**
+!dockerfiles/configs/floodgate/
+!dockerfiles/configs/floodgate/**
 !dockerfiles/plugins/
 !dockerfiles/plugins/velocity/
 !dockerfiles/plugins/velocity/**

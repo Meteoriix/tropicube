@@ -2,7 +2,7 @@
 
 [English version](README.en.md)
 
-Tropicube est une infrastructure Minecraft multi-serveurs pour **Minecraft 26.2**. Elle associe un proxy Velocity, des serveurs Paper créés dynamiquement dans Docker, Redis pour l'état partagé et les événements, et MySQL pour les données persistantes.
+Tropicube est une infrastructure Minecraft multi-serveurs pour **Minecraft 26.2**, accessible depuis Java Edition et Bedrock Edition grâce à Geyser/Floodgate. Elle associe un proxy Velocity, des serveurs Paper créés dynamiquement dans Docker, Redis pour l'état partagé et les événements, et MySQL pour les données persistantes.
 
 ## Documentation
 
@@ -57,7 +57,7 @@ chmod +x deploy.sh
 ./deploy.sh
 ```
 
-Le proxy écoute sur le port TCP `25565`. MySQL (`3306`), Redis (`6379`) et les interfaces de développement optionnelles sont publiés uniquement sur `127.0.0.1`.
+Le proxy écoute sur `25565/tcp` pour Java et sur `${BEDROCK_PORT:-19132}/udp` pour Bedrock. MySQL (`3306`), Redis (`6379`) et les interfaces de développement optionnelles sont publiés uniquement sur `127.0.0.1`.
 
 ## Développement
 
@@ -83,6 +83,7 @@ Le module Fallen Kingdoms est actuellement vide : il compile dans le réacteur m
 
 - Ne versionnez jamais `.env` ni un secret réel. Le fichier est ignoré par Git.
 - Ne publiez pas directement les ports des serveurs Paper dynamiques : seul Velocity doit être accessible aux joueurs.
+- Ouvrez le port `BEDROCK_PORT` en **UDP**, jamais uniquement en TCP, et conservez le volume `floodgate-data` qui contient la clé privée d'identité Bedrock.
 - Le secret de forwarding doit être identique côté Velocity et Paper.
 - L'accès au daemon Docker est limité au conteneur `docker-proxy`; seules les API nécessaires aux conteneurs, images, réseaux et volumes éphémères sont exposées. Cet accès reste néanmoins sensible et doit être réservé à une machine de confiance.
 - Sauvegardez les volumes `mysql-data` et `redis-data` avant toute opération d'infrastructure importante.

@@ -1,0 +1,25 @@
+# Floodgate-Velocity 2.2.5 configuration for Tropicube.
+# key.pem is generated in the floodgate-data Docker volume and must stay secret.
+key-file-name: key.pem
+username-prefix: "."
+replace-spaces: true
+default-locale: fr_FR
+
+disconnect:
+  invalid-key: Connexion Bedrock invalide. Reconnectez-vous via l'adresse officielle Tropicube.
+  invalid-arguments-length: Donnees de connexion Bedrock incompatibles ({} arguments attendus, {} recus). Contactez l'equipe Tropicube.
+
+player-link:
+  enabled: true
+  require-link: false
+  enable-own-linking: false
+  allowed: true
+  link-code-timeout: 300
+  type: sqlite
+  enable-global-linking: true
+
+metrics:
+  enabled: false
+  uuid: ${metrics.uuid}
+
+config-version: 3

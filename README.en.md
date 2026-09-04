@@ -4,7 +4,7 @@
 
 [Edit and preview languages](docs/en/LANGUAGE_EDITOR.md)
 
-Tropicube is a modular Minecraft 26.2 network built around Velocity, dynamically created Paper servers, Redis, MySQL, and Docker Compose. The reference development environment is Java 25 with Maven 3.9.11.
+Tropicube is a modular Minecraft 26.2 network available to Java Edition and Bedrock Edition players through Geyser/Floodgate. It is built around Velocity, dynamically created Paper servers, Redis, MySQL, and Docker Compose. The reference development environment is Java 25 with Maven 3.9.11.
 
 ## Modules
 
@@ -19,7 +19,7 @@ Tropicube is a modular Minecraft 26.2 network built around Velocity, dynamically
 
 ## Runtime architecture
 
-Players enter through Velocity. The proxy creates and registers Paper containers from templates, stores shared state in Redis, and routes players without exposing backend ports publicly. Paper plugins use MySQL for durable player data and Redis for short-lived coordination.
+Java players enter Velocity on `25565/tcp`; Bedrock players enter Geyser on `${BEDROCK_PORT:-19132}/udp` and receive a Floodgate identity before following the same Velocity routing path. The proxy creates and registers Paper containers from templates without exposing backend ports publicly. Paper plugins use MySQL for durable player data and Redis for short-lived coordination.
 
 ```text
 Player -> Velocity -> Lobby / SheepWars Paper instance
@@ -33,6 +33,7 @@ Paper plugins ------|-> MySQL (profiles and statistics)
 - Java 25;
 - Maven 3.9.11 through the included wrapper;
 - Docker Engine with Compose;
+- public TCP `25565` and UDP `BEDROCK_PORT` (`19132` by default);
 - Git LFS for Minecraft region files;
 - Node.js for the static documentation site.
 

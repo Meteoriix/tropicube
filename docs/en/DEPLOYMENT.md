@@ -8,7 +8,7 @@ Migration V008 permanently removes `tropicube_permissions` and the former grade 
 
 The optional `language-editor` Compose profile starts LibreTranslate on localhost and keeps its models in `libretranslate-models`. It is not required by the Minecraft network and must not be exposed publicly.
 
-The repository supports Windows through `deploy.ps1` and Linux through `deploy.sh`. Both paths build the same Maven reactor, redistribute plugin artifacts, validate Docker inputs, and rebuild the selected images. Java 25, Maven 3.9.11, Docker Compose, Git LFS, and Node.js are required.
+The repository supports Windows through `deploy.ps1` and Linux through `deploy.sh`. Both paths build the same Maven reactor, redistribute plugin artifacts, validate Docker inputs, and rebuild the selected images. Java 25, Maven 3.9.11, Docker Compose, Git LFS, and Node.js are required. The host must expose `25565/tcp` for Java and `BEDROCK_PORT` (`19132` by default) over UDP for Bedrock.
 
 ## Initial setup
 
@@ -40,7 +40,7 @@ node docs-site/build.mjs
 node docs-site/validate.mjs
 ```
 
-The Maven build creates normal and shaded plugin JARs under each module's `target/` directory. Deployment scripts copy the runtime artifacts into the Docker build contexts. During `process-resources`, Core and Velocity also copy their `src/main/resources/languages/*.yml` files to the matching directories under `dockerfiles/configs`. These embedded files are the source of truth; direct edits to Docker language copies are overwritten. Deployment repeats and verifies the exact copy, including in `OnlyImages` mode. A red build must never be deployed.
+The Maven build creates normal and shaded plugin JARs under each module's `target/` directory. Deployment scripts copy the runtime artifacts into the Docker build contexts. The Velocity image downloads pinned official Geyser and Floodgate builds and BuildKit verifies their SHA-256 hashes, so no third-party JAR is committed. During `process-resources`, Core and Velocity also copy their `src/main/resources/languages/*.yml` files to the matching directories under `dockerfiles/configs`. These embedded files are the source of truth; direct edits to Docker language copies are overwritten. Deployment repeats and verifies the exact copy, including in `OnlyImages` mode. A red build must never be deployed.
 
 Velocity RCON is enabled only inside its container for local editor language reloads; its port is not published on the host. The dedicated Core and Velocity `languageeditorreload` commands reject players. After these commands have been delivered once, the editor copies validated YAML files and reloads them without rebuilding images.
 
@@ -99,7 +99,7 @@ Velocity and every Paper backend must receive the same modern-forwarding secret 
 
 Velocity creates a container from the selected template with a labelled ephemeral `/data` volume, waits for health checks, registers it with the proxy, and stores its `ServerInstance` in Redis. Empty servers are stopped after their configured delay. A finished minigame asks Velocity to transfer players and immediately remove its container, data volume, and shared state. Labelled orphan volumes are purged on startup.
 
-The Velocity container uses a `tmpfs` mount for `/server`, seeded from the image on every start. No anonymous proxy volume survives a stop. During the first deployment of this layout, the deployment scripts detect and remove the legacy anonymous `/server` volume after recreating the proxy.
+The Velocity container uses a `tmpfs` mount for `/server`, seeded from the image on every start. A nested named volume at `/server/plugins/floodgate` keeps Floodgate's generated private key and linking data across recreations. Never delete `floodgate-data` during a normal deployment or commit its `key.pem`. During the first deployment of this layout, the deployment scripts detect and remove only the legacy anonymous `/server` volume after recreating the proxy.
 
 For private custom games, Velocity injects `HOST_UUID` and `CUSTOM_GAME_PRIVATE=true`; do not hard-code them in a template. If the host item or access list is missing, inspect `host:<uuid>` and the `whitelistedPlayers` field of `instance:<id>` in Redis. A target must have joined the network previously, unless the host supplies its UUID directly.
 
@@ -108,6 +108,8 @@ The proxy's normal shutdown may preserve or remove dynamic instances according t
 ## Operational checks
 
 - confirm Velocity can reach Redis, MySQL, and the Docker socket proxy;
+- confirm Java connects through `25565/tcp` and Bedrock through `BEDROCK_PORT/udp`;
+- run `geyser connectiontest <public-host> <BEDROCK_PORT>` from the Velocity console after firewall/NAT changes;
 - confirm Paper receives forwarded identities and cannot be reached publicly;
 - confirm lobby selectors reflect `GAME_WAITING`, `GAME_STARTING`, `GAME_PLAYING`, and `GAME_ENDING` correctly;
 - confirm a playing SheepWars instance admits late arrivals as spectators;

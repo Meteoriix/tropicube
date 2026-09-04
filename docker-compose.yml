@@ -19,6 +19,7 @@ volumes:
   mysql-data:
   redis-data:
   libretranslate-models:
+  floodgate-data:
 
 services:
 # ── Redis (inter-service communication bus) ────────────────
@@ -74,8 +75,11 @@ services:
       - tropicube-control
     ports:
       - "25565:25577"
+      - "${BEDROCK_PORT:-19132}:${BEDROCK_PORT:-19132}/udp"
     tmpfs:
       - /server:size=512m,mode=0755
+    volumes:
+      - floodgate-data:/server/plugins/floodgate
     environment:
       TYPE: VELOCITY
       VELOCITY_VERSION: "4.0.0"
@@ -85,6 +89,7 @@ services:
       CFG_REDIS_PASSWORD: "${REDIS_PASSWORD:?REDIS_PASSWORD manquant dans .env}"
       CFG_FORWARDING_SECRET: "${FORWARDING_SECRET:?FORWARDING_SECRET manquant dans .env}"
       CFG_RCON_PASSWORD: "${RCON_PASSWORD:?RCON_PASSWORD manquant dans .env}"
+      CFG_BEDROCK_PORT: "${BEDROCK_PORT:-19132}"
       REDIS_PASSWORD: "${REDIS_PASSWORD:?REDIS_PASSWORD manquant dans .env}"
       MYSQL_DATABASE: "${MYSQL_DATABASE:?MYSQL_DATABASE manquant dans .env}"
       MYSQL_USER: "${MYSQL_USER:?MYSQL_USER manquant dans .env}"

@@ -51,6 +51,20 @@ function Assert-TotpMasterKey {
     }
 }
 
+function Assert-BedrockPort {
+    $value = [Environment]::GetEnvironmentVariable("BEDROCK_PORT")
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        $entry = Get-Content -LiteralPath ".env" |
+            Where-Object { $_ -match '^\s*BEDROCK_PORT\s*=' } |
+            Select-Object -Last 1
+        $value = if ($null -eq $entry) { "19132" } else { ($entry -split '=', 2)[1].Trim().Trim('"', "'") }
+    }
+    $port = 0
+    if (-not [int]::TryParse($value, [ref]$port) -or $port -lt 1 -or $port -gt 65535) {
+        Fail "BEDROCK_PORT must be an integer between 1 and 65535 (received '$value')."
+    }
+}
+
 function Sync-LanguageDirectory([string]$sourceDirectory, [string]$destinationDirectory) {
     if (-not (Test-Path -LiteralPath $sourceDirectory -PathType Container)) {
         Fail "Language source directory not found: $sourceDirectory"
@@ -237,6 +251,7 @@ if (-not $OnlyImages) {
 }
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) { Fail "docker not found on PATH." }
 Assert-TotpMasterKey
+Assert-BedrockPort
 & docker info --format '{{.ServerVersion}}' *> $null
 if ($LASTEXITCODE -ne 0) { Fail "Docker daemon is not available." }
 & docker compose version *> $null
@@ -398,6 +413,12 @@ foreach ($image in @("tropicube-lobby:latest", "tropicube-sheepwars:latest")) {
     if ($LASTEXITCODE -ne 0) { Fail "Prewarmed Paper runtime is incomplete in $image." }
     Ok "$image contains Paper runtime artifacts and offline startup configs."
 }
+
+Step "Verifying Geyser and Floodgate proxy artifacts..."
+$proxyBridgeCheck = 'set -eu; echo "28d796e67b466fd9832eb12d0b4a1b72a5046caae1fb6c67099f2a5d14423571  /opt/tropicube/server/plugins/Geyser-Velocity.jar" | sha256sum -c -; echo "f5867ad79b90d38abcc72755a685428fbcf423b52c9830a39ffed5203de6936a  /opt/tropicube/server/plugins/floodgate-velocity.jar" | sha256sum -c -; test -s /opt/tropicube/server/plugins/Geyser-Velocity/config.yml; test -s /opt/tropicube/server/plugins/floodgate/config.yml'
+& docker run --rm --entrypoint /bin/sh tropicube-velocity:latest -c $proxyBridgeCheck
+if ($LASTEXITCODE -ne 0) { Fail "Geyser/Floodgate artifacts are incomplete in tropicube-velocity:latest." }
+Ok "Velocity contains the pinned Geyser and Floodgate artifacts."
 
 if (-not $SkipRestart) {
     Step "Recreating the Velocity stack..."

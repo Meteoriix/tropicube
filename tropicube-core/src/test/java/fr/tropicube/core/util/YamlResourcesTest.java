@@ -442,6 +442,39 @@ class YamlResourcesTest {
     }
 
     @Test
+    void bedrockBridgeUsesFloodgateAndPinnedProxyArtifacts() throws Exception {
+        Path configs = Path.of("../dockerfiles/configs");
+        YamlConfiguration geyser = YamlConfiguration.loadConfiguration(
+                configs.resolve("Geyser-Velocity/config.yml").toFile());
+        YamlConfiguration floodgate = YamlConfiguration.loadConfiguration(
+                configs.resolve("floodgate/config.yml").toFile());
+
+        assertEquals("0.0.0.0", geyser.getString("bedrock.address"));
+        assertEquals("${CFG_BEDROCK_PORT}", geyser.getString("bedrock.port"));
+        assertEquals("${CFG_BEDROCK_PORT}", geyser.getString("bedrock.broadcast-port"));
+        assertEquals("auto", geyser.getString("remote.address"));
+        assertEquals("floodgate", geyser.getString("remote.auth-type"));
+        assertTrue(geyser.getBoolean("use-direct-connection"));
+        assertTrue(geyser.getBoolean("disable-bedrock-scaffolding"));
+        assertEquals(4, geyser.getInt("config-version"));
+
+        assertEquals(".", floodgate.getString("username-prefix"));
+        assertEquals("key.pem", floodgate.getString("key-file-name"));
+        assertFalse(floodgate.getBoolean("player-link.require-link"));
+        assertEquals(3, floodgate.getInt("config-version"));
+
+        String dockerfile = Files.readString(Path.of("../dockerfiles/Dockerfile.velocity"));
+        assertTrue(dockerfile.contains("versions/2.11.2/builds/1234/downloads/velocity"));
+        assertTrue(dockerfile.contains("sha256:28d796e67b466fd9832eb12d0b4a1b72a5046caae1fb6c67099f2a5d14423571"));
+        assertTrue(dockerfile.contains("versions/2.2.5/builds/140/downloads/velocity"));
+        assertTrue(dockerfile.contains("sha256:f5867ad79b90d38abcc72755a685428fbcf423b52c9830a39ffed5203de6936a"));
+
+        String compose = Files.readString(Path.of("../docker-compose.yml"));
+        assertTrue(compose.contains("${BEDROCK_PORT:-19132}:${BEDROCK_PORT:-19132}/udp"));
+        assertTrue(compose.contains("floodgate-data:/server/plugins/floodgate"));
+    }
+
+    @Test
     void playerDrivenNarrativeMessagesStayUnprefixed() {
         List<String> narrativeKeys = List.of(
                 "join.message",

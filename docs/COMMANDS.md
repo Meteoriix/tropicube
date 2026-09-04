@@ -146,7 +146,9 @@ Le module est actuellement vide et n'ajoute donc aucune commande ni permission.
 
 `vipLevel ≥ 3` autorise l'activation de `/nick`. `/nick off` reste toujours accessible et le grade d'affichage factice ne modifie jamais les niveaux réels.
 
-`/whitelist` est validée par Velocity : l'émetteur doit posséder une partie personnalisée active et privée. Un pseudo est résolu parmi les joueurs actuellement ou précédemment vus par le proxy ; un UUID est aussi accepté. L'item de whitelist remis à l'hôte dans la hotbar SheepWars utilise le même flux proxy.
+`/whitelist` est validée par Velocity : l'émetteur doit posséder une partie personnalisée active et privée. Un pseudo Java ou un pseudo Floodgate préfixé par `.` est résolu parmi les joueurs actuellement ou précédemment vus par le proxy ; un UUID est aussi accepté. L'item de whitelist remis à l'hôte dans la hotbar SheepWars utilise le même flux proxy.
+
+Les commandes Geyser/Floodgate ne sont pas publiées aux joueurs par le catalogue Tropicube. L'exploitation peut lancer `geyser connectiontest <hôte> <port>` depuis la console Velocity après déploiement. Les autres commandes exigent leurs permissions proxy `geyser.command.*` ou `floodgate.command.*` et restent hors du modèle de niveaux Tropicube tant qu'elles ne sont pas explicitement intégrées.
 
 ### Administration des instances
 

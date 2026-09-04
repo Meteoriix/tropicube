@@ -40,7 +40,7 @@ public final class WhitelistMenu implements Listener {
     private static final int ADD_SLOT = 45;
     private static final int CLOSE_SLOT = 53;
     private static final long UPDATE_TIMEOUT_TICKS = 100L;
-    private static final Pattern PLAYER_NAME = Pattern.compile("[A-Za-z0-9_]{1,16}");
+    private static final Pattern PLAYER_NAME = Pattern.compile("(?:[A-Za-z0-9_]{1,16}|\\.[A-Za-z0-9_]{1,15})");
     private static final List<Integer> MEMBER_SLOTS = List.of(
             10, 11, 12, 13, 14, 15, 16,
             19, 20, 21, 22, 23, 24, 25,

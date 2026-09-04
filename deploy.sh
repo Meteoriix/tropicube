@@ -64,6 +64,26 @@ raise SystemExit(0 if len(decoded) == 32 else 1)
 PY
 }
 
+validate_bedrock_port() {
+  "${python_command[@]}" - <<'PY' || fail 'BEDROCK_PORT must be an integer between 1 and 65535.'
+import os
+
+value = os.environ.get("BEDROCK_PORT")
+if not value:
+    value = "19132"
+    with open(".env", encoding="utf-8") as stream:
+        for raw_line in stream:
+            line = raw_line.strip()
+            if line.startswith("BEDROCK_PORT="):
+                value = line.partition("=")[2].strip().strip("\"'")
+try:
+    port = int(value)
+except ValueError:
+    raise SystemExit(1)
+raise SystemExit(0 if 1 <= port <= 65535 else 1)
+PY
+}
+
 if ! $only_images; then require_command mvn; fi
 require_command docker
 if command -v python3 >/dev/null 2>&1 && python3 --version >/dev/null 2>&1; then
@@ -78,6 +98,7 @@ else
 fi
 
 validate_totp_master_key
+validate_bedrock_port
 docker info --format '{{.ServerVersion}}' >/dev/null 2>&1 || fail 'Docker daemon is not available.'
 docker compose version >/dev/null 2>&1 || fail 'docker compose is not available.'
 docker compose config --quiet || fail 'docker-compose.yml or .env is invalid.'
@@ -357,6 +378,12 @@ for image in tropicube-lobby:latest tropicube-sheepwars:latest; do
     || fail "Prewarmed Paper runtime is incomplete in $image."
   ok "$image contains Paper runtime artifacts and offline startup configs."
 done
+
+step 'Verifying Geyser and Floodgate proxy artifacts...'
+proxy_bridge_check='set -eu; echo "28d796e67b466fd9832eb12d0b4a1b72a5046caae1fb6c67099f2a5d14423571  /opt/tropicube/server/plugins/Geyser-Velocity.jar" | sha256sum -c -; echo "f5867ad79b90d38abcc72755a685428fbcf423b52c9830a39ffed5203de6936a  /opt/tropicube/server/plugins/floodgate-velocity.jar" | sha256sum -c -; test -s /opt/tropicube/server/plugins/Geyser-Velocity/config.yml; test -s /opt/tropicube/server/plugins/floodgate/config.yml'
+docker run --rm --entrypoint /bin/sh tropicube-velocity:latest -c "$proxy_bridge_check" \
+  || fail 'Geyser/Floodgate artifacts are incomplete in tropicube-velocity:latest.'
+ok 'Velocity contains the pinned Geyser and Floodgate artifacts.'
 
 if ! $skip_restart; then
   step 'Recreating the Velocity stack...'

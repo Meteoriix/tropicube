@@ -37,6 +37,7 @@ Créer `.env` depuis `.env.example` et remplacer chaque valeur :
 | `FORWARDING_SECRET` | Authentification Velocity → Paper |
 | `RCON_PASSWORD` | RCON des instances dynamiques |
 | `TOTP_MASTER_KEY` | Clé AES-256 encodée en Base64 pour chiffrer les secrets TOTP du personnel |
+| `BEDROCK_PORT` | Port UDP public de Geyser, entier de `1` à `65535` (`19132` par défaut) |
 | `DOCKER_SOCKET_PATH` | Socket Docker de l'hôte, y compris rootless |
 
 Génération recommandée d'un secret sous PowerShell :
@@ -120,7 +121,7 @@ Le lobby est une dépendance de routage essentielle et reste activé. Pour ajout
 
 `party.disconnect-grace-seconds` vaut `60` et doit être strictement positif. Un joueur qui revient avant cette échéance reste dans sa party. Après l'échéance, il est retiré atomiquement et, si c'était le chef, le rôle passe à un membre connecté. Une party devenue entièrement hors ligne est supprimée immédiatement.
 
-Le service Compose `velocity` monte `/server` en `tmpfs` avec une limite de 512 Mio. Cette donnée d'exécution est réinitialisée depuis l'image à chaque démarrage et libérée automatiquement dès l'arrêt du conteneur ; elle ne doit pas être remplacée par un volume persistant.
+Le service Compose `velocity` monte `/server` en `tmpfs` avec une limite de 512 Mio. Cette donnée d'exécution est réinitialisée depuis l'image à chaque démarrage et libérée automatiquement dès l'arrêt du conteneur. Seul le sous-dossier `/server/plugins/floodgate` utilise le volume nommé `floodgate-data`, afin de conserver la clé privée et les éventuelles données de liaison de comptes.
 
 La valeur `false` conserve les backends et leurs volumes afin qu'un redémarrage de Velocity puisse restaurer les parties actives. Cette dérogation doit être réservée aux redéploiements où cette continuité est explicitement recherchée ; si la clé est absente, le comportement sûr reste la suppression.
 
@@ -154,6 +155,14 @@ Paramètres indispensables :
 - liste `servers.try` vide, le lobby étant choisi dynamiquement par le plugin.
 
 Le fichier `forwarding.secret` contient le marqueur `${CFG_FORWARDING_SECRET}`, remplacé au démarrage. Le fichier Paper `paper-global.yml` utilise le même secret avec `proxies.velocity.enabled: true` et `online-mode: true`. Une divergence provoque typiquement « Unable to verify player details ».
+
+## Geyser et Floodgate
+
+Les deux plugins sont installés uniquement sur Velocity. `Dockerfile.velocity` télécharge les artefacts officiels Geyser-Velocity `2.11.2-b1234` et Floodgate-Velocity `2.2.5-b140`, avec URL de build et SHA-256 épinglés. Aucun JAR tiers n'est versionné. Avant une mise à jour, vérifier la prise en charge de Java `26.2` et des versions Bedrock courantes, puis modifier ensemble URL, empreinte, commentaires de configuration, tests et documentation.
+
+`dockerfiles/configs/Geyser-Velocity/config.yml` écoute sur `0.0.0.0:${CFG_BEDROCK_PORT}`, annonce le même port, cible automatiquement le proxy local et impose `auth-type: floodgate`. La connexion directe est conservée pour éviter un second trajet TCP. Les suggestions de commandes sont désactivées côté Geyser et l'échafaudage propre à Bedrock est bloqué pour préserver l'équité SheepWars.
+
+`dockerfiles/configs/floodgate/config.yml` autorise les comptes Bedrock sans liaison Java obligatoire. Le préfixe `.` et le remplacement des espaces par `_` évitent les collisions avec les pseudos Java ; les invitations sociales et la whitelist privée acceptent explicitement ce format. `key.pem` est généré dans `floodgate-data`, n'est jamais copié dans l'image ni dans Git, et doit être sauvegardé avec les autres secrets durables. Changer ou perdre cette clé peut invalider les identités transmises pendant la transition.
 
 ## TropicubeCore
 

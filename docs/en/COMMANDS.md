@@ -21,7 +21,9 @@
 
 `vipLevel ≥ 3` controls who may enable a nick. Disabling is always allowed, cancels an outstanding skin request, and can be retried while a backend has not restored the profile. The visual grade remains independent from access levels.
 
-Velocity validates `/whitelist`: the sender must own an active private custom game. Names resolve among players currently or previously seen by the proxy, and UUIDs are accepted directly. The SheepWars host hotbar item uses the same proxy-owned mutation path.
+Velocity validates `/whitelist`: the sender must own an active private custom game. Java names and dot-prefixed Floodgate names resolve among players currently or previously seen by the proxy, and UUIDs are accepted directly. The SheepWars host hotbar item uses the same proxy-owned mutation path.
+
+Geyser and Floodgate commands are not advertised to players by Tropicube's command catalog. Operators can run `geyser connectiontest <host> <port>` from the Velocity console after deployment. Other commands require their proxy-side `geyser.command.*` or `floodgate.command.*` permissions and remain outside Tropicube's level model until explicitly integrated.
 
 ## Core commands
 

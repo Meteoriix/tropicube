@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 /** Network social facade used by commands and the lobby UI. */
 public final class SocialService {
     private static final String EVENT_PREFIX = "SOCIAL_MESSAGE:";
-    private static final Pattern MINECRAFT_USERNAME = Pattern.compile("[A-Za-z0-9_]{1,16}");
+    private static final Pattern MINECRAFT_USERNAME = Pattern.compile("(?:[A-Za-z0-9_]{1,16}|\\.[A-Za-z0-9_]{1,15})");
 
     private final TropicubeCore plugin;
     private final FriendshipRepository friendships;
@@ -169,7 +169,7 @@ public final class SocialService {
                 .hoverEvent(HoverEvent.showText(hover));
     }
 
-    /** Builds only allow-listed invitation commands from a valid Minecraft username. */
+    /** Builds only allow-listed invitation commands from a Java or dot-prefixed Floodgate username. */
     static InvitationAction invitationAction(String key, Object[] arguments) {
         if (arguments.length == 0) return null;
         String username = String.valueOf(arguments[0]);

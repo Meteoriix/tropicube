@@ -34,17 +34,17 @@
     <div class="content-grid">
       <article class="documentation"><p><a href="../index.html">Version française</a></p>
 <p><a href="language-editor.html">Edit and preview languages</a></p>
-<p>Tropicube is a modular Minecraft 26.2 network built around Velocity, dynamically created Paper servers, Redis, MySQL, and Docker Compose. The reference development environment is Java 25 with Maven 3.9.11.</p>
+<p>Tropicube is a modular Minecraft 26.2 network available to Java Edition and Bedrock Edition players through Geyser/Floodgate. It is built around Velocity, dynamically created Paper servers, Redis, MySQL, and Docker Compose. The reference development environment is Java 25 with Maven 3.9.11.</p>
 <h2 id="modules">Modules<a class="heading-anchor" href="#modules" aria-label="Link to this section">#</a></h2>
 <div class="table-scroll"><table><thead><tr><th>Module</th><th>Responsibility</th></tr></thead><tbody><tr><td><code>tropicube-docker-api</code></td><td>Shared server models plus Docker and Redis access</td></tr><tr><td><code>tropicube-velocity</code></td><td>Proxy routing, queues, dynamic instance lifecycle, and <code>/nick</code></td></tr><tr><td><code>tropicube-core</code></td><td>Player data, economy, grades, permissions, languages, moderation, friends, and parties</td></tr><tr><td><code>tropicube-lobby</code></td><td>Lobby menus, server selection, Social menu, language selection, and custom games</td></tr><tr><td><code>tropicube-sheepwars</code></td><td>Complete SheepWars minigame</td></tr><tr><td><code>tropicube-fallenkingdoms</code></td><td>Reserved module for the future Fallen Kingdoms implementation</td></tr></tbody></table></div>
 <h2 id="runtime-architecture">Runtime architecture<a class="heading-anchor" href="#runtime-architecture" aria-label="Link to this section">#</a></h2>
-<p>Players enter through Velocity. The proxy creates and registers Paper containers from templates, stores shared state in Redis, and routes players without exposing backend ports publicly. Paper plugins use MySQL for durable player data and Redis for short-lived coordination.</p>
+<p>Java players enter Velocity on <code>25565/tcp</code>; Bedrock players enter Geyser on <code>${BEDROCK_PORT:-19132}/udp</code> and receive a Floodgate identity before following the same Velocity routing path. The proxy creates and registers Paper containers from templates without exposing backend ports publicly. Paper plugins use MySQL for durable player data and Redis for short-lived coordination.</p>
 <div class="code-block"><span class="code-language">text</span><pre class=""><code>Player -&gt; Velocity -&gt; Lobby / SheepWars Paper instance
                     |-&gt; Redis (state, events, queues)
                     |-&gt; Docker socket proxy (instance lifecycle)
 Paper plugins ------|-&gt; MySQL (profiles and statistics)</code></pre></div>
 <h2 id="requirements">Requirements<a class="heading-anchor" href="#requirements" aria-label="Link to this section">#</a></h2>
-<ul><li>Java 25;</li><li>Maven 3.9.11 through the included wrapper;</li><li>Docker Engine with Compose;</li><li>Git LFS for Minecraft region files;</li><li>Node.js for the static documentation site.</li></ul>
+<ul><li>Java 25;</li><li>Maven 3.9.11 through the included wrapper;</li><li>Docker Engine with Compose;</li><li>public TCP <code>25565</code> and UDP <code>BEDROCK_PORT</code> (<code>19132</code> by default);</li><li>Git LFS for Minecraft region files;</li><li>Node.js for the static documentation site.</li></ul>
 <p>Copy <code>.env.example</code> to <code>.env</code>, fill in local secrets without committing them, then validate the stack before deployment.</p>
 <h2 id="common-commands">Common commands<a class="heading-anchor" href="#common-commands" aria-label="Link to this section">#</a></h2>
 <div class="code-block"><span class="code-language">powershell</span><pre class=""><code>.\mvnw.cmd clean verify

@@ -8,6 +8,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 #### Added
 
+- The Velocity proxy now accepts Bedrock clients through Geyser and Floodgate on a configurable UDP port, with verified artifacts, a persistent private key, and identities supported by Social and SheepWars whitelists.
 - SheepWars now displays glowing wool targets between bases: shooting one grants the whole team healing, poison arrows, or speed, with configurable effects, weights, positions, and respawn timing.
 
 ### 2026-09-03

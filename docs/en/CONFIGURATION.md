@@ -16,6 +16,7 @@ The local language editor uses `LIBRETRANSLATE_URL` (default `http://127.0.0.1:5
 | `VELOCITY_FORWARDING_SECRET` | Shared Velocity/Paper forwarding secret |
 | `TROPICUBE_PROJECT_PATH` | Absolute Docker-host project path used for bind mounts |
 | `TOTP_MASTER_KEY` | Base64-encoded AES-256 key used to encrypt staff TOTP secrets |
+| `BEDROCK_PORT` | Public Geyser UDP port from `1` to `65535` (`19132` by default) |
 
 The TOTP key must encode exactly 32 random bytes, for example with `openssl rand -base64 32`. Losing it makes existing enrollments unreadable. When absent, Core starts but deliberately keeps protected staff commands locked.
 
@@ -41,6 +42,14 @@ Velocity also accepts the following operational settings:
 - `motd.line-1`, `line-2`, and `maintenance-line` describe only the public Velocity endpoint. `{games}` is replaced with the enabled, deduplicated game types.
 - `announcements.interval-seconds` and `announcements.entries[].message-key/target` define the localized rotation. A target is `network`, a type, a template, or an instance.
 - `maintenance.default-deadline-minutes` supplies `/maintenance ... on` when no duration is provided. It must range from 1 to 1,440 minutes; the drain is persisted in Redis for at most seven days.
+
+## Geyser and Floodgate
+
+Both plugins run on Velocity only. `Dockerfile.velocity` downloads the official Geyser-Velocity `2.11.2-b1234` and Floodgate-Velocity `2.2.5-b140` artifacts from pinned build URLs and verifies pinned SHA-256 values. Third-party JARs stay out of Git. Before upgrading, verify Java `26.2` and current Bedrock support, then update the URLs, hashes, configuration comments, tests, and documentation together.
+
+`dockerfiles/configs/Geyser-Velocity/config.yml` listens on `0.0.0.0:${CFG_BEDROCK_PORT}`, advertises the same UDP port, automatically targets the local proxy, and requires Floodgate authentication. Direct connection remains enabled. Command suggestions are disabled and Bedrock scaffolding is blocked for SheepWars parity.
+
+`dockerfiles/configs/floodgate/config.yml` does not require Bedrock users to link a Java account. A `.` prefix plus space-to-underscore replacement prevents Java-name collisions; social invitation actions and private SheepWars whitelists accept this strict form. The generated `key.pem` lives in the named `floodgate-data` volume. It must never enter the image or Git and must be backed up as a durable secret.
 
 ## Core
 

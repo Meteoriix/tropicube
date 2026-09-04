@@ -26,7 +26,8 @@ Each placeholder name represents one business meaning and is reused by translati
 
 ```text
 Internet
-  -> Velocity
+  -> Java 25565/tcp -> Velocity
+  -> Bedrock 19132/udp -> Geyser -> Floodgate -> Velocity
       -> Lobby Paper containers
       -> SheepWars Paper containers
       -> Redis
@@ -34,7 +35,7 @@ Internet
 Paper containers -> MySQL
 ```
 
-Velocity forwards authenticated profiles to Paper using modern forwarding. Dynamic Paper ports remain private. Docker access is restricted through a socket proxy, and secrets come from the environment.
+Velocity authenticates Java profiles directly. Geyser translates Bedrock traffic on the same proxy and Floodgate supplies stable UUID identities without disabling Java online mode. Velocity then forwards both profile types to Paper through modern forwarding. Geyser and Floodgate are not installed on Paper because no backend consumes their API. Dynamic Paper ports remain private. Docker access is restricted through a socket proxy, and secrets come from the environment.
 
 ## Server lifecycle
 

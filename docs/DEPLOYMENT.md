@@ -15,7 +15,7 @@ Le profil Compose facultatif `language-editor` démarre LibreTranslate sur local
 - Maven 3.9 ou plus récent ;
 - Docker Engine récent et daemon démarré ;
 - plugin Docker Compose v2 (`docker compose`, pas l'ancien binaire `docker-compose`) ;
-- ports hôte `25565/tcp`, `3306`, `6379`, et éventuellement `8080`/`8081`, disponibles ;
+- ports hôte `25565/tcp`, `${BEDROCK_PORT:-19132}/udp`, `3306`, `6379`, et éventuellement `8080`/`8081`, disponibles ;
 - mémoire suffisante pour Velocity, MySQL, Redis et au moins deux backends Paper. Prévoir au minimum 6 à 8 Gio pour un environnement de test confortable, davantage en production.
 
 Les versions Java et Maven sont aussi contrôlées par Maven Enforcer. Les images Minecraft utilisées sont des images Linux : même sous Windows, Docker doit fonctionner en mode conteneurs Linux.
@@ -72,7 +72,7 @@ Pour Docker rootless, régler `DOCKER_SOCKET_PATH`, par exemple `/run/user/1000/
 
 Les images Paper Lobby et SheepWars copient aussi `dockerfiles/configs/spigot.yml`. Ce fichier désactive l'enregistrement et le chargement de tous les advancements (`*`) ; il doit rester présent dans les deux images pour éviter les notifications et la progression vanilla sur l'ensemble des backends.
 
-Le build de ces deux images télécharge Paper, le JAR serveur Mojang et produit le runtime patché avec `paperclip.patchonly`. Ces artefacts, leurs bibliothèques et les fichiers `bukkit.yml` et `paper-world-defaults.yml` sont stockés dans une couche Docker commune et amorcent ensuite chaque nouveau volume `/data`. Le premier build ou un changement de version nécessite donc un accès à PaperMC et Mojang, tandis que la création d'une instance Lobby ou SheepWars ne télécharge plus aucun de ces éléments. Sur la pile de référence, cela retire deux appels HTTP séquentiels qui ajoutaient environ quatre secondes avant le lancement de la JVM.
+Le build de ces deux images télécharge Paper, le JAR serveur Mojang et produit le runtime patché avec `paperclip.patchonly`. Le build Velocity télécharge pour sa part les builds officiels épinglés de Geyser et Floodgate, puis BuildKit vérifie leurs SHA-256. Ces artefacts, leurs bibliothèques et les fichiers `bukkit.yml` et `paper-world-defaults.yml` sont stockés dans les couches Docker ; aucun JAR tiers n'entre dans Git. Le premier build ou un changement de version nécessite donc un accès à PaperMC, Mojang et `download.geysermc.org`, tandis que la création d'une instance Lobby ou SheepWars ne télécharge plus aucun de ces éléments.
 7. Exécuter le déploiement complet.
 
 Windows :
@@ -177,7 +177,7 @@ Exemples :
 7. double tag `latest` et `YYYYMMDD-HHMMSS` UTC ;
 8. `docker compose up -d --force-recreate velocity` puis suppression contrôlée de l'éventuel ancien volume anonyme `/server`.
 
-Compose démarre ou vérifie automatiquement Redis, MySQL et `docker-proxy` grâce aux dépendances de santé. Par défaut, l'arrêt de l'ancien Velocity supprime les backends dynamiques et leurs volumes de données éphémères avant le redémarrage. Le `/server` de Velocity est un `tmpfs` initialisé depuis l'image : son contenu disparaît à l'arrêt et le JAR fraîchement construit ne peut pas être masqué par un ancien volume. Lors de la première migration, les scripts suppriment précisément l'ancien volume anonyme détecté sur ce chemin. Les futures instances utilisent les nouvelles images `latest`.
+Compose démarre ou vérifie automatiquement Redis, MySQL et `docker-proxy` grâce aux dépendances de santé. Par défaut, l'arrêt de l'ancien Velocity supprime les backends dynamiques et leurs volumes de données éphémères avant le redémarrage. Le `/server` de Velocity est un `tmpfs` initialisé depuis l'image : son contenu disparaît à l'arrêt et le JAR fraîchement construit ne peut pas être masqué par un ancien volume. Le sous-dossier Floodgate est un volume nommé imbriqué : sa clé privée `key.pem` survit aux recréations et ne doit jamais être supprimée lors d'un déploiement normal. Lors de la première migration, les scripts suppriment précisément l'ancien volume anonyme détecté sur `/server`, sans toucher à `floodgate-data`. Les futures instances utilisent les nouvelles images `latest`.
 
 Le RCON de Velocity est activé uniquement dans son conteneur pour permettre le rechargement des langues par l'éditeur local ; son port n'est pas publié sur l'hôte. Les commandes dédiées `languageeditorreload` de Core et Velocity refusent les joueurs. Après une première livraison de ces commandes, l'éditeur copie les YAML validés et les recharge sans reconstruire les images.
 
@@ -201,6 +201,8 @@ Vérifier ensuite :
 - absence d'erreur d'initialisation du plugin Velocity ;
 - création d'au moins un lobby ;
 - connexion d'un compte Minecraft officiel sur `hôte:25565` ;
+- connexion d'un compte Bedrock/Xbox sur `hôte:BEDROCK_PORT` en UDP, avec pseudo Floodgate préfixé par `.` côté Java ;
+- depuis la console Velocity, `geyser connectiontest <hôte-public> <BEDROCK_PORT>` après ouverture du pare-feu et de la redirection UDP ;
 - `/server`, transfert vers SheepWars et retour `/hub` ;
 - fin d'une partie SheepWars, retour de tous les joueurs au lobby puis disparition immédiate du conteneur avec `docker compose ps` ;
 - `/quickplay`, puis `/competitive 4v4` et `/competitive 8v8` avec les capacités exactes ; vérifier les plages 25625–25639, 25640–25649 et 25650–25659 uniquement depuis l'hôte, jamais publiées aux joueurs ;

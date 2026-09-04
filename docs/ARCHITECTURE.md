@@ -4,7 +4,10 @@
 
 ```mermaid
 flowchart LR
-    P[Joueurs Minecraft] -->|TCP 25565| V[Velocity]
+    J[Joueurs Java] -->|TCP 25565| V[Velocity]
+    B[Joueurs Bedrock] -->|UDP 19132| G[Geyser]
+    G --> F[Floodgate]
+    F --> V
     V --> L[Paper Lobby]
     V --> S[Paper SheepWars]
     V --> DP[Docker Socket Proxy]
@@ -18,7 +21,7 @@ flowchart LR
     D --> S
 ```
 
-Velocity est l'unique point d'entrée public. Le plugin `tropicube-velocity` maintient un catalogue d'instances, restaure celles qui existent encore après son redémarrage, crée les conteneurs nécessaires et les enregistre dynamiquement auprès du proxy. Les serveurs Paper exécutent `TropicubeCore` et leur plugin spécialisé.
+Velocity est l'unique point de routage public. Il authentifie directement les profils Java ; Geyser traduit le protocole Bedrock sur ce même proxy et Floodgate fournit une identité UUID stable sans désactiver l'`online-mode` Java. Les deux ponts restent sur Velocity, car aucun backend n'utilise leur API. Le plugin `tropicube-velocity` maintient un catalogue d'instances, restaure celles qui existent encore après son redémarrage, crée les conteneurs nécessaires et les enregistre dynamiquement auprès du proxy. Les serveurs Paper exécutent `TropicubeCore` et leur plugin spécialisé.
 
 L'éditeur local conserve les ressources Maven comme source de vérité et leurs miroirs Docker comme source de build. Il partage le rendu des placeholders nommés via `tropicube-language-api`. Les dispositions des menus, scoreboards et tablists résident dans des manifestes versionnés propres à leur module. Après validation, l'éditeur installe langues et manifestes dans les conteneurs, puis appelle `languageeditorreload` par RCON. Core publie chaque ensemble sous une nouvelle génération Redis (`runtime-ui:generation:<id>:*`) et ne remplace `runtime-ui:active` qu'après les fichiers et leur manifeste de hashes. Une nouvelle instance vérifie puis restaure cette génération avant de charger ses gestionnaires.
 
@@ -254,6 +257,7 @@ Les grades déclarés dans la configuration Core sont resynchronisés au démarr
 ## Sécurité réseau
 
 - Velocity authentifie les comptes (`online-mode = true`).
+- Geyser écoute uniquement le port public UDP configuré ; Floodgate chiffre ses données avec la clé privée persistée dans `floodgate-data`.
 - Les backends Paper sont hors ligne car ils font confiance au forwarding moderne de Velocity.
 - `paper-global.yml` exige le même `FORWARDING_SECRET` que `forwarding.secret` côté proxy.
 - Redis et MySQL ne sont publiés que sur la boucle locale de l'hôte.
