@@ -91,6 +91,20 @@ public class ItemBuilder {
         return this;
     }
 
+    /**
+     * Creates a textured player head for Java or a meaningful vanilla icon for Bedrock.
+     * Dynamic skull textures cannot enter Geyser's startup-generated resource pack.
+     */
+    public static ItemBuilder playerProfileIcon(Player viewer, ResolvableProfile profile,
+                                                Material bedrockFallback) {
+        Objects.requireNonNull(viewer, "viewer");
+        Objects.requireNonNull(bedrockFallback, "bedrockFallback");
+        if (NetworkMenuStyle.isBedrockClient(viewer)) {
+            return new ItemBuilder(bedrockFallback);
+        }
+        return new ItemBuilder(Material.PLAYER_HEAD).skullProfile(profile);
+    }
+
     public ItemStack build() {
         item.setItemMeta(meta);
         if (skullProfile != null) item.setData(DataComponentTypes.PROFILE, skullProfile);

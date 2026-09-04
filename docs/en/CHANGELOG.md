@@ -15,6 +15,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 - Bedrock clients now receive sparse menus without decorative panes and Geyser's required integrated pack; all eleven HeadDatabase icons used by Tropicube are pre-registered and no longer fall back to a Steve head.
 - Fake enchantments used as decorative glints in menus and the hotbar are no longer added for Bedrock clients; gameplay enchantments remain unchanged.
+- Dynamic player heads in Profile and Social screens now use vanilla status icons on Bedrock instead of falling back to a Steve head; Java keeps resolved skins.
 
 ### 2026-09-03
 

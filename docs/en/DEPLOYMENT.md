@@ -109,7 +109,7 @@ The proxy's normal shutdown may preserve or remove dynamic instances according t
 
 - confirm Velocity can reach Redis, MySQL, and the Docker socket proxy;
 - confirm Java connects through `25565/tcp` and Bedrock through `BEDROCK_PORT/udp`;
-- confirm the required Geyser pack loads, menus omit decorative panes, and all eleven HeadDatabase icons render without a Steve fallback;
+- confirm the required Geyser pack loads, menus omit decorative panes, all eleven HeadDatabase icons render, and dynamic player entries use their status icons without a Steve fallback;
 - run `geyser connectiontest <public-host> <BEDROCK_PORT>` from the Velocity console after firewall/NAT changes;
 - confirm Paper receives forwarded identities and cannot be reached publicly;
 - confirm lobby selectors reflect `GAME_WAITING`, `GAME_STARTING`, `GAME_PLAYING`, and `GAME_ENDING` correctly;

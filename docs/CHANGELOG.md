@@ -15,6 +15,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 - Les clients Bedrock reçoivent des menus allégés sans vitres décoratives ainsi que le pack intégré Geyser obligatoire ; les onze icônes HeadDatabase employées par Tropicube sont préenregistrées et ne retombent plus sur une tête de Steve.
 - Les faux enchantements utilisés comme scintillement décoratif dans les menus et la hotbar ne sont plus ajoutés pour les clients Bedrock ; les enchantements de gameplay restent inchangés.
+- Les têtes de joueur dynamiques du Profil et des écrans Social utilisent désormais des icônes d'état vanilla sur Bedrock au lieu de retomber sur une tête de Steve ; Java conserve les skins résolus.
 
 ### 2026-09-03
 

@@ -72,8 +72,15 @@ public final class NetworkMenuStyle {
         return item;
     }
 
-    /** Builds a player head whose explicit menu label overrides Minecraft's generated head name. */
+    /**
+     * Builds a player head whose explicit menu label overrides Minecraft's generated head name.
+     * Bedrock receives a stable profile icon because its inventory cannot render an unregistered,
+     * dynamically resolved skull texture.
+     */
     public static ItemStack playerHead(Player player, Component name, Component... lore) {
+        if (playerHeadMaterial(player.getName(), player.getClientBrandName()) == Material.NAME_TAG) {
+            return item(Material.NAME_TAG, name, lore);
+        }
         ItemStack item = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta meta = (SkullMeta) item.getItemMeta();
         meta.setPlayerProfile(player.getPlayerProfile());
@@ -84,6 +91,10 @@ public final class NetworkMenuStyle {
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         item.setItemMeta(meta);
         return item;
+    }
+
+    static Material playerHeadMaterial(String username, String clientBrand) {
+        return isBedrockClient(username, clientBrand) ? Material.NAME_TAG : Material.PLAYER_HEAD;
     }
 
     public static ItemStack close(Component name, Component lore) {

@@ -79,8 +79,8 @@ public final class FriendRequestsGUI {
                     ? List.of(LangHelper.get(player, "social.requests-incoming-left-click"),
                             LangHelper.get(player, "social.requests-incoming-right-click"))
                     : List.of(LangHelper.get(player, "social.requests-sent-right-click"));
-            inventory.setItem(slot, new ItemBuilder(Material.PLAYER_HEAD)
-                    .skullProfile(entry.profile())
+            inventory.setItem(slot, ItemBuilder.playerProfileIcon(player, entry.profile(),
+                            incoming ? Material.WRITABLE_BOOK : Material.PAPER)
                     .name(LangHelper.get(player, incoming
                             ? "social.requests-incoming-entry" : "social.requests-sent-entry", entry.username()))
                     .lore(lore).build());

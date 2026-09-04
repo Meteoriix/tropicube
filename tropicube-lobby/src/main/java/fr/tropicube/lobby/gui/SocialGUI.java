@@ -86,8 +86,8 @@ public final class SocialGUI {
         for (int index = 0; index < Math.min(friends.size(), ENTRY_SLOTS.length); index++) {
             FriendEntry friend = friends.get(index);
             int slot = ENTRY_SLOTS[index];
-            inventory.setItem(slot, new ItemBuilder(Material.PLAYER_HEAD)
-                    .skullProfile(friend.profile())
+            inventory.setItem(slot, ItemBuilder.playerProfileIcon(player, friend.profile(),
+                            friend.online() ? Material.LIME_DYE : Material.GRAY_DYE)
                     .name(LangHelper.get(player, friend.online()
                             ? "social.friend-list-online" : "social.friend-list-offline", friend.username()))
                     .lore(friend.online()
@@ -130,8 +130,9 @@ public final class SocialGUI {
                 lore = List.of(LangHelper.get(player, self
                         ? "social.menu-party-member-self" : "social.menu-party-member-leader-only"));
             }
-            inventory.setItem(slot, new ItemBuilder(Material.PLAYER_HEAD)
-                    .skullProfile(member.profile())
+            Material bedrockIcon = member.leader() ? Material.GOLDEN_HELMET
+                    : member.online() ? Material.LIGHT_BLUE_DYE : Material.GRAY_DYE;
+            inventory.setItem(slot, ItemBuilder.playerProfileIcon(player, member.profile(), bedrockIcon)
                     .name(LangHelper.get(player, member.leader()
                             ? "social.menu-party-member-leader" : "social.menu-party-member", member.username()))
                     .lore(lore).build());

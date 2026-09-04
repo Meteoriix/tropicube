@@ -79,8 +79,8 @@ public final class PartyInvitesGUI {
                     ? List.of(LangHelper.get(player, "social.party-request-left-click"),
                             LangHelper.get(player, "social.party-request-right-click"))
                     : List.of(LangHelper.get(player, "social.party-request-sent-right-click"));
-            inventory.setItem(slot, new ItemBuilder(Material.PLAYER_HEAD)
-                    .skullProfile(invite.profile())
+            inventory.setItem(slot, ItemBuilder.playerProfileIcon(player, invite.profile(),
+                            incoming ? Material.BELL : Material.PAPER)
                     .name(LangHelper.get(player, incoming
                             ? "social.party-request-incoming-entry" : "social.party-request-sent-entry",
                             invite.username()))
