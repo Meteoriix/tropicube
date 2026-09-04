@@ -30,8 +30,9 @@ Sources historiques : [présentation d'Epicube et origine du nom](https://www.mi
 3. En partie classique, le démarrage automatique déclenche le compte à rebours lorsque le minimum configuré est atteint. En partie personnalisée, l'hôte lance le compte à rebours depuis son menu de réglages ou active explicitement le démarrage automatique.
 4. Au début de la manche, chaque joueur rejoint un spawn libre de son équipe avec une armure en cuir colorée, une épée, un arc Infinité, une flèche et un mouton aléatoire.
 5. Un mouton spécial supplémentaire est distribué périodiquement à chaque survivant qui en stocke moins de cinq. Si le stock est plein à l'échéance, la remise reste en attente jusqu'à ce qu'une place se libère, puis le délai complet repart pour ce joueur. L'équipe en sous-nombre reçoit un pool de trois moutons par joueur manquant, réparti avec un plafond de deux bonus par joueur.
-6. Une mort est définitive pour la manche et place le joueur en spectateur. Tout joueur qui rejoint l'instance après le lancement arrive également en spectateur, sans équipe et sans influencer les conditions de victoire. La disparition de tous les survivants d'une équipe termine immédiatement la partie.
-7. Après l'écran de résultat, les joueurs sont renvoyés au lobby. Une prochaine instance est précréée uniquement après une partie classique ; une partie personnalisée n'engendre jamais automatiquement un nouveau serveur. Le lobby peut alors proposer une revanche classique et mettre les joueurs en attente pendant sa création.
+6. Des blocs de laine lumineux flottent entre les deux bases. Une flèche qui traverse leur volume consomme la cible et accorde immédiatement son bonus à tous les survivants connectés de l'équipe du tireur.
+7. Une mort est définitive pour la manche et place le joueur en spectateur. Tout joueur qui rejoint l'instance après le lancement arrive également en spectateur, sans équipe et sans influencer les conditions de victoire. La disparition de tous les survivants d'une équipe termine immédiatement la partie.
+8. Après l'écran de résultat, les joueurs sont renvoyés au lobby. Une prochaine instance est précréée uniquement après une partie classique ; une partie personnalisée n'engendre jamais automatiquement un nouveau serveur. Le lobby peut alors proposer une revanche classique et mettre les joueurs en attente pendant sa création.
 
 La durée par défaut est de 600 secondes, le compte à rebours de 10 secondes et la distribution configurée des moutons de 15 secondes. En partie classique, le délai est adapté une fois au lancement : 10 secondes pour 2 à 4 joueurs, 12 secondes pour 5 à 8 joueurs et 15 secondes pour 9 à 16 joueurs. Une partie personnalisée conserve le délai fixé par l'hôte.
 
@@ -95,6 +96,14 @@ Les explosions de moutons utilisent un calcul linéaire propre à SheepWars pour
 
 Chaque mouton lancé mémorise l'UUID de son lanceur. Lorsqu'un autre joueur détruit un mouton destructible, il récupère un exemplaire du même type si son stock n'a pas atteint la limite. Le lanceur ne récupère jamais son propre mouton, notamment quand l'explosion qui lui est attribuée provoque elle-même la mort de l'entité.
 
+## Bonus d'équipe aériens
+
+Chaque carte peut définir jusqu'à huit centres de cibles sous `locations.<carte>.powerups.target1..target8`. Au lancement de la manche, chaque centre affiche un `BlockDisplay` de laine avec un contour blanc lumineux. La couleur annonce le bonus : vert clair pour le soin, violet pour les flèches empoisonnées et bleu clair pour la vitesse.
+
+Le trajet complet d'une flèche entre deux ticks est testé contre la cible afin qu'un projectile rapide ne puisse pas la traverser sans l'activer. Le tireur doit être un survivant de la partie ; la flèche et la cible sont alors supprimées, le bonus est appliqué à tous ses coéquipiers survivants connectés, puis cette cible réapparaît après 45 secondes par défaut avec un nouveau type tiré selon les poids configurés. La fin de partie et l'arrêt du plugin annulent la tâche et retirent toutes les entités d'affichage.
+
+Les effets livrés par défaut sont un soin de 6 PV, trois flèches de Poison I pendant 5 secondes par équipier, ou Vitesse I pendant 8 secondes. Les poids, amplitudes, durées, délai de réapparition et rayon de collision sont configurables sous `team-powerups` et validés au démarrage.
+
 ## Modes publics et compétition
 
 - `/quickplay` remplit en priorité une instance existante jusqu'à 8v8 ; son minimum configurable permet un départ adaptatif.
@@ -156,7 +165,8 @@ Les configurations sources se trouvent dans `tropicube-sheepwars/src/main/resour
 - `default-settings` : règles initiales de la manche ;
 - `custom-game-default-settings` : valeurs initiales propres aux instances personnalisées ;
 - `force-settings` : fonctionnalités interdites par l'exploitation ;
-- `locations` : monde, lobby, limite du vide, cartes et spawns d'équipe.
+- `team-powerups` : activation, réapparition, collision, poids et effets des cibles de laine ;
+- `locations` : monde, lobby, limite du vide, cartes, spawns d'équipe et centres des cibles aériennes.
 
 Le menu hôte couvre toutes les feuilles de `default-settings` : effectifs, compte à rebours, durée, cadence, kits aléatoires, démarrage automatique, vote de carte et poids de chaque mouton. Les paramètres `gameplay-balance` restent des réglages d'exploitation validés au démarrage, car leurs services sont construits une fois par instance. Le minimum et le maximum valent au moins deux ; le maximum ne peut pas descendre sous l'effectif connecté et sa modification met aussi à jour la capacité vue par Velocity.
 

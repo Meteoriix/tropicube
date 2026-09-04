@@ -193,6 +193,7 @@ export const PLACEHOLDER_DESCRIPTIONS: Record<string, string> = {
     profile: 'Profil formaté du joueur, avec son grade visible.',
     profile_visibility: 'Niveau de visibilité actuel du profil.',
     progress: 'Progression actuelle vers l’objectif de la mission ou du défi.',
+    powerup: 'Nom localisé du bonus d’équipe déclenché par la cible de laine.',
     queue: 'Nom localisé de la file d’attente active.',
     rank: 'Rang ou position du joueur dans le classement.',
     ranked_games: 'Nombre de parties classées jouées pendant la saison.',

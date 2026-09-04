@@ -177,6 +177,11 @@ sw:
   countdown-cancelled: "<sw><red>Game launch cancelled."
   arena-not-ready-start: "<sw><red>The arena is not configured, cannot start."
   game-started: "<sw><green>Adventure begins! Show your skills! 🌴"
+  powerup-activated: "<sw><aqua>{player}</aqua> activated <green>{powerup}</green> for your team!"
+  powerup-healing: "Team healing"
+  powerup-poison-arrows: "Poison arrows"
+  powerup-speed: "Team speed"
+  powerup-poison-arrow-item: "<light_purple>Poison power-up arrow"
   killed-by-connector: " <gray>was eliminated by "
   died-connector: " <gray>died."
   # Titles

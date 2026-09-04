@@ -42,6 +42,25 @@ custom-game-default-settings:
   # A custom game waits by default for its host to manually launch
   auto-start: false
 
+# Glowing wool targets placed between the two team bases for each map.
+team-powerups:
+  enabled: true
+  respawn-seconds: 45
+  hit-radius: 0.85
+  effects:
+    healing:
+      weight: 35
+      health: 6
+    poison-arrows:
+      weight: 35
+      arrow-count: 3
+      duration-seconds: 5
+      amplifier: 0
+    speed:
+      weight: 30
+      duration-seconds: 8
+      amplifier: 0
+
 # Public queue rules. A ranked match only starts at its exact capacity.
 competitive:
   role-limits:
@@ -184,6 +203,10 @@ locations:
     name: Dirigeables
     enabled: true
     void_limit: 256
+    powerups:
+      target1: { x: 53.5, y: 296.5, z: 1049.0 }
+      target2: { x: 65.5, y: 296.5, z: 1049.0 }
+      target3: { x: 77.5, y: 296.5, z: 1049.0 }
     spawns:
       red:
         spawn1:
@@ -287,6 +310,10 @@ locations:
     name: Arbres
     enabled: true
     void_limit: 170
+    powerups:
+      target1: { x: -45.5, y: 196.5, z: -55.0 }
+      target2: { x: -51.5, y: 196.5, z: -52.5 }
+      target3: { x: -57.5, y: 196.5, z: -50.0 }
     spawns:
       red:
         spawn1:
@@ -390,6 +417,10 @@ locations:
     name: Buildings
     enabled: true
     void_limit: 180
+    powerups:
+      target1: { x: 568.5, y: 207.5, z: 452.5 }
+      target2: { x: 574.5, y: 207.5, z: 452.5 }
+      target3: { x: 580.5, y: 207.5, z: 452.5 }
     spawns:
       red:
         spawn1:
@@ -493,6 +524,10 @@ locations:
     name: Ilots
     enabled: true
     void_limit: 180
+    powerups:
+      target1: { x: 634.5, y: 216.5, z: -45.5 }
+      target2: { x: 640.5, y: 216.5, z: -45.5 }
+      target3: { x: 646.5, y: 216.5, z: -45.5 }
     spawns:
       red:
         spawn1:
@@ -596,6 +631,10 @@ locations:
     name: Galions
     enabled: true
     void_limit: 144
+    powerups:
+      target1: { x: 88.5, y: 165.5, z: 392.0 }
+      target2: { x: 88.5, y: 165.5, z: 398.0 }
+      target3: { x: 88.5, y: 165.5, z: 404.0 }
     spawns:
       red:
         spawn1:
@@ -699,6 +738,10 @@ locations:
     name: Steampunk
     enabled: true
     void_limit: 110
+    powerups:
+      target1: { x: 869.5, y: 145.5, z: -74.5 }
+      target2: { x: 875.5, y: 145.5, z: -74.5 }
+      target3: { x: 881.5, y: 145.5, z: -74.5 }
     spawns:
       red:
         spawn1:

@@ -27,6 +27,7 @@ public class MapsUtil {
             gameMap.setVoidLimit(mapSection.getInt("void_limit"));
             gameMap.addTeamSpawns(GameTeam.RED,  loadSpawns(mapSection, world, "spawns.red"));
             gameMap.addTeamSpawns(GameTeam.BLUE,  loadSpawns(mapSection, world, "spawns.blue"));
+            gameMap.setPowerUpSpawns(loadPowerUpSpawns(mapSection, world));
 
             if (gameMap.isNotReady()) continue;
             maps.add(gameMap);
@@ -52,6 +53,18 @@ public class MapsUtil {
         for (int i = 1; i <= 8; i++) {
             Location loc = loadLocation(sub, world,"spawn" + i);
             if (loc != null) locations.add(loc);
+        }
+        return locations;
+    }
+
+    /** Loads up to eight floating target locations from powerups.target1 ... target8. */
+    public static List<Location> loadPowerUpSpawns(ConfigurationSection section, World world) {
+        List<Location> locations = new ArrayList<>();
+        ConfigurationSection targets = section.getConfigurationSection("powerups");
+        if (targets == null) return locations;
+        for (int index = 1; index <= 8; index++) {
+            Location location = loadLocation(targets, world, "target" + index);
+            if (location != null) locations.add(location);
         }
         return locations;
     }

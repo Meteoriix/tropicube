@@ -21,6 +21,7 @@ import fr.tropicube.sheepwars.menu.KitMasteryMenu;
 import fr.tropicube.sheepwars.menu.TeamSelectionMenu;
 import fr.tropicube.sheepwars.menu.WhitelistMenu;
 import fr.tropicube.sheepwars.player.PlayerDataManager;
+import fr.tropicube.sheepwars.powerup.TeamPowerUpSettings;
 import fr.tropicube.sheepwars.scoreboard.ScoreboardManager;
 import fr.tropicube.sheepwars.sheep.SheepManager;
 import fr.tropicube.core.ui.MenuTemplateRegistry;
@@ -49,6 +50,7 @@ public final class TropicubeSheepwars extends JavaPlugin {
     private GameSettingsMenu gameSettingsMenu;
     private WhitelistMenu whitelistMenu;
     private GameplayBalance gameplayBalance;
+    private TeamPowerUpSettings teamPowerUpSettings;
     private SheepWarsProgressionService progressionService;
     private KitMasteryMenu kitMasteryMenu;
     private KitMasteryCatalog kitMasteryCatalog;
@@ -68,6 +70,7 @@ public final class TropicubeSheepwars extends JavaPlugin {
 
         try {
             gameplayBalance = GameplayBalance.load(getConfig());
+            teamPowerUpSettings = TeamPowerUpSettings.load(getConfig());
         } catch (IllegalArgumentException exception) {
             getLogger().severe(MessageStyle.log("sw", "SYSTEM", "<red>" + exception.getMessage()));
             getServer().getPluginManager().disablePlugin(this);
@@ -197,6 +200,7 @@ public final class TropicubeSheepwars extends JavaPlugin {
     public MapSelectionMenu getMapVoteMenu() { return mapSelectionMenu; }
     public WhitelistMenu getWhitelistMenu() { return whitelistMenu; }
     public GameplayBalance getGameplayBalance() { return gameplayBalance; }
+    public TeamPowerUpSettings getTeamPowerUpSettings() { return teamPowerUpSettings; }
     public SheepWarsProgressionService getProgressionService() { return progressionService; }
     public KitMasteryMenu getKitMasteryMenu() { return kitMasteryMenu; }
     public KitMasteryCatalog getKitMasteryCatalog() { return kitMasteryCatalog; }

@@ -83,7 +83,7 @@ describe('language model', () => {
     expect(placeholders.find(entry => entry.name === 'player_grade')).toMatchObject({
       description: 'Grade MiniMessage formaté du joueur destinataire, sans son pseudo.', references: [],
     });
-    expect(Object.keys(PLACEHOLDER_DESCRIPTIONS)).toHaveLength(140);
+    expect(Object.keys(PLACEHOLDER_DESCRIPTIONS)).toHaveLength(141);
     expect(Object.values(PLACEHOLDER_DESCRIPTIONS).every(description =>
       !description.includes('Contenu dynamique associé au champ'))).toBe(true);
     expect(describePlaceholder('custom_value', [{ set: 'core', key: 'one' }]))

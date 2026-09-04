@@ -9,6 +9,7 @@ import fr.tropicube.sheepwars.competitive.SheepWarsProgressionService;
 import fr.tropicube.sheepwars.player.GamePlayer;
 import fr.tropicube.sheepwars.player.PlayerClass;
 import fr.tropicube.sheepwars.player.PlayerKit;
+import fr.tropicube.sheepwars.powerup.TeamPowerUpManager;
 import fr.tropicube.sheepwars.sheep.SheepType;
 import fr.tropicube.sheepwars.util.ItemBuilder;
 import fr.tropicube.sheepwars.util.MapsUtil;
@@ -73,6 +74,7 @@ public class GameManager {
     private int gameTime;
     private long gameStartedAt;
     private final GlowingEntities glowingEntities;
+    private final TeamPowerUpManager teamPowerUpManager;
 
     public GameManager(TropicubeSheepwars plugin) {
         this.plugin = plugin;
@@ -88,6 +90,7 @@ public class GameManager {
                 plugin.getConfig().getBoolean("custom-game-default-settings.auto-start", false));
         plugin.getConfig().set("default-settings.auto-start", initialAutoStart);
         this.glowingEntities = new GlowingEntities(plugin);
+        this.teamPowerUpManager = new TeamPowerUpManager(plugin, this, plugin.getTeamPowerUpSettings());
     }
 
     public List<GameMap> getGameMaps() {
@@ -651,6 +654,7 @@ public class GameManager {
         broadcastLang("sw.game-started");
 
         sheepDeliverySchedule = new SheepDeliverySchedule(sheepDelaySeconds, players.keySet());
+        teamPowerUpManager.start(selectedMap);
 
         // Periodic task during the game
         currentTask = Bukkit.getScheduler().runTaskTimer(plugin, this::gameTick, 20L, 20L);
@@ -860,6 +864,7 @@ public class GameManager {
         if (currentTask != null) currentTask.cancel();
         cancelReconnectTasks();
         sheepDeliverySchedule = null;
+        teamPowerUpManager.stop();
 
         List<SheepWarsProgressionService.Participant> resultSnapshot = players.values().stream()
                 .filter(player -> player.getTeam() != null)
@@ -1152,6 +1157,7 @@ public class GameManager {
         currentTask = null;
         cancelReconnectTasks();
         sheepDeliverySchedule = null;
+        teamPowerUpManager.stop();
         players.values().stream().map(GamePlayer::getBukkitPlayer).filter(Objects::nonNull)
                 .forEach(this::restoreCombatAttributes);
         players.clear();

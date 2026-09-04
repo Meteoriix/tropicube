@@ -184,6 +184,11 @@ sw:
   countdown-cancelled: "<sw><red>Annulation du lancement de la partie."
   arena-not-ready-start: "<sw><red>L'arène n'est pas configurée, impossible de démarrer."
   game-started: "<sw><green>L'aventure commence ! Montre tes talents ! 🌴"
+  powerup-activated: "<sw><aqua>{player}</aqua> a déclenché <green>{powerup}</green> pour ton équipe !"
+  powerup-healing: "Soin d'équipe"
+  powerup-poison-arrows: "Flèches empoisonnées"
+  powerup-speed: "Vitesse d'équipe"
+  powerup-poison-arrow-item: "<light_purple>Flèche de bonus empoisonnée"
   killed-by-connector: " <gray>a été éliminé par "
   died-connector: " <gray>est mort."
   # Titres

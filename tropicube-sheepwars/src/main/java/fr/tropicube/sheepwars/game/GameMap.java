@@ -12,6 +12,7 @@ public class GameMap {
     private String name;
     private int voidLimit;
     private final Map<GameTeam, List<Location>> teamSpawns = new EnumMap<>(GameTeam.class);
+    private List<Location> powerUpSpawns = List.of();
 
     public List<Location> getSpawns(GameTeam team) {
         List<Location> spawns = teamSpawns.get(team);
@@ -20,6 +21,14 @@ public class GameMap {
 
     public void addTeamSpawns(GameTeam team, List<Location> locations) {
         teamSpawns.put(team, new ArrayList<>(locations));
+    }
+
+    public List<Location> getPowerUpSpawns() {
+        return powerUpSpawns;
+    }
+
+    public void setPowerUpSpawns(List<Location> powerUpSpawns) {
+        this.powerUpSpawns = List.copyOf(powerUpSpawns);
     }
 
     public String getName() { return name; }

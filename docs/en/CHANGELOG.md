@@ -4,6 +4,12 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+### 2026-09-04
+
+#### Added
+
+- SheepWars now displays glowing wool targets between bases: shooting one grants the whole team healing, poison arrows, or speed, with configurable effects, weights, positions, and respawn timing.
+
 ### 2026-09-03
 
 #### Added

@@ -42,6 +42,25 @@ custom-game-default-settings:
   # A custom game waits by default for its host to manually launch
   auto-start: false
 
+# Glowing wool targets placed between the two team bases for each map.
+team-powerups:
+  enabled: true
+  respawn-seconds: 45
+  hit-radius: 0.85
+  effects:
+    healing:
+      weight: 35
+      health: 6
+    poison-arrows:
+      weight: 35
+      arrow-count: 3
+      duration-seconds: 5
+      amplifier: 0
+    speed:
+      weight: 30
+      duration-seconds: 8
+      amplifier: 0
+
 # Public queue rules. A ranked match only starts at its exact capacity.
 competitive:
   role-limits:
@@ -179,6 +198,8 @@ locations:
     name: "Map 12345"
     enabled: true
     void_limit: 100
+    # Floating target centers (target1 to target8).
+    powerups:
     spawns:
       red:
       blue:
@@ -186,6 +207,7 @@ locations:
     name: "Map 678910"
     enabled: false
     void_limit: 100
+    powerups:
     spawns:
       red:
       blue:

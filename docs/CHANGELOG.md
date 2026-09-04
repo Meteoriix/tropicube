@@ -4,6 +4,12 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-09-04
+
+#### Ajouté
+
+- SheepWars affiche désormais des cibles de laine lumineuse entre les bases : une flèche leur fait accorder à toute l'équipe un soin, des flèches empoisonnées ou un bonus de vitesse, avec effets, poids, positions et réapparition configurables.
+
 ### 2026-09-03
 
 #### Ajouté
