@@ -11,8 +11,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.List;
+import java.util.Locale;
 
-/** Shared visual primitives for every Core and Lobby inventory. */
+/** Shared visual primitives for every Core, Lobby, and mini-game inventory. */
 public final class NetworkMenuStyle {
     public static final Material BACKGROUND = Material.GRAY_STAINED_GLASS_PANE;
     public static final Material ACCENT = Material.LIGHT_BLUE_STAINED_GLASS_PANE;
@@ -24,11 +25,34 @@ public final class NetworkMenuStyle {
         for (int slot = 0; slot < inventory.getSize(); slot++) inventory.setItem(slot, filler);
     }
 
+    /** Fills decorative background slots only when the viewer uses Java Edition. */
+    public static void fill(Inventory inventory, Player player) {
+        if (!isBedrockClient(player.getName(), player.getClientBrandName())) {
+            fill(inventory);
+        }
+    }
+
     /** Draws an accent top row over the neutral shared background. */
     public static void frame(Inventory inventory) {
         fill(inventory);
         ItemStack accent = item(ACCENT, Component.text(" "));
         for (int slot = 0; slot < Math.min(9, inventory.getSize()); slot++) inventory.setItem(slot, accent);
+    }
+
+    /**
+     * Draws the shared frame for Java clients and keeps Bedrock inventories sparse.
+     * Geyser's touch interface makes a full grid of decorative panes visually noisy and
+     * harder to navigate, while empty slots let actionable items remain immediately visible.
+     */
+    public static void frame(Inventory inventory, Player player) {
+        if (!isBedrockClient(player.getName(), player.getClientBrandName())) {
+            frame(inventory);
+        }
+    }
+
+    static boolean isBedrockClient(String username, String clientBrand) {
+        return username.startsWith(".")
+                || clientBrand != null && clientBrand.toLowerCase(Locale.ROOT).contains("geyser");
     }
 
     public static ItemStack item(Material material, Component name, Component... lore) {

@@ -42,7 +42,7 @@ public final class RankedSelectorGUI {
 
     private static void draw(TropicubeLobby plugin, Player player, Holder holder) {
         Inventory inventory = holder.inventory;
-        NetworkMenuStyle.frame(inventory);
+        NetworkMenuStyle.frame(inventory, player);
         holder.templates.clear();
         for (LobbyServerManager.TemplateInfo template : plugin.getLobbyServerManager()
                 .getRankedTemplatesForType(holder.type)) {

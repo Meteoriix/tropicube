@@ -77,7 +77,7 @@ public class CustomGameGUI {
                 LangHelper.menuTitle(player, "custom-game"));
         holder.setInventory(inv);
 
-        NetworkMenuStyle.frame(inv);
+        NetworkMenuStyle.frame(inv, player);
 
         if (creationPending) {
             inv.setItem(13, new ItemBuilder(Material.CLOCK)

@@ -80,7 +80,7 @@ public class MapSelectionMenu implements Listener {
         List<GameMap> candidates = ballot(maps);
         Inventory inv = Bukkit.createInventory(null, LangHelper.menuSize("map-vote"),
                 LangHelper.menuTitle(player, "map-vote"));
-        NetworkMenuStyle.fill(inv);
+        NetworkMenuStyle.fill(inv, player);
 
         GameMap myVote = votes.get(player.getUniqueId());
         Map<GameMap, Integer> counts = countVotes(candidates);
@@ -100,7 +100,7 @@ public class MapSelectionMenu implements Listener {
     private void openPickMenu(Player player, List<GameMap> maps) {
         Inventory inv = Bukkit.createInventory(null, LangHelper.menuSize("map-pick"),
                 LangHelper.menuTitle(player, "map-pick"));
-        NetworkMenuStyle.fill(inv);
+        NetworkMenuStyle.fill(inv, player);
 
         GameMap selected = plugin.getGameManager().getSelectedMap();
         for (int i = 0; i < maps.size() && i < 9; i++) {

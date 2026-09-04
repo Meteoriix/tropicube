@@ -83,7 +83,7 @@ public class LanguageSelectorGUI {
                 LangHelper.menuTitle(player, "language-selector"));
         holder.setInventory(inv);
 
-        NetworkMenuStyle.frame(inv);
+        NetworkMenuStyle.frame(inv, player);
 
         // Language icons
         List<LanguageEntry> langs = getLanguages();

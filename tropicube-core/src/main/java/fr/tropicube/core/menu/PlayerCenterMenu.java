@@ -71,7 +71,7 @@ public final class PlayerCenterMenu implements Listener {
 
     public void openHome(Player player) {
         Inventory inventory = Bukkit.createInventory(null, menuSize("profile-home"), menuTitle(player, "profile-home"));
-        NetworkMenuStyle.frame(inventory);
+        NetworkMenuStyle.frame(inventory, player);
         inventory.setItem(13, playerHead(player, "center.profile", "center.profile-lore",
                 "center.profile-action", "PROFILE"));
         inventory.setItem(20, navigationItem(player, Material.WRITABLE_BOOK,
@@ -109,7 +109,7 @@ public final class PlayerCenterMenu implements Listener {
                     }
                     Inventory inventory = Bukkit.createInventory(null, menuSize("profile-notifications"),
                             menuTitle(online, "profile-notifications", result.page() + 1, result.unread()));
-                    NetworkMenuStyle.frame(inventory);
+                    NetworkMenuStyle.frame(inventory, online);
                     for (int slot = 0; slot < result.notifications().size(); slot++) {
                         NotificationService.Notification notification = result.notifications().get(slot);
                         Material material = notification.read() ? Material.PAPER : Material.ENCHANTED_BOOK;
@@ -157,7 +157,7 @@ public final class PlayerCenterMenu implements Listener {
                     if (error != null || profile == null) { online.sendMessage(message(online, "general.operation-failed")); return; }
                     Inventory inventory = Bukkit.createInventory(null, menuSize("profile-details"),
                             menuTitle(online, "profile-details", profile.username()));
-                    NetworkMenuStyle.frame(inventory);
+                    NetworkMenuStyle.frame(inventory, online);
                     inventory.setItem(4, playerHead(online, "center.profile-identity",
                             "center.profile-identity-lore", "NONE", profile.username()));
                     var grade = plugin.getPermissionManager().getAllGrades().get(profile.grade());
@@ -210,7 +210,7 @@ public final class PlayerCenterMenu implements Listener {
                     if (error != null) { online.sendMessage(message(online, "general.operation-failed")); return; }
                     Inventory inventory = Bukkit.createInventory(null, menuSize("profile-missions"),
                             menuTitle(online, "profile-missions"));
-                    NetworkMenuStyle.frame(inventory);
+                    NetworkMenuStyle.frame(inventory, online);
                     for (int index = 0; index < missions.size(); index++) {
                         MissionService.Assignment assignment = missions.get(index);
                         String rotation = messageText(online, "center.mission-rotation-"
@@ -262,7 +262,7 @@ public final class PlayerCenterMenu implements Listener {
                     if (error != null) { online.sendMessage(message(online, "general.operation-failed")); return; }
                     Inventory inventory = Bukkit.createInventory(null, menuSize("profile-guilds"),
                             menuTitle(online, "profile-guilds"));
-                    NetworkMenuStyle.frame(inventory);
+                    NetworkMenuStyle.frame(inventory, online);
                     for (int index = 0; index < Math.min(20, page.ranking().size()); index++) {
                         var value = page.ranking().get(index);
                         inventory.setItem(9 + index, display(Material.SHIELD, message(online, "guild.ranking-entry",

@@ -40,7 +40,7 @@ public class CustomGameTypeGUI {
                 LangHelper.menuTitle(player, "custom-game-type"));
         holder.setInventory(inv);
 
-        NetworkMenuStyle.frame(inv);
+        NetworkMenuStyle.frame(inv, player);
 
         inv.setItem(PUBLIC_GAME_SLOT, buildPublicGameItem(player));
         inv.setItem(PRIVATE_GAME_SLOT, buildPrivateGameItem(player));

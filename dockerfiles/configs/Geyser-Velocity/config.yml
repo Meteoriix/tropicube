@@ -4,52 +4,62 @@ bedrock:
   address: 0.0.0.0
   port: ${CFG_BEDROCK_PORT}
   clone-remote-port: false
-  motd1: "Tropicube"
-  motd2: "Minecraft Java & Bedrock"
-  server-name: "Tropicube"
-  compression-level: 6
-  broadcast-port: ${CFG_BEDROCK_PORT}
-  enable-proxy-protocol: false
 
-remote:
-  address: auto
-  port: 25565
+java:
   auth-type: floodgate
-  use-proxy-protocol: false
-  forward-hostname: false
 
-floodgate-key-file: key.pem
+motd:
+  primary-motd: "Tropicube"
+  secondary-motd: "Minecraft Java & Bedrock"
+  passthrough-motd: true
+  max-players: 100
+  passthrough-player-counts: true
+  integrated-ping-passthrough: true
+  ping-passthrough-interval: 3
+
+gameplay:
+  server-name: "Tropicube"
+  cooldown-type: crosshair
+  command-suggestions: false
+  show-coordinates: true
+  disable-bedrock-scaffolding: true
+  nether-roof-workaround: false
+  emotes-enabled: true
+  block-legacy-codes: true
+  unusable-space-block: minecraft:barrier
+  enable-custom-content: true
+  # Required for the integrated inventory UI and registered HeadDatabase textures.
+  force-resource-packs: true
+  enable-integrated-pack: true
+  forward-player-ping: false
+  xbox-achievements-enabled: false
+  max-visible-custom-skulls: 128
+  custom-skull-render-distance: 32
+
+default-locale: fr_fr
+log-player-ip-addresses: true
 saved-user-logins: []
 pending-authentication-timeout: 120
-command-suggestions: false
-passthrough-motd: true
-passthrough-player-counts: true
-legacy-ping-passthrough: false
-ping-passthrough-interval: 3
-forward-player-ping: false
-max-players: 100
-debug-mode: false
-show-cooldown: "false"
-show-coordinates: true
-disable-bedrock-scaffolding: true
-default-locale: fr_fr
-cache-images: 0
-allow-custom-skulls: true
-max-visible-custom-skulls: 128
-custom-skull-render-distance: 32
-add-non-bedrock-items: true
-above-bedrock-nether-building: false
-force-resource-packs: false
-xbox-achievements-enabled: false
-log-player-ip-addresses: true
 notify-on-new-bedrock-update: true
-unusable-space-block: minecraft:barrier
-metrics:
-  enabled: false
-  uuid: 00000000-0000-0000-0000-000000000000
-scoreboard-packet-threshold: 20
-enable-proxy-connections: false
-mtu: 1400
-use-direct-connection: true
-disable-compression: true
-config-version: 4
+
+advanced:
+  cache-images: 0
+  scoreboard-packet-threshold: 20
+  add-team-suggestions: true
+  resource-pack-urls: []
+  floodgate-key-file: key.pem
+  java:
+    use-haproxy-protocol: false
+    use-direct-connection: true
+    disable-compression: true
+  bedrock:
+    broadcast-port: ${CFG_BEDROCK_PORT}
+    compression-level: 6
+    use-haproxy-protocol: false
+    haproxy-protocol-whitelisted-ips: []
+    use-waterdogpe-forwarding: false
+    mtu: 1400
+    validate-bedrock-login: true
+
+debug-mode: false
+config-version: 7

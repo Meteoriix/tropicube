@@ -42,7 +42,7 @@ public final class PartyInvitesGUI {
         Inventory inventory = Bukkit.createInventory(holder, LangHelper.menuSize("party-invites"),
                 LangHelper.menuTitle(player, "party-invites", page + 1));
         holder.inventory = inventory;
-        NetworkMenuStyle.frame(inventory);
+        NetworkMenuStyle.frame(inventory, player);
 
         inventory.setItem(3, new ItemBuilder(Material.LIME_DYE)
                 .name(LangHelper.get(player, "social.party-requests-incoming-title", incoming.size())).build());

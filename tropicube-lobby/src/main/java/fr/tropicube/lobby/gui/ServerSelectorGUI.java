@@ -100,7 +100,7 @@ public class ServerSelectorGUI {
         Inventory inv = Bukkit.createInventory(holder, LangHelper.menuSize("server-selector"), buildTitle(player, type, page));
         holder.setInventory(inv);
 
-        drawBorder(inv);
+        drawBorder(inv, player);
 
         for (int i = fromIndex; i < toIndex; i++) {
             inv.setItem(innerSlots.get(i - fromIndex), buildServerItem(player, servers.get(i)).build());
@@ -170,8 +170,8 @@ public class ServerSelectorGUI {
                 .toList();
     }
 
-    private static void drawBorder(Inventory inv) {
-        NetworkMenuStyle.frame(inv);
+    private static void drawBorder(Inventory inv, Player player) {
+        NetworkMenuStyle.frame(inv, player);
     }
 
     private static void drawControls(Inventory inv, Player player, boolean hasPrev, boolean hasNext, Filter filter) {

@@ -202,6 +202,7 @@ Vérifier ensuite :
 - création d'au moins un lobby ;
 - connexion d'un compte Minecraft officiel sur `hôte:25565` ;
 - connexion d'un compte Bedrock/Xbox sur `hôte:BEDROCK_PORT` en UDP, avec pseudo Floodgate préfixé par `.` côté Java ;
+- acceptation automatique du pack obligatoire Geyser, menus sans vitres décoratives et affichage des onze icônes HeadDatabase sans tête de Steve ;
 - depuis la console Velocity, `geyser connectiontest <hôte-public> <BEDROCK_PORT>` après ouverture du pare-feu et de la redirection UDP ;
 - `/server`, transfert vers SheepWars et retour `/hub` ;
 - fin d'une partie SheepWars, retour de tous les joueurs au lobby puis disparition immédiate du conteneur avec `docker compose ps` ;

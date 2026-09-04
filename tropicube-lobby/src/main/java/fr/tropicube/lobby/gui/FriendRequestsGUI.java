@@ -42,7 +42,7 @@ public final class FriendRequestsGUI {
         Inventory inventory = Bukkit.createInventory(holder, LangHelper.menuSize("friend-requests"),
                 LangHelper.menuTitle(player, "friend-requests", page + 1));
         holder.inventory = inventory;
-        NetworkMenuStyle.frame(inventory);
+        NetworkMenuStyle.frame(inventory, player);
 
         inventory.setItem(3, new ItemBuilder(Material.LIME_DYE)
                 .name(LangHelper.get(player, "social.requests-incoming-title", incoming.size())).build());

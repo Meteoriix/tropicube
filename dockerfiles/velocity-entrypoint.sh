@@ -16,6 +16,11 @@ fi
 # delegating to the upstream certificate entrypoint and proxy launcher.
 cp -a /opt/tropicube/server/. /server/
 
+# Geyser's current schema parses ports as integers and therefore cannot consume
+# the placeholder itself. Replace the two controlled occurrences after seeding.
+sed -i "s/\${CFG_BEDROCK_PORT}/$CFG_BEDROCK_PORT/g" \
+    /server/plugins/Geyser-Velocity/config.yml
+
 # This nested named volume keeps Floodgate's generated private key stable while
 # the rest of the proxy runtime remains disposable. Never copy key.pem to Git.
 chown 1000:1000 /server/plugins/floodgate

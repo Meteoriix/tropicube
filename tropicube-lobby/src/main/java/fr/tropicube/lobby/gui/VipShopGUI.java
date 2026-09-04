@@ -50,7 +50,7 @@ public class VipShopGUI {
         Inventory inv = Bukkit.createInventory(holder, LangHelper.menuSize("vip-shop-home"),
                 LangHelper.menuTitle(player, "vip-shop-home"));
         holder.setInventory(inv);
-        NetworkMenuStyle.frame(inv);
+        NetworkMenuStyle.frame(inv, player);
         inv.setItem(4, new ItemBuilder(Material.GOLD_INGOT)
                 .name(LangHelper.get(player, "lobby.shop-home-name"))
                 .lore(LangHelper.get(player, "lobby.vip-banner-balance", formatCoins((int) balance))).glow().build());
@@ -68,7 +68,7 @@ public class VipShopGUI {
                 LangHelper.menuTitle(player, "vip-shop-grades"));
         holder.setInventory(inv);
 
-        NetworkMenuStyle.frame(inv);
+        NetworkMenuStyle.frame(inv, player);
 
         inv.setItem(4, new ItemBuilder(Material.GOLD_INGOT)
                 .name(LangHelper.get(player, "lobby.vip-banner-name"))

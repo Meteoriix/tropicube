@@ -11,6 +11,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 - Le proxy Velocity accepte désormais les clients Bedrock via Geyser et Floodgate sur un port UDP configurable, avec artefacts vérifiés, clé privée persistante et identités compatibles avec Social et les whitelists SheepWars.
 - SheepWars affiche désormais des cibles de laine lumineuse entre les bases : une flèche leur fait accorder à toute l'équipe un soin, des flèches empoisonnées ou un bonus de vitesse, avec effets, poids, positions et réapparition configurables.
 
+#### Corrigé
+
+- Les clients Bedrock reçoivent des menus allégés sans vitres décoratives ainsi que le pack intégré Geyser obligatoire ; les onze icônes HeadDatabase employées par Tropicube sont préenregistrées et ne retombent plus sur une tête de Steve.
+
 ### 2026-09-03
 
 #### Ajouté

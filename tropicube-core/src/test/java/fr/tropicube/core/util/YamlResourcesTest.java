@@ -1,5 +1,7 @@
 package fr.tropicube.core.util;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import fr.tropicube.docker.model.AccessPolicy;
 import fr.tropicube.docker.model.PlayerAccessProfile;
 import org.bukkit.configuration.ConfigurationSection;
@@ -451,12 +453,19 @@ class YamlResourcesTest {
 
         assertEquals("0.0.0.0", geyser.getString("bedrock.address"));
         assertEquals("${CFG_BEDROCK_PORT}", geyser.getString("bedrock.port"));
-        assertEquals("${CFG_BEDROCK_PORT}", geyser.getString("bedrock.broadcast-port"));
-        assertEquals("auto", geyser.getString("remote.address"));
-        assertEquals("floodgate", geyser.getString("remote.auth-type"));
-        assertTrue(geyser.getBoolean("use-direct-connection"));
-        assertTrue(geyser.getBoolean("disable-bedrock-scaffolding"));
-        assertEquals(4, geyser.getInt("config-version"));
+        assertEquals("${CFG_BEDROCK_PORT}", geyser.getString("advanced.bedrock.broadcast-port"));
+        assertEquals("floodgate", geyser.getString("java.auth-type"));
+        assertTrue(geyser.getBoolean("advanced.java.use-direct-connection"));
+        assertTrue(geyser.getBoolean("gameplay.disable-bedrock-scaffolding"));
+        assertTrue(geyser.getBoolean("gameplay.enable-custom-content"));
+        assertTrue(geyser.getBoolean("gameplay.enable-integrated-pack"));
+        assertTrue(geyser.getBoolean("gameplay.force-resource-packs"));
+        assertEquals(7, geyser.getInt("config-version"));
+
+        JsonObject customHeads = JsonParser.parseString(Files.readString(
+                configs.resolve("Geyser-Velocity/custom_mappings/tropicube-heads.json"))).getAsJsonObject();
+        assertEquals(1, customHeads.get("format_version").getAsInt());
+        assertEquals(11, customHeads.getAsJsonObject("skulls").getAsJsonArray("skin_hash").size());
 
         assertEquals(".", floodgate.getString("username-prefix"));
         assertEquals("key.pem", floodgate.getString("key-file-name"));
@@ -472,6 +481,9 @@ class YamlResourcesTest {
         String compose = Files.readString(Path.of("../docker-compose.yml"));
         assertTrue(compose.contains("${BEDROCK_PORT:-19132}:${BEDROCK_PORT:-19132}/udp"));
         assertTrue(compose.contains("floodgate-data:/server/plugins/floodgate"));
+
+        String entrypoint = Files.readString(Path.of("../dockerfiles/velocity-entrypoint.sh"));
+        assertTrue(entrypoint.contains("s/\\${CFG_BEDROCK_PORT}/$CFG_BEDROCK_PORT/g"));
     }
 
     @Test

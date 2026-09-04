@@ -47,7 +47,9 @@ Velocity also accepts the following operational settings:
 
 Both plugins run on Velocity only. `Dockerfile.velocity` downloads the official Geyser-Velocity `2.11.2-b1234` and Floodgate-Velocity `2.2.5-b140` artifacts from pinned build URLs and verifies pinned SHA-256 values. Third-party JARs stay out of Git. Before upgrading, verify Java `26.2` and current Bedrock support, then update the URLs, hashes, configuration comments, tests, and documentation together.
 
-`dockerfiles/configs/Geyser-Velocity/config.yml` listens on `0.0.0.0:${CFG_BEDROCK_PORT}`, advertises the same UDP port, automatically targets the local proxy, and requires Floodgate authentication. Direct connection remains enabled. Command suggestions are disabled and Bedrock scaffolding is blocked for SheepWars parity.
+`dockerfiles/configs/Geyser-Velocity/config.yml` uses Geyser schema `config-version: 7`, listens on `0.0.0.0:${CFG_BEDROCK_PORT}`, advertises the same UDP port, and requires Floodgate authentication. Direct connection remains enabled. Command suggestions are disabled and Bedrock scaffolding is blocked for SheepWars parity.
+
+Custom content and Geyser's integrated pack are enabled and required. The pack improves Bedrock inventory rendering; `custom_mappings/tropicube-heads.json` pre-registers all eleven static HeadDatabase textures used by menus so they are not replaced with a Steve head. Any new HeadDatabase icon must add its texture hash to this file, followed by a Velocity image rebuild and restart to regenerate the Bedrock pack.
 
 `dockerfiles/configs/floodgate/config.yml` does not require Bedrock users to link a Java account. A `.` prefix plus space-to-underscore replacement prevents Java-name collisions; social invitation actions and private SheepWars whitelists accept this strict form. The generated `key.pem` lives in the named `floodgate-data` volume. It must never enter the image or Git and must be backed up as a durable secret.
 
