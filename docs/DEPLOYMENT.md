@@ -205,6 +205,7 @@ Vérifier ensuite :
 - acceptation automatique du pack obligatoire Geyser, menus sans vitres décoratives, affichage des onze icônes HeadDatabase et remplacement des têtes de joueur dynamiques par leurs icônes d'état sans tête de Steve ;
 - depuis la console Velocity, `geyser connectiontest <hôte-public> <BEDROCK_PORT>` après ouverture du pare-feu et de la redirection UDP ;
 - `/server`, transfert vers SheepWars et retour `/hub` ;
+- en partie SheepWars, présence d'un seul bloc power-up, changement d'emplacement après activation et résumé final sans balise MiniMessage littérale ;
 - fin d'une partie SheepWars, retour de tous les joueurs au lobby puis disparition immédiate du conteneur avec `docker compose ps` ;
 - `/quickplay`, puis `/competitive 4v4` et `/competitive 8v8` avec les capacités exactes ; vérifier les plages 25625–25639, 25640–25649 et 25650–25659 uniquement depuis l'hôte, jamais publiées aux joueurs ;
 - transfert d'une party avec suivi activé, refus au-delà de 2 joueurs en classé 4v4 et 4 joueurs en classé 8v8 ;

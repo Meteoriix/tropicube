@@ -12,7 +12,7 @@ The implementation contains fifteen sheep types, three classes, nine kits, map v
 2. In a standard game, reaching the configured minimum starts the countdown automatically. A custom-game host may start manually or enable automatic start.
 3. At match start, participants are assigned to shuffled team spawns and receive colored leather armor, a sword, an Infinity bow, one arrow, and one random special sheep.
 4. Every living player receives another sheep at the configured interval. A deadline reached with a full sheep stock remains pending until space is available, then that player's full interval starts again. The smaller team receives a shared pool of three sheep per missing player, capped at two bonuses per recipient.
-5. Glowing wool blocks float between the bases. An arrow crossing one consumes the target and immediately grants its bonus to every connected survivor on the shooter's team.
+5. A single glowing wool block floats between the bases. An arrow crossing it consumes the target and immediately grants its bonus to every connected survivor on the shooter's team.
 6. Death is final for the round and changes the player to spectator mode.
 7. Players joining after the match starts also become spectators. They have no team, cannot deal or receive game damage, and do not affect survivor counts or victory.
 8. After the result screen, Velocity transfers everyone to a lobby and destroys the finished game container. A pre-created equivalent instance may be offered for replay.
@@ -63,9 +63,9 @@ Every launched sheep records its thrower's UUID. A player who destroys another p
 
 ## Aerial team power-ups
 
-Each map may define up to eight target centers under `locations.<map>.powerups.target1..target8`. At match start, every center displays a glowing wool `BlockDisplay`: lime announces team healing, purple poison arrows, and light blue team speed.
+Each map may define as many candidate centers as needed under `locations.<map>.powerups.target1`, `target2`, and so on. At match start, exactly one randomly selected center displays a glowing wool `BlockDisplay`: lime announces team healing, purple poison arrows, and light blue team speed. Each of the six deployed maps provides five candidates.
 
-Collision checks cover the arrow's full path between ticks, preventing fast projectiles from skipping a target. The shooter must be a living participant. The arrow and display are consumed, every connected living teammate receives the effect, and the target respawns after 45 seconds by default with a newly weighted type. Match completion and plugin shutdown cancel the task and remove all displays.
+Collision checks cover the arrow's full path between ticks, preventing fast projectiles from skipping the target. The shooter must be a living participant. The arrow and display are consumed, every connected living teammate receives the effect, and one target respawns after 45 seconds by default with a newly weighted type and a different location when several candidates exist. Match completion and plugin shutdown cancel the task and remove the display.
 
 Defaults provide 6 HP of healing, three Poison I arrows lasting 5 seconds per teammate, or Speed I for 8 seconds. Weights, strengths, durations, respawn time, and hit radius are startup-validated under `team-powerups`.
 
@@ -124,7 +124,7 @@ The source file is `tropicube-sheepwars/src/main/resources/config.yml`. Main sec
 - `custom-game-default-settings`;
 - `team-powerups` for target timing, collision, weighted effects, and effect strengths;
 - `force-settings`;
-- `locations`, including per-map `powerups.target1..target8` centers.
+- `locations`, including each map's numbered `powerups.target1`, `target2`, and subsequent candidate centers.
 
 The host menu covers every `default-settings` option. Player limits stay between 2 and 16, cannot be lowered below current attendance, and maximum-capacity changes are published to Velocity immediately. When a party member joins the waiting room, SheepWars attempts to reuse a party mate's team only when the resulting red/blue size difference remains at most one.
 

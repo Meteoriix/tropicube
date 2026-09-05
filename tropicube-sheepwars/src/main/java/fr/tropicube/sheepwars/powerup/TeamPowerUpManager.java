@@ -31,18 +31,21 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Owns floating wool targets for one running match. All entity and inventory work stays on the
- * Paper thread, and {@link #stop()} invalidates every target before a late tick can act.
+ * Owns the single floating wool target for one running match. All entity and inventory work stays
+ * on the Paper thread, and {@link #stop()} invalidates it before a late tick can act.
  */
 public final class TeamPowerUpManager {
     private final TropicubeSheepwars plugin;
     private final GameManager gameManager;
     private final TeamPowerUpSettings settings;
     private final TeamPowerUpPicker picker;
-    private final List<Target> targets = new ArrayList<>();
+    private final TeamPowerUpSpawnPicker spawnPicker = new TeamPowerUpSpawnPicker();
+    private final List<Location> spawnCandidates = new ArrayList<>();
     private final Map<UUID, Location> previousArrowLocations = new HashMap<>();
+    private Target activeTarget;
     private BukkitTask task;
     private long currentTick;
+    private long respawnAtTick;
 
     public TeamPowerUpManager(TropicubeSheepwars plugin, GameManager gameManager,
                               TeamPowerUpSettings settings) {
@@ -52,15 +55,12 @@ public final class TeamPowerUpManager {
         this.picker = new TeamPowerUpPicker(settings.weights());
     }
 
-    /** Creates every configured target and begins collision checks for the selected map. */
+    /** Selects one configured target location and begins collision checks for the selected map. */
     public void start(GameMap map) {
         stop();
         if (!settings.enabled() || map == null || map.getPowerUpSpawns().isEmpty()) return;
-        map.getPowerUpSpawns().forEach(location -> {
-            Target target = new Target(location.clone());
-            targets.add(target);
-            spawn(target);
-        });
+        map.getPowerUpSpawns().stream().map(Location::clone).forEach(spawnCandidates::add);
+        spawnNext();
         task = plugin.getServer().getScheduler().runTaskTimer(plugin, this::tick, 1L, 1L);
     }
 
@@ -68,10 +68,13 @@ public final class TeamPowerUpManager {
     public void stop() {
         if (task != null) task.cancel();
         task = null;
-        targets.forEach(Target::removeDisplay);
-        targets.clear();
+        if (activeTarget != null) activeTarget.removeDisplay();
+        activeTarget = null;
+        spawnCandidates.clear();
+        spawnPicker.reset();
         previousArrowLocations.clear();
         currentTick = 0;
+        respawnAtTick = 0;
     }
 
     private void tick() {
@@ -80,8 +83,7 @@ public final class TeamPowerUpManager {
             return;
         }
         currentTick++;
-        targets.stream().filter(target -> target.display == null && currentTick >= target.respawnAtTick)
-                .forEach(this::spawn);
+        if (activeTarget == null && currentTick >= respawnAtTick) spawnNext();
         detectArrowHits();
         if (currentTick % 20 == 0) {
             previousArrowLocations.entrySet().removeIf(entry -> {
@@ -92,9 +94,9 @@ public final class TeamPowerUpManager {
     }
 
     private void detectArrowHits() {
-        Target firstActive = targets.stream().filter(target -> target.display != null).findFirst().orElse(null);
-        if (firstActive == null) return;
-        World world = firstActive.location.getWorld();
+        Target target = activeTarget;
+        if (target == null || target.display == null) return;
+        World world = target.location.getWorld();
         if (world == null) return;
 
         double radiusSquared = settings.hitRadius() * settings.hitRadius();
@@ -109,22 +111,23 @@ public final class TeamPowerUpManager {
             if (previous == null || previous.getWorld() != current.getWorld()) {
                 previous = current.clone().subtract(arrow.getVelocity());
             }
-            for (Target target : targets) {
-                if (target.display == null || target.location.getWorld() != current.getWorld()) continue;
-                double distanceSquared = ArrowPathCollision.distanceSquaredToSegment(
-                        previous.getX(), previous.getY(), previous.getZ(),
-                        current.getX(), current.getY(), current.getZ(),
-                        target.location.getX(), target.location.getY(), target.location.getZ());
-                if (distanceSquared > radiusSquared) continue;
-                activate(target, shooter, gamePlayer.getTeam());
-                previousArrowLocations.remove(arrow.getUniqueId());
-                arrow.remove();
-                break;
-            }
+            if (target.location.getWorld() != current.getWorld()) continue;
+            double distanceSquared = ArrowPathCollision.distanceSquaredToSegment(
+                    previous.getX(), previous.getY(), previous.getZ(),
+                    current.getX(), current.getY(), current.getZ(),
+                    target.location.getX(), target.location.getY(), target.location.getZ());
+            if (distanceSquared > radiusSquared) continue;
+            activate(target, shooter, gamePlayer.getTeam());
+            previousArrowLocations.remove(arrow.getUniqueId());
+            arrow.remove();
+            return;
         }
     }
 
-    private void spawn(Target target) {
+    private void spawnNext() {
+        if (spawnCandidates.isEmpty()) return;
+        Location location = spawnCandidates.get(spawnPicker.pick(spawnCandidates.size())).clone();
+        Target target = new Target(location);
         TeamPowerUpType type = picker.pick();
         Location entityLocation = target.location.clone().subtract(0.5, 0.5, 0.5);
         BlockDisplay display = Objects.requireNonNull(target.location.getWorld()).spawn(entityLocation,
@@ -138,13 +141,15 @@ public final class TeamPowerUpManager {
                 });
         target.type = type;
         target.display = display;
+        activeTarget = target;
         target.location.getWorld().spawnParticle(Particle.END_ROD, target.location, 14, 0.45, 0.45, 0.45, 0.01);
     }
 
     private void activate(Target target, Player shooter, GameTeam team) {
         TeamPowerUpType type = target.type;
         target.removeDisplay();
-        target.respawnAtTick = currentTick + settings.respawnTicks();
+        activeTarget = null;
+        respawnAtTick = currentTick + settings.respawnTicks();
         apply(type, team);
 
         World world = target.location.getWorld();
@@ -192,7 +197,6 @@ public final class TeamPowerUpManager {
         private final Location location;
         private BlockDisplay display;
         private TeamPowerUpType type;
-        private long respawnAtTick;
 
         private Target(Location location) {
             this.location = location;

@@ -29,6 +29,16 @@ public enum SheepWarsMode {
     public boolean ranked() { return ranked; }
     public int teamSize() { return maximumPlayers / 2; }
 
+    /** Returns the localized label used in player-facing match summaries. */
+    public String summaryLanguageKey() {
+        return switch (this) {
+            case QUICK_PLAY -> "sw.summary-mode-quick-play";
+            case RANKED_4V4 -> "sw.summary-mode-ranked-4v4";
+            case RANKED_8V8 -> "sw.summary-mode-ranked-8v8";
+            case CUSTOM -> "sw.summary-mode-custom";
+        };
+    }
+
     /** Resolves the orchestration value while preserving legacy quick-play instances. */
     public static SheepWarsMode fromEnvironment(String value, boolean customGame) {
         if (customGame) return CUSTOM;

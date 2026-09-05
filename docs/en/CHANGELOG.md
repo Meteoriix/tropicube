@@ -16,6 +16,7 @@ This document records functional, technical, and operational changes. Entries ar
 - Bedrock clients now receive sparse menus without decorative panes and Geyser's required integrated pack; all eleven HeadDatabase icons used by Tropicube are pre-registered and no longer fall back to a Steve head.
 - Fake enchantments used as decorative glints in menus and the hotbar are no longer added for Bedrock clients; gameplay enchantments remain unchanged.
 - Dynamic player heads in Profile and Social screens now use vanilla status icons on Bedrock instead of falling back to a Steve head; Java keeps resolved skins.
+- SheepWars now displays one power-up target at a time, rotates through five locations per map without a software cap, automatically audits its language keys, and renders the colored summary status without exposing MiniMessage tags.
 
 ### 2026-09-03
 

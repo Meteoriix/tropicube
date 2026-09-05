@@ -16,6 +16,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 - Les clients Bedrock reçoivent des menus allégés sans vitres décoratives ainsi que le pack intégré Geyser obligatoire ; les onze icônes HeadDatabase employées par Tropicube sont préenregistrées et ne retombent plus sur une tête de Steve.
 - Les faux enchantements utilisés comme scintillement décoratif dans les menus et la hotbar ne sont plus ajoutés pour les clients Bedrock ; les enchantements de gameplay restent inchangés.
 - Les têtes de joueur dynamiques du Profil et des écrans Social utilisent désormais des icônes d'état vanilla sur Bedrock au lieu de retomber sur une tête de Steve ; Java conserve les skins résolus.
+- SheepWars n'affiche plus qu'une cible de power-up à la fois, alterne parmi cinq emplacements par carte sans plafond logiciel, vérifie automatiquement ses clés de langue et rend correctement le statut coloré du résumé sans balise MiniMessage visible.
 
 ### 2026-09-03
 

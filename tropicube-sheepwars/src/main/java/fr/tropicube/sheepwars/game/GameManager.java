@@ -899,9 +899,12 @@ public class GameManager {
                     .max(Comparator.comparingInt(GamePlayer::getKills)).orElse(gp);
             GamePlayer topSheep = visibleSummaryPlayers(gp).stream()
                     .max(Comparator.comparingInt(GamePlayer::getSheepThrown)).orElse(gp);
-            p.sendMessage(LangHelper.component(p, "sw.summary-mode", mode.name()));
-            p.sendMessage(LangHelper.component(p, "sw.summary-personal", gp.getKills(), gp.getSheepThrown(),
-                    gp.isAlive() ? LangHelper.get(p, "sw.summary-survived") : LangHelper.get(p, "sw.summary-eliminated")));
+            p.sendMessage(LangHelper.component(p, "sw.summary-mode",
+                    LangHelper.get(p, mode.summaryLanguageKey())));
+            Component matchResult = LangHelper.component(p,
+                    gp.isAlive() ? "sw.summary-survived" : "sw.summary-eliminated");
+            p.sendMessage(LangHelper.component(p, "sw.summary-personal",
+                    MatchSummaryPlaceholders.create(gp.getKills(), gp.getSheepThrown(), matchResult)));
             p.sendMessage(LangHelper.component(p, "sw.summary-distinctions",
                     displayName(topKills), topKills.getKills(), displayName(topSheep), topSheep.getSheepThrown()));
         }

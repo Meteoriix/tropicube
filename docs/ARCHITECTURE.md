@@ -143,7 +143,7 @@ Une instance SheepWars suit les phases attente, sélection, compte à rebours, j
 - l'item et les inventaires de whitelist de l'hôte privé, dont les lectures Redis sont exécutées hors du thread Paper ;
 - les scores et statistiques persistantes ;
 - les moutons spéciaux issus d'une table de poids immuable filtrant les types désactivés, d'un tirage pondéré indépendant à chaque remise et d'une échéance propre à chaque joueur qui reste due tant que son stock est plein ;
-- les cibles aériennes de laine lumineuse, dont le gestionnaire propre à la manche teste les segments de trajectoire des flèches, applique un bonus pondéré aux survivants de l'équipe puis gère la réapparition et le nettoyage ;
+- la cible aérienne unique de laine lumineuse, dont le gestionnaire propre à la manche choisit un centre parmi les candidats de la carte, teste les segments de trajectoire des flèches, applique un bonus pondéré aux survivants de l'équipe puis choisit un autre centre à la réapparition ;
 - le retour au lobby et la proposition de revanche.
 
 Les types inclus sont Boarding, TNT, Distort, Darkness, Searching, Fire, Poison, Swap, Meteor, Healing, Lightning, Gravity, Mecha, Strength et Fragmentation.

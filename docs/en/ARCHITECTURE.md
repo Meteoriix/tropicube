@@ -56,7 +56,7 @@ SheepWars publishes each game transition back to Redis. The lobby renders `GAME_
 
 Sheep distribution uses an immutable effective-weight table followed by an independent weighted draw for every successful insertion. The once-per-second game tick also advances per-player delivery deadlines; a deadline remains due while the player's sheep stock is full and restarts only after insertion succeeds.
 
-The match-owned aerial power-up manager renders configured wool targets, checks arrow segments on the Paper thread, grants the selected weighted effect only to living teammates, and owns both respawn timing and display cleanup. It is started only for `PLAYING` and stopped before result processing or plugin shutdown.
+The match-owned aerial power-up manager renders exactly one wool target at a candidate center, checks arrow segments on the Paper thread, grants the selected weighted effect only to living teammates, and chooses another center when it respawns. It owns timing and display cleanup, starts only for `PLAYING`, and stops before result processing or plugin shutdown.
 
 ## Redis contracts
 

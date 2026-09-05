@@ -7,10 +7,13 @@ import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /** Load SheepWars maps from configuration and validate their key points. */
 public class MapsUtil {
+    private static final Pattern POWER_UP_TARGET = Pattern.compile("target([1-9][0-9]*)");
 
     public static List<GameMap> loadMaps(ConfigurationSection section, World world) {
         List<GameMap> maps = new ArrayList<>();
@@ -57,15 +60,25 @@ public class MapsUtil {
         return locations;
     }
 
-    /** Loads up to eight floating target locations from powerups.target1 ... target8. */
+    /** Loads every numbered floating target candidate from powerups.target1, target2, and so on. */
     public static List<Location> loadPowerUpSpawns(ConfigurationSection section, World world) {
         List<Location> locations = new ArrayList<>();
         ConfigurationSection targets = section.getConfigurationSection("powerups");
         if (targets == null) return locations;
-        for (int index = 1; index <= 8; index++) {
-            Location location = loadLocation(targets, world, "target" + index);
+        List<String> targetKeys = targets.getKeys(false).stream()
+                .filter(key -> POWER_UP_TARGET.matcher(key).matches())
+                .sorted(Comparator.comparingInt(MapsUtil::targetIndex))
+                .toList();
+        for (String targetKey : targetKeys) {
+            Location location = loadLocation(targets, world, targetKey);
             if (location != null) locations.add(location);
         }
         return locations;
+    }
+
+    private static int targetIndex(String key) {
+        var matcher = POWER_UP_TARGET.matcher(key);
+        if (!matcher.matches()) throw new IllegalArgumentException("Clé de cible invalide : " + key);
+        return Integer.parseInt(matcher.group(1));
     }
 }

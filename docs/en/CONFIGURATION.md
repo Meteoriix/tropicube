@@ -80,10 +80,10 @@ Main sections:
 - `redis`: shared-state connection;
 - `default-settings`: player limits, automatic start, countdown, duration, sheep interval, random kits, map voting, and sheep weights;
 - `custom-game-default-settings`: defaults for host-created games;
-- `team-powerups`: enable flag, respawn delay, hit radius, weighted healing/poison-arrow/speed effects, and their startup-validated strengths;
+- `team-powerups`: enable flag, respawn delay, hit radius, weighted healing/poison-arrow/speed effects, and their startup-validated strengths for the single active target;
 - `CUSTOM_GAME_PRIVATE`: an internal Velocity-injected environment flag that enables the private-host whitelist item; it must not be configured manually in a template;
 - `force-settings`: disabled classes, kits, and sheep types;
-- `locations`: world, waiting lobby, void limits, maps, red/blue spawns, and optional per-map `powerups.target1..target8` centers. A map without centers remains playable without aerial targets.
+- `locations`: world, waiting lobby, void limits, maps, red/blue spawns, and any number of optional numbered `powerups.target1`, `target2`, and subsequent candidate centers. Only one is active and respawning avoids the previous candidate. A map without centers remains playable without an aerial target.
 
 `default-settings.sheep-give-delay` defaults to twenty seconds. A full ten-minute match therefore contains twenty-nine useful periodic deadlines plus the starting sheep. Each successful delivery restarts an individual player's interval; a deadline blocked by the five-sheep stock limit remains due and is retried every second. Active weights are normalized and used directly by a fresh independent draw for every delivery.
 

@@ -198,7 +198,7 @@ locations:
     name: "Map 12345"
     enabled: true
     void_limit: 100
-    # Floating target centers (target1 to target8).
+    # Candidate centers for the single floating target (target1, target2, ...).
     powerups:
     spawns:
       red:

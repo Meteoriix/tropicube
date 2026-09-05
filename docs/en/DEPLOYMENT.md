@@ -114,6 +114,7 @@ The proxy's normal shutdown may preserve or remove dynamic instances according t
 - confirm Paper receives forwarded identities and cannot be reached publicly;
 - confirm lobby selectors reflect `GAME_WAITING`, `GAME_STARTING`, `GAME_PLAYING`, and `GAME_ENDING` correctly;
 - confirm a playing SheepWars instance admits late arrivals as spectators;
+- confirm SheepWars exposes one power-up block at a time, changes its location after activation, and shows no literal MiniMessage tag in the final summary;
 - confirm shutdown removes scheduled tasks, subscriptions, containers, and ephemeral game volumes as configured;
 - inspect logs without exposing credentials.
 

@@ -55,7 +55,7 @@ class TeamPowerUpSettingsTest {
             checkedMaps++;
             ConfigurationSection targets = maps.getConfigurationSection(mapKey + ".powerups");
             assertNotNull(targets, mapKey);
-            assertEquals(3, targets.getKeys(false).size(), mapKey);
+            assertTrue(targets.getKeys(false).size() >= 5, mapKey + " doit proposer au moins cinq candidats");
             double[] red = spawnCenter(maps, mapKey + ".spawns.red");
             double[] blue = spawnCenter(maps, mapKey + ".spawns.blue");
             double dx = blue[0] - red[0];
