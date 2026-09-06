@@ -81,3 +81,9 @@ Generated HTML under `docs-site/` and `docs-site/en/` is committed with its Mark
 `GuildSqlTest` runs the actual migrations against a dedicated disposable database. Without `TROPICUBE_GUILD_TEST_URL`, its four SQL scenarios are skipped; domain and resource tests remain active. Start a test MySQL container matching the Compose version, with database `guild_test`, an empty-password root account restricted to this disposable instance and a port published only on `127.0.0.1`. Set `TROPICUBE_GUILD_TEST_URL=jdbc:mysql://127.0.0.1:<port>/guild_test?allowPublicKeyRetrieval=true&useSSL=false`, then run the Maven reactor. Never target the network database. Remove the temporary container afterwards.
 
 Assertions cover expired invitations, concurrent acceptance at capacity, permissions and ownership transfer, stale screens after guild changes, last-member departure and weekly contribution display rollover. Pure tests also cover guild identities, input deadlines, menu permissions, pagination and atomic input consumption.
+
+## Translation reference audit
+
+`PluginLanguageReferencesTest` analyzes Java sources across all Maven modules and resource references, then requires their presence in all four catalogs of the relevant provider (Core or Velocity), without language fallback. It also checks arguments in direct translation calls and known dynamic families, including enums, missions and configured VIP entries. New computed key families must extend its explicit registry.
+
+`YamlResourcesTest` complements this audit with key-tree, placeholder and MiniMessage style parity, duplicate YAML detection and Docker copy synchronization. These static checks do not replace linguistic review or in-game checks of computed text and language changes.

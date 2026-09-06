@@ -192,7 +192,7 @@ public class ServerSelectorGUI {
     }
 
     private static ItemStack filterItem(Player player, Filter filter) {
-        String label = LangHelper.get(player, "lobby.server-filter-" + filter.name().toLowerCase(Locale.ROOT));
+        String label = LangHelper.get(player, "lobby.server-filter-" + filter.name().toLowerCase(Locale.ROOT).replace('_', '-'));
         return new ItemBuilder(Material.HOPPER)
                 .name(LangHelper.get(player, "lobby.server-filter-name", label))
                 .lore("",

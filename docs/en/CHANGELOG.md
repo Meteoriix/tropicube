@@ -6,6 +6,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-06
 
+- An automated audit checks translation references across all plugins in all four languages, including known dynamic families. Guild result, insufficient balance and quick-play filter keys are corrected; Docker copies remain synchronized.
 - Social now hosts complete guild management: invitations, members, challenges, ranking and cancellable private input; Profile no longer contains the button. Mutations revalidate permissions and the displayed guild under a SQL lock; roles, challenges and results are localized.
 
 ### 2026-09-04
