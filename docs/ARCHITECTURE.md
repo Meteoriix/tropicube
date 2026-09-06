@@ -25,6 +25,8 @@ Velocity est l'unique point de routage public. Il authentifie directement les pr
 
 L'éditeur local conserve les ressources Maven comme source de vérité et leurs miroirs Docker comme source de build. Il partage le rendu des placeholders nommés via `tropicube-language-api`. Les dispositions des menus, scoreboards et tablists résident dans des manifestes versionnés propres à leur module. Après validation, l'éditeur installe langues et manifestes dans les conteneurs, puis appelle `languageeditorreload` par RCON. Core publie chaque ensemble sous une nouvelle génération Redis (`runtime-ui:generation:<id>:*`) et ne remplace `runtime-ui:active` qu'après les fichiers et leur manifeste de hashes. Une nouvelle instance vérifie puis restaure cette génération avant de charger ses gestionnaires.
 
+La restauration vérifie le hash du fichier Redis d'origine puis complète les langues Core dans un fichier temporaire avec les clés manquantes du JAR, sans écraser les valeurs personnalisées. Le remplacement atomique précède le chargement des langues. Les clés Redis, leur persistance sans expiration et le pointeur de génération ne changent pas ; la restauration ne republie pas la génération. Cette étape empêche une ancienne génération de réintroduire des clés manquantes après la migration initiale des configurations.
+
 Deux réseaux Docker séparent les flux :
 
 - `tropicube-net` relie Velocity, Redis, MySQL et les serveurs de jeu ;

@@ -1,6 +1,8 @@
 package fr.tropicube.core.ui;
 
 import fr.tropicube.core.TropicubeCore;
+import fr.tropicube.core.util.ConfigUpdater;
+import org.bukkit.plugin.Plugin;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,7 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
-/** Persists editor-managed language and UI files so newly created Paper instances inherit them. */
+/** Persists editor-managed UI files, completing restored languages from the installed plugin. */
 public final class RuntimeUiBundle {
     private static final String ACTIVE_KEY = "runtime-ui:active";
     private static final String GENERATION_PREFIX = "runtime-ui:generation:";
@@ -45,19 +47,28 @@ public final class RuntimeUiBundle {
                 if (content.length > MAX_FILE_BYTES || !hash(content).equals(expectedHash)) {
                     throw new IllegalArgumentException("contenu absent, trop volumineux ou hash invalide");
                 }
-                Files.createDirectories(path.getParent());
-                Path temporary = Files.createTempFile(path.getParent(), ".runtime-ui-", ".tmp");
-                try {
-                    Files.write(temporary, content);
-                    moveAtomically(temporary, path);
-                } finally {
-                    Files.deleteIfExists(temporary);
-                }
+                installFile(plugin, id, path, content);
             } catch (IOException | IllegalArgumentException failure) {
                 plugin.getLogger().warning("TROPICUBE > UI > Restauration ignorée pour " + id + " : "
                         + failure.getMessage());
             }
         });
+    }
+
+    /** Completes older editor catalogs before publication, preserving their customized values. */
+    static void installFile(Plugin plugin, String id, Path path, byte[] content) throws IOException {
+        Files.createDirectories(path.getParent());
+        Path temporary = Files.createTempFile(path.getParent(), ".runtime-ui-", ".tmp");
+        try {
+            Files.write(temporary, content);
+            // Redis can predate the JAR: the startup merge performed before restore is insufficient.
+            if (id.startsWith("core/languages/")) {
+                ConfigUpdater.update(plugin, id.substring("core/".length()), temporary.toFile());
+            }
+            moveAtomically(temporary, path);
+        } finally {
+            Files.deleteIfExists(temporary);
+        }
     }
 
     /** Publishes every file installed on this instance without expiring the last approved version. */

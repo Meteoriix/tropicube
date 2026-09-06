@@ -6,6 +6,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-06
 
+- La restauration des interfaces Redis complète désormais les langues avec les nouvelles clés du JAR avant leur chargement, en conservant les personnalisations. Une ancienne génération pouvait supprimer 79 clés par langue, notamment dans Social et les guildes, malgré des catalogues embarqués complets.
 - Un audit automatique vérifie les références de traduction de tous les plugins dans les quatre langues, y compris les familles dynamiques connues. Les clés des résultats de guilde, du solde insuffisant et du filtre de partie rapide sont corrigées ; les copies Docker restent synchronisées.
 - Social accueille la gestion complète des guildes : invitations, membres, défis, classement et saisie privée annulable ; le bouton quitte le Profil. Les mutations revalident les droits et la guilde affichée sous verrou SQL ; rôles, défis et résultats sont localisés.
 

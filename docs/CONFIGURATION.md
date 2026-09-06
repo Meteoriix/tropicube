@@ -9,6 +9,8 @@ Le projet contient deux catégories de configuration :
 
 TropicubeCore complète automatiquement les fichiers de langue existants avec les nouvelles clés sans écraser les traductions personnalisées. Les scripts de déploiement font la même opération avant la construction des images pour Core et Velocity, avec refus des clés ou sections YAML dupliquées et des structures imbriquées non prises en charge par le mergeur.
 
+Après restauration des interfaces depuis Redis, Core complète aussi chaque catalogue restauré avec les clés du JAR installé, avant son remplacement atomique sur disque. Une génération de l'éditeur antérieure au plugin conserve ses personnalisations sans supprimer les traductions ajoutées depuis. Les manifestes d'interface restent restaurés à l'identique.
+
 Les variables d'environnement ont priorité sur certaines valeurs Core. Dans les conteneurs `itzg`, le mécanisme `REPLACE_ENV_VARIABLES` remplace également les marqueurs `${CFG_...}` présents dans les fichiers copiés.
 
 Les builds Maven et les scripts de déploiement synchronisent les quatre ressources de langue Core et Velocity vers leurs copies sous `dockerfiles/configs`. Les `config.yml` de déploiement restent distincts, car ils contiennent les marqueurs de secrets et l'adresse du proxy Docker.
