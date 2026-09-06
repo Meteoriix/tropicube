@@ -250,3 +250,7 @@ Les balises internes `<tc>` et `<sw>` insèrent respectivement les marques rése
 4. exécuter un déploiement ou `--validate-only` pour valider le merge.
 
 Éviter les clés YAML dupliquées. Le merge de déploiement accepte les sections de premier niveau et leurs feuilles indentées de deux espaces ; une structure plus profonde doit être migrée explicitement plutôt qu'ignorée silencieusement.
+
+## Saisie privée des guildes dans le Lobby
+
+Dans `TropicubeLobby/config.yml`, `guilds.input-timeout-seconds` définit le délai de chaque étape de saisie privée (nom, tag ou pseudo). Valeur par défaut : `120` secondes ; un entier entre `10` et `600` est requis. Les valeurs fractionnaires, textuelles ou hors limites sont refusées au démarrage avec la clé et la valeur reçue. La ressource embarquée et sa copie Docker sont synchronisées ; les anciennes configurations reçoivent la valeur par défaut via le mécanisme existant. Les limites de membres, d'officiers et de contribution restent celles de Core.

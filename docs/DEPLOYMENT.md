@@ -322,3 +322,7 @@ DOCKER_SOCKET_PATH=/run/user/1000/docker.sock
 ```
 
 Puis vérifier que Compose peut monter ce chemin et que le daemon correspondant est actif pour l'utilisateur du déploiement.
+
+## Vérification des menus de guilde
+
+Après mise à jour conjointe de Core et Lobby, vérifier sur Java et Bedrock : Social aux trois onglets, absence du bouton Guildes dans Profil, création par nom/tag, invitations, pagination de plus de 21 membres, défis et classement vide ou rempli. Vérifier les rôles membre/officier/chef, les confirmations d'exclusion/transfert/départ et l'avertissement de suppression de la dernière guilde. Une saisie privée ne doit jamais apparaître dans le chat des autres joueurs. Tester `!`, l'expiration, la déconnexion, une navigation pendant chargement, les doubles clics et `/lang` dans les quatre langues. Simuler un échec SQL puis utiliser Actualiser. Aucun changement de ports ni de volume de production n'est requis.

@@ -4,6 +4,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-09-06
+
+- Social accueille la gestion complète des guildes : invitations, membres, défis, classement et saisie privée annulable ; le bouton quitte le Profil. Les mutations revalident les droits et la guilde affichée sous verrou SQL ; rôles, défis et résultats sont localisés.
+
 ### 2026-09-04
 
 #### Ajouté

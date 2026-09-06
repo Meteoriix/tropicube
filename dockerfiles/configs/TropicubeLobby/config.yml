@@ -25,3 +25,7 @@ lobby:
   double-jump: true
   join-message: true
   welcome-message: "<tc><gray>Bienvenue <yellow>%player% <gray>! <dark_gray>(<green>%online%<gray>/<red>%max%<dark_gray>)"
+
+guilds:
+  # Private menu input expires after this delay (10..600 seconds).
+  input-timeout-seconds: 120

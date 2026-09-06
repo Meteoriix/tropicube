@@ -90,3 +90,7 @@ lang-selector:
       head-id: "522"
       display-name: "<white>Deutsch"
       lore: "<dark_gray>■<red>■<yellow>■ <dark_gray>DE <gray>— <aqua>Deutsch<br><gray>Klicken Sie, um auf Deutsch zu spielen."
+
+guilds:
+  # Private menu input expires after this delay (10..600 seconds).
+  input-timeout-seconds: 120

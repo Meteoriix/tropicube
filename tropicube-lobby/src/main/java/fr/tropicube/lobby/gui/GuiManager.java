@@ -162,6 +162,8 @@ public class GuiManager {
             return;
         }
         UUID playerId = player.getUniqueId();
+        Inventory loading = SocialGUI.loading(player, view);
+        player.openInventory(loading);
         var social = core.getSocialService();
         social.friends(playerId).thenCombine(social.requests(playerId), (friends, requests) -> {
             List<CompletableFuture<SocialGUI.FriendEntry>> entryFutures = friends.stream()
@@ -188,10 +190,12 @@ public class GuiManager {
         }).thenCompose(snapshot -> snapshot)
                 .whenComplete((snapshot, error) -> Bukkit.getScheduler().runTask(plugin, () -> {
             Player online = Bukkit.getPlayer(playerId);
-            if (online == null) return;
+            if (online == null || online.getOpenInventory().getTopInventory() != loading) return;
             if (error != null) {
                 plugin.getLogger().log(java.util.logging.Level.WARNING, "Impossible de charger le menu Social", error);
                 online.sendMessage(LangHelper.component(online, "general.operation-failed"));
+                loading.setItem(22, new fr.tropicube.lobby.utils.ItemBuilder(org.bukkit.Material.RED_DYE)
+                        .name(LangHelper.get(online, "general.operation-failed")).build());
                 return;
             }
             try {
@@ -338,6 +342,7 @@ public class GuiManager {
     }
 
     public void onPlayerQuit(UUID playerId) {
+        if (plugin.getGuildMenus() != null) plugin.getGuildMenus().quit(playerId);
         openGuis.remove(playerId);
     }
 

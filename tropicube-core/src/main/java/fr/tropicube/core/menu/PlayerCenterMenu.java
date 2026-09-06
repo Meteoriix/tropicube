@@ -74,12 +74,10 @@ public final class PlayerCenterMenu implements Listener {
         NetworkMenuStyle.frame(inventory, player);
         inventory.setItem(13, playerHead(player, "center.profile", "center.profile-lore",
                 "center.profile-action", "PROFILE"));
-        inventory.setItem(20, navigationItem(player, Material.WRITABLE_BOOK,
+        inventory.setItem(21, navigationItem(player, Material.WRITABLE_BOOK,
                 "center.missions", "center.missions-lore", "center.missions-action", "MISSIONS"));
-        inventory.setItem(22, navigationItem(player, Material.BELL,
+        inventory.setItem(23, navigationItem(player, Material.BELL,
                 "center.notifications", "center.notifications-lore", "center.notifications-action", "NOTIFICATIONS"));
-        inventory.setItem(24, navigationItem(player, Material.SHIELD,
-                "center.guilds", "center.guilds-lore", "center.guilds-action", "GUILDS"));
         inventory.setItem(31, navigationItem(player, Material.COMPARATOR,
                 "center.privacy", "center.privacy-lore", "center.privacy-action", "SETTINGS"));
         inventory.setItem(53, navigationItem(player, Material.BARRIER,
@@ -252,34 +250,6 @@ public final class PlayerCenterMenu implements Listener {
                 }));
     }
 
-    public void openGuilds(Player player) {
-        UUID playerId = player.getUniqueId();
-        plugin.getGuildService().currentRanking(20).thenCombine(
-                plugin.getGuildService().guild(playerId), GuildPage::new).whenComplete((page, error) ->
-                Bukkit.getScheduler().runTask(plugin, () -> {
-                    Player online = Bukkit.getPlayer(playerId);
-                    if (online == null) return;
-                    if (error != null) { online.sendMessage(message(online, "general.operation-failed")); return; }
-                    Inventory inventory = Bukkit.createInventory(null, menuSize("profile-guilds"),
-                            menuTitle(online, "profile-guilds"));
-                    NetworkMenuStyle.frame(inventory, online);
-                    for (int index = 0; index < Math.min(20, page.ranking().size()); index++) {
-                        var value = page.ranking().get(index);
-                        inventory.setItem(9 + index, display(Material.SHIELD, message(online, "guild.ranking-entry",
-                                index + 1, value.tag(), value.name(), Math.round(value.score()), value.rankedMatches())));
-                    }
-                    if (page.guild() != null) inventory.setItem(40, display(Material.GOLDEN_HELMET,
-                            message(online, "guild.info", page.guild().tag(), page.guild().name(),
-                                    page.guild().level(), page.guild().experience())));
-                    inventory.setItem(45, navigationItem(online, Material.ARROW,
-                            "center.back", "lobby.back-button-lore", "BACK"));
-                    inventory.setItem(53, navigationItem(online, Material.BARRIER,
-                            "lobby.close-button", "lobby.close-button-lore", "CLOSE"));
-                    online.openInventory(inventory);
-                    states.put(playerId, new State(View.GUILDS, 0, "ALL"));
-                }));
-    }
-
     @EventHandler
     public void click(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
@@ -315,7 +285,6 @@ public final class PlayerCenterMenu implements Listener {
             case "PROFILE" -> openProfile(player);
             case "MISSIONS" -> openMissions(player);
             case "NOTIFICATIONS" -> openNotifications(player, 0, "ALL");
-            case "GUILDS" -> openGuilds(player);
             case "SETTINGS" -> {
                 Consumer<Player> opener = settingsOpener;
                 if (opener == null) dispatch(player, "settings"); else opener.accept(player);
@@ -438,8 +407,6 @@ public final class PlayerCenterMenu implements Listener {
         int index = FILTERS.indexOf(current == null ? "ALL" : current);
         return FILTERS.get((Math.max(0, index) + 1) % FILTERS.size());
     }
-    private enum View { HOME, PROFILE, MISSIONS, NOTIFICATIONS, GUILDS }
-    private record GuildPage(List<fr.tropicube.core.guild.GuildService.Ranking> ranking,
-                             fr.tropicube.core.guild.GuildService.Guild guild) { }
+    private enum View { HOME, PROFILE, MISSIONS, NOTIFICATIONS }
     private record State(View view, int page, String filter) {}
 }

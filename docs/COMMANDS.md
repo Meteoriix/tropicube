@@ -175,3 +175,9 @@ Les nœuds Paper et Velocity sont uniquement des adaptateurs calculés depuis `v
 Velocity utilise le profil révisionné publié par Core dans Redis et le conserve en mémoire. Une valeur absente ou invalide vaut `0/0` ; aucun accès Redis n'est effectué dans le callback de permissions.
 
 `modLevel 3` couvre toute l'administration Tropicube. `modLevel 4` ajoute le wildcard global ; les opérateurs Paper et UUID configurés ne donnent plus de droits.
+
+## Parcours graphique des guildes
+
+Dans la hotbar du Lobby, **Social → Guildes** propose création, invitations reçues, membres, défis hebdomadaires et top 20 saisonnier. Le Profil ne comporte plus de bouton Guildes. La création demande le nom puis le tag dans une saisie privée ; inviter demande le pseudo. Saisir `!` annule et revient au menu. Chaque étape expire après le délai configuré.
+
+Les officiers et le chef peuvent inviter ; un officier peut exclure un membre, et le chef peut aussi gérer les officiers, promouvoir, rétrograder et transférer la propriété. Départ, exclusion et transfert nécessitent une confirmation dans les menus. Un chef doit transférer sa guilde avant de partir si d'autres membres restent ; le départ de son dernier membre la supprime avec un avertissement explicite. Les commandes `/guild` et `/guilde` ainsi que leurs permissions restent inchangées. Les libellés de rôle, de défi et de résultat sont localisés dans les quatre langues.

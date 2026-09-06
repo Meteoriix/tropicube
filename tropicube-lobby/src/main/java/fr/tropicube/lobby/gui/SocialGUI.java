@@ -22,13 +22,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-/** Two-view social menu whose holder contains immutable actions instead of trusting item text. */
+/** Three-tab social menu whose holder contains immutable actions instead of trusting item text. */
 public final class SocialGUI {
     static final String FRIENDS_HEAD_ID = "117085";
     static final String PARTY_HEAD_ID = "117095";
     public static final int SIZE = 54;
-    public static final int FRIENDS_TAB_SLOT = 3;
-    public static final int PARTY_TAB_SLOT = 5;
+    public static final int FRIENDS_TAB_SLOT = 2;
+    public static final int PARTY_TAB_SLOT = 4;
+    public static final int GUILDS_TAB_SLOT = 6;
     public static final int REQUESTS_SLOT = 49;
     public static final int CLOSE_SLOT = 53;
     private static final int[] ENTRY_SLOTS = {
@@ -56,6 +57,10 @@ public final class SocialGUI {
                 "social.menu-friends", view == View.FRIENDS));
         inventory.setItem(PARTY_TAB_SLOT, navigationItem(player, PARTY_HEAD_ID,
                 "social.menu-party", view == View.PARTY));
+        inventory.setItem(GUILDS_TAB_SLOT, new ItemBuilder(Material.SHIELD)
+                .name(LangHelper.get(player, "guild-ui.tab"))
+                .lore(LangHelper.get(player, "guild-ui.tab-action")).build());
+        actions.put(GUILDS_TAB_SLOT, new Action(ActionType.OPEN_GUILDS, ""));
         actions.put(FRIENDS_TAB_SLOT, new Action(ActionType.OPEN_FRIENDS, ""));
         actions.put(PARTY_TAB_SLOT, new Action(ActionType.OPEN_PARTY, ""));
 
@@ -78,6 +83,16 @@ public final class SocialGUI {
         }
 
         inventory.setItem(CLOSE_SLOT, ItemBuilder.closeButton(player));
+        return inventory;
+    }
+
+    /** Displays navigation immediately while SQL and Redis are being read. */
+    public static Inventory loading(Player player, View view) {
+        Inventory inventory = build(player, view, List.of(), List.of(), 0, 0, 0, null);
+        Holder holder = (Holder) inventory.getHolder();
+        holder.actions.keySet().removeIf(slot -> slot != FRIENDS_TAB_SLOT && slot != PARTY_TAB_SLOT && slot != GUILDS_TAB_SLOT);
+        inventory.setItem(REQUESTS_SLOT, null);
+        inventory.setItem(22, new ItemBuilder(Material.CLOCK).name(LangHelper.get(player, "guild-ui.loading")).build());
         return inventory;
     }
 
@@ -156,8 +171,11 @@ public final class SocialGUI {
         }
     }
 
-    private static ItemStack navigationItem(Player player, String headId, String nameKey, boolean active) {
+    static ItemStack navigationItem(Player player, String headId, String nameKey, boolean active) {
         ItemBuilder item = new ItemBuilder(headDatabaseIcon(headId)).name(LangHelper.get(player, nameKey));
+        item.lore(LangHelper.get(player, headId.equals(FRIENDS_HEAD_ID)
+                ? "social.menu-friends-action" : "social.menu-party-action"),
+                LangHelper.get(player, active ? "guild-ui.active" : "guild-ui.available"));
         if (active) item.glow(player);
         return item.build();
     }
@@ -197,11 +215,12 @@ public final class SocialGUI {
     public record Action(ActionType type, String argument) { }
 
     public enum ActionType {
-        OPEN_FRIENDS, OPEN_PARTY, FRIEND_JOIN, PARTY_INVITE, OPEN_FRIEND_REQUESTS,
+        OPEN_FRIENDS, OPEN_PARTY, OPEN_GUILDS, FRIEND_JOIN, PARTY_INVITE, OPEN_FRIEND_REQUESTS,
         OPEN_PARTY_REQUESTS, FOLLOW_TOGGLE, PARTY_WARP, PARTY_WARP_MEMBER, PARTY_KICK
     }
 
     static Action actionForClick(Action primary, Action rightClick, ClickType click) {
+        if (!click.isLeftClick() && !click.isRightClick()) return null;
         return click.isRightClick() && rightClick != null ? rightClick : primary;
     }
 
@@ -219,6 +238,7 @@ public final class SocialGUI {
 
         public View view() { return view; }
         public Action action(int slot, ClickType click) {
+            if ((slot == FRIENDS_TAB_SLOT || slot == PARTY_TAB_SLOT || slot == GUILDS_TAB_SLOT) && click != ClickType.LEFT) return null;
             return actionForClick(actions.get(slot), rightClickActions.get(slot), click);
         }
         @Override public @NotNull Inventory getInventory() { return inventory; }

@@ -127,3 +127,9 @@ Tout changement fonctionnel, de configuration ou d'exploitation doit mettre à j
 4. Valider Docker Compose et les scripts touchés.
 5. Tester en jeu tout flux dépendant de Paper, Velocity, Redis ou Docker.
 6. Décrire précisément les vérifications dans la pull request.
+
+## Tests SQL des guildes
+
+`GuildSqlTest` utilise les migrations réelles sur une base jetable dédiée. Sans `TROPICUBE_GUILD_TEST_URL`, les quatre scénarios SQL sont ignorés ; les tests métier et ressources restent actifs. Pour les exécuter, démarrer un conteneur MySQL de test avec la même version que Compose, une base `guild_test`, un port publié uniquement sur `127.0.0.1` et un compte root sans mot de passe limité à ce conteneur jetable. Définir `TROPICUBE_GUILD_TEST_URL=jdbc:mysql://127.0.0.1:<port>/guild_test?allowPublicKeyRetrieval=true&useSSL=false`, puis lancer le réacteur Maven. Ne jamais utiliser la base du réseau. Supprimer le conteneur temporaire après les essais.
+
+Les assertions couvrent invitations expirées, acceptations simultanées face à la capacité, permissions et transfert, écrans périmés après changement de guilde, départ du dernier membre et contribution hebdomadaire affichée après changement de semaine. Les tests purs couvrent également les identités de guilde, le délai de saisie, les droits graphiques, la pagination et la consommation atomique d'une saisie.

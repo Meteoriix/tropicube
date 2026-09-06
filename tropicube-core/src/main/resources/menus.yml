@@ -13,23 +13,17 @@ menus:
         action: open_profile
         required: true
       missions:
-        slot: 20
+        slot: 21
         material: WRITABLE_BOOK
         name-key: center.missions
         lore-key: center.missions-lore
         action: open_missions
       notifications:
-        slot: 22
+        slot: 23
         material: BELL
         name-key: center.notifications
         lore-key: center.notifications-lore
         action: open_notifications
-      guilds:
-        slot: 24
-        material: SHIELD
-        name-key: center.guilds
-        lore-key: center.guilds-lore
-        action: open_guilds
       settings:
         slot: 31
         material: COMPARATOR
@@ -187,38 +181,4 @@ menus:
           - 29
           - 31
         template-action: mission
-        preview-count: 5
-  profile-guilds:
-    title-key: center.guilds-title
-    rows: 6
-    frame: network
-    buttons:
-      back:
-        slot: 45
-        material: ARROW
-        name-key: center.back
-        lore-key: lobby.back-button-lore
-        action: back
-        required: true
-      close:
-        slot: 53
-        material: BARRIER
-        name-key: lobby.close-button
-        lore-key: lobby.close-button-lore
-        action: close
-        required: true
-    dynamic-regions:
-      ranking:
-        slots:
-          - 9
-          - 10
-          - 11
-          - 12
-          - 13
-          - 14
-          - 15
-          - 16
-          - 17
-          - 18
-        template-action: inspect_guild
         preview-count: 5

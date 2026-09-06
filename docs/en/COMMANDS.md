@@ -88,3 +88,9 @@ Command handlers validate arguments and permissions at the boundary. Player-faci
 `vipLevel` ranges from 0 to 3 and `modLevel` from 0 to 4. Players cannot change themselves and may only assign a moderator level strictly below their own; level 4 is console-only. Arbitrary individual permissions no longer exist. Sensitive staff actions still require TOTP.
 
 After `/` is entered, clients receive every registered Tropicube command and alias from Velocity, Core, Lobby, and the current game, while permission checks continue to hide inaccessible staff commands. External commands and namespaces stay hidden; `/?`, Bukkit/Minecraft namespaces, and vanilla commands are rejected network-wide. Accepting a party invitation while already grouped atomically leaves the old party, promotes a successor when needed, and joins the new one.
+
+## Guild menu workflow
+
+Lobby hotbar **Social → Guilds** provides creation, received invitations, members, weekly challenges and the seasonal top 20. Profile no longer contains a Guilds button. Creation privately prompts for a name, then a tag; invitations prompt for a username. Enter `!` to cancel and return to the menu. Each input step expires after the configured delay.
+
+Officers and the owner may invite; officers may remove members, while the owner also manages officers, promotes, demotes and transfers ownership. Leaving, removing members and transferring require a menu confirmation. An owner must transfer ownership before leaving a populated guild; the last member's departure deletes it with an explicit warning. Existing `/guild` and `/guilde` commands and permissions remain available. Roles, challenges and operation results are localized in all four languages.

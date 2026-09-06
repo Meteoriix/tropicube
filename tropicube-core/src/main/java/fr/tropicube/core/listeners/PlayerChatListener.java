@@ -29,6 +29,12 @@ public class PlayerChatListener implements Listener {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
+        if (plugin.getPrivateChatInput().consume(uuid,
+                PlainTextComponentSerializer.plainText().serialize(event.message()))) {
+            event.setCancelled(true);
+            return;
+        }
+
         // Check mute
         if (plugin.getPlayerDataManager().isMuted(uuid)) {
             event.setCancelled(true);

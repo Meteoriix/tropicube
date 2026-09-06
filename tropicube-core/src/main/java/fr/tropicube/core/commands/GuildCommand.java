@@ -2,6 +2,7 @@ package fr.tropicube.core.commands;
 
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.core.guild.GuildService;
+import fr.tropicube.core.guild.GuildPresentation;
 import fr.tropicube.core.util.CommandAsync;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -65,18 +66,14 @@ public final class GuildCommand implements CommandExecutor {
                         case DEMOTE -> plugin.getGuildService().setRole(player.getUniqueId(), target, GuildService.Role.MEMBER);
                         case TRANSFER -> plugin.getGuildService().transfer(player.getUniqueId(), target);
                     };
-                    operation.thenAccept(result -> {
+                    UUID actor = player.getUniqueId();
+                    operation.thenCompose(result -> {
                         reply(player, result);
                         if (action == TargetAction.INVITE && result == GuildService.Result.SUCCESS) {
-                            plugin.getGuildService().guild(player.getUniqueId()).thenAccept(guild -> {
-                                if (guild != null) plugin.getNotificationService().create(target, "GUILD", "guild.invitation",
-                                        List.of(player.getName(), guild.tag()),
-                                        new fr.tropicube.core.network.NotificationService.Action(
-                                                fr.tropicube.core.network.NotificationService.ActionType.SUGGEST_COMMAND,
-                                                "/guild accept " + guild.tag()));
-                            });
+                            return plugin.getGuildInvitations().notifyInvitation(actor, target);
                         }
-                    });
+                        return java.util.concurrent.CompletableFuture.completedFuture(null);
+                    }).exceptionally(error -> { failure(player, error); return null; });
                 });
         return true;
     }
@@ -87,10 +84,10 @@ public final class GuildCommand implements CommandExecutor {
                     if (guild == null) { message(player, "guild.none"); return; }
                     message(player, "guild.info", guild.tag(), guild.name(), guild.level(), guild.experience());
                     for (GuildService.Member member : guild.members()) message(player, "guild.member",
-                            member.role(), member.username(), member.weeklyContribution());
+                            plugin.getLanguageManager().get(player.getUniqueId(), GuildPresentation.roleKey(member.role())), member.username(), member.weeklyContribution());
                     for (GuildService.Challenge challenge : guild.challenges()) message(player, "guild.challenge",
-                            challenge.id(), challenge.progress(), challenge.target(), challenge.completed() ? "✓" : "");
-                }));
+                            plugin.getLanguageManager().get(player.getUniqueId(), GuildPresentation.challengeKey(challenge.id())), challenge.progress(), challenge.target(), challenge.completed() ? "✓" : "");
+                })).exceptionally(error -> { failure(player, error); return null; });
     }
 
     private void ranking(Player player) {
@@ -103,14 +100,24 @@ public final class GuildCommand implements CommandExecutor {
                                 "guild.ranking-entry", index + 1, value.tag(), value.name(),
                                 Math.round(value.score()), value.rankedMatches()));
                     }
-                }));
+                })).exceptionally(error -> { failure(player, error); return null; });
     }
 
     private void run(Player player, java.util.concurrent.CompletableFuture<GuildService.Result> operation) {
-        operation.thenAccept(result -> reply(player, result));
+        operation.whenComplete((result, error) -> {
+            if (error != null) failure(player, error); else reply(player, result);
+        });
     }
     private void reply(Player player, GuildService.Result result) {
-        plugin.getServer().getScheduler().runTask(plugin, () -> message(player, "guild.result-" + result.name().toLowerCase(Locale.ROOT)));
+        if (plugin.isEnabled()) plugin.getServer().getScheduler().runTask(plugin, () -> {
+            if (player.isOnline()) message(player, GuildPresentation.resultKey(result));
+        });
+    }
+    private void failure(Player player, Throwable error) {
+        plugin.getLogger().log(java.util.logging.Level.WARNING, "Guild command failed", error);
+        if (plugin.isEnabled()) plugin.getServer().getScheduler().runTask(plugin, () -> {
+            if (player.isOnline()) message(player, "general.operation-failed");
+        });
     }
     private void usage(Player player) { message(player, "guild.usage"); }
     private void message(Player player, String key, Object... arguments) {

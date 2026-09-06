@@ -40,6 +40,8 @@ public class TropicubeLobby extends JavaPlugin {
     private RedisManager redisManager;
     private LobbyServerManager lobbyServerManager;
     private GuiManager guiManager;
+    private fr.tropicube.lobby.gui.GuildMenuController guildMenus;
+    public fr.tropicube.lobby.gui.GuildMenuController getGuildMenus() { return guildMenus; }
     private PlayerLobbyListener playerLobbyListener;
     private LobbyScoreboardManager scoreboardManager;
     private LobbyVisibilityManager visibilityManager;
@@ -86,6 +88,8 @@ public class TropicubeLobby extends JavaPlugin {
         core = loadedCore;
         try {
             fr.tropicube.lobby.gui.VipShopGUI.validateConfiguration(this);
+            guildMenus = new fr.tropicube.lobby.gui.GuildMenuController(this);
+            Bukkit.getPluginManager().registerEvents(guildMenus, this);
         } catch (IllegalArgumentException exception) {
             getLogger().severe("Configuration Boutique invalide : " + exception.getMessage());
             Bukkit.getPluginManager().disablePlugin(this);
@@ -171,6 +175,9 @@ public class TropicubeLobby extends JavaPlugin {
                     if (player == null) return;
                     playerLobbyListener.setupHotbar(player);
                     scoreboardManager.setup(player);
+                    guildMenus.refreshLanguage(player);
+                    if (player.getOpenInventory().getTopInventory().getHolder() instanceof fr.tropicube.lobby.gui.SocialGUI.Holder holder)
+                        guiManager.openSocial(player, holder.view());
                 });
             } catch (IllegalArgumentException e) {
                 getLogger().warning(MessageStyle.log("tc", "LOBBY", "<yellow>Événement LANG_CHANGED avec UUID invalide : " + payload));
@@ -195,6 +202,7 @@ public class TropicubeLobby extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (guildMenus != null) guildMenus.close();
         if (core != null) core.getPlayerCenterMenu().clearSettingsOpener();
         if (scoreboardManager != null) scoreboardManager.clearAll();
         if (guiManager != null) guiManager.clearAll();

@@ -98,3 +98,7 @@ Compose defines Velocity, Redis, MySQL, the Docker socket proxy, and any static 
 ## Compatibility rules
 
 New options require a safe default, startup validation, documentation, and deployment-copy synchronization. Old configuration should remain readable whenever practical. Redis changes must identify keys and TTLs; SQL changes require migrations and indexes.
+
+## Private guild input in Lobby
+
+`TropicubeLobby/config.yml` exposes `guilds.input-timeout-seconds` for each private input step (name, tag or username). Default: `120` seconds; only integers from `10` to `600` are accepted. Fractional, textual and out-of-range values fail startup with the key and supplied value. The bundled resource and Docker copy match; existing configuration files receive the default through the current updater. Member, officer and contribution limits remain owned by Core.

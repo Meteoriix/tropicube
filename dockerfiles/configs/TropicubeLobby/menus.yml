@@ -439,16 +439,23 @@ menus:
     frame: network
     buttons:
       friends:
-        slot: 3
+        slot: 2
         material: PLAYER_HEAD
         name-key: social.menu-friends
         action: friends
         required: true
       party:
-        slot: 5
+        slot: 4
         material: PLAYER_HEAD
         name-key: social.menu-party
         action: party
+        required: true
+      guilds:
+        slot: 6
+        material: SHIELD
+        name-key: guild-ui.tab
+        lore-key: guild-ui.tab-action
+        action: guilds
         required: true
       requests:
         slot: 49

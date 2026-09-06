@@ -45,6 +45,53 @@ public final class GuildService {
         this.weeklyContributionCap = weeklyContributionCap;
     }
 
+    /** Invitation data contains no player object and can cross the asynchronous boundary. */
+    public record Invitation(long guildId, String name, String tag, long expiresAt) { }
+
+    /** Maximum membership enforced by every join operation. */
+    public int maximumMembers() { return maximumMembers; }
+    /** Maximum officer count enforced by promotions. */
+    public int maximumOfficers() { return maximumOfficers; }
+    /** Maximum XP contribution accepted from one member during the ISO week. */
+    public long weeklyContributionCap() { return weeklyContributionCap; }
+
+    /** Lists only invitations that can still be accepted, newest first. */
+    public CompletableFuture<List<Invitation>> invitations(UUID player) {
+        return database.supplyAsync(() -> {
+            try (Connection connection = database.getConnection(); PreparedStatement statement = connection.prepareStatement("""
+                    SELECT g.id, g.name, g.tag, i.expires_at FROM tropicube_guild_invites i
+                    JOIN tropicube_guilds g ON g.id = i.guild_id
+                    WHERE i.player_uuid = ? AND i.expires_at > ? ORDER BY i.created_at DESC, g.id
+                    """)) {
+                statement.setString(1, player.toString());
+                statement.setLong(2, System.currentTimeMillis());
+                List<Invitation> invitations = new ArrayList<>();
+                try (ResultSet rows = statement.executeQuery()) {
+                    while (rows.next()) invitations.add(new Invitation(rows.getLong(1), rows.getString(2),
+                            rows.getString(3), rows.getLong(4)));
+                }
+                return List.copyOf(invitations);
+            }
+        });
+    }
+
+    /** Administrative operations exposed to the Lobby without depending on its view types. */
+    public enum Administration { INVITE, LEAVE, KICK, PROMOTE, DEMOTE, TRANSFER }
+
+    /** Checks the screen's guild identity inside the same lock as the mutation. */
+    public CompletableFuture<Result> administer(UUID actor, long expectedGuild, Administration action, UUID target) {
+        if (actor == null || action == null || expectedGuild <= 0 || action != Administration.LEAVE && target == null)
+            return CompletableFuture.completedFuture(Result.INVALID);
+        return database.supplyAsync(() -> switch (action) {
+            case INVITE -> inviteNow(actor, target, expectedGuild);
+            case LEAVE -> leaveNow(actor, expectedGuild);
+            case KICK -> removeMember(actor, target, expectedGuild);
+            case PROMOTE -> setRoleNow(actor, target, Role.OFFICER, expectedGuild);
+            case DEMOTE -> setRoleNow(actor, target, Role.MEMBER, expectedGuild);
+            case TRANSFER -> transferNow(actor, target, expectedGuild);
+        });
+    }
+
     public CompletableFuture<Result> create(UUID owner, String name, String tag) {
         return database.supplyAsync(() -> createNow(owner, name, tag));
     }
@@ -116,9 +163,10 @@ public final class GuildService {
 
     private Result createNow(UUID owner, String rawName, String rawTag) throws SQLException {
         String name = rawName == null ? "" : rawName.trim();
-        String tag = rawTag == null ? "" : rawTag.trim().toUpperCase(Locale.ROOT);
-        if (!name.matches("[\\p{L}0-9 _-]{3,32}") || !tag.matches("[A-Z0-9]{2,8}")) return Result.INVALID;
-        try (Connection connection = database.getConnection()) {
+        String tag = GuildNames.normalizeTag(rawTag);
+        if (!GuildNames.validName(name) || !GuildNames.validTag(tag)) return Result.INVALID;
+        try (Connection connection = database.getConnection();
+             GuildMutationLock lock = GuildMutationLock.acquire(connection)) {
             connection.setAutoCommit(false);
             try {
                 if (memberGuildId(connection, owner) != null) { connection.rollback(); return Result.ALREADY_MEMBER; }
@@ -147,10 +195,16 @@ public final class GuildService {
     }
 
     private Result inviteNow(UUID actor, UUID target) throws SQLException {
-        try (Connection connection = database.getConnection()) {
+        return inviteNow(actor, target, null);
+    }
+
+    private Result inviteNow(UUID actor, UUID target, Long expectedGuild) throws SQLException {
+        try (Connection connection = database.getConnection();
+             GuildMutationLock lock = GuildMutationLock.acquire(connection)) {
+            if (expectedGuild != null && !expectedGuild.equals(memberGuildId(connection, actor))) return Result.NOT_FOUND;
             MemberRow member = member(connection, actor);
             if (member == null) return Result.NOT_MEMBER;
-            if (member.role() == Role.MEMBER) return Result.NOT_ALLOWED;
+            if (!GuildPermissions.canInvite(member.role())) return Result.NOT_ALLOWED;
             if (memberGuildId(connection, target) != null) return Result.ALREADY_MEMBER;
             if (memberCount(connection, member.guildId()) >= maximumMembers) return Result.FULL;
             long now = System.currentTimeMillis();
@@ -163,13 +217,15 @@ public final class GuildService {
                 statement.setString(3, actor.toString()); statement.setLong(4, now);
                 statement.setLong(5, now + 7L * 24 * 60 * 60 * 1000); statement.executeUpdate();
             }
+            connection.commit();
             return Result.SUCCESS;
         }
     }
 
     private Result acceptNow(UUID player, String rawTag) throws SQLException {
-        String tag = rawTag == null ? "" : rawTag.trim().toUpperCase(Locale.ROOT);
-        try (Connection connection = database.getConnection()) {
+        String tag = GuildNames.normalizeTag(rawTag);
+        try (Connection connection = database.getConnection();
+             GuildMutationLock lock = GuildMutationLock.acquire(connection)) {
             connection.setAutoCommit(false);
             try {
                 if (memberGuildId(connection, player) != null) { connection.rollback(); return Result.ALREADY_MEMBER; }
@@ -199,50 +255,77 @@ public final class GuildService {
     }
 
     private Result leaveNow(UUID player) throws SQLException {
-        try (Connection connection = database.getConnection()) {
+        return leaveNow(player, null);
+    }
+
+    private Result leaveNow(UUID player, Long expectedGuild) throws SQLException {
+        try (Connection connection = database.getConnection();
+             GuildMutationLock lock = GuildMutationLock.acquire(connection)) {
+            if (expectedGuild != null && !expectedGuild.equals(memberGuildId(connection, player))) return Result.NOT_FOUND;
             MemberRow row = member(connection, player);
             if (row == null) return Result.NOT_MEMBER;
             if (row.role() == Role.OWNER && memberCount(connection, row.guildId()) > 1) return Result.NOT_ALLOWED;
             if (row.role() == Role.OWNER) {
-                database.executeUpdate("DELETE FROM tropicube_guilds WHERE id = ?", row.guildId());
+                update(connection, "DELETE FROM tropicube_guilds WHERE id = ?", row.guildId());
             } else {
-                database.executeUpdate("DELETE FROM tropicube_guild_members WHERE player_uuid = ?", player.toString());
+                update(connection, "DELETE FROM tropicube_guild_members WHERE player_uuid = ?", player.toString());
                 audit(connection, row.guildId(), player, "LEAVE", Map.of());
             }
+            connection.commit();
             return Result.SUCCESS;
         }
     }
 
     private Result removeMember(UUID actor, UUID target) throws SQLException {
+        return removeMember(actor, target, null);
+    }
+
+    private Result removeMember(UUID actor, UUID target, Long expectedGuild) throws SQLException {
         if (actor.equals(target)) return Result.INVALID;
-        try (Connection connection = database.getConnection()) {
+        try (Connection connection = database.getConnection();
+             GuildMutationLock lock = GuildMutationLock.acquire(connection)) {
+            if (expectedGuild != null && !expectedGuild.equals(memberGuildId(connection, actor))) return Result.NOT_FOUND;
             MemberRow source = member(connection, actor), destination = member(connection, target);
             if (source == null || destination == null || source.guildId() != destination.guildId()) return Result.NOT_FOUND;
-            if (source.role() == Role.MEMBER || destination.role() == Role.OWNER
-                    || source.role() == destination.role()) return Result.NOT_ALLOWED;
-            database.executeUpdate("DELETE FROM tropicube_guild_members WHERE player_uuid = ?", target.toString());
+            if (!GuildPermissions.canKick(source.role(), destination.role())) return Result.NOT_ALLOWED;
+            update(connection, "DELETE FROM tropicube_guild_members WHERE player_uuid = ?", target.toString());
             audit(connection, source.guildId(), actor, "KICK", Map.of("target", target.toString()));
+            connection.commit();
             return Result.SUCCESS;
         }
     }
 
     private Result setRoleNow(UUID actor, UUID target, Role role) throws SQLException {
+        return setRoleNow(actor, target, role, null);
+    }
+
+    private Result setRoleNow(UUID actor, UUID target, Role role, Long expectedGuild) throws SQLException {
         if (role == Role.OWNER) return Result.INVALID;
-        try (Connection connection = database.getConnection()) {
+        try (Connection connection = database.getConnection();
+             GuildMutationLock lock = GuildMutationLock.acquire(connection)) {
+            if (expectedGuild != null && !expectedGuild.equals(memberGuildId(connection, actor))) return Result.NOT_FOUND;
             MemberRow source = member(connection, actor), destination = member(connection, target);
             if (source == null || destination == null || source.guildId() != destination.guildId()) return Result.NOT_FOUND;
-            if (source.role() != Role.OWNER || destination.role() == Role.OWNER) return Result.NOT_ALLOWED;
+            if (!GuildPermissions.canManage(source.role(), destination.role())) return Result.NOT_ALLOWED;
+            if (destination.role() == role) return Result.SUCCESS;
             if (role == Role.OFFICER && officerCount(connection, source.guildId()) >= maximumOfficers)
                 return Result.LIMIT_REACHED;
-            database.executeUpdate("UPDATE tropicube_guild_members SET role = ? WHERE player_uuid = ?",
+            update(connection, "UPDATE tropicube_guild_members SET role = ? WHERE player_uuid = ?",
                     role.name(), target.toString());
             audit(connection, source.guildId(), actor, "ROLE", Map.of("target", target.toString(), "role", role.name()));
+            connection.commit();
             return Result.SUCCESS;
         }
     }
 
     private Result transferNow(UUID owner, UUID target) throws SQLException {
-        try (Connection connection = database.getConnection()) {
+        return transferNow(owner, target, null);
+    }
+
+    private Result transferNow(UUID owner, UUID target, Long expectedGuild) throws SQLException {
+        try (Connection connection = database.getConnection();
+             GuildMutationLock lock = GuildMutationLock.acquire(connection)) {
+            if (expectedGuild != null && !expectedGuild.equals(memberGuildId(connection, owner))) return Result.NOT_FOUND;
             connection.setAutoCommit(false);
             try {
                 MemberRow source = member(connection, owner), destination = member(connection, target);
@@ -318,7 +401,8 @@ public final class GuildService {
     }
 
     private boolean succeedOwner(long guildId, long cutoff) throws SQLException {
-        try (Connection connection = database.getConnection()) {
+        try (Connection connection = database.getConnection();
+             GuildMutationLock lock = GuildMutationLock.acquire(connection)) {
             connection.setAutoCommit(false);
             try {
                 UUID oldOwner = null, successor = null;
@@ -381,11 +465,12 @@ public final class GuildService {
         List<Member> values = new ArrayList<>();
         try (PreparedStatement statement = connection.prepareStatement("""
                 SELECT member.player_uuid, player.username, member.role, member.joined_at,
-                       member.last_active_at, member.weekly_contribution
+                       member.last_active_at, CASE WHEN member.contribution_week = ? THEN member.weekly_contribution ELSE 0 END
                 FROM tropicube_guild_members member JOIN tropicube_players player ON player.uuid = member.player_uuid
                 WHERE member.guild_id = ? ORDER BY FIELD(member.role, 'OWNER', 'OFFICER', 'MEMBER'), member.joined_at
                 """)) {
-            statement.setLong(1, guildId);
+            statement.setString(1, weekKey());
+            statement.setLong(2, guildId);
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) values.add(new Member(UUID.fromString(result.getString(1)), result.getString(2),
                         Role.valueOf(result.getString(3)), result.getLong(4), result.getLong(5), result.getLong(6)));
@@ -475,6 +560,13 @@ public final class GuildService {
             statement.setLong(5, System.currentTimeMillis()); statement.executeUpdate();
         }
     }
+    private static void update(Connection connection, String sql, Object... arguments) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            for (int index = 0; index < arguments.length; index++) statement.setObject(index + 1, arguments[index]);
+            statement.executeUpdate();
+        }
+    }
+
     static String weekKey() { LocalDate d = LocalDate.now(ZONE); WeekFields f = WeekFields.ISO;
         return "%d-W%02d".formatted(d.get(f.weekBasedYear()), d.get(f.weekOfWeekBasedYear())); }
     private static boolean isDuplicate(SQLException error) { return "23000".equals(error.getSQLState()); }

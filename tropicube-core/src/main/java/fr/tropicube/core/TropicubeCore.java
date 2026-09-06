@@ -79,6 +79,8 @@ public class TropicubeCore extends JavaPlugin {
     private MissionService missionService;
     private ProfileService profileService;
     private GuildService guildService;
+    private fr.tropicube.core.guild.GuildInvitations guildInvitations;
+    private final fr.tropicube.core.network.PrivateChatInput privateChatInput = new fr.tropicube.core.network.PrivateChatInput(this);
     private RuntimeUiBundle runtimeUiBundle;
     private MenuTemplateRegistry menuTemplates;
 
@@ -128,6 +130,7 @@ public class TropicubeCore extends JavaPlugin {
      */
     @Override
     public void onDisable() {
+        privateChatInput.close();
         // Saves data for all players still connected
         if (playerDataManager != null) playerDataManager.saveAll();
 
@@ -222,6 +225,7 @@ public class TropicubeCore extends JavaPlugin {
                     positiveConfig("guilds.max-members", 50, 2),
                     positiveConfig("guilds.max-officers", 5, 1),
                     positiveConfig("guilds.weekly-contribution-cap", 5000, 1));
+            guildInvitations = new fr.tropicube.core.guild.GuildInvitations(guildService, notificationService);
             getServer().getAsyncScheduler().runAtFixedRate(this, task -> guildService.applySuccession(),
                     1, 24, java.util.concurrent.TimeUnit.HOURS);
             getServer().getAsyncScheduler().runAtFixedRate(this,
@@ -343,6 +347,7 @@ public class TropicubeCore extends JavaPlugin {
 
             // Chat: message formatting, mute management, etc.
             getServer().getPluginManager().registerEvents(new PlayerChatListener(this), this);
+            getServer().getPluginManager().registerEvents(privateChatInput, this);
 
             // Removes some unwanted system notifications
             getServer().getPluginManager().registerEvents(new SuppressNotificationsListener(), this);
@@ -421,6 +426,10 @@ public class TropicubeCore extends JavaPlugin {
     public NetworkProgressionService getNetworkProgressionService() { return networkProgressionService; }
     public MissionService getMissionService() { return missionService; }
     public ProfileService getProfileService() { return profileService; }
+    /** Shared private input boundary consumed before network chat publication. */
+    public fr.tropicube.core.network.PrivateChatInput getPrivateChatInput() { return privateChatInput; }
+    /** Notification delivery shared by guild command and menu adapters. */
+    public fr.tropicube.core.guild.GuildInvitations getGuildInvitations() { return guildInvitations; }
     public GuildService getGuildService() { return guildService; }
     public boolean isStaffMode(UUID playerId) { return staffModePlayers.contains(playerId); }
     public void setStaffMode(UUID playerId, boolean active) {
