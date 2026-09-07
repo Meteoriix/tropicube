@@ -20,23 +20,82 @@ import java.util.List;
 final class SchemaMigrationManager {
     private static final String INDEX_RESOURCE = "/db/migration/index.txt";
 
-    private final TropicubeCore plugin;
+    private final java.util.function.Consumer<String> log;
 
     SchemaMigrationManager(TropicubeCore plugin) {
-        this.plugin = plugin;
+        this.log = message -> plugin.getLogger().info(message);
     }
+
+    SchemaMigrationManager(java.util.function.Consumer<String> log) { this.log = log; }
 
     void migrate(Connection connection) throws SQLException {
         createHistoryTable(connection);
         for (String resource : migrationResources()) {
             String version = resource.substring(0, resource.indexOf("__"));
+            verifyChecksum(connection, version, resource);
             if (isApplied(connection, version)) continue;
             apply(connection, version, resource);
         }
     }
 
+    /** Validates both successful and interrupted executions before any migration SQL is run. */
+    private void verifyChecksum(Connection connection, String version, String resource) throws SQLException {
+        String checksum = checksum(readResource("/db/migration/" + resource));
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT resource_name, checksum FROM tropicube_schema_checksums WHERE version = ?")) {
+            statement.setString(1, version);
+            try (ResultSet result = statement.executeQuery()) {
+                if (result.next()) {
+                    if (!resource.equals(result.getString(1)) || !checksum.equals(result.getString(2))) {
+                        throw new SQLException("Migration changed after execution began: " + resource);
+                    }
+                    return;
+                }
+            }
+        }
+        if (isApplied(connection, version)) {
+            java.util.Properties reference = new java.util.Properties();
+            try (InputStream input = SchemaMigrationManager.class.getResourceAsStream("/db/migration/legacy-checksums.properties")) {
+                if (input == null) throw new SQLException("Missing legacy migration checksums");
+                reference.load(input);
+            } catch (IOException failure) { throw new SQLException("Cannot read legacy checksums", failure); }
+            if (!checksum.equals(reference.getProperty(resource))) {
+                throw new SQLException("Legacy migration requires reviewed reference checksum: " + resource);
+            }
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "SELECT resource_name FROM tropicube_schema_migrations WHERE version = ?")) {
+                statement.setString(1, version);
+                try (ResultSet result = statement.executeQuery()) {
+                    if (!result.next() || !resource.equals(result.getString(1))) throw new SQLException("Legacy resource mismatch: " + version);
+                }
+            }
+        }
+        // A separate durable row survives MySQL DDL implicit commits and interrupted migrations.
+        try (PreparedStatement statement = connection.prepareStatement(
+                "INSERT INTO tropicube_schema_checksums(version, resource_name, checksum) VALUES (?, ?, ?)")) {
+            statement.setString(1, version);
+            statement.setString(2, resource);
+            statement.setString(3, checksum);
+            statement.executeUpdate();
+        }
+    }
+
+    static String checksum(String sql) {
+        try {
+            return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
+                    .digest(sql.replace("\r\n", "\n").getBytes(StandardCharsets.UTF_8)));
+        } catch (java.security.NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }
+    }
+
     private void createHistoryTable(Connection connection) throws SQLException {
         try (Statement statement = connection.createStatement()) {
+            statement.execute("""
+                    CREATE TABLE IF NOT EXISTS tropicube_schema_checksums (
+                        version VARCHAR(32) PRIMARY KEY,
+                        resource_name VARCHAR(191) NOT NULL,
+                        checksum CHAR(64) NOT NULL
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                    """);
             statement.execute("""
                     CREATE TABLE IF NOT EXISTS tropicube_schema_migrations (
                         version VARCHAR(32) PRIMARY KEY,
@@ -61,7 +120,10 @@ final class SchemaMigrationManager {
         List<String> resources = lines.stream().map(String::trim)
                 .filter(line -> !line.isEmpty() && !line.startsWith("#"))
                 .toList();
-        if (resources.size() != resources.stream().distinct().count()) {
+        if (resources.stream().anyMatch(name -> !name.matches("V[0-9]{3}__[a-z0-9_]+\\.sql"))) {
+            throw new IllegalArgumentException("Invalid migration filename");
+        }
+        if (resources.size() != resources.stream().map(name -> name.split("__")[0]).distinct().count()) {
             throw new IllegalArgumentException("L'index des migrations contient un doublon");
         }
         List<String> sorted = resources.stream().sorted().toList();
@@ -95,7 +157,7 @@ final class SchemaMigrationManager {
                 statement.setLong(3, System.currentTimeMillis());
                 statement.executeUpdate();
             }
-            plugin.getLogger().info(MessageStyle.log("tc", "DB", "<gray>Migration appliquée: " + resource));
+            log.accept(MessageStyle.log("tc", "DB", "<gray>Migration appliquée: " + resource));
         } catch (SQLException error) {
             throw new SQLException("Échec de la migration " + resource, error);
         }

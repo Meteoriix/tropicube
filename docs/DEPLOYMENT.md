@@ -330,3 +330,7 @@ Après mise à jour conjointe de Core et Lobby, vérifier sur Java et Bedrock : 
 ## Lot applicatif coordonné
 
 Livrer Core, Lobby, SheepWars et Velocity ensemble : le proxy attend maintenant le marqueur de disponibilité applicative des nouveaux backends. Le message générique de démarrage Paper ne suffit plus. Fixer le budget dynamique en réservant séparément la RAM du système et des services statiques.
+
+## Empreintes SQL
+
+Le premier démarrage vérifie les migrations appliquées contre les empreintes historiques de référence, puis enregistre les empreintes avant toute nouvelle exécution. Une divergence bloque le backend. Ne pas effacer la table de contrôle pour contourner une erreur ; vérifier les ressources et restaurer le lot compatible. La DDL MySQL nécessite toujours une migration idempotente et une sauvegarde avant changement incompatible.

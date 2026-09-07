@@ -12,6 +12,33 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SchemaMigrationManagerTest {
     @Test
+    void checksumIsPortableAndDetectsSqlChanges() {
+        assertEquals(SchemaMigrationManager.checksum("SELECT 1;\n"), SchemaMigrationManager.checksum("SELECT 1;\r\n"));
+        org.junit.jupiter.api.Assertions.assertNotEquals(SchemaMigrationManager.checksum("SELECT 1;"), SchemaMigrationManager.checksum("SELECT 2;"));
+    }
+
+    @Test
+    void rejectsDuplicateVersionsAndUnsafeResources() {
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> SchemaMigrationManager.readIndex(List.of("V001__first.sql", "V001__second.sql")));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> SchemaMigrationManager.readIndex(List.of("../V001__first.sql")));
+    }
+
+    @Test
+    void legacyReferencesMatchReviewedResources() throws Exception {
+        var reference = new java.util.Properties();
+        try (var input = getClass().getResourceAsStream("/db/migration/legacy-checksums.properties")) { reference.load(input); }
+        assertEquals(8, reference.size());
+        for (String resource : reference.stringPropertyNames()) {
+            try (var input = getClass().getResourceAsStream("/db/migration/" + resource)) {
+                assertEquals(reference.getProperty(resource), SchemaMigrationManager.checksum(
+                        new String(input.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8)), resource);
+            }
+        }
+    }
+
+    @Test
     void splitsStatementsAndIgnoresComments() {
         assertEquals(List.of("CREATE TABLE first (id INT)", "CREATE TABLE second (id INT)"),
                 SchemaMigrationManager.splitStatements("""

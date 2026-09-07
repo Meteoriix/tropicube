@@ -136,6 +136,12 @@ Administrative writes and automatic succession acquire the MySQL named lock `tc:
 
 Core consumes private input before public chat filtering and network publication, including for muted players. Name/tag creation and invitation usernames are consumed once and handled on Paper. `!` cancels; navigation, logout and shutdown also invalidate input. SQL and profile resolution stay asynchronous. A loading response can only update the inventory that requested it. `/lang` refreshes guild screens and the current input step without restarting its deadline.
 
-## Runtime reliability
+## Reliability contracts
 
-Core prepares network services off-thread before Paper adapters; proxy admission waits for TROPICUBE_BACKEND_READY. SQL work and dynamic memory are bounded. Docker resources have owners and cleanup excludes other deployments.
+Core prepares SQL, Redis, runtime UI restoration and the grade catalog on lifecycle workers. Lobby/SheepWars wait for Core, initialize their network client off-thread, then construct Paper components on the server scheduler. Admission stays closed until `TROPICUBE_BACKEND_READY`; deploy the proxy and backends together. Stopping the backend immediately closes admission. SQL work has bounded concurrency/queue and exceptional completion on overload or shutdown.
+
+Dynamic memory is reserved atomically before creation and reconstructed from actual Docker limits at startup. Failed deletion retains the reservation. Matchmaking waits and retries on memory exhaustion. New resources carry `fr.tropicube.owner`; cleanup ignores other owners. Legacy containers must match the prefix and network; legacy volumes must match the data-volume prefix.
+
+`tropicube_schema_checksums` records resource names and LF-normalized SHA-256 before migration execution, including interrupted DDL. Legacy history is checked against reviewed reference hashes. MySQL DDL still requires idempotent recovery. Backups and migrations share the `tropicube:core:schema` advisory lock.
+
+Redis diagnostic keys `tropicube:health:proxy` and `tropicube:health:backend:<instanceId>` are atomically replaced every 60 seconds with a 180-second TTL. They contain aggregate capacity, queues and readiness, never player information. They do not restore games.
