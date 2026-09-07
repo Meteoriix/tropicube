@@ -41,7 +41,7 @@
         <junit.version>6.1.2</junit.version>
         <maven.compiler.version>3.15.0</maven.compiler.version>
         <maven.shade.version>3.6.2</maven.shade.version>
-        <maven.surefire.version>3.5.6</maven.surefire.version>
+        <maven.surefire.version>3.6.0</maven.surefire.version>
         <maven.resources.version>3.5.0</maven.resources.version>
         <maven.jar.version>3.5.1</maven.jar.version>
         <maven.clean.version>3.5.0</maven.clean.version>
