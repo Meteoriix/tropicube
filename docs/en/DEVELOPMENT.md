@@ -87,3 +87,7 @@ Assertions cover expired invitations, concurrent acceptance at capacity, permiss
 `PluginLanguageReferencesTest` analyzes Java sources across all Maven modules and resource references, then requires their presence in all four catalogs of the relevant provider (Core or Velocity), without language fallback. It also checks arguments in direct translation calls and known dynamic families, including enums, missions and configured VIP entries. New computed key families must extend its explicit registry.
 
 `YamlResourcesTest` complements this audit with key-tree, placeholder and MiniMessage style parity, duplicate YAML detection and Docker copy synchronization. These static checks do not replace linguistic review or in-game checks of computed text and language changes.
+
+## Reliability validation
+
+Run `python -m unittest discover -s tools/ops -p test_ops.py -v`, `python tools/ops/integration_tests.py` and the full Maven reactor. Integration credentials apply only to the disposable test project. SQL base statements are shared between runtime startup and integration tests through DatabaseSchema. Inspect private Spark/diagnostic evidence before changing refresh rates or query strategies.

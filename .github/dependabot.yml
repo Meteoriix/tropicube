@@ -19,3 +19,24 @@ updates:
     labels:
       - dependencies
       - ci
+
+  - package-ecosystem: docker
+    directory: /dockerfiles
+    schedule:
+      interval: weekly
+    labels: [dependencies, infrastructure]
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: weekly
+    labels: [dependencies, infrastructure]
+  - package-ecosystem: npm
+    directory: /tools/language-editor/frontend
+    schedule:
+      interval: weekly
+    labels: [dependencies]
+  - package-ecosystem: maven
+    directory: /tools/language-editor/backend
+    schedule:
+      interval: weekly
+    labels: [dependencies]

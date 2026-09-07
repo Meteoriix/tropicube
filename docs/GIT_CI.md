@@ -212,3 +212,11 @@ Une fonctionnalité issue d'un document de game design doit utiliser le fichier 
 L'analyse couvre règles, machine à états, données persistantes, commandes, permissions, textes, paramètres configurables et interactions entre modules. Les ambiguïtés structurantes sont signalées avant implémentation. Le développement est découpé en commits cohérents : socle métier, intégrations, interface joueur, tests et documentation.
 
 Pour un nouveau mini-jeu, consulter également `AGENTS.md` à la racine. Il contient la checklist d'architecture, de performance, de localisation, de Docker et de documentation à appliquer lors des développements futurs.
+
+## Validation de fiabilité et dépendances d'infrastructure
+
+Le job Linux exécute les tests Python d'exploitation et `python tools/ops/integration_tests.py`. Ce script crée un projet Compose unique avec ports loopback éphémères et volumes temporaires, teste les migrations réelles MySQL, le verrou de sauvegarde, Redis et ses abonnements, puis supprime uniquement ce projet. Les tests d'intégration JUnit sont explicitement activés par `TROPICUBE_TEST_MYSQL_URL` / `TROPICUBE_TEST_REDIS_PORT` ; ils ne ciblent jamais les services de production.
+
+Le job `Native Windows validation` utilise le wrapper `.cmd`, Java 25, les tests Python et le parseur PowerShell. Le job Ubuntu reste responsable de Docker Engine et des scripts Bash. Dependabot suit maintenant Dockerfiles, Compose et les dépendances Maven/npm de l'éditeur de langues. Aucune fusion ni mise à jour majeure automatique : vérifier les notes officielles, les empreintes et la compatibilité du lot avant activation. Ne pas remplacer Minecraft 26.2 ni la branche MySQL par déduction d'une suggestion de Dependabot.
+
+Le workflow manuel `Isolated image lot smoke test` est réservé à `main` et à un runner Linux privé étiqueté `tropicube-staging`, disposant du lot vérifié demandé. Il démarre puis arrête une pile isolée via `tools/ops/smoke_test.py`. Ne pas exposer ce runner aux pull requests non fiables.

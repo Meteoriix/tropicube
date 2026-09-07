@@ -142,6 +142,8 @@ Les assertions couvrent invitations expirées, acceptations simultanées face à
 
 `RuntimeUiBundleTest` restaure une ancienne génération sur des catalogues déjà à jour et vérifie toutes les clés des quatre langues, la préservation des personnalisations, les appels répétés et le nettoyage des fichiers temporaires. Pour diagnostiquer un serveur actif, comparer également ses fichiers de langue aux ressources embarquées : une validation du dépôt seule ne prouve pas que la génération Redis restaurée est complète. Vérifier en jeu Social (amis, groupes, guildes), les autres inventaires, le HUD et leur rafraîchissement après `/lang` sans reconnexion.
 
-## Préparation des services
+## Contrôles avant ouverture
 
-DatabaseSchema partage les tables SQL historiques entre le démarrage et les tests. Les travaux SQL passent par une file bornée ; les composants Paper ne sont construits qu'après préparation des connexions sur les workers de cycle de vie.
+Exécuter `python -m unittest discover -s tools/ops -p test_ops.py -v` pour les erreurs d'exploitation et `python tools/ops/integration_tests.py` avec Docker disponible pour les migrations/verrous/Redis réels. Les identifiants `integration-only` appartiennent exclusivement à cette pile jetable, jamais à la production. Les sources SQL historiques sont regroupées dans DatabaseSchema pour que le démarrage et les tests utilisent les mêmes tables de base.
+
+L'objectif de charge initial est 50 joueurs sur un hôte Linux. Conserver les rapports Spark et diagnostics dans un stockage privé ; relever le p95 des ticks et les ressources après vingt cycles. Ne pas optimiser des requêtes ou des fréquences de rafraîchissement sans comparer un scénario identique avant/après.

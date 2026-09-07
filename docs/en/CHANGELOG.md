@@ -230,3 +230,7 @@ This document records functional, technical, and operational changes. Entries ar
 #### Documentation
 
 - Architecture, commands, configuration, deployment, game design, development, Git/CI, and changelog are available in both languages.
+
+## Reliability preparation — 2026-09-07
+
+Bound SQL work and container memory, add application readiness and owned Docker cleanup, verify migration checksums, provide encrypted off-host backups and staged image activation, and test Windows/Linux plus real disposable MySQL/Redis services.

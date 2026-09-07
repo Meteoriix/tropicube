@@ -67,3 +67,9 @@ A change summary should list:
 - configuration, language, Redis, SQL, Docker, and documentation changes;
 - manual in-game scenarios still required;
 - known risks or assumptions.
+
+## Reliability checks
+
+Linux CI runs Python operations tests and disposable real MySQL/Redis integration tests; the dedicated Windows job uses the native Maven wrapper, Python tests and PowerShell parser. Dependabot also monitors Docker, Compose and language-editor Maven/npm dependencies. No automatic major-version merge or Minecraft/SQL branch migration is enabled.
+
+The manually dispatched image-lot workflow runs only from main on a private Linux runner labeled `tropicube-staging`, where a verified image lot must already exist. The isolated smoke test uses a separate owner, network, volume set and loopback backend port range. Never grant that runner to untrusted pull requests.

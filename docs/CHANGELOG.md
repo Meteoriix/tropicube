@@ -6,11 +6,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-07
 
-- Fournit les sauvegardes SFTP chiffrées et leur manifeste, le diagnostic local, la rotation des journaux, les lots d'images préparés sans changer la production et l'activation avec maintenance et sauvegarde préalable.
-
-- Vérifie les SHA-256 des migrations avant exécution ou reprise et adopte les historiques existants uniquement contre le manifeste de référence versionné.
-
-- Borne les ressources SQL/Redis et Docker, prépare les services hors du thread Paper et ouvre l'admission après disponibilité des backends. Le nettoyage Docker distingue désormais les propriétaires et la file classique attend le budget mémoire.
+- Fiabilise le démarrage Core/Lobby/SheepWars avec préparation réseau asynchrone et admission après disponibilité applicative ; borne la file SQL et les délais des pools, et retire les accès SQL/Redis de la déconnexion Paper.
+- Sépare heap Java et limite Docker, ajoute un budget mémoire dynamique et un propriétaire aux ressources ; la file classique attend lorsque le budget est épuisé.
+- Vérifie les empreintes des migrations, fournit sauvegardes chiffrées SFTP, diagnostic léger, rotation des logs et activation de lots vérifiés avec maintenance et sauvegarde préalable.
+- Ajoute tests MySQL/Redis isolés, tests d'échec de l'outillage, validation native Windows et suivi Dependabot des images et de l'éditeur.
 
 ### 2026-09-06
 
