@@ -58,83 +58,54 @@ public class PlayerDataManager {
         String username = player.getName();
         String displayName = player.getName();
         String initialLanguage = LanguageManager.resolveClientLanguage(player.locale().toLanguageTag());
-        return CompletableFuture.supplyAsync(() -> {
+        return db.supplyAsync(() -> {
             long now = System.currentTimeMillis();
-
-            try (Connection conn = db.getConnection()) {
-                // Check if existing player
-                try (PreparedStatement stmt = conn.prepareStatement(
-                        "SELECT * FROM tropicube_players WHERE uuid = ?")) {
-                    stmt.setString(1, uuid.toString());
-                    ResultSet rs = stmt.executeQuery();
-
-                    PlayerProfile profile;
-                    if (rs.next()) {
-                        // Existing player — update last_join and username
-                        profile = new PlayerProfile(
-                                uuid, username,
-                                rs.getString("display_name"),
-                                rs.getLong("first_join"), now,
-                                rs.getLong("play_time"),
-                                rs.getString("language"),
-                                rs.getString("grade"),
-                                rs.getBoolean("is_banned"),
-                                rs.getString("ban_reason"),
-                                rs.getLong("ban_expiry")
-                        );
-                        db.executeUpdate(
-                                "UPDATE tropicube_players SET username = ?, last_join = ? WHERE uuid = ?",
-                                username, now, uuid.toString()
-                        );
-                    } else {
-                        // New player
-                        profile = new PlayerProfile(
-                                uuid, username, displayName,
-                                now, now, 0L, initialLanguage, "JOUEUR",
-                                false, null, 0L
-                        );
-                        db.executeUpdate(
-                                "INSERT INTO tropicube_players (uuid, username, display_name, first_join, last_join, play_time, language, grade) " +
-                                "VALUES (?, ?, ?, ?, ?, 0, ?, 'JOUEUR')",
-                                uuid.toString(), username, displayName, now, now, initialLanguage
-                        );
-                        economyManager.createAccount(uuid);
-                        plugin.getLogger().info(MessageStyle.log("tc", "CORE", "<gray>Nouveau joueur : " + username));
-                    }
-
-                    profileCache.put(uuid, profile);
-                    sessionStart.put(uuid, now);
-
-                    // Load subsystems
-                    languageManager.loadPlayerLanguage(uuid, profile.language());
-                    permissionManager.loadPlayer(uuid);
-
-                    return profile;
+            PlayerProfile profile;
+            boolean existing;
+            // Release the read connection before other repositories acquire their own connection.
+            try (Connection conn = db.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement("SELECT * FROM tropicube_players WHERE uuid = ?")) {
+                stmt.setString(1, uuid.toString());
+                try (ResultSet rs = stmt.executeQuery()) {
+                    existing = rs.next();
+                    profile = existing ? new PlayerProfile(uuid, username, rs.getString("display_name"),
+                            rs.getLong("first_join"), now, rs.getLong("play_time"), rs.getString("language"),
+                            rs.getString("grade"), rs.getBoolean("is_banned"), rs.getString("ban_reason"), rs.getLong("ban_expiry"))
+                            : new PlayerProfile(uuid, username, displayName, now, now, 0L, initialLanguage, "JOUEUR", false, null, 0L);
                 }
-            } catch (SQLException e) {
-                plugin.getLogger().log(Level.SEVERE, MessageStyle.log("tc", "CORE", "<red>Erreur chargement joueur " + username), e);
-                return null;
             }
+            if (existing) {
+                db.executeUpdate("UPDATE tropicube_players SET username = ?, last_join = ? WHERE uuid = ?", username, now, uuid.toString());
+            } else {
+                db.executeUpdate("INSERT INTO tropicube_players (uuid, username, display_name, first_join, last_join, play_time, language, grade) "
+                        + "VALUES (?, ?, ?, ?, ?, 0, ?, 'JOUEUR')", uuid.toString(), username, displayName, now, now, initialLanguage);
+                economyManager.createAccount(uuid);
+            }
+            profileCache.put(uuid, profile);
+            sessionStart.put(uuid, now);
+            languageManager.loadPlayerLanguage(uuid, profile.language());
+            permissionManager.loadPlayer(uuid);
+            return profile;
         });
     }
 
     public void unloadPlayer(UUID uuid) {
         PlayerProfile profile = profileCache.remove(uuid);
-        plugin.getRedisManager().removePlayerLanguage(String.valueOf(uuid));
-        if (profile == null) return;
-
         Long start = sessionStart.remove(uuid);
-        if (start != null) {
-            long playTime = (System.currentTimeMillis() - start) / 1000;
-            db.executeUpdate(
-                    "UPDATE tropicube_players SET play_time = play_time + ?, last_join = ? WHERE uuid = ?",
-                    playTime, System.currentTimeMillis(), uuid.toString()
-            );
-        }
-
+        long endedAt = System.currentTimeMillis();
         permissionManager.unloadPlayer(uuid);
         languageManager.unloadPlayer(uuid);
-        economyManager.invalidateCache(uuid);
+        db.supplyAsync(() -> {
+            economyManager.invalidateCache(uuid);
+            plugin.getRedisManager().removePlayerLanguage(String.valueOf(uuid));
+            if (profile != null && start != null) db.executeUpdate(
+                    "UPDATE tropicube_players SET play_time = play_time + ?, last_join = ? WHERE uuid = ?",
+                    (endedAt - start) / 1000, endedAt, uuid.toString());
+            return null;
+        }).exceptionally(error -> {
+            plugin.getLogger().log(Level.SEVERE, "Player disconnect persistence failed: " + uuid, error);
+            return null;
+        });
     }
 
     public void saveAll() {

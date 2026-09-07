@@ -51,7 +51,7 @@ public class PermissionManager {
                 gradeRegistry.put(grade.name(), grade);
             }
         }
-        CompletableFuture.runAsync(this::preloadRedisProfiles);
+        db.runAsync(this::preloadRedisProfiles);
         plugin.getLogger().info(MessageStyle.log("tc", "ACCESS", "<gray>" + gradeRegistry.size()
                 + " grades cosmétiques chargés."));
     }
@@ -70,7 +70,7 @@ public class PermissionManager {
     }
 
     public void loadPlayer(UUID uuid) {
-        CompletableFuture.runAsync(() -> {
+        db.runAsync(() -> {
             try (Connection c = db.getConnection(); PreparedStatement s = c.prepareStatement(
                     "SELECT grade,grade_expiry,vip_level,mod_level,access_revision FROM tropicube_players WHERE uuid=?")) {
                 s.setString(1, uuid.toString());
@@ -310,7 +310,7 @@ public class PermissionManager {
         long delay = Math.max(1, expiry - System.currentTimeMillis() / 1000);
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             if (playerGradeExpiries.getOrDefault(uuid, -1L) == expiry) {
-                CompletableFuture.runAsync(() -> setGrade(uuid, "JOUEUR", -1, null, "GRADE_EXPIRY"))
+                db.runAsync(() -> setGrade(uuid, "JOUEUR", -1, null, "GRADE_EXPIRY"))
                         .exceptionally(error -> {
                             plugin.getLogger().log(Level.SEVERE, MessageStyle.log("tc", "ACCESS",
                                     "<red>Expiration du grade impossible pour " + uuid), error);

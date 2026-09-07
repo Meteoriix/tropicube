@@ -245,6 +245,7 @@ public class RedisManager {
      * without tying up the main thread or creating an unbounded native thread pool.
      */
     private final ExecutorService subscriberExecutor;
+    private final RedisOptions options;
 
     /**
      * Register of all active message handlers, grouped by channel name.
@@ -261,6 +262,12 @@ public class RedisManager {
     // ── Constructeur ───────────────────────────────────────────────────────────
 
     public RedisManager(String host, int port, String password) {
+        this(host, port, password, RedisOptions.defaults());
+    }
+
+    /** Creates a Redis client with explicit validated pool limits. */
+    public RedisManager(String host, int port, String password, RedisOptions options) {
+        this.options = Objects.requireNonNull(options);
         if (host == null || host.isBlank()) throw new IllegalArgumentException("host est obligatoire");
         if (port < 1 || port > 65_535) throw new IllegalArgumentException("port doit être compris entre 1 et 65535");
         this.host     = host;
@@ -281,8 +288,8 @@ public class RedisManager {
         if (client != null) throw new IllegalStateException("RedisManager est déjà initialisé");
         // Build the per-connection configuration (timeouts and optional authentication)
         DefaultJedisClientConfig.Builder configBuilder = DefaultJedisClientConfig.builder()
-                .connectionTimeoutMillis(2000) // délai max pour établir une connexion TCP
-                .socketTimeoutMillis(2000);    // délai max pour attendre une réponse
+                .connectionTimeoutMillis(options.connectTimeoutMillis()) // délai max pour établir une connexion TCP
+                .socketTimeoutMillis(options.socketTimeoutMillis());    // délai max pour attendre une réponse
 
         if (password != null && !password.isEmpty()) {
             configBuilder.password(password);
@@ -292,9 +299,10 @@ public class RedisManager {
 
         // Pool configuration: pre-opens connections and reuses them to avoid the cost of creating each call
         ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
-        poolConfig.setMaxTotal(20);       // limite stricte de connexions simultanées
-        poolConfig.setMaxIdle(10);        // garde au maximum 10 connexions inactives ouvertes
-        poolConfig.setMinIdle(2);         // garde toujours au minimum 2 connexions prêtes
+        poolConfig.setMaxTotal(options.maxTotal());       // limite stricte de connexions simultanées
+        poolConfig.setMaxIdle(options.maxIdle());        // garde au maximum 10 connexions inactives ouvertes
+        poolConfig.setMinIdle(options.minIdle());         // garde toujours au minimum 2 connexions prêtes
+        poolConfig.setMaxWait(java.time.Duration.ofMillis(options.borrowTimeoutMillis()));
         poolConfig.setTestOnBorrow(true); // vérifie la connexion avant de la prêter (ping)
 
         RedisClient candidate = RedisClient.builder()

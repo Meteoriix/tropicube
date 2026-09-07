@@ -4,6 +4,13 @@
 
 # Surcharge possible : TROPICUBE_REDIS_HOST, TROPICUBE_REDIS_PORT, TROPICUBE_REDIS_PASSWORD
 redis:
+  pool:
+    max-total: 20
+    max-idle: 10
+    min-idle: 2
+  connect-timeout-millis: 2000
+  socket-timeout-millis: 2000
+  borrow-timeout-millis: 2000
   host: "redis"
   port: 6379
   password: ""
@@ -11,6 +18,14 @@ redis:
 # Surcharge possible : TROPICUBE_DB_HOST, TROPICUBE_DB_PORT, TROPICUBE_DB_NAME,
 # TROPICUBE_DB_USER and TROPICUBE_DB_PASSWORD
 database:
+  pool:
+    max-size: 10
+    min-idle: 2
+  connection-timeout-millis: 30000
+  socket-timeout-millis: 30000
+  max-concurrent: 10
+  queue-capacity: 100
+  shutdown-timeout-seconds: 10
   host: "mysql"
   port: 3306
   name: tropicube

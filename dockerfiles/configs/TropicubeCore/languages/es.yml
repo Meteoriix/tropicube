@@ -1030,3 +1030,6 @@ guild-ui:
   input-expired: "<yellow>La entrada privada ha caducado.</yellow>"
   invalid-name: "<red>Nombre no válido: usa 3–32 letras, cifras, espacios o guiones.</red>"
   invalid-tag: "<red>Etiqueta no válida: usa 2–8 letras latinas o cifras.</red>"
+
+reliability:
+  profile-unavailable: "<red>Tu perfil no está disponible temporalmente. Inténtalo de nuevo en unos instantes.</red>"

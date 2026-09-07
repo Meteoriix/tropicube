@@ -1040,3 +1040,6 @@ guild-ui:
   input-expired: "<yellow>Private input expired.</yellow>"
   invalid-name: "<red>Invalid name: use 3–32 letters, digits, spaces, hyphens or underscores.</red>"
   invalid-tag: "<red>Invalid tag: use 2–8 Latin letters or digits.</red>"
+
+reliability:
+  profile-unavailable: "<red>Your profile is temporarily unavailable. Please try again shortly.</red>"

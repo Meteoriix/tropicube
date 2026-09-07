@@ -60,6 +60,18 @@ public final class TropicubeSheepwars extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        TropicubeCore corePlugin = (TropicubeCore) getServer().getPluginManager().getPlugin("TropicubeCore");
+        if (corePlugin == null) { getServer().getPluginManager().disablePlugin(this); return; }
+        saveDefaultConfig();
+        String host = getConfig().getString("redis.host", "localhost");
+        int port = getConfig().getInt("redis.port", 6379);
+        String password = System.getenv("TROPICUBE_REDIS_PASSWORD");
+        if (password == null || password.isBlank()) password = getConfig().getString("redis.password", "");
+        redisManager = new RedisManager(host, port, password);
+        corePlugin.initializeBackend(this, redisManager::initialize, this::finishStartup);
+    }
+
+    private void finishStartup() {
         saveDefaultConfig();
 
         try {
@@ -96,21 +108,6 @@ public final class TropicubeSheepwars extends JavaPlugin {
         } catch (Exception exception) {
             getLogger().log(Level.SEVERE, MessageStyle.log("sw", "CONFIG",
                     "<red>Catalogue de récompenses saisonnières invalide : " + exception.getMessage()), exception);
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
-
-        String redisHost = getConfig().getString("redis.host", "localhost");
-        int redisPort = getConfig().getInt("redis.port", 6379);
-        String redisPassword = System.getenv("TROPICUBE_REDIS_PASSWORD");
-        if (redisPassword == null || redisPassword.isBlank())
-            redisPassword = getConfig().getString("redis.password", "");
-        try {
-            redisManager = new RedisManager(redisHost, redisPort, redisPassword);
-            redisManager.initialize();
-            getLogger().info(MessageStyle.log("sw", "SYSTEM", "<gray>Connexion Redis établie."));
-        } catch (Exception e) {
-            getLogger().log(Level.SEVERE, MessageStyle.log("sw", "SYSTEM", "<red>Impossible de se connecter à Redis !"), e);
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -182,11 +179,14 @@ public final class TropicubeSheepwars extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (getServer().getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore corePlugin) corePlugin.backendStopped();
+        getServer().getScheduler().cancelTasks(this);
+        getServer().getAsyncScheduler().cancelTasks(this);
         shuttingDown = true;
         if (scoreboardManager != null) scoreboardManager.clearAll();
         if (gameManager != null) gameManager.shutdown();
         if (playerDataManager != null) playerDataManager.close();
-        if (redisManager != null) redisManager.close();
+        if (redisManager != null) Thread.ofPlatform().daemon(false).name("tropicube-backend-close").start(redisManager::close);
     }
 
     public RedisManager getRedisManager() { return redisManager; }

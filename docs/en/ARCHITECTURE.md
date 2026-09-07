@@ -135,3 +135,7 @@ Lobby shows Friends, Party and Guilds in slots 2, 4 and 6 of Social. The guild s
 Administrative writes and automatic succession acquire the MySQL named lock `tc:guild:<UUID derived from the database name>` across instances, with a five-second wait limit, then check and write through the same transactional connection. The lock is explicitly released before returning the connection to the pool. No schema change or new Redis key is required. Gameplay contributions do not acquire this lock. Menu actions carry the displayed guild ID, preventing stale screens from changing a player's new guild.
 
 Core consumes private input before public chat filtering and network publication, including for muted players. Name/tag creation and invitation usernames are consumed once and handled on Paper. `!` cancels; navigation, logout and shutdown also invalidate input. SQL and profile resolution stay asynchronous. A loading response can only update the inventory that requested it. `/lang` refreshes guild screens and the current input step without restarting its deadline.
+
+## Runtime reliability
+
+Core prepares network services off-thread before Paper adapters; proxy admission waits for TROPICUBE_BACKEND_READY. SQL work and dynamic memory are bounded. Docker resources have owners and cleanup excludes other deployments.

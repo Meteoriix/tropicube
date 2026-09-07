@@ -275,6 +275,7 @@ public class TropiServerManager {
                 template.setSpectatorSlots(node.node("spectator-slots").getInt(0));
                 template.setMinRam(node.node("ram-min").getInt(512));
                 template.setMaxRam(node.node("ram-max").getInt(1024));
+                template.setMemoryOverheadMiB(node.node("memory-overhead-mib").getInt(0));
                 template.setEnabled(node.node("enabled").getBoolean(true));
                 if ("LOBBY".equalsIgnoreCase(template.getServerType()) && !template.isEnabled()) {
                     logger.warn(MessageStyle.log("PROXY", "<yellow>Template lobby '{}' ne peut pas être désactivé — forcé à enabled."), template.getId());
@@ -428,7 +429,8 @@ public class TropiServerManager {
                         e.addSuppressed(cleanupError);
                     }
                 }
-                logger.error(MessageStyle.log("PROXY", "<red>Erreur création serveur {}"), serverName, e);
+                if (!(e instanceof fr.tropicube.docker.client.MemoryBudget.CapacityExceededException))
+                    logger.error(MessageStyle.log("PROXY", "<red>Erreur création serveur {}"), serverName, e);
                 throw new RuntimeException(e);
             } finally {
                 if (pending.decrementAndGet() == 0) pendingCreations.remove(templateId, pending);
@@ -583,6 +585,15 @@ public class TropiServerManager {
         creation.whenComplete((instance, error) -> {
             if (matchmakingCreations.remove(templateId, creation)) {
                 if (error != null) {
+                    Throwable cause = error;
+                    while (cause.getCause() != null) cause = cause.getCause();
+                    if (cause instanceof fr.tropicube.docker.client.MemoryBudget.CapacityExceededException) {
+                        memoryRetryTasks.removeIf(java.util.concurrent.Future::isDone);
+                        if (!scheduler.isShutdown()) memoryRetryTasks.add(scheduler.schedule(() -> {
+                            if (matchmakingWaitlist.hasPlayers(templateId)) ensureMatchmakingCreation(templateId);
+                        }, 5, TimeUnit.SECONDS));
+                        return;
+                    }
                     List<UUID> failedPlayers = matchmakingWaitlist.removeAll(templateId);
                     failedPlayers.forEach(this::clearMatchmakingPlayer);
                     failedPlayers.forEach(playerId -> redisManager.publishCommand(
@@ -838,6 +849,9 @@ public class TropiServerManager {
         }
         logger.info(MessageStyle.log("PROXY", "<gray>Arrêt du proxy : conservation de {} serveur(s) dynamique(s)."),
                 activeInstances.size());
+        if (healthTelemetryTask != null) healthTelemetryTask.cancel(false);
+        memoryRetryTasks.forEach(task -> task.cancel(false));
+        memoryRetryTasks.clear();
         scheduler.shutdownNow();
     }
 
@@ -849,6 +863,9 @@ public class TropiServerManager {
      */
     public void stopAllServers() {
         logger.info(MessageStyle.log("PROXY", "<gray>Arrêt de tous les serveurs ({})..."), activeInstances.size());
+        if (healthTelemetryTask != null) healthTelemetryTask.cancel(false);
+        memoryRetryTasks.forEach(task -> task.cancel(false));
+        memoryRetryTasks.clear();
         scheduler.shutdownNow();
 
         try (var exec = Executors.newVirtualThreadPerTaskExecutor()) {
@@ -942,7 +959,21 @@ public class TropiServerManager {
                 }, scheduler);
     }
 
+    private java.util.concurrent.ScheduledFuture<?> healthTelemetryTask;
+    private final java.util.Set<java.util.concurrent.ScheduledFuture<?>> memoryRetryTasks = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     private void startAutoScaler() {
+        healthTelemetryTask = scheduler.scheduleAtFixedRate(() -> {
+            try {
+                long minimum = templates.values().stream().filter(t -> t.isEnabled() && t.isAutoStart())
+                        .mapToLong(ServerTemplate::getMinInstances).sum();
+                long queued = templates.keySet().stream().mapToLong(id -> matchmakingWaitlist.snapshot(id).size()).sum();
+                redisManager.set("health:proxy", "{\"at\":" + System.currentTimeMillis()
+                        + ",\"active_instances\":" + activeInstances.size() + ",\"expected_min\":" + minimum
+                        + ",\"queued_matchmaking\":" + queued + ",\"reserved_memory_mib\":"
+                        + dockerManager.reservedMemoryMiB() + "}", 180);
+            } catch (Exception failure) { logger.warn("event=runtime_health dependencies=unavailable"); }
+        }, 1, 60, TimeUnit.SECONDS);
         scheduler.scheduleAtFixedRate(() -> templates.values().forEach(template -> {
             if (!template.isEnabled() || template.isMaintenanceMode()) return;
             long current = activeInstances.values().stream()

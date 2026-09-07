@@ -36,6 +36,7 @@ public class DockerManager implements Closeable {
 
     private static final System.Logger LOGGER = System.getLogger(DockerManager.class.getName());
     private static final Pattern ENVIRONMENT_NAME = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
+    private static final String OWNER_LABEL = "fr.tropicube.owner";
     private static final String DYNAMIC_LABEL = "fr.tropicube.dynamic";
     private static final String INSTANCE_ID_LABEL = "fr.tropicube.instance-id";
     private static final String TEMPLATE_ID_LABEL = "fr.tropicube.template-id";
@@ -86,6 +87,7 @@ public class DockerManager implements Closeable {
      * declared in the template volumes.
      */
     private final String basePath;
+    private MemoryBudget memoryBudget = new MemoryBudget(16384);
     private final AtomicBoolean closed = new AtomicBoolean();
 
     /**
@@ -168,6 +170,39 @@ public class DockerManager implements Closeable {
             throw new IllegalArgumentException("Plage de ports " + label + " invalide : " + start + "-" + end);
         }
     }
+
+    /** Called once before orchestration starts. Existing limits are accounted even above the new budget. */
+    public void configureMemoryBudget(long limitMiB) {
+        MemoryBudget restored = new MemoryBudget(limitMiB);
+        for (Container container : managedContainers()) {
+            var inspected = dockerClient.inspectContainerCmd(container.getId()).exec();
+            String id = container.getLabels().get(INSTANCE_ID_LABEL);
+            if (id == null) throw new IllegalStateException("Dynamic container missing instance label");
+            Long bytes = inspected.getHostConfig().getMemory();
+            restored.restore(id, bytes == null ? 0 : (bytes + 1048575) / 1048576);
+        }
+        memoryBudget = restored;
+    }
+
+    private List<Container> managedContainers() {
+        return dockerClient.listContainersCmd().withLabelFilter(List.of(DYNAMIC_LABEL + "=true"))
+                .withShowAll(true).exec().stream().filter(container -> {
+                    String owner = container.getLabels().get(OWNER_LABEL);
+                    String name = container.getNames().length == 0 ? "" : container.getNames()[0];
+                    if (!ownsResource(containerPrefix, owner, name, false)) return false;
+                    // Legacy containers lacked an owner label. Adopt them only on this manager's network.
+                    return owner != null || networkName.equals(dockerClient.inspectContainerCmd(container.getId())
+                            .exec().getHostConfig().getNetworkMode());
+                }).toList();
+    }
+
+    static boolean ownsResource(String prefix, String owner, String name, boolean volume) {
+        if (owner != null) return prefix.equals(owner);
+        String normalized = name.startsWith("/") ? name.substring(1) : name;
+        return normalized.startsWith(prefix + (volume ? "-data-" : "-"));
+    }
+
+    public long reservedMemoryMiB() { return memoryBudget.reservedMiB(); }
 
     private static boolean rangesOverlap(int firstStart, int firstEnd, int secondStart, int secondEnd) {
         return firstStart <= secondEnd && secondStart <= firstEnd;
@@ -405,7 +440,10 @@ public class DockerManager implements Closeable {
 
         String createdContainerId = null;
         String dataVolumeName = null;
+        boolean memoryReserved = false;
         try {
+            memoryBudget.reserve(instanceId, template.getContainerMemoryMiB());
+            memoryReserved = true;
             // --- Construction of environment variables ---
             Map<String, String> environment = new LinkedHashMap<>();
             environment.put("EULA", "TRUE");
@@ -422,6 +460,9 @@ public class DockerManager implements Closeable {
             // Template variables first, then extraEnv to allow overloading
             putEnvironment(environment, template.getEnvironmentVariables());
             putEnvironment(environment, effectiveExtraEnv);
+            environment.put("MEMORY", template.getMinRam() + "M");
+            environment.put("INIT_MEMORY", template.getMinRam() + "M");
+            environment.put("MAX_MEMORY", template.getMaxRam() + "M");
             List<String> envVars = environment.entrySet().stream()
                     .map(entry -> entry.getKey() + "=" + entry.getValue())
                     .toList();
@@ -458,8 +499,9 @@ public class DockerManager implements Closeable {
             HostConfig hostConfig = HostConfig.newHostConfig()
                     .withPortBindings(portBindings)
                     .withNetworkMode(networkName)
-                    .withMemory((long) template.getMaxRam() * 1024 * 1024)              // Limite mémoire dure (en octets)
+                    .withMemory(template.getContainerMemoryMiB() * 1024 * 1024)              // Limite mémoire dure (en octets)
                     .withMemoryReservation((long) template.getMinRam() * 1024 * 1024)   // Réservation mémoire souple (en octets)
+                    .withLogConfig(new LogConfig(LogConfig.LoggingType.LOCAL, Map.of("max-size", "20m", "max-file", "5")))
                     .withRestartPolicy(RestartPolicy.noRestart())                        // Pas de redémarrage automatique
                     .withSecurityOpts(List.of("no-new-privileges:true"))
                     .withBinds(binds);
@@ -472,6 +514,7 @@ public class DockerManager implements Closeable {
                     .withHostConfig(hostConfig)
                     .withLabels(Map.of(
                             DYNAMIC_LABEL, "true",
+                        OWNER_LABEL, containerPrefix,
                             INSTANCE_ID_LABEL, instanceId,
                             TEMPLATE_ID_LABEL, template.getId()))
                     .exec();
@@ -499,9 +542,11 @@ public class DockerManager implements Closeable {
             return instance;
 
         } catch (Exception e) {
+            boolean containerGone = createdContainerId == null;
             if (createdContainerId != null) {
                 try {
                     dockerClient.removeContainerCmd(createdContainerId).withForce(true).withRemoveVolumes(true).exec();
+                    containerGone = true;
                 } catch (Exception cleanupFailure) {
                     e.addSuppressed(cleanupFailure);
                 }
@@ -513,9 +558,12 @@ public class DockerManager implements Closeable {
                     e.addSuppressed(cleanupFailure);
                 }
             }
-            // On error, frees the allocated ports and marks the instance in error
-            releasePort(port);
-            if (rconEnabled && rconPort != 0) releaseRconPort(rconPort);
+            if (containerGone && memoryReserved) memoryBudget.release(instanceId);
+            // A failed cleanup still owns its ports and memory until reconciliation confirms removal.
+            if (containerGone) {
+                releasePort(port);
+                if (rconEnabled && rconPort != 0) releaseRconPort(rconPort);
+            }
             instance.setStatus(ServerInstance.Status.ERROR);
             throw e;
         }
@@ -577,6 +625,7 @@ public class DockerManager implements Closeable {
                 .withName(volumeName)
                 .withLabels(Map.of(
                         DYNAMIC_LABEL, "true",
+                        OWNER_LABEL, containerPrefix,
                         INSTANCE_ID_LABEL, instanceId,
                         TEMPLATE_ID_LABEL, templateId))
                 .exec();
@@ -599,7 +648,7 @@ public class DockerManager implements Closeable {
      * Monitors the container logs and completes the returned {@link CompletableFuture}
      * as soon as the Minecraft server is ready to accept connections.
      *
-     * <p>Detection is based on the {@code "Done (Xs)!"} message sent by Paper/Spigot
+     * <p>Detection is based on the {@code "TROPICUBE_BACKEND_READY"} marker sent by the specialized backend
      * in standard output. A timeout is applied: if the server does not start
      * within the time limit, the future fails with a {@link java.util.concurrent.TimeoutException}.
      *
@@ -620,8 +669,8 @@ public class DockerManager implements Closeable {
                 // If the future is already resolved, we ignore the following frames
                 if (future.isDone()) return;
                 String line = new String(frame.getPayload(), StandardCharsets.UTF_8).trim();
-                // Detection of Paper/Spigot end of startup message: “Done (Xs)!”
-                if (line.contains("Done (") && line.contains("s)!")) {
+                // Only the specialized backend emits this after Core and its own managers are ready.
+                if (line.contains("TROPICUBE_BACKEND_READY")) {
                     future.complete(null);
                     try { close(); } catch (IOException ignored) {}
                 }
@@ -769,6 +818,7 @@ public class DockerManager implements Closeable {
             LOGGER.log(System.Logger.Level.WARNING, "Impossible de supprimer le conteneur " + instance.getContainerId(), e);
         } finally {
             if (removed) {
+                memoryBudget.release(instance.getInstanceId());
                 try {
                     removeDynamicDataVolume(instance.getInstanceId());
                 } catch (Exception e) {
@@ -801,16 +851,14 @@ public class DockerManager implements Closeable {
         requireOpen();
         try {
             // Lists all dynamic containers, whether running or stopped
-            List<Container> containers = dockerClient.listContainersCmd()
-                    .withLabelFilter(List.of(DYNAMIC_LABEL + "=true"))
-                    .withShowAll(true)
-                    .exec();
+            List<Container> containers = managedContainers();
             for (Container container : containers) {
                 try {
                     dockerClient.removeContainerCmd(container.getId())
                             .withForce(true)
                             .withRemoveVolumes(true)
                             .exec();
+                    memoryBudget.release(container.getLabels().get(INSTANCE_ID_LABEL));
                     removeDynamicDataVolume(container.getLabels().get(INSTANCE_ID_LABEL));
                 } catch (Exception e) {
                     LOGGER.log(System.Logger.Level.WARNING,
@@ -837,10 +885,7 @@ public class DockerManager implements Closeable {
         Set<String> knownIds = Set.copyOf(Objects.requireNonNull(knownContainerIds, "knownContainerIds"));
         try {
             // List all dynamic containers, including stopped ones
-            List<Container> candidates = dockerClient.listContainersCmd()
-                    .withLabelFilter(List.of(DYNAMIC_LABEL + "=true"))
-                    .withShowAll(true)
-                    .exec();
+            List<Container> candidates = managedContainers();
             Set<String> retainedInstanceIds = new HashSet<>();
             for (Container container : candidates) {
                 String instanceId = container.getLabels().get(INSTANCE_ID_LABEL);
@@ -852,6 +897,7 @@ public class DockerManager implements Closeable {
                                 .withForce(true)
                                 .withRemoveVolumes(true)
                                 .exec();
+                        memoryBudget.release(instanceId);
                         if (instanceId != null && !instanceId.isBlank()) removeDynamicDataVolume(instanceId);
                     } catch (Exception e) {
                         LOGGER.log(System.Logger.Level.WARNING,
@@ -873,7 +919,8 @@ public class DockerManager implements Closeable {
             if (response.getVolumes() == null) return;
             for (var volume : response.getVolumes()) {
                 Map<String, String> labels = volume.getLabels();
-                String instanceId = labels != null ? labels.get(INSTANCE_ID_LABEL) : null;
+                if (labels == null || !ownsResource(containerPrefix, labels.get(OWNER_LABEL), volume.getName(), true)) continue;
+                String instanceId = labels.get(INSTANCE_ID_LABEL);
                 if (instanceId != null && !retainedInstanceIds.contains(instanceId)) {
                     try {
                         removeVolume(volume.getName());

@@ -24,20 +24,28 @@ public class PlayerJoinQuitListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
+        String username = player.getName();
         event.joinMessage(null); // L'événement ne doit pas être modifié après sa clôture.
         plugin.getNetworkProgressionService().refreshDisplay(uuid);
 
         // Load player data async
         plugin.getPlayerDataManager().loadPlayer(player)
+                .exceptionally(error -> {
+                    plugin.getLogger().log(java.util.logging.Level.SEVERE, "Player initialization failed", error);
+                    if (plugin.isEnabled()) plugin.getServer().getScheduler().runTask(plugin, () -> {
+                        if (player.isOnline()) player.kick(plugin.getLanguageManager().getComponent(uuid, "reliability.profile-unavailable"));
+                    });
+                    return null;
+                })
                 .thenAccept(profile -> {
-                    if (profile == null) return;
+                    if (profile == null || !plugin.isEnabled()) return;
 
                     // Distinguishes a network transfer using the marker placed by Velocity.
                     String transferKey = "transfer:" + uuid;
                     boolean isTransfer = plugin.getRedisManager().exists(transferKey);
                     if (isTransfer) plugin.getRedisManager().delete(transferKey);
                     boolean restoreStaffMode = plugin.getRedisManager().exists("staff-mode:" + uuid);
-                    if (profile.banned()) plugin.getModerationService().cacheBan(uuid, player.getName(),
+                    if (profile.banned()) plugin.getModerationService().cacheBan(uuid, username,
                             profile.banReason(), profile.banExpiry());
 
                     // Welcome message (private, deleted if transferred)

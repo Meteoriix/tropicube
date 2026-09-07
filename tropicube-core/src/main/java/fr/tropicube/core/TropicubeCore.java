@@ -47,6 +47,13 @@ import java.util.logging.Level;
 public class TropicubeCore extends JavaPlugin {
     // Redis manager for cache and inter-server communication
     private RedisManager redisManager;
+    private volatile boolean stopping;
+    private volatile boolean backendReady;
+    private io.papermc.paper.threadedregions.scheduler.ScheduledTask healthTelemetryTask;
+    private final java.util.concurrent.CompletableFuture<Void> ready = new java.util.concurrent.CompletableFuture<>();
+    private java.util.concurrent.CompletableFuture<Void> bootstrap;
+    private final java.util.concurrent.ExecutorService lifecycleExecutor = java.util.concurrent.Executors.newThreadPerTaskExecutor(
+            Thread.ofPlatform().daemon(false).name("tropicube-lifecycle-", 0).factory());
 
     // MySQL Database Manager
     private DatabaseManager databaseManager;
@@ -86,7 +93,7 @@ public class TropicubeCore extends JavaPlugin {
 
     /**
      * Called by Paper when activating the plugin.
-     * Initializes in order: config, database, Redis, managers, commands and listeners.
+     * Captures configuration, prepares remote services on lifecycle workers, then initializes Paper adapters.
      */
     @Override
     public void onEnable() {
@@ -103,15 +110,37 @@ public class TropicubeCore extends JavaPlugin {
         // Updates existing configuration files with new keys
         updateConfigs();
 
-        // Database initialization; stop the plugin on failure
-        if (!initDatabase()) return;
-
-        // Initializing Redis; stop the plugin on failure
-        if (!initRedis()) return;
-
+        // Register the admission guard before network initialization; TCP/Paper startup is not readiness.
+        getServer().getPluginManager().registerEvents(new org.bukkit.event.Listener() {
+            @org.bukkit.event.EventHandler
+            public void preLogin(org.bukkit.event.player.AsyncPlayerPreLoginEvent event) {
+                if (!backendReady || stopping) event.disallow(
+                        org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result.KICK_OTHER,
+                        net.kyori.adventure.text.Component.translatable("multiplayer.disconnect.server_shutdown"));
+            }
+        }, this);
+        databaseManager = new DatabaseManager(this);
+        redisManager = new RedisManager(getConfiguredString("TROPICUBE_REDIS_HOST", "redis.host", "localhost"),
+                getConfiguredInt("TROPICUBE_REDIS_PORT", "redis.port", 6379),
+                getConfiguredString("TROPICUBE_REDIS_PASSWORD", "redis.password", ""),
+                fr.tropicube.docker.client.RedisOptions.read((key, fallback) -> getConfig().getInt("redis." + key, fallback)));
+        permissionManager = new PermissionManager(this, databaseManager);
         runtimeUiBundle = new RuntimeUiBundle(this);
-        runtimeUiBundle.restore();
+        bootstrap = java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                databaseManager.initialize();
+                redisManager.initialize();
+                runtimeUiBundle.restore();
+                permissionManager.initialize();
+            } catch (Exception failure) { throw new java.util.concurrent.CompletionException(failure); }
+        }, lifecycleExecutor);
+        bootstrap.whenComplete((ignored, failure) -> onServerThread(this, () -> {
+            if (failure != null) { failStartup(this, failure); return; }
+            finishStartup();
+        }));
+    }
 
+    private void finishStartup() {
         // Initializes all business managers
         if (!initManagers()) return;
 
@@ -122,6 +151,21 @@ public class TropicubeCore extends JavaPlugin {
 
         // Disables the locator bar on all loaded worlds
         getServer().getWorlds().forEach(w -> w.setGameRule(GameRules.LOCATOR_BAR, false));
+        healthTelemetryTask = getServer().getAsyncScheduler().runAtFixedRate(this, task -> {
+            if (stopping) return;
+            long started = System.nanoTime();
+            try {
+                redisManager.get("health:probe");
+                String instanceId = System.getenv("INSTANCE_ID");
+                if (instanceId != null) redisManager.set("health:backend:" + instanceId,
+                        "{\"active_sql\":" + databaseManager.activeOperations() + ",\"queued_sql\":"
+                        + databaseManager.queuedOperations() + ",\"ready\":" + backendReady + "}", 180);
+                getLogger().info("event=runtime_health active_sql=" + databaseManager.activeOperations()
+                        + " queued_sql=" + databaseManager.queuedOperations()
+                        + " redis_millis=" + (System.nanoTime() - started) / 1_000_000);
+            } catch (Exception error) { getLogger().warning("event=runtime_health redis=unavailable"); }
+        }, 1, 60, java.util.concurrent.TimeUnit.SECONDS);
+        ready.complete(null);
     }
 
     /**
@@ -130,52 +174,72 @@ public class TropicubeCore extends JavaPlugin {
      */
     @Override
     public void onDisable() {
+        stopping = true;
+        backendReady = false;
+        ready.completeExceptionally(new IllegalStateException("Core stopping"));
+        if (healthTelemetryTask != null) healthTelemetryTask.cancel();
         privateChatInput.close();
-        // Saves data for all players still connected
-        if (playerDataManager != null) playerDataManager.saveAll();
-
-        // Close the connection to the MySQL database
-        if (databaseManager != null) databaseManager.close();
-
-        // Close the Redis connection
-        if (redisManager != null) redisManager.close();
+        getServer().getScheduler().cancelTasks(this);
+        getServer().getAsyncScheduler().cancelTasks(this);
+        // Non-daemon worker keeps the JVM alive for the bounded database drain, without blocking Paper.
+        java.util.concurrent.CompletableFuture<Void> initialization = bootstrap == null
+                ? java.util.concurrent.CompletableFuture.completedFuture(null) : bootstrap;
+        initialization.handleAsync((ignored, failure) -> {
+            try {
+                if (playerDataManager != null) databaseManager.supplyAsync(() -> { playerDataManager.saveAll(); return null; })
+                        .exceptionally(error -> { getLogger().log(Level.SEVERE, "Final player save failed", error); return null; });
+            } finally {
+                if (databaseManager != null) databaseManager.close();
+                if (redisManager != null) {
+                    try {
+                        String instanceId = System.getenv("INSTANCE_ID");
+                        if (instanceId != null) redisManager.delete("health:backend:" + instanceId);
+                    } catch (Exception ignoredError) { /* TTL removes unavailable shutdown telemetry. */ }
+                    redisManager.close();
+                }
+            }
+            return null;
+        }, lifecycleExecutor).whenComplete((ignored, failure) -> {
+            if (failure != null) getLogger().log(Level.SEVERE, "Shutdown persistence failed", failure);
+            lifecycleExecutor.shutdown();
+        });
     }
 
-    /**
-     * Initializes the connection to the MySQL database.
-     *
-     * @return true if the connection is established, false on error (disables the plugin)
-     */
-    private boolean initDatabase() {
-        try {
-            databaseManager = new DatabaseManager(this);
-            databaseManager.initialize();
-            return true;
-        } catch (Exception e) {
-            getLogger().log(Level.SEVERE, MessageStyle.log("tc", "CORE", "<red>Impossible d'initialiser la base de données."), e);
-            getServer().getPluginManager().disablePlugin(this);
-            return false;
-        }
+    /** Initializes a dependent backend's network off-thread, then its Paper objects on the server thread. */
+    public void initializeBackend(JavaPlugin owner, Runnable networkInitialization, Runnable serverInitialization) {
+        ready.thenRunAsync(() -> {
+            if (stopping) throw new IllegalStateException("Core stopping");
+            networkInitialization.run();
+        }, lifecycleExecutor).whenComplete((ignored, failure) -> onServerThread(owner, () -> {
+            if (failure != null) { failStartup(owner, failure); return; }
+            try {
+                serverInitialization.run();
+                if (owner.isEnabled() && !stopping) {
+                    backendReady = true;
+                    owner.getLogger().info("TROPICUBE_BACKEND_READY");
+                }
+            } catch (Exception error) { failStartup(owner, error); }
+        }));
     }
 
-    /**
-     * Initializes the Redis connection from the plugin configuration.
-     *
-     * @return true if the connection is established, false on error (disables the plugin)
-     */
-    private boolean initRedis() {
-        try {
-            String host     = getConfiguredString("TROPICUBE_REDIS_HOST", "redis.host", "localhost");
-            int    port     = getConfiguredInt("TROPICUBE_REDIS_PORT", "redis.port", 6379);
-            String password = getConfiguredString("TROPICUBE_REDIS_PASSWORD", "redis.password", "");
+    /** Closes admission immediately when the specialized plugin stops independently of Core. */
+    public void backendStopped() { backendReady = false; }
 
-            redisManager = new RedisManager(host, port, password);
-            redisManager.initialize();
-            return true;
-        } catch (Exception e) {
-            getLogger().log(Level.SEVERE, MessageStyle.log("tc", "CORE", "<red>Impossible d'initialiser Redis."), e);
-            getServer().getPluginManager().disablePlugin(this);
-            return false;
+    private void failStartup(JavaPlugin owner, Throwable failure) {
+        backendReady = false;
+        ready.completeExceptionally(failure);
+        owner.getLogger().log(Level.SEVERE, "Backend initialization failed; admission remains closed", failure);
+        getServer().getPluginManager().disablePlugin(owner);
+    }
+
+    private void onServerThread(JavaPlugin owner, Runnable action) {
+        if (stopping) return;
+        try {
+            getServer().getScheduler().runTask(owner, () -> {
+                if (!stopping && owner.isEnabled()) action.run();
+            });
+        } catch (org.bukkit.plugin.IllegalPluginAccessException ignored) {
+            // Disable raced the completion; no callback may mutate a stopped plugin.
         }
     }
 
@@ -193,8 +257,7 @@ public class TropicubeCore extends JavaPlugin {
             getServer().getServicesManager().register(fr.tropicube.core.ui.UiReloadParticipant.class,
                     menuTemplates, this, org.bukkit.plugin.ServicePriority.Normal);
 
-            permissionManager = new PermissionManager(this, databaseManager);
-            permissionManager.initialize();
+            // The grade catalog was loaded on the lifecycle worker before this phase.
 
             economyManager = new EconomyManager(this, databaseManager, redisManager);
 

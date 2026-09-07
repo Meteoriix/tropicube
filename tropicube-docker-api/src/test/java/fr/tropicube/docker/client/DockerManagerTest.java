@@ -6,6 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DockerManagerTest {
+    @Test
+    void neverAdoptsAnotherLabeledDeployment() {
+        org.junit.jupiter.api.Assertions.assertFalse(DockerManager.ownsResource("tropicube", "tropicube-smoke", "tropicube-smoke-data-123", true));
+        org.junit.jupiter.api.Assertions.assertFalse(DockerManager.ownsResource("tropicube-smoke", null, "/tropicube-lobby-123", false));
+        org.junit.jupiter.api.Assertions.assertTrue(DockerManager.ownsResource("tropicube", null, "tropicube-data-123", true));
+        org.junit.jupiter.api.Assertions.assertTrue(DockerManager.ownsResource("tropicube", "tropicube", "/tropicube-lobby-123", false));
+    }
+
 
     @Test
     void buildsStablePerInstanceDataVolumeName() {

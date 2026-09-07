@@ -22,6 +22,7 @@ public class ServerTemplate {
      * Unique identifier of the template (e.g. "lobby", "survival-1").
      */
     private String id;
+    private int memoryOverheadMiB;
 
     /**
      * Readable name of the template, displayed in the administration interfaces.
@@ -227,6 +228,14 @@ public class ServerTemplate {
         this.maxRam = maxRam;
     }
 
+    /** Zero selects an automatic native-memory margin; positive values are explicit MiB. */
+    public void setMemoryOverheadMiB(int value) { memoryOverheadMiB = value; }
+
+    /** Hard container limit, distinct from the Java maximum heap. */
+    public long getContainerMemoryMiB() {
+        return (long) maxRam + (memoryOverheadMiB == 0 ? Math.max(512L, (maxRam + 3L) / 4) : memoryOverheadMiB);
+    }
+
     public boolean isAutoStart() {
         return autoStart;
     }
@@ -318,6 +327,7 @@ public class ServerTemplate {
         }
         if (maxPlayers <= 0) throw new IllegalStateException("maxPlayers doit être strictement positif");
         if (spectatorSlots < 0) throw new IllegalStateException("spectatorSlots ne peut pas être négatif");
+        if (memoryOverheadMiB < 0) throw new IllegalStateException("memory-overhead-mib must be >= 0: " + memoryOverheadMiB);
         if (minRam <= 0) throw new IllegalStateException("minRam doit être strictement positif");
         if (maxRam < minRam) throw new IllegalStateException("maxRam doit être supérieur ou égal à minRam");
         if (autoStopDelay < 0) throw new IllegalStateException("autoStopDelay ne peut pas être négatif");

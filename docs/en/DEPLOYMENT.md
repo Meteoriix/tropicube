@@ -125,3 +125,7 @@ Keep image tags and deployment inputs reproducible. Roll back by restoring the p
 ## Guild menu verification
 
 Update Core and Lobby together, then check Java and Bedrock: three Social tabs, no Guilds button in Profile, private name/tag creation, invitations, lists exceeding 21 members, challenges and empty/populated rankings. Check member/officer/owner permissions and removal/transfer/leave confirmations, including last-member deletion. Private input must never reach other players' chat. Test `!`, timeout, logout, navigation during loading, double clicks and `/lang` in all four languages. Simulate a SQL failure and use Refresh. No production port or volume change is needed.
+
+## Runtime reliability
+
+Deploy Core, Lobby, SheepWars and Velocity together: new readiness markers are required. Reserve OS and static-service RAM separately from the dynamic budget.

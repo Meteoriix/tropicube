@@ -4,6 +4,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-09-07
+
+- Borne les ressources SQL/Redis et Docker, prépare les services hors du thread Paper et ouvre l'admission après disponibilité des backends. Le nettoyage Docker distingue désormais les propriétaires et la file classique attend le budget mémoire.
+
 ### 2026-09-06
 
 - La restauration des interfaces Redis complète désormais les langues avec les nouvelles clés du JAR avant leur chargement, en conservant les personnalisations. Une ancienne génération pouvait supprimer 79 clés par langue, notamment dans Social et les guildes, malgré des catalogues embarqués complets.

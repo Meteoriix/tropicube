@@ -1048,3 +1048,6 @@ guild-ui:
   input-expired: "<yellow>La saisie privée a expiré.</yellow>"
   invalid-name: "<red>Nom invalide : 3–32 lettres, chiffres, espaces, tirets ou underscores.</red>"
   invalid-tag: "<red>Tag invalide : 2–8 lettres latines ou chiffres.</red>"
+
+reliability:
+  profile-unavailable: "<red>Ton profil est temporairement indisponible. Réessaie dans quelques instants.</red>"

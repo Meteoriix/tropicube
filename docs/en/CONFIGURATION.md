@@ -102,3 +102,7 @@ New options require a safe default, startup validation, documentation, and deplo
 ## Private guild input in Lobby
 
 `TropicubeLobby/config.yml` exposes `guilds.input-timeout-seconds` for each private input step (name, tag or username). Default: `120` seconds; only integers from `10` to `600` are accepted. Fractional, textual and out-of-range values fail startup with the key and supplied value. The bundled resource and Docker copy match; existing configuration files receive the default through the current updater. Member, officer and contribution limits remain owned by Core.
+
+## Runtime reliability
+
+New defaults: docker.memory-budget-mib=16384; template memory-overhead-mib=0 adds max(512, ceil(ram-max/4)) MiB beyond heap. Core SQL queue-capacity=100 and max-concurrent=10. Core/Velocity Redis pool defaults remain 20/10/2 with bounded 2000 ms timeouts.

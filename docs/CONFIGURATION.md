@@ -256,3 +256,24 @@ Les balises internes `<tc>` et `<sw>` insèrent respectivement les marques rése
 ## Saisie privée des guildes dans le Lobby
 
 Dans `TropicubeLobby/config.yml`, `guilds.input-timeout-seconds` définit le délai de chaque étape de saisie privée (nom, tag ou pseudo). Valeur par défaut : `120` secondes ; un entier entre `10` et `600` est requis. Les valeurs fractionnaires, textuelles ou hors limites sont refusées au démarrage avec la clé et la valeur reçue. La ressource embarquée et sa copie Docker sont synchronisées ; les anciennes configurations reçoivent la valeur par défaut via le mécanisme existant. Les limites de membres, d'officiers et de contribution restent celles de Core.
+
+## Fiabilité avant ouverture
+
+Les versions Minecraft 26.2, Java 25 et Maven 3.9.11 restent inchangées. Les nouvelles options sont lues au démarrage ; un changement nécessite la recréation du backend ou du proxy concerné.
+
+| Option | Défaut | Validation / effet |
+|---|---|---|
+| Velocity `docker.memory-budget-mib` | 16384 | Entier positif ; budget des limites mémoire des conteneurs dynamiques, créations en cours comprises. Ne représente pas la RAM totale de l'hôte. |
+| Template `memory-overhead-mib` | 0 | Entier positif ou nul ; 0 calcule `max(512, ceil(ram-max / 4))` Mio hors heap. |
+| Core `database.pool.max-size` / `min-idle` | 10 / 2 | Maximum positif ; minimum entre 0 et le maximum. |
+| Core `database.connection-timeout-millis` | 30000 | Au moins 250 ms pour obtenir une connexion. |
+| Core `database.socket-timeout-millis` | 30000 | Entier positif ; borne les lectures réseau MySQL. |
+| Core `database.max-concurrent` | 10 | Entre 1 et la taille maximale du pool. |
+| Core `database.queue-capacity` | 100 | Entier positif ; refus asynchrone immédiat au-delà. |
+| Core `database.shutdown-timeout-seconds` | 10 | Entier positif ; délai de drainage des tâches SQL avant interruption. |
+| Core/Velocity `redis.pool.max-total` / `max-idle` / `min-idle` | 20 / 10 / 2 | `0 <= min-idle <= max-idle <= max-total`, maximum total positif. |
+| Core/Velocity `redis.connect-timeout-millis` / `socket-timeout-millis` / `borrow-timeout-millis` | 2000 chacun | Entiers positifs ; connexion, lecture réseau et attente du pool. |
+
+`ram-min` et `ram-max` décrivent toujours le heap Java. La limite Docker vaut `ram-max + marge`. Les variables `MEMORY`, `INIT_MEMORY` et `MAX_MEMORY` sont calculées à partir de ces paramètres, après les autres variables de template, pour éviter une divergence silencieuse. Les anciennes configurations obtiennent la marge automatique. Réserver séparément la mémoire Linux, Docker, Velocity, MySQL, Redis et la marge d'exploitation avant de fixer le budget dynamique : 16384 Mio est un défaut de configuration, pas une recommandation de matériel.
+
+Les clients Redis propres au Lobby et à SheepWars conservent les limites compatibles de RedisOptions : 20 connexions, 10 idle, 2 minimum et délais de 2 secondes. La taille maximale du pool SQL doit être multipliée par le nombre maximal de backends pour vérifier le budget de connexions MySQL.

@@ -1030,3 +1030,6 @@ guild-ui:
   input-expired: "<yellow>Die private Eingabe ist abgelaufen.</yellow>"
   invalid-name: "<red>Ungültiger Name: 3–32 Buchstaben, Ziffern, Leerzeichen, Binde- oder Unterstriche.</red>"
   invalid-tag: "<red>Ungültiges Kürzel: 2–8 lateinische Buchstaben oder Ziffern.</red>"
+
+reliability:
+  profile-unavailable: "<red>Dein Profil ist vorübergehend nicht verfügbar. Versuche es gleich erneut.</red>"

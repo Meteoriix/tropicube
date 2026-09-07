@@ -141,3 +141,7 @@ Les assertions couvrent invitations expirées, acceptations simultanées face à
 `YamlResourcesTest` complète cet audit avec la parité des arborescences, des placeholders et des styles MiniMessage, les doublons YAML et la synchronisation des copies Docker. Ces contrôles statiques ne remplacent pas la relecture linguistique ni les essais en jeu des textes calculés et des changements de langue.
 
 `RuntimeUiBundleTest` restaure une ancienne génération sur des catalogues déjà à jour et vérifie toutes les clés des quatre langues, la préservation des personnalisations, les appels répétés et le nettoyage des fichiers temporaires. Pour diagnostiquer un serveur actif, comparer également ses fichiers de langue aux ressources embarquées : une validation du dépôt seule ne prouve pas que la génération Redis restaurée est complète. Vérifier en jeu Social (amis, groupes, guildes), les autres inventaires, le HUD et leur rafraîchissement après `/lang` sans reconnexion.
+
+## Préparation des services
+
+DatabaseSchema partage les tables SQL historiques entre le démarrage et les tests. Les travaux SQL passent par une file bornée ; les composants Paper ne sont construits qu'après préparation des connexions sur les workers de cycle de vie.

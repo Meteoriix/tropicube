@@ -3,6 +3,13 @@
 # =====================================================
 
 redis:
+  pool:
+    max-total: 20
+    max-idle: 10
+    min-idle: 2
+  connect-timeout-millis: 2000
+  socket-timeout-millis: 2000
+  borrow-timeout-millis: 2000
   host: "redis"
   port: 6379
   password: "${CFG_REDIS_PASSWORD}"
@@ -65,6 +72,8 @@ health-check:
   connect-timeout-millis: 2000
 
 docker:
+  # Dynamic containers only; reserve host/service RAM separately.
+  memory-budget-mib: 16384
   host: "tcp://docker-proxy:2375"
   network: "tropicube-net"
   container-prefix: "tropicube"

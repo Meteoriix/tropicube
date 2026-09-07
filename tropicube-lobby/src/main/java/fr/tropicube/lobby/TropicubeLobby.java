@@ -50,6 +50,18 @@ public class TropicubeLobby extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        TropicubeCore corePlugin = (TropicubeCore) getServer().getPluginManager().getPlugin("TropicubeCore");
+        if (corePlugin == null) { getServer().getPluginManager().disablePlugin(this); return; }
+        saveDefaultConfig();
+        String host = getConfig().getString("redis.host", "localhost");
+        int port = getConfig().getInt("redis.port", 6379);
+        String password = System.getenv("TROPICUBE_REDIS_PASSWORD");
+        if (password == null || password.isBlank()) password = getConfig().getString("redis.password", "");
+        redisManager = new RedisManager(host, port, password);
+        corePlugin.initializeBackend(this, redisManager::initialize, this::finishStartup);
+    }
+
+    private void finishStartup() {
         instance = this;
         saveDefaultConfig();
         try {
@@ -60,19 +72,6 @@ public class TropicubeLobby extends JavaPlugin {
         }
 
         // Init Redis
-        String redisHost = getConfig().getString("redis.host", "localhost");
-        int redisPort = getConfig().getInt("redis.port", 6379);
-        String redisPassword = environmentOrConfig("TROPICUBE_REDIS_PASSWORD", "redis.password");
-        try {
-            redisManager = new RedisManager(redisHost, redisPort, redisPassword);
-            redisManager.initialize();
-            getLogger().info(MessageStyle.log("tc", "LOBBY", "<gray>Connexion Redis établie."));
-        } catch (Exception e) {
-            getLogger().log(Level.SEVERE, MessageStyle.log("tc", "LOBBY", "<red>Impossible de se connecter à Redis !"), e);
-            Bukkit.getPluginManager().disablePlugin(this);
-            return;
-        }
-
         // Managers
         lobbyServerManager = new LobbyServerManager(this, redisManager);
         guiManager = new GuiManager(this);
@@ -202,11 +201,14 @@ public class TropicubeLobby extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (getServer().getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore corePlugin) corePlugin.backendStopped();
+        getServer().getScheduler().cancelTasks(this);
+        getServer().getAsyncScheduler().cancelTasks(this);
         if (guildMenus != null) guildMenus.close();
-        if (core != null) core.getPlayerCenterMenu().clearSettingsOpener();
+        if (core != null && core.getPlayerCenterMenu() != null) core.getPlayerCenterMenu().clearSettingsOpener();
         if (scoreboardManager != null) scoreboardManager.clearAll();
         if (guiManager != null) guiManager.clearAll();
-        if (redisManager != null) redisManager.close();
+        if (redisManager != null) Thread.ofPlatform().daemon(false).name("tropicube-backend-close").start(redisManager::close);
         instance = null;
         getLogger().info(MessageStyle.log("tc", "LOBBY", "<gray>Tropicube Lobby désactivé."));
     }
