@@ -327,10 +327,50 @@ Puis vérifier que Compose peut monter ce chemin et que le daemon correspondant 
 
 Après mise à jour conjointe de Core et Lobby, vérifier sur Java et Bedrock : Social aux trois onglets, absence du bouton Guildes dans Profil, création par nom/tag, invitations, pagination de plus de 21 membres, défis et classement vide ou rempli. Vérifier les rôles membre/officier/chef, les confirmations d'exclusion/transfert/départ et l'avertissement de suppression de la dernière guilde. Une saisie privée ne doit jamais apparaître dans le chat des autres joueurs. Tester `!`, l'expiration, la déconnexion, une navigation pendant chargement, les doubles clics et `/lang` dans les quatre langues. Simuler un échec SQL puis utiliser Actualiser. Aucun changement de ports ni de volume de production n'est requis.
 
-## Lot applicatif coordonné
+## Procédure de livraison fiable avant ouverture
 
-Livrer Core, Lobby, SheepWars et Velocity ensemble : le proxy attend maintenant le marqueur de disponibilité applicative des nouveaux backends. Le message générique de démarrage Paper ne suffit plus. Fixer le budget dynamique en réservant séparément la RAM du système et des services statiques.
+La cible initiale reste un seul hôte Linux avec Compose et un objectif de 50 joueurs à mesurer. Python 3.11+, Restic, OpenSSH et systemd complètent les prérequis d'exploitation Linux. Le build et les vérifications Python fonctionnent également sous Windows.
 
-## Empreintes SQL
+Les scripts construisent désormais uniquement les tags UTC candidats et vérifient les trois images avant activation. `-SkipRestart` / `--skip-restart` laisse le lot préparé sans changer les tags `latest`. Pour activer ensuite un lot vérifié :
 
-Le premier démarrage vérifie les migrations appliquées contre les empreintes historiques de référence, puis enregistre les empreintes avant toute nouvelle exécution. Une divergence bloque le backend. Ne pas effacer la table de contrôle pour contourner une erreur ; vérifier les ressources et restaurer le lot compatible. La DDL MySQL nécessite toujours une migration idempotente et une sauvegarde avant changement incompatible.
+```bash
+python3 tools/ops/tropicube_ops.py activate YYYYMMDD-HHMMSS
+```
+
+L'activation résout les trois identifiants d'images avant modification, enregistre le lot et les anciens identifiants sous `.runtime/ops/releases`, puis conserve les références précédentes avec les tags locaux `previous`. Sur une pile démarrée : maintenance réseau d'une minute, attente du drain, sauvegarde hors serveur obligatoire, arrêt de Velocity et vérification qu'aucun backend dynamique ne reste actif. L'option `shutdown.stop-dynamic-servers` doit donc être activée. Après remplacement, Compose attend la santé du proxy et l'outil attend un lobby prêt avant de lever la maintenance. Une erreur bloque l'opération ; consulter le manifeste local et les logs privés avant toute reprise. Aucun push ni tag Git n'est créé.
+
+Au premier déploiement, les clients attendent la disponibilité du lobby. Lors d'une mise à jour depuis une ancienne version, recréer Redis avec sa nouvelle variable d'environnement avant la première sauvegarde automatisée ; le volume Redis doit être conservé. Ne pas exposer de port backend supplémentaire.
+
+### Installation des sauvegardes quotidiennes
+
+Configurer et initialiser le dépôt SFTP Restic depuis le compte d'exploitation, installer les quatre unités de `tools/ops/systemd` sous `/etc/systemd/system`, adapter `/opt/tropicube` si nécessaire, puis :
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now tropicube-backup.timer tropicube-diagnostic.timer
+sudo systemctl start tropicube-backup.service
+sudo systemctl status tropicube-backup.service
+```
+
+La sauvegarde utilise le même verrou MySQL que les migrations et un dump InnoDB `--single-transaction`, puis un snapshot Redis RDB, les données Floodgate, les configurations, les mondes sources et `.env`. Les données joueur des mondes et les volumes des parties éphémères sont exclus. Les copies temporaires résident dans un répertoire privé et sont supprimées après l'opération. Le manifeste contient date, révision Git, identifiants d'images et hashes des fichiers. Les images elles-mêmes ne sont pas sauvegardées : conserver les tags des lots et les JAR tiers autorisés dans un stockage privé séparé.
+
+Restic chiffre et conserve 7 quotidiennes, 4 hebdomadaires et 3 mensuelles, regroupées par hôte et tag `tropicube`. Une vérification du dépôt suit la rétention. L'horodatage de succès n'est actualisé qu'à la réussite complète ; un échec préserve celui de la sauvegarde précédente. La sauvegarde quotidienne vise une perte maximale de 24 heures ; une panne du stockage doit être traitée immédiatement pour respecter cet objectif.
+
+### Exercice de restauration isolé
+
+1. Préparer un hôte isolé, les versions d'images du manifeste et un environnement privé avec des volumes MySQL/Redis neufs. Fermer l'entrée des joueurs.
+2. Exécuter `restic restore latest --tag tropicube --target /srv/tropicube-restore` avec les accès de récupération. Retrouver le répertoire contenant `manifest.json`, puis `python3 tools/ops/tropicube_ops.py verify-backup <répertoire>` avant tout import.
+3. Restaurer `environment.env` comme `.env` avec des droits 0600, les archives de configurations/mondes et les données Floodgate. Importer `mysql.sql` dans la base vide avec le client MySQL, en fournissant le mot de passe via un fichier privé ou l'environnement, jamais dans la commande.
+4. Pour Redis, charger `redis.rdb` en `dump.rdb` dans le volume neuf avec AOF temporairement désactivé. Après chargement et contrôle des clés, activer AOF avec `CONFIG SET appendonly yes`, attendre la fin de la réécriture, puis redémarrer avec la configuration Compose normale. Ne jamais remettre un ancien AOF à côté du snapshot restauré.
+5. Démarrer Velocity puis les backends ; vérifier réconciliation des instances, profils, économie, permissions, quatre langues, Floodgate et une partie complète. Une ancienne partie éphémère n'est pas récupérable.
+6. Mesurer le temps entre le début de la récupération et le réseau fonctionnel : objectif inférieur à deux heures. Répéter l'exercice après une migration incompatible et au moins mensuellement.
+
+Un retour au code précédent ne restaure pas les données : en cas de migration incompatible, utiliser ensemble les images du manifeste antérieur et sa sauvegarde. Ne pas activer arbitrairement `previous` contre un schéma non vérifié.
+
+### Diagnostic et essais de capacité
+
+`python3 tools/ops/tropicube_ops.py diagnose` produit un JSON filtré et un code non nul en cas d'alerte. Le timer le lance chaque minute ; consulter `journalctl -u tropicube-diagnostic.service` et le fichier `diagnostic.json`. Les alertes couvrent service indisponible, sauvegarde absente/échouée/âgée de plus de 26 heures, disque occupé à plus de 80 %, télémétrie absente et nombre d'instances inférieur au minimum. Les temps des sondes incluent l'appel Docker CLI ; les logs Core donnent également la mesure Redis côté JVM. Aucun système de notification externe n'est configuré automatiquement.
+
+Avant ouverture, mesurer avec Spark et les diagnostics une heure de jeu représentatif à 10, 25 puis 50 joueurs, avec vingt cycles création/partie/fin. Critères : aucune terminaison mémoire, pas de croissance durable après nettoyage, temps de tick p95 inférieur à 50 ms. Noter CPU/RAM/stockage, nombre d'instances, temps de démarrage et de transfert. Les essais impliquant de vrais clients Java/Bedrock et le matériel cible restent indispensables ; les tests unitaires ne garantissent pas cette capacité.
+
+Références : [profilage Paper](https://docs.papermc.io/paper/profiling/), [journaux Docker](https://docs.docker.com/engine/logging/drivers/local/), [snapshot Redis](https://redis.io/docs/latest/develop/tools/cli/), [rétention Restic](https://github.com/restic/restic/blob/master/doc/060_forget.rst).

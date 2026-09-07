@@ -6,6 +6,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-07
 
+- Fournit les sauvegardes SFTP chiffrées et leur manifeste, le diagnostic local, la rotation des journaux, les lots d'images préparés sans changer la production et l'activation avec maintenance et sauvegarde préalable.
+
 - Vérifie les SHA-256 des migrations avant exécution ou reprise et adopte les historiques existants uniquement contre le manifeste de référence versionné.
 
 - Borne les ressources SQL/Redis et Docker, prépare les services hors du thread Paper et ouvre l'admission après disponibilité des backends. Le nettoyage Docker distingue désormais les propriétaires et la file classique attend le budget mémoire.

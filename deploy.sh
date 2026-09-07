@@ -352,7 +352,7 @@ declare -A build_pids=()
 
 for name in "${build_names[@]}"; do
   docker build --pull -f "dockerfiles/${build_files[$name]}" \
-    -t "tropicube-$name:latest" -t "tropicube-$name:$build_tag" . \
+    -t "tropicube-$name:$build_tag" . \
     >"$build_log_dir/$name.log" 2>&1 &
   build_pids[$name]=$!
 done
@@ -362,7 +362,7 @@ for name in "${build_names[@]}"; do
   printf '\n--- %s ---\n' "$name"
   if wait "${build_pids[$name]}"; then
     cat "$build_log_dir/$name.log"
-    ok "Built tropicube-$name:latest"
+    ok "Built tropicube-$name:$build_tag"
   else
     cat "$build_log_dir/$name.log"
     printf '[ERROR] Docker build failed: %s\n' "$name" >&2
@@ -373,7 +373,7 @@ $build_failed && exit 1
 
 step 'Verifying prewarmed Paper runtimes...'
 paper_cache_check='set -eu; test -s "/data/paper-${TROPICUBE_PAPER_VERSION}-${TROPICUBE_PAPER_BUILD}.jar"; test -s "/data/cache/mojang_${TROPICUBE_PAPER_VERSION}.jar"; test -s "/data/versions/${TROPICUBE_PAPER_VERSION}/paper-${TROPICUBE_PAPER_VERSION}.jar"; test -s "/data/bukkit.yml"; test -s "/data/config/paper-world-defaults.yml"'
-for image in tropicube-lobby:latest tropicube-sheepwars:latest; do
+for image in "tropicube-lobby:$build_tag" "tropicube-sheepwars:$build_tag"; do
   docker run --rm --entrypoint /bin/sh "$image" -c "$paper_cache_check" \
     || fail "Prewarmed Paper runtime is incomplete in $image."
   ok "$image contains Paper runtime artifacts and offline startup configs."
@@ -381,21 +381,12 @@ done
 
 step 'Verifying Geyser and Floodgate proxy artifacts...'
 proxy_bridge_check='set -eu; echo "28d796e67b466fd9832eb12d0b4a1b72a5046caae1fb6c67099f2a5d14423571  /opt/tropicube/server/plugins/Geyser-Velocity.jar" | sha256sum -c -; echo "f5867ad79b90d38abcc72755a685428fbcf423b52c9830a39ffed5203de6936a  /opt/tropicube/server/plugins/floodgate-velocity.jar" | sha256sum -c -; test -s /opt/tropicube/server/plugins/Geyser-Velocity/config.yml; test -s /opt/tropicube/server/plugins/floodgate/config.yml'
-docker run --rm --entrypoint /bin/sh tropicube-velocity:latest -c "$proxy_bridge_check" \
+docker run --rm --entrypoint /bin/sh "tropicube-velocity:$build_tag" -c "$proxy_bridge_check" \
   || fail 'Geyser/Floodgate artifacts are incomplete in tropicube-velocity:latest.'
 ok 'Velocity contains the pinned Geyser and Floodgate artifacts.'
 
 if ! $skip_restart; then
-  step 'Recreating the Velocity stack...'
-  legacy_velocity_volumes=$(docker inspect tropicube-velocity \
-    --format '{{range .Mounts}}{{if and (eq .Type "volume") (eq .Destination "/server")}}{{println .Name}}{{end}}{{end}}' 2>/dev/null || true)
-  docker compose up -d --force-recreate velocity || fail 'Docker Compose deployment failed.'
-  for volume in $legacy_velocity_volumes; do
-    docker volume rm "$volume" >/dev/null || fail "Could not remove legacy Velocity volume '$volume'."
-  done
-  ok 'Velocity recreated; new game containers will use the freshly tagged images.'
+  python3 tools/ops/tropicube_ops.py activate "$build_tag" || fail 'Lot activation failed; review the operations manifest.'
 fi
-
-printf '\n==> Deploy complete in %ss.\n' "$((SECONDS - start_seconds))"
-printf '    Lobby/SheepWars/Velocity: new containers use the latest image tags.\n'
-printf '    Rollback tag: %s\n' "$build_tag"
+printf '\n==> Verified image lot: %s.\n' "$build_tag"
+printf '    --skip-restart leaves this lot staged and does not change live image tags.\n'

@@ -21,11 +21,20 @@ volumes:
   libretranslate-models:
   floodgate-data:
 
+x-logging: &bounded-logging
+  driver: local
+  options:
+    max-size: "20m"
+    max-file: "5"
+
 services:
 # ── Redis (inter-service communication bus) ────────────────
   redis:
     image: redis:8-alpine@sha256:978f0e01593e65eed801f2402944efcd936d43b5027e4908a7897baf88ed6241
     container_name: tropicube-redis
+    environment:
+      REDIS_PASSWORD: "${REDIS_PASSWORD:?REDIS_PASSWORD manquant dans .env}"
+    logging: *bounded-logging
     restart: unless-stopped
     networks:
       - tropicube-net
@@ -44,6 +53,7 @@ services:
   mysql:
     image: mysql:9.7.0@sha256:c11782aa2a96624c1efc121768641d96954faa136d6aa82751b032d8c426ffbc
     container_name: tropicube-mysql
+    logging: *bounded-logging
     restart: unless-stopped
     networks:
       - tropicube-net
@@ -69,6 +79,7 @@ services:
       dockerfile: dockerfiles/Dockerfile.velocity
     image: tropicube-velocity:latest
     container_name: tropicube-velocity
+    logging: *bounded-logging
     restart: unless-stopped
     networks:
       - tropicube-net
@@ -110,6 +121,7 @@ services:
   docker-proxy:
     image: tecnativa/docker-socket-proxy:0.3@sha256:9e4b9e7517a6b660f2cc903a19b257b1852d5b3344794e3ea334ff00ae677ac2
     container_name: tropicube-docker-proxy
+    logging: *bounded-logging
     restart: unless-stopped
     networks:
       - tropicube-control
@@ -135,6 +147,7 @@ services:
   adminer:
     image: adminer:5@sha256:890cffec7caa20159fb6f68c1a521b2e5879f7314f4845d4ebca7cc1cf145971
     container_name: tropicube-adminer
+    logging: *bounded-logging
     restart: unless-stopped
     profiles: ["dev"]
     networks:
@@ -148,6 +161,7 @@ services:
   redis-commander:
     image: rediscommander/redis-commander:latest@sha256:19cd0c49f418779fa2822a0496c5e6516d0c792effc39ed20089e6268477e40a
     container_name: tropicube-redis-ui
+    logging: *bounded-logging
     restart: unless-stopped
     profiles: ["dev"]
     networks:
@@ -165,6 +179,7 @@ services:
     image: libretranslate/libretranslate:v1.9.6@sha256:1de2d7056bb8ad607a412f4563d9abe324ff632b43b5be9428bcc8e213aebb32
     container_name: tropicube-libretranslate
     profiles: ["language-editor"]
+    logging: *bounded-logging
     restart: unless-stopped
     ports:
       - "127.0.0.1:${LIBRETRANSLATE_PORT:-5000}:5000"

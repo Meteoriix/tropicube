@@ -94,3 +94,7 @@ After `/` is entered, clients receive every registered Tropicube command and ali
 Lobby hotbar **Social → Guilds** provides creation, received invitations, members, weekly challenges and the seasonal top 20. Profile no longer contains a Guilds button. Creation privately prompts for a name, then a tag; invitations prompt for a username. Enter `!` to cancel and return to the menu. Each input step expires after the configured delay.
 
 Officers and the owner may invite; officers may remove members, while the owner also manages officers, promotes, demotes and transfers ownership. Leaving, removing members and transferring require a menu confirmation. An owner must transfer ownership before leaving a populated guild; the last member's departure deletes it with an explicit warning. Existing `/guild` and `/guilde` commands and permissions remain available. Roles, challenges and operation results are localized in all four languages.
+
+## Local operations
+
+Use `python3 tools/ops/tropicube_ops.py backup`, `diagnose`, `verify-backup <directory>` or `activate <UTC-lot>` from the operations account. These add no Minecraft permissions. `python3 tools/ops/integration_tests.py` runs disposable MySQL/Redis checks; `python3 tools/ops/smoke_test.py <UTC-lot>` checks isolated proxy/backend startup and shutdown. On Windows use `python`.

@@ -1,0 +1,12 @@
+[Unit]
+Description=Tropicube health and backup-age diagnostic
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/tropicube
+Environment=TROPICUBE_OPS_STATE=/var/lib/tropicube-ops
+ExecStart=/usr/bin/python3 /opt/tropicube/tools/ops/tropicube_ops.py diagnose
+UMask=0077
+TimeoutStartSec=55s
+NoNewPrivileges=true

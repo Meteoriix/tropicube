@@ -1,0 +1,9 @@
+[Unit]
+Description=Check Tropicube each minute
+
+[Timer]
+OnBootSec=2m
+OnUnitActiveSec=1m
+
+[Install]
+WantedBy=timers.target

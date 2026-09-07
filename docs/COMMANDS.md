@@ -181,3 +181,17 @@ Velocity utilise le profil révisionné publié par Core dans Redis et le conser
 Dans la hotbar du Lobby, **Social → Guildes** propose création, invitations reçues, membres, défis hebdomadaires et top 20 saisonnier. Le Profil ne comporte plus de bouton Guildes. La création demande le nom puis le tag dans une saisie privée ; inviter demande le pseudo. Saisir `!` annule et revient au menu. Chaque étape expire après le délai configuré.
 
 Les officiers et le chef peuvent inviter ; un officier peut exclure un membre, et le chef peut aussi gérer les officiers, promouvoir, rétrograder et transférer la propriété. Départ, exclusion et transfert nécessitent une confirmation dans les menus. Un chef doit transférer sa guilde avant de partir si d'autres membres restent ; le départ de son dernier membre la supprime avec un avertissement explicite. Les commandes `/guild` et `/guilde` ainsi que leurs permissions restent inchangées. Les libellés de rôle, de défi et de résultat sont localisés dans les quatre langues.
+
+## Commandes locales d'exploitation
+
+Ces commandes sont réservées au compte système d'exploitation, sans nouvelle permission Minecraft :
+
+- `python3 tools/ops/tropicube_ops.py backup` : sauvegarde chiffrée vers le dépôt SFTP configuré ; nécessite MySQL, Redis, Velocity et Restic.
+- `python3 tools/ops/tropicube_ops.py verify-backup <répertoire>` : contrôle le manifeste et les empreintes avant restauration, sans importer de données.
+- `python3 tools/ops/tropicube_ops.py diagnose` : diagnostic JSON et code de retour non nul en cas d'alerte.
+- `python3 tools/ops/tropicube_ops.py activate <tag-UTC>` : active un lot d'images déjà vérifié, avec maintenance et sauvegarde si le réseau tourne.
+- `python3 tools/ops/integration_tests.py` : crée puis supprime uniquement une pile MySQL/Redis temporaire et exécute les tests d'intégration.
+
+Sous Windows, utiliser `python` au lieu de `python3`. Le déploiement emploie la commande console existante `/maintenance network on|off` ; ses permissions joueur restent inchangées.
+
+`python3 tools/ops/smoke_test.py <tag-UTC>` vérifie un lot dans une pile séparée (préfixe propriétaire, réseaux et volumes dédiés, ports backend décalés de 10000). Les logs restent privés sous `.runtime/smoke`.

@@ -381,7 +381,7 @@ $jobs = $dockerBuilds | ForEach-Object {
         $buildName = $using:b.Name
         $tagSuffix = $using:buildTag
         $versionedTag = $tag.Replace(":latest", ":$tagSuffix")
-        $output = & docker build --pull -f "dockerfiles/$dockerfile" -t $tag -t $versionedTag . 2>&1
+        $output = & docker build --pull -f "dockerfiles/$dockerfile" -t $versionedTag . 2>&1
         [pscustomobject]@{
             Name     = $buildName
             Output   = ($output | Out-String)
@@ -401,14 +401,14 @@ foreach ($r in $results) {
         Write-Host "[ERROR] Docker build failed: $($r.Name)" -ForegroundColor Red
         $anyFailed = $true
     } else {
-        Ok "Built tropicube-$($r.Name):latest"
+        Ok "Built tropicube-$($r.Name):$buildTag"
     }
 }
 if ($anyFailed) { exit 1 }
 
 Step "Verifying prewarmed Paper runtimes..."
 $paperCacheCheck = 'set -eu; test -s "/data/paper-${TROPICUBE_PAPER_VERSION}-${TROPICUBE_PAPER_BUILD}.jar"; test -s "/data/cache/mojang_${TROPICUBE_PAPER_VERSION}.jar"; test -s "/data/versions/${TROPICUBE_PAPER_VERSION}/paper-${TROPICUBE_PAPER_VERSION}.jar"; test -s "/data/bukkit.yml"; test -s "/data/config/paper-world-defaults.yml"'
-foreach ($image in @("tropicube-lobby:latest", "tropicube-sheepwars:latest")) {
+foreach ($image in @("tropicube-lobby:$buildTag", "tropicube-sheepwars:$buildTag")) {
     & docker run --rm --entrypoint /bin/sh $image -c $paperCacheCheck
     if ($LASTEXITCODE -ne 0) { Fail "Prewarmed Paper runtime is incomplete in $image." }
     Ok "$image contains Paper runtime artifacts and offline startup configs."
@@ -416,26 +416,13 @@ foreach ($image in @("tropicube-lobby:latest", "tropicube-sheepwars:latest")) {
 
 Step "Verifying Geyser and Floodgate proxy artifacts..."
 $proxyBridgeCheck = 'set -eu; echo "28d796e67b466fd9832eb12d0b4a1b72a5046caae1fb6c67099f2a5d14423571  /opt/tropicube/server/plugins/Geyser-Velocity.jar" | sha256sum -c -; echo "f5867ad79b90d38abcc72755a685428fbcf423b52c9830a39ffed5203de6936a  /opt/tropicube/server/plugins/floodgate-velocity.jar" | sha256sum -c -; test -s /opt/tropicube/server/plugins/Geyser-Velocity/config.yml; test -s /opt/tropicube/server/plugins/floodgate/config.yml'
-& docker run --rm --entrypoint /bin/sh tropicube-velocity:latest -c $proxyBridgeCheck
+& docker run --rm --entrypoint /bin/sh "tropicube-velocity:$buildTag" -c $proxyBridgeCheck
 if ($LASTEXITCODE -ne 0) { Fail "Geyser/Floodgate artifacts are incomplete in tropicube-velocity:latest." }
 Ok "Velocity contains the pinned Geyser and Floodgate artifacts."
 
 if (-not $SkipRestart) {
-    Step "Recreating the Velocity stack..."
-    $legacyVelocityVolumes = @(& docker inspect tropicube-velocity `
-        --format '{{range .Mounts}}{{if and (eq .Type "volume") (eq .Destination "/server")}}{{println .Name}}{{end}}{{end}}' 2>$null)
-    & docker compose up -d --force-recreate velocity
-    if ($LASTEXITCODE -ne 0) { Fail "Docker Compose deployment failed." }
-    foreach ($volume in $legacyVelocityVolumes) {
-        if ([string]::IsNullOrWhiteSpace($volume)) { continue }
-        & docker volume rm $volume | Out-Null
-        if ($LASTEXITCODE -ne 0) { Fail "Could not remove legacy Velocity volume '$volume'." }
-    }
-    Ok "Velocity recreated; new game containers will use the freshly tagged images."
+    & python tools/ops/tropicube_ops.py activate $buildTag
+    if ($LASTEXITCODE -ne 0) { Fail "Lot activation failed; review the operations manifest." }
 }
-
-# ── Done ──────────────────────────────────────────────────────────────────────
-$elapsed = [math]::Round(((Get-Date) - $start).TotalSeconds, 1)
-Write-Host "`n==> Deploy complete in ${elapsed}s." -ForegroundColor Green
-Write-Host "    Lobby/SheepWars/Velocity: new containers will use tropicube-lobby:latest / tropicube-sheepwars:latest / tropicube-velocity:latest." -ForegroundColor DarkGray
-Write-Host "    Rollback tag: $buildTag" -ForegroundColor DarkGray
+Write-Host "Verified image lot: $buildTag" -ForegroundColor Green
+Write-Host "-SkipRestart leaves the lot staged without changing live image tags."

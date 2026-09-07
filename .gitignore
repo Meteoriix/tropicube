@@ -32,3 +32,9 @@ dockerfiles/plugins/**/*.jar
 dockerfiles/worlds/**/players/
 dockerfiles/worlds/**/session.lock
 dockerfiles/worlds/**/level.dat_old
+
+# Local operations state, exports and Python caches
+.runtime/
+**/__pycache__/
+*.sql.gz
+*.rdb

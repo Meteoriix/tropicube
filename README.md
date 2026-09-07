@@ -87,3 +87,7 @@ Le module Fallen Kingdoms est actuellement vide : il compile dans le réacteur m
 - Le secret de forwarding doit être identique côté Velocity et Paper.
 - L'accès au daemon Docker est limité au conteneur `docker-proxy`; seules les API nécessaires aux conteneurs, images, réseaux et volumes éphémères sont exposées. Cet accès reste néanmoins sensible et doit être réservé à une machine de confiance.
 - Sauvegardez les volumes `mysql-data` et `redis-data` avant toute opération d'infrastructure importante.
+
+## Préparation de la première production
+
+Le réseau dispose de limites mémoire distinctes du heap Java, d'une file SQL bornée, d'un signal de disponibilité applicative, de sauvegardes SFTP chiffrées et de lots d'images activés après validation. Consulter [le guide d'exploitation](docs/DEPLOYMENT.md#procédure-de-livraison-fiable-avant-ouverture) et [les paramètres](docs/CONFIGURATION.md#fiabilité-avant-ouverture). L'objectif initial de 50 joueurs doit être validé sur le matériel cible avant ouverture.

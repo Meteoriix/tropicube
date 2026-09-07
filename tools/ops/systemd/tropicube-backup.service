@@ -1,0 +1,16 @@
+[Unit]
+Description=Tropicube encrypted off-host backup
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/tropicube
+EnvironmentFile=/etc/tropicube/ops.env
+Environment=TROPICUBE_OPS_STATE=/var/lib/tropicube-ops
+ExecStart=/usr/bin/python3 /opt/tropicube/tools/ops/tropicube_ops.py backup
+UMask=0077
+TimeoutStartSec=3h
+Nice=10
+IOSchedulingClass=idle
+NoNewPrivileges=true

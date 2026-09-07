@@ -103,6 +103,10 @@ New options require a safe default, startup validation, documentation, and deplo
 
 `TropicubeLobby/config.yml` exposes `guilds.input-timeout-seconds` for each private input step (name, tag or username). Default: `120` seconds; only integers from `10` to `600` are accepted. Fractional, textual and out-of-range values fail startup with the key and supplied value. The bundled resource and Docker copy match; existing configuration files receive the default through the current updater. Member, officer and contribution limits remain owned by Core.
 
-## Runtime reliability
+## Pre-opening reliability settings
 
-New defaults: docker.memory-budget-mib=16384; template memory-overhead-mib=0 adds max(512, ceil(ram-max/4)) MiB beyond heap. Core SQL queue-capacity=100 and max-concurrent=10. Core/Velocity Redis pool defaults remain 20/10/2 with bounded 2000 ms timeouts.
+Core SQL defaults: `database.pool.max-size=10`, `pool.min-idle=2`, `connection-timeout-millis=30000` (minimum 250), `socket-timeout-millis=30000`, `max-concurrent=10`, `queue-capacity=100`, `shutdown-timeout-seconds=10`. Concurrency cannot exceed pool size; all durations and capacities are positive. Core/Velocity Redis defaults: `redis.pool.max-total=20`, `max-idle=10`, `min-idle=2`; connection, socket and borrow timeouts are 2000 ms. Idle bounds must be ordered within the pool maximum.
+
+Velocity `docker.memory-budget-mib=16384` covers dynamic container limits only. Reserve memory separately for the OS and static services. Template `memory-overhead-mib=0` computes `max(512, ceil(ram-max/4))` MiB beyond Java heap; positive values override the margin. Memory environment variables are derived from these settings. Existing configurations receive compatibility defaults on restart.
+
+Operations need Python 3.11+, Restic and SSH. Configure `RESTIC_REPOSITORY` as an off-host `sftp:` repository, `RESTIC_PASSWORD_FILE`, and optionally `TROPICUBE_OPS_STATE` (default `.runtime/ops`; systemd uses `/var/lib/tropicube-ops`). Keep recovery credentials outside Git and outside this host. Static and dynamic containers use Docker local logging with five 20 MiB files.
