@@ -91,3 +91,5 @@ Le module Fallen Kingdoms est actuellement vide : il compile dans le réacteur m
 ## Préparation de la première production
 
 Le réseau dispose de limites mémoire distinctes du heap Java, d'une file SQL bornée, d'un signal de disponibilité applicative, de sauvegardes SFTP chiffrées et de lots d'images activés après validation. Consulter [le guide d'exploitation](docs/DEPLOYMENT.md#procédure-de-livraison-fiable-avant-ouverture) et [les paramètres](docs/CONFIGURATION.md#fiabilité-avant-ouverture). L'objectif initial de 50 joueurs doit être validé sur le matériel cible avant ouverture.
+
+Pour le poste de développement Windows, `tools/ops/setup-windows.ps1` configure des sauvegardes locales chiffrées et `tools/ops/windows.ps1 -Command deploy` charge leur configuration avant le déploiement. L'installation des tâches Windows est décrite dans le guide d'exploitation ; une sauvegarde hors du PC reste nécessaire pour couvrir sa perte.

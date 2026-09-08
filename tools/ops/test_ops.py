@@ -9,6 +9,25 @@ import tropicube_ops as ops
 
 
 class OperationsTest(unittest.TestCase):
+    def test_local_backup_requires_explicit_development_mode(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            environment = {"RESTIC_REPOSITORY": "local:" + temporary, "RESTIC_PASSWORD_FILE": "/test"}
+            with patch.dict(ops.os.environ, environment, clear=True):
+                with self.assertRaises(ValueError): ops.validate_backup_configuration()
+                ops.os.environ["TROPICUBE_BACKUP_MODE"] = "local-development"
+                ops.validate_backup_configuration()
+                for destination in ("local:relative", "local:" + str(ops.ROOT / "backups"), "sftp:test:/backup"):
+                    ops.os.environ["RESTIC_REPOSITORY"] = destination
+                    with self.assertRaises(ValueError): ops.validate_backup_configuration()
+
+    def test_backup_configuration_rejects_unknown_mode_and_missing_password(self):
+        with patch.dict(ops.os.environ, {"RESTIC_REPOSITORY": "sftp:test:/backup"}, clear=True):
+            with self.assertRaises(ValueError): ops.validate_backup_configuration()
+            ops.os.environ["RESTIC_PASSWORD_FILE"] = "/test"
+            ops.validate_backup_configuration()
+            ops.os.environ["TROPICUBE_BACKUP_MODE"] = "local"
+            with self.assertRaises(ValueError): ops.validate_backup_configuration()
+
     def test_manifest_rejects_tampering_and_traversal(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

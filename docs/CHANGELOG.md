@@ -4,6 +4,11 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-09-08
+
+- Ajoute un profil de développement Windows avec sauvegardes locales Restic chiffrées, répertoire privé protégé par ACL, tâches planifiées et commande de déploiement réutilisable ; le mode de production exige toujours SFTP.
+- Fixe le budget dynamique de la configuration Docker de développement à 8192 Mio, distinct du défaut embarqué de 16384 Mio.
+
 ### 2026-09-07
 
 - Fiabilise le démarrage Core/Lobby/SheepWars avec préparation réseau asynchrone et admission après disponibilité applicative ; borne la file SQL et les délais des pools, et retire les accès SQL/Redis de la déconnexion Paper.

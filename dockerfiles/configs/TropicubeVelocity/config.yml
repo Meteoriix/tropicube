@@ -72,8 +72,8 @@ health-check:
   connect-timeout-millis: 2000
 
 docker:
-  # Dynamic containers only; reserve host/service RAM separately.
-  memory-budget-mib: 16384
+  # Development deployment: 8 GiB for dynamic containers, separate from services.
+  memory-budget-mib: 8192
   host: "tcp://docker-proxy:2375"
   network: "tropicube-net"
   container-prefix: "tropicube"

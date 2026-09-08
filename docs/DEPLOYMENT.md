@@ -329,6 +329,28 @@ Après mise à jour conjointe de Core et Lobby, vérifier sur Java et Bedrock : 
 
 ## Procédure de livraison fiable avant ouverture
 
+### Développement sur Windows avec Docker Desktop
+
+PowerShell 7 et Python 3.11+ sont nécessaires. Depuis la racine du dépôt :
+
+```powershell
+.\tools\ops\setup-windows.ps1
+# Une seule fois pour un ancien Redis, hors session de jeu :
+docker compose up -d --no-deps --force-recreate --wait --wait-timeout 60 redis
+.\tools\ops\windows.ps1 -Command backup
+.\tools\ops\windows.ps1 -Command deploy
+.\tools\ops\setup-windows.ps1 -InstallTasks
+.\tools\ops\windows.ps1 -Command diagnose
+```
+
+L'installation télécharge Restic 0.19.1 depuis sa publication officielle et vérifie le SHA-256 avant exécution. Elle initialise une sauvegarde locale chiffrée hors du dépôt source, protège ses fichiers par ACL et génère une clé aléatoire sans l'afficher. La relancer conserve la clé et les snapshots. Ce profil explicite de développement ne remplace pas une sauvegarde sur un stockage externe : conserver une copie indépendante du dépôt Restic et de sa clé de récupération hors du PC.
+
+Les tâches `Tropicube-<identifiant>-backup` et `Tropicube-<identifiant>-diagnose` utilisent le compte Windows connecté, sans stocker son mot de passe. La sauvegarde est quotidienne à 4 h avec rattrapage des échéances manquées ; le diagnostic s'exécute chaque minute. Le PC, la session et Docker Desktop doivent être disponibles. Une sauvegarde planifiée est ignorée si Velocity est arrêté ; elle ne démarre pas la pile et n'avance pas l'horodatage de succès. Les journaux de dernière exécution et `diagnostic.json` sont dans le répertoire privé indiqué par `.runtime/windows/settings.json`. Le Planificateur de tâches conserve le code de sortie. Il n'y a pas de notification externe ni de garantie de sauvegarde quotidienne lorsque le PC est éteint.
+
+Pour un lot déjà construit, remplacer `deploy` par `activate -Tag YYYYMMDD-HHMMSS`. Pour charger les variables Restic dans le terminal sans lancer une opération : `. .\tools\ops\windows.ps1 -Command environment`. Pour restaurer sous Windows, repérer le répertoire `backup-...` contenant `manifest.json` avec `restic ls latest`, puis utiliser `restic restore "latest:/C/.../backup-..." --tag tropicube --target <répertoire privé>` en remplaçant le chemin par celui affiché. Restaurer ce sous-répertoire évite de réappliquer les métadonnées des répertoires système parents de Windows. Valider ensuite avec `python tools/ops/tropicube_ops.py verify-backup <répertoire privé>` avant tout import et tester sur une pile isolée. Ne pas restaurer directement par-dessus les données actives.
+
+### Serveur Linux avec sauvegarde externe
+
 La cible initiale reste un seul hôte Linux avec Compose et un objectif de 50 joueurs à mesurer. Python 3.11+, Restic, OpenSSH et systemd complètent les prérequis d'exploitation Linux. Le build et les vérifications Python fonctionnent également sous Windows.
 
 Les scripts construisent désormais uniquement les tags UTC candidats et vérifient les trois images avant activation. `-SkipRestart` / `--skip-restart` laisse le lot préparé sans changer les tags `latest`. Pour activer ensuite un lot vérifié :

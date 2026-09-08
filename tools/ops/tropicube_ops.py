@@ -126,8 +126,20 @@ def archive_tree(source, destination):
 
 
 def validate_backup_configuration():
-    if not os.environ.get("RESTIC_REPOSITORY", "").startswith("sftp:"):
-        raise ValueError("RESTIC_REPOSITORY must name an off-host sftp: repository")
+    mode = os.environ.get("TROPICUBE_BACKUP_MODE", "off-host")
+    repository = os.environ.get("RESTIC_REPOSITORY", "")
+    if mode == "off-host":
+        if not repository.startswith("sftp:"):
+            raise ValueError("RESTIC_REPOSITORY must name an off-host sftp: repository")
+    elif mode == "local-development":
+        # Explicit opt-in for development; never silently downgrade the production policy.
+        if not repository.startswith("local:") or not Path(repository[6:]).is_absolute():
+            raise ValueError("Local development requires local: followed by an absolute repository path")
+        destination = Path(repository[6:]).resolve()
+        if destination.is_relative_to(ROOT):
+            raise ValueError("The local backup repository must be outside the source checkout")
+    else:
+        raise ValueError("TROPICUBE_BACKUP_MODE must be off-host or local-development")
     if not os.environ.get("RESTIC_PASSWORD_FILE"):
         raise ValueError("RESTIC_PASSWORD_FILE is required")
 
@@ -163,7 +175,8 @@ def backup():
             run(["restic", "forget", "--tag", "tropicube", "--group-by", "host,tags", "--keep-daily", "7",
                  "--keep-weekly", "4", "--keep-monthly", "3", "--prune"], timeout=3600)
             run(["restic", "check"], timeout=3600)
-        write_json(state / "last-backup.json", {"completed_at": time.time()})
+        write_json(state / "last-backup.json", {"completed_at": time.time(),
+                   "mode": os.environ.get("TROPICUBE_BACKUP_MODE", "off-host")})
         write_json(state / "backup-status.json", {"state": "ok", "at": time.time()})
     except Exception:
         write_json(state / "backup-status.json", {"state": "failed", "at": time.time()})
@@ -196,7 +209,9 @@ def diagnose():
     result["disk_used_percent"] = round(used * 100 / total, 1)
     if used / total > .8: result["alerts"].append("disk>80%")
     try:
-        last = json.loads((state_dir() / "last-backup.json").read_text())["completed_at"]
+        last_backup = json.loads((state_dir() / "last-backup.json").read_text())
+        last = last_backup["completed_at"]
+        result["backup_mode"] = last_backup.get("mode", "off-host")
         result["backup_age_hours"] = round((time.time() - last) / 3600, 2)
         if time.time() - last > 26 * 3600: result["alerts"].append("backup>26h")
         status = json.loads((state_dir() / "backup-status.json").read_text())
