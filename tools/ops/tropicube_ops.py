@@ -18,11 +18,14 @@ ROOT = Path(__file__).resolve().parents[2]
 IMAGES = ("lobby", "sheepwars", "velocity")
 MYSQL_CONTAINER = "tropicube-mysql"
 REDIS_CONTAINER = "tropicube-redis"
+# A windowless task has no console to inherit. Explicitly suppress console creation
+# for every CLI child, including the long-lived SQL backup lock connection.
+SUBPROCESS_FLAGS = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
 
 
 def run(args, *, output=None, timeout=120, input=None):
     result = subprocess.run(args, cwd=ROOT, input=input, stdout=output or subprocess.PIPE,
-                            stderr=subprocess.PIPE, timeout=timeout)
+                            stderr=subprocess.PIPE, timeout=timeout, creationflags=SUBPROCESS_FLAGS)
     if result.returncode:
         # docker inspect and tool stderr can contain credentials; keep diagnostics deliberately bounded.
         raise RuntimeError(f"{args[0]} failed (exit {result.returncode}); inspect the service privately")
@@ -86,7 +89,8 @@ def schema_lock():
     """Same MySQL advisory lock as Core, held by a dedicated connection during the dump."""
     command = ["docker", "exec", "-i", MYSQL_CONTAINER, "sh", "-c",
                'export MYSQL_PWD="$MYSQL_PASSWORD"; exec mysql --batch --skip-column-names --unbuffered -u "$MYSQL_USER" "$MYSQL_DATABASE"']
-    process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                               creationflags=SUBPROCESS_FLAGS)
     connection_id = None
     try:
         process.stdin.write(b"SELECT IF(GET_LOCK('tropicube:core:schema',30)=1,CONNECTION_ID(),0); DO SLEEP(3600);\n")
@@ -300,14 +304,14 @@ def activate(tag, restart):
         raise RuntimeError("Activation failed. Network must remain closed; inspect release manifest and schema before rollback") from None
 
 
-def main():
+def main(arguments=None):
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("backup")
     sub.add_parser("diagnose")
     verify = sub.add_parser("verify-backup"); verify.add_argument("directory")
     release = sub.add_parser("activate"); release.add_argument("tag"); release.add_argument("--skip-restart", action="store_true")
-    args = parser.parse_args()
+    args = parser.parse_args(arguments)
     os.umask(0o077)
     try:
         if args.command == "diagnose": return diagnose()

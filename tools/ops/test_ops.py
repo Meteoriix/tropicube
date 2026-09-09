@@ -2,13 +2,45 @@
 import json
 from pathlib import Path
 import tempfile
+import sys
 import unittest
 from unittest.mock import patch
 
 import tropicube_ops as ops
+import windows_task
 
 
 class OperationsTest(unittest.TestCase):
+    @unittest.skipUnless(ops.os.name == "nt", "Windows console regression")
+    def test_child_process_has_no_console_and_preserves_output(self):
+        result = ops.run([sys.executable, "-c",
+                          "import ctypes; print(ctypes.windll.kernel32.GetConsoleWindow())"])
+        self.assertEqual("0", result)
+
+    def test_windowless_task_logs_output_and_propagates_failure(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.dict(ops.os.environ):
+            settings = {name: temporary for name in ("RESTIC_REPOSITORY", "RESTIC_PASSWORD_FILE",
+                        "TROPICUBE_OPS_STATE", "TROPICUBE_BACKUP_MODE", "toolsDirectory", "dockerDirectory", "gitDirectory")}
+            def failed(arguments):
+                self.assertEqual(["diagnose"], arguments)
+                print("diagnostic failure", file=sys.stderr)
+                return 1
+            with patch.object(ops, "main", side_effect=failed):
+                self.assertEqual(1, windows_task.run_task("diagnose", settings))
+            self.assertIn("diagnostic failure", (Path(temporary) / "diagnose-task.log").read_text())
+
+    def test_windowless_backup_skips_stopped_stack_without_advancing_success(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.dict(ops.os.environ):
+            settings = {name: temporary for name in ("RESTIC_REPOSITORY", "RESTIC_PASSWORD_FILE",
+                        "TROPICUBE_OPS_STATE", "TROPICUBE_BACKUP_MODE", "toolsDirectory", "dockerDirectory", "gitDirectory")}
+            last = Path(temporary) / "last-backup.json"
+            last.write_text('{"completed_at": 10}')
+            with patch.object(ops, "docker", return_value=""), patch.object(ops, "main") as operation:
+                self.assertEqual(0, windows_task.run_task("backup", settings))
+                operation.assert_not_called()
+            self.assertEqual(10, json.loads(last.read_text())["completed_at"])
+            self.assertIn("skipped", (Path(temporary) / "backup-task.log").read_text())
+
     def test_local_backup_requires_explicit_development_mode(self):
         with tempfile.TemporaryDirectory() as temporary:
             environment = {"RESTIC_REPOSITORY": "local:" + temporary, "RESTIC_PASSWORD_FILE": "/test"}

@@ -70,10 +70,13 @@ if ($LASTEXITCODE -ne 0) { throw 'Cannot open existing Restic repository.' }
 if ($InstallTasks) {
     $account = [Security.Principal.WindowsIdentity]::GetCurrent().Name
     $principal = New-ScheduledTaskPrincipal -UserId $account -LogonType Interactive -RunLevel Limited
-    $pwsh = (Get-Command pwsh -CommandType Application | Select-Object -First 1).Source
+    $pythonw = Join-Path (Split-Path $settings.python) 'pythonw.exe'
+    if (-not (Test-Path -LiteralPath $pythonw -PathType Leaf)) {
+        throw 'pythonw.exe is required beside the configured python.exe for windowless scheduled tasks.'
+    }
     foreach ($command in @('backup', 'diagnose')) {
-        $arguments = '-NoProfile -NonInteractive -WindowStyle Hidden -File "{0}" -Command {1} -Scheduled' -f (Join-Path $PSScriptRoot 'windows.ps1'), $command
-        $action = New-ScheduledTaskAction -Execute $pwsh -Argument $arguments -WorkingDirectory $repositoryRoot
+        $arguments = '"{0}" {1}' -f (Join-Path $PSScriptRoot 'windows_task.py'), $command
+        $action = New-ScheduledTaskAction -Execute $pythonw -Argument $arguments -WorkingDirectory $repositoryRoot
         $trigger = if ($command -eq 'backup') {
             New-ScheduledTaskTrigger -Daily -At '04:00'
         } else {

@@ -4,6 +4,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-09-09
+
+- Supprime les apparitions de terminal des tâches Windows : lancement direct par `pythonw.exe`, sous-processus sans console et conservation des journaux et codes de retour du diagnostic et des sauvegardes.
+
 ### 2026-09-08
 
 - Ajoute un profil de développement Windows avec sauvegardes locales Restic chiffrées, répertoire privé protégé par ACL, tâches planifiées et commande de déploiement réutilisable ; le mode de production exige toujours SFTP.
