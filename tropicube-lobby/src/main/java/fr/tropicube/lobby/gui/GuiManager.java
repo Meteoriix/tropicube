@@ -66,14 +66,20 @@ public class GuiManager {
 
     public void openRankedSelector(Player player, String type) {
         UUID playerId = player.getUniqueId();
+        Inventory loading = plugin.getDiscoveryMenus().loading(player, () -> openRankedSelector(player, type),
+                () -> plugin.getDiscoveryMenus().openModes(player, type));
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            plugin.getLobbyServerManager().refreshPlayerMatchmaking(playerId);
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                Player online = Bukkit.getPlayer(playerId);
-                if (online == null) return;
-                openGuis.put(playerId, GuiType.RANKED_SELECTOR);
-                online.openInventory(RankedSelectorGUI.build(plugin, online, type));
-            });
+            try {
+                plugin.getLobbyServerManager().refreshPlayerMatchmaking(playerId);
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (!player.isOnline() || player.getOpenInventory().getTopInventory() != loading) return;
+                    openGuis.put(playerId, GuiType.RANKED_SELECTOR);
+                    player.openInventory(RankedSelectorGUI.build(plugin, player, type));
+                });
+            } catch (RuntimeException error) {
+                if (plugin.isEnabled()) Bukkit.getScheduler().runTask(plugin,
+                        () -> plugin.getDiscoveryMenus().loadFailed(player, loading, error));
+            }
         });
     }
 
@@ -86,16 +92,18 @@ public class GuiManager {
     public void openSettings(Player player) {
         UUID playerId = player.getUniqueId();
         if (!(Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core)) return;
+        Inventory loading = plugin.getDiscoveryMenus().loading(player, () -> openSettings(player),
+                () -> plugin.getCore().getPlayerCenterMenu().openHome(player));
         var replay = java.util.concurrent.CompletableFuture
                 .supplyAsync(() -> plugin.getRedisManager().getAutoReplayRemaining(playerId));
         replay.thenCombine(core.getPlayerPreferenceService().load(playerId), SettingsSnapshot::new)
                 .whenComplete((snapshot, error) -> Bukkit.getScheduler().runTask(plugin, () -> {
                     Player online = Bukkit.getPlayer(playerId);
-                    if (online == null) return;
+                    if (online != player || online.getOpenInventory().getTopInventory() != loading) return;
                     if (error != null) {
                         plugin.getLogger().log(java.util.logging.Level.WARNING,
                                 "Impossible de charger les paramètres de " + playerId, error);
-                        online.sendMessage(LangHelper.component(online, "general.operation-failed"));
+                        plugin.getDiscoveryMenus().loadFailed(online, loading, error);
                         return;
                     }
                     openGuis.put(playerId, GuiType.SETTINGS);
@@ -123,13 +131,15 @@ public class GuiManager {
         }
 
         UUID playerId = player.getUniqueId();
+        Inventory loading = plugin.getDiscoveryMenus().loading(player, () -> openVipShop(player, grades),
+                grades ? () -> openVipShop(player) : player::closeInventory);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 double balance = core.getEconomyManager().getBalance(playerId);
                 String grade = core.getPermissionManager().getGrade(playerId);
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     Player onlinePlayer = Bukkit.getPlayer(playerId);
-                    if (onlinePlayer == null) return;
+                    if (onlinePlayer != player || onlinePlayer.getOpenInventory().getTopInventory() != loading) return;
                     Inventory inventory = grades
                             ? VipShopGUI.buildGrades(onlinePlayer, balance, grade)
                             : VipShopGUI.build(onlinePlayer, balance, grade);
@@ -142,7 +152,7 @@ public class GuiManager {
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     Player onlinePlayer = Bukkit.getPlayer(playerId);
                     if (onlinePlayer != null) {
-                        onlinePlayer.sendMessage(LangHelper.component(onlinePlayer, "general.operation-failed"));
+                        plugin.getDiscoveryMenus().loadFailed(onlinePlayer, loading, exception);
                     }
                 });
             }
@@ -329,6 +339,16 @@ public class GuiManager {
     public boolean hasCustomGameOrCreation(UUID playerId) {
         return plugin.getRedisManager().exists("host:" + playerId)
                 || plugin.getRedisManager().exists("host-creation:" + playerId);
+    }
+
+    /** Rebuilds active settings/shop/routing screens after a language change. */
+    public void refreshLanguage(Player player) {
+        var holder = player.getOpenInventory().getTopInventory().getHolder();
+        if (holder instanceof VipShopGUI.Holder shop) openVipShop(player, shop.view() == VipShopGUI.View.GRADES);
+        else if (holder instanceof SettingsGUI.Holder) openSettings(player);
+        else if (holder instanceof RankedSelectorGUI.Holder ranked) openRankedSelector(player, ranked.type());
+        else if (holder instanceof ServerTypeSelectorGUI.Holder) openServerTypeSelector(player);
+        else if (holder instanceof ServerSelectorGUI.Holder servers) openServerSelector(player, servers.getType(), servers.getPage(), servers.getFilter());
     }
 
     // ── Suivi ────────────────────────────────────────────────────────────────

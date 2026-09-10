@@ -296,7 +296,7 @@ Les récompenses de missions réclamables et notifications non lues sont recharg
 
 Le clic gauche sur un jeu ouvre Partie rapide, Classé et Parties publiques. Les raccourcis Java clic droit et Maj + clic gauche restent disponibles, ainsi que l'entrée Parties personnalisées. Les modes utilisent les templates publiés par Velocity et le routage existant ; aucune règle SheepWars ne change. Les restrictions classées restent détaillées dans le sélecteur existant.
 
-Le Guide est volontaire et présente Jouer, Progresser, Social et Personnalisation. La Progression relit l'XP réseau, réutilise la courbe des récompenses existantes et présente les prochains cosmétiques par niveau dans l'ordre des seuils. La première étape fournit le catalogue de définitions ; les acquisitions et effets sont intégrés aux étapes suivantes. Aucun nouvel écran n'est imposé à la connexion.
+Le Guide est volontaire et présente Jouer, Progresser, Social et Personnalisation. La Progression relit l'XP réseau, réutilise la courbe des récompenses existantes et présente les prochains cosmétiques par niveau dans l'ordre des seuils. Le catalogue Core alimente aussi les acquisitions persistantes et le rendu Lobby décrits ci-dessous. Aucun nouvel écran n'est imposé à la connexion.
 
 ### Vestiaire et effets personnels
 
@@ -307,3 +307,13 @@ Core possède CosmeticCatalog et CosmeticService, leurs instantanés immuables e
 Lobby recharge les sélections à chaque arrivée et après mutation. Une génération de requête empêche une ancienne lecture d'écraser un chargement plus récent ; les mises à jour de préférence ont leur propre révision. Le rendu s'appuie uniquement sur ces caches et sur le VIP local actualisé par Core. Une seule tâche Paper cherche les destinataires dans le voisinage spatial et revalide portée, visibilité du joueur source et préférence de chaque destinataire. Les traînées publiques exigent un déplacement ; l'aperçu privé peut être vu immobile. Le son choisi remplace seulement le carillon de première arrivée, au même volume, pour son propriétaire ; les retours de lobby gardent leur comportement antérieur.
 
 La fermeture d'un écran invalide sa session ; les callbacks ne rouvrent jamais un menu fermé. `/lang` reconstruit le vestiaire actif. Déconnexion et arrêt nettoient caches et aperçus ; l'arrêt annule la tâche de rendu, désinscrit les listeners et ferme les écrans du vestiaire.
+
+### Achats et intégration à la progression
+
+Boutique garde Grades (case 11) et ajoute Cosmétiques (15), qui ouvre le même catalogue que Profil. Le retour conserve l'origine Boutique ou Profil pendant les filtres, pages et fiches. La confirmation présente l'objet, son prix, le solde et le solde restant ; elle précise que l'achat est définitif, non transférable et sans équipement automatique. Après réussite, la fiche permet d'équiper explicitement l'objet.
+
+`CosmeticService.buy(player, id, expectedPrice)` verrouille d'abord `tropicube_players`, revérifie l'acquisition et le prix confirmé, puis verrouille `tropicube_economy`. Le débit, `total_spent`, l'acquisition et une transaction économique `PURCHASE` sont écrits dans la même transaction MySQL. Une demande répétée retourne `OWNED` sans débit. Toute erreur SQL avant commit annule les trois écritures. La connexion est rendue au pool après commit/rollback. L'invalidation du solde réutilise `ECONOMY_INVALIDATE` et `economy:balance:<uuid>` ; aucun nouveau message Redis, TTL ou abonnement n'est ajouté. Un échec de publication après commit est journalisé sans annoncer à tort que l'achat a échoué.
+
+Les missions contribuent uniquement par leur XP et monnaie existantes : aucun multiplicateur ni nouvelle récompense n'est introduit. Les seuils sont consultés au moment d'équiper ; les achats restent acquis après reconnexion. Le prix du catalogue est configurable, et l'état affiché est relu à chaque fiche/confirmation.
+
+Les chargements existants de Boutique, Paramètres et Classé possèdent désormais un écran annulable et un contrôle d'identité de l'inventaire. Les retours depuis Classé et Parcourir ramènent au choix des modes. `/lang` reconstruit les écrans des nouveaux parcours, et Core rafraîchit son propre Profil même sans Lobby. Les sous-menus de notification et de navigation publique placent Retour à gauche et Fermer à droite ; Langues place aussi Fermer à droite.

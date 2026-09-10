@@ -26,15 +26,67 @@ public final class CosmeticService {
     }
     private final DatabaseManager database;
     private final CosmeticCatalog catalog;
-    public CosmeticService(DatabaseManager database, CosmeticCatalog catalog) {
+    private final java.util.function.Consumer<UUID> invalidateBalance;
+    public CosmeticService(DatabaseManager database, CosmeticCatalog catalog, java.util.function.Consumer<UUID> invalidateBalance) {
         this.database = database;
         this.catalog = catalog;
+        this.invalidateBalance = invalidateBalance;
     }
     public CosmeticCatalog catalog() { return catalog; }
     public CompletableFuture<Snapshot> snapshot(UUID player) {
         return database.supplyAsync(() -> {
             try (Connection connection = database.getConnection()) { return consult(connection, player); }
         });
+    }
+    /** Purchases never equip implicitly. The confirmed price is checked under the account lock. */
+    public CompletableFuture<Result> buy(UUID player, String id, int expectedPrice) {
+        CosmeticCatalog.Entry entry;
+        try { entry = catalog.find(id); }
+        catch (IllegalArgumentException invalid) { return CompletableFuture.completedFuture(Result.INVALID_SELECTION); }
+        return database.supplyAsync(() -> {
+            Result result;
+            try (Connection connection = database.getConnection()) { result = purchase(connection, player, entry, expectedPrice); }
+            if (result == Result.SUCCESS) invalidateBalance.accept(player);
+            return result;
+        });
+    }
+    /** Synchronous transaction boundary; requires a dedicated worker connection, never the Paper thread. */
+    public static Result purchase(Connection connection, UUID player, CosmeticCatalog.Entry entry, int expectedPrice) throws SQLException {
+        requireAutocommit(connection);
+        connection.setAutoCommit(false);
+        try {
+            if (!lockPlayer(connection, player)) { connection.rollback(); return Result.ACCOUNT_NOT_FOUND; }
+            Snapshot snapshot = read(connection, player);
+            Result result;
+            if (snapshot.purchased().contains(entry.id())) result = Result.OWNED;
+            else if (entry.access() != CosmeticCatalog.Access.CURRENCY) result = Result.LOCKED;
+            else if (entry.requirement() != expectedPrice) result = Result.PRICE_CHANGED;
+            else {
+                BigDecimal balance;
+                try (var statement = connection.prepareStatement("SELECT balance FROM tropicube_economy WHERE uuid=? FOR UPDATE")) {
+                    statement.setString(1, player.toString());
+                    try (var rows = statement.executeQuery()) {
+                        balance = rows.next() ? rows.getBigDecimal(1) : null;
+                    }
+                }
+                var price = BigDecimal.valueOf(entry.requirement());
+                if (balance == null) result = Result.ACCOUNT_NOT_FOUND;
+                else if (balance.compareTo(price) < 0) result = Result.INSUFFICIENT_FUNDS;
+                else {
+                    execute(connection, "UPDATE tropicube_economy SET balance=balance-?,total_spent=total_spent+?,last_updated=? WHERE uuid=?",
+                            price, price, System.currentTimeMillis(), player.toString());
+                    execute(connection, "INSERT INTO tropicube_cosmetic_purchases(player_uuid,cosmetic_id,price,acquired_at) VALUES(?,?,?,?)",
+                            player.toString(), entry.id(), price, System.currentTimeMillis());
+                    execute(connection, "INSERT INTO tropicube_transactions(from_uuid,to_uuid,amount,reason,transaction_type,timestamp) VALUES(?,NULL,?,?,?,?)",
+                            player.toString(), price, "Cosmetic: " + entry.id(), "PURCHASE", System.currentTimeMillis());
+                    result = Result.SUCCESS;
+                }
+            }
+            connection.commit();
+            return result;
+        } catch (SQLException | RuntimeException error) {
+            connection.rollback(); throw error;
+        } finally { connection.setAutoCommit(true); }
     }
     /** Null id unequips; invalid identifiers never schedule a mutation. */
     public CompletableFuture<Result> equip(UUID player, CosmeticCatalog.Category category, String id) {

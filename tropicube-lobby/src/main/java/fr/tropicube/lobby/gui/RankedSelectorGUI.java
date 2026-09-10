@@ -87,6 +87,7 @@ public final class RankedSelectorGUI {
             this.templates = templates;
         }
 
+        public String type() { return type; }
         public String templateAt(int slot) { return templates.get(slot); }
         @Override public @NonNull Inventory getInventory() { return inventory; }
     }

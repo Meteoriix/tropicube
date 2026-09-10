@@ -104,11 +104,10 @@ export function collectPlaceholders(sets: StateSet[]): PlaceholderSummary[] {
 
 /** Canonical business meaning of every placeholder exposed by the language resources. */
 export const PLACEHOLDER_DESCRIPTIONS: Record<string, string> = {
-    action: 'Type d’action de modération enregistrée dans l’historique.',
+    action: 'Libellé localisé de l’action proposée par un bouton ou enregistrée dans l’historique de modération.',
     amount: 'Montant de TropiCoins ajouté, retiré ou transféré.',
     auto_replay: 'État actuel du rejeu automatique dans les préférences du joueur.',
     badge: 'Nom localisé du badge affiché sur le profil.',
-    action: 'Action localisée du bouton, annoncée après le geste de clic.',
     requirement: 'Niveau, seuil VIP ou prix requis pour débloquer un cosmétique.',
     remaining: 'Solde de monnaie restant après un achat cosmétique.',
     balance: 'Solde actuel du joueur en TropiCoins.',

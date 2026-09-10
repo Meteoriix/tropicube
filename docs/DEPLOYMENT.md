@@ -398,3 +398,7 @@ Un retour au code précédent ne restaure pas les données : en cas de migration
 Avant ouverture, mesurer avec Spark et les diagnostics une heure de jeu représentatif à 10, 25 puis 50 joueurs, avec vingt cycles création/partie/fin. Critères : aucune terminaison mémoire, pas de croissance durable après nettoyage, temps de tick p95 inférieur à 50 ms. Noter CPU/RAM/stockage, nombre d'instances, temps de démarrage et de transfert. Les essais impliquant de vrais clients Java/Bedrock et le matériel cible restent indispensables ; les tests unitaires ne garantissent pas cette capacité.
 
 Références : [profilage Paper](https://docs.papermc.io/paper/profiling/), [journaux Docker](https://docs.docker.com/engine/logging/drivers/local/), [snapshot Redis](https://redis.io/docs/latest/develop/tools/cli/), [rétention Restic](https://github.com/restic/restic/blob/master/doc/060_forget.rst).
+
+## Lot Profil et personnalisation
+
+Livrer Core et Lobby ensemble après `mvnw verify`. V009 crée les tables de cosmétiques sans attribuer d'équipement ni toucher aux soldes existants. Les migrations historiques restent inchangées ; conserver les tables d'empreintes. Les langues utilisent des feuilles à deux niveaux (`cosmetics.name-breeze`, etc.), compatibles avec les merges PowerShell/Bash. Ne pas créer un sous-arbre `names` dans une langue locale. `cosmetics.yml` est copié avec les ressources Core ; les réglages de rendu sont dans la configuration Lobby. Aucun nouveau conteneur, port, secret, JAR tiers ou pack n'est requis.

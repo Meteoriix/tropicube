@@ -129,7 +129,7 @@ class PluginLanguageReferencesTest {
         families.put("cosmetics.filter-", Set.of("all", "available", "locked"));
         for (String prefix : List.of("cosmetics.guide-", "cosmetics.help-", "cosmetics.open-")) families.put(prefix, Set.of("play", "progress", "social", "customize"));
         try (var input = Files.newInputStream(root.resolve("tropicube-core/src/main/resources/cosmetics.yml"))) {
-            families.put("cosmetics.names.", fr.tropicube.core.cosmetic.CosmeticCatalog.load(input).entries().stream()
+            families.put("cosmetics.name-", fr.tropicube.core.cosmetic.CosmeticCatalog.load(input).entries().stream()
                     .map(fr.tropicube.core.cosmetic.CosmeticCatalog.Entry::id).collect(java.util.stream.Collectors.toSet()));
         }
         Set<String> ranks = enums.get("tropicube-sheepwars/RankTier");

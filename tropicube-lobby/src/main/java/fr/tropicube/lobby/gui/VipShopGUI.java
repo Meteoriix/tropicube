@@ -28,7 +28,8 @@ import java.util.Set;
  */
 public class VipShopGUI {
 
-    public static final int HOME_GRADES_SLOT = 13;
+    public static final int HOME_GRADES_SLOT = 11;
+    public static final int HOME_COSMETICS_SLOT = 15;
     public static final int HOME_CLOSE_SLOT = 26;
     public static final int GRADES_BACK_SLOT = 45;
     public static final int GRADES_CLOSE_SLOT = 53;
@@ -57,6 +58,8 @@ public class VipShopGUI {
         inv.setItem(HOME_GRADES_SLOT, new ItemBuilder(Material.NAME_TAG)
                 .name(LangHelper.get(player, "lobby.shop-grades-tab"))
                 .lore(LangHelper.get(player, "lobby.shop-grades-tab-lore")).build());
+        inv.setItem(HOME_COSMETICS_SLOT, new ItemBuilder(Material.FEATHER).name(LangHelper.get(player, "cosmetics.wardrobe"))
+                .lore(LangHelper.get(player, "cosmetics.wardrobe-action")).build());
         inv.setItem(HOME_CLOSE_SLOT, ItemBuilder.closeButton(player));
         return inv;
     }

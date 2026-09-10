@@ -108,7 +108,6 @@ public class TropicubeCore extends JavaPlugin {
         saveDefaultLanguages();
         File missionFile = new File(getDataFolder(), "missions.yml");
         if (!missionFile.exists()) saveResource("missions.yml", false);
-        if (!new File(getDataFolder(), "cosmetics.yml").exists()) saveResource("cosmetics.yml", false);
 
         // Updates existing configuration files with new keys
         updateConfigs();
@@ -134,6 +133,11 @@ public class TropicubeCore extends JavaPlugin {
                 databaseManager.initialize();
                 redisManager.initialize();
                 runtimeUiBundle.restore();
+                File cosmeticsFile = new File(getDataFolder(), "cosmetics.yml");
+                if (!cosmeticsFile.exists()) saveResource("cosmetics.yml", false);
+                try (var input = java.nio.file.Files.newInputStream(cosmeticsFile.toPath())) {
+                    cosmeticCatalog = fr.tropicube.core.cosmetic.CosmeticCatalog.load(input);
+                }
                 permissionManager.initialize();
             } catch (Exception failure) { throw new java.util.concurrent.CompletionException(failure); }
         }, lifecycleExecutor);
@@ -283,9 +287,13 @@ public class TropicubeCore extends JavaPlugin {
             privacyService = new fr.tropicube.core.network.PrivacyService(this, databaseManager);
             networkProgressionService = new NetworkProgressionService(this, databaseManager);
             profileService = new ProfileService(databaseManager, playerPreferenceService);
-            try (var input = java.nio.file.Files.newInputStream(new File(getDataFolder(), "cosmetics.yml").toPath())) {
-                cosmeticCatalog = fr.tropicube.core.cosmetic.CosmeticCatalog.load(input);
-                cosmeticService = new fr.tropicube.core.cosmetic.CosmeticService(databaseManager, cosmeticCatalog);
+            {
+                cosmeticCatalog.validateNames((language, key) -> languageManager.getLanguages().get(language).isString(key));
+                cosmeticService = new fr.tropicube.core.cosmetic.CosmeticService(databaseManager, cosmeticCatalog, playerId -> {
+                    economyManager.invalidateCache(playerId);
+                    try { redisManager.publishPlayerEvent("ECONOMY_INVALIDATE", playerId.toString()); }
+                    catch (RuntimeException error) { getLogger().log(java.util.logging.Level.WARNING, "Cosmetic balance invalidation failed for " + playerId, error); }
+                });
             }
             try (var input = java.nio.file.Files.newInputStream(
                     new File(getDataFolder(), "missions.yml").toPath())) {

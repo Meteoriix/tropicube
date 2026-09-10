@@ -26,7 +26,7 @@ import java.util.Map;
 public class LanguageSelectorGUI {
 
     /** “Close” button slot. */
-    public static final int CLOSE_SLOT = 22;
+    public static final int CLOSE_SLOT = 26;
 
     private static final int SIZE = 27;
 

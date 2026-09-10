@@ -47,6 +47,14 @@ class CosmeticCatalogTest {
             assertThrows(IllegalArgumentException.class, () -> catalog.find("removed"));
         }
     }
+    @Test void customDefinitionsRequireNamesInAllFourLanguages() {
+        var catalog = new CosmeticCatalog(List.of(entry("custom", Access.FREE, 0)));
+        assertDoesNotThrow(() -> catalog.validateNames((language, key) -> key.equals("cosmetics.name-custom")));
+        var error = assertThrows(IllegalArgumentException.class,
+                () -> catalog.validateNames((language, key) -> !language.equals("de")));
+        assertTrue(error.getMessage().contains("languages/de.yml"));
+        assertTrue(error.getMessage().contains("cosmetics.name-custom"));
+    }
     @Test void rejectsMalformedYamlUnknownEnumsAndScalarCoercion() {
         String valid = "version: 1\nentries:\n  breeze:\n    category: TRAIL\n    access: FREE\n    requirement: 0\n    effect: CLOUD\n";
         for (String invalid : List.of(valid.replace("version: 1", "version: '1'"), valid.replace("TRAIL", "UNKNOWN"),

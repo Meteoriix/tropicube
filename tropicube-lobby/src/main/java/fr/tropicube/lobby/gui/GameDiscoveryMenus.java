@@ -14,10 +14,15 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /** Lobby-owned discovery and cosmetic screens. Inventory identity guards all asynchronous completions. */
-public final class GameDiscoveryMenus implements Listener {
+public final class GameDiscoveryMenus implements Listener, AutoCloseable {
+    private volatile boolean closed;
     private final TropicubeLobby plugin;
     public GameDiscoveryMenus(TropicubeLobby plugin) {
         this.plugin = plugin;
+        for (String id : List.of("game-modes", "player-guide", "player-progression", "player-loading")) {
+            if (plugin.getMenuTemplates().menu(id).rows() != 6)
+                throw new IllegalArgumentException("menus." + id + ".rows: expected 6 for discovery navigation");
+        }
     }
     private static final int[] CONTENT = {10,11,12,13,14,15,16,19,20,21,22,23,24,25,28,29,30,31,32,33,34};
     /** Holder binds actions to this exact rendered snapshot, never to an item supplied by a player. */
@@ -25,7 +30,7 @@ public final class GameDiscoveryMenus implements Listener {
         private Inventory inventory;
         private final Map<Integer, Runnable> actions = new HashMap<>();
         private Runnable refresh;
-        private boolean busy;
+        private final fr.tropicube.core.ui.MenuSession session = new fr.tropicube.core.ui.MenuSession();
         public Inventory getInventory() { return inventory; }
     }
     private Screen screen(Player player, String template, Runnable refresh, Runnable back) {
@@ -40,7 +45,7 @@ public final class GameDiscoveryMenus implements Listener {
     }
     private void button(Player player, Screen screen, int slot, Material material, String key, Runnable action, Object... args) {
         screen.inventory.setItem(slot, NetworkMenuStyle.item(material, LangHelper.component(player, key, args),
-                LangHelper.component(player, "cosmetics.action", LangHelper.get(player, key, args))));
+                LangHelper.component(player, "cosmetics.action", NetworkMenuStyle.actionPlaceholders(LangHelper.component(player, key, args)))));
         screen.actions.put(slot, action);
     }
     /** Reads progression anew on every opening; closing invalidates the pending inventory. */
@@ -55,6 +60,7 @@ public final class GameDiscoveryMenus implements Listener {
             screen.inventory.setItem(4, NetworkMenuStyle.item(Material.EXPERIENCE_BOTTLE,
                     LangHelper.component(player, "cosmetics.progress", progress.level(),
                             fr.tropicube.core.progression.NetworkProgressionService.experienceToNextLevel(progress.experience()))));
+            button(player, screen, 49, Material.WRITABLE_BOOK, "center.missions", () -> plugin.getCore().getPlayerCenterMenu().openMissions(player));
             var upcoming = plugin.getCore().getCosmeticCatalog().upcoming(progress.level());
             if (upcoming.isEmpty()) screen.inventory.setItem(22, NetworkMenuStyle.item(Material.PAPER,
                     LangHelper.component(player, "cosmetics.progress-complete")));
@@ -102,15 +108,38 @@ public final class GameDiscoveryMenus implements Listener {
     @EventHandler public void click(InventoryClickEvent event) {
         if (!(event.getInventory().getHolder() instanceof Screen screen)) return;
         event.setCancelled(true);
-        if (screen.busy || event.getClick() != ClickType.LEFT || event.getRawSlot() < 0 || event.getRawSlot() >= screen.inventory.getSize()) return;
+        if (!screen.session.canInteract() || event.getClick() != ClickType.LEFT || event.getRawSlot() < 0 || event.getRawSlot() >= screen.inventory.getSize()) return;
         Runnable action = screen.actions.get(event.getRawSlot());
         if (action != null) action.run();
     }
     @EventHandler public void drag(InventoryDragEvent event) {
         if (event.getInventory().getHolder() instanceof Screen) event.setCancelled(true);
     }
-    private boolean current(Player player, Screen screen) { return player.isOnline() && player.getOpenInventory().getTopInventory() == screen.inventory; }
-    private void onServer(Runnable action) { if (plugin.isEnabled()) Bukkit.getScheduler().runTask(plugin, () -> { if (plugin.isEnabled()) action.run(); }); }
+    private boolean current(Player player, Screen screen) { return !closed && screen.session.isOpen() && player.isOnline() && player.getOpenInventory().getTopInventory() == screen.inventory; }
+    private void onServer(Runnable action) { if (!closed && plugin.isEnabled()) Bukkit.getScheduler().runTask(plugin, () -> { if (!closed && plugin.isEnabled()) action.run(); }); }
+    /** A visible, cancellable request token for shared Settings, Grades and Ranked adapters. */
+    public Inventory loading(Player player, Runnable retry, Runnable back) {
+        Screen screen = screen(player, "player-loading", retry, back);
+        screen.inventory.setItem(22, NetworkMenuStyle.loading(LangHelper.component(player, "cosmetics.loading"),
+                LangHelper.component(player, "cosmetics.back")));
+        return screen.inventory;
+    }
+    public void loadFailed(Player player, Inventory expected, Throwable error) {
+        if (expected.getHolder() instanceof Screen screen && current(player, screen)) failure(player, screen, error);
+    }
+    @EventHandler public void inventoryClosed(InventoryCloseEvent event) {
+        if (event.getInventory().getHolder() instanceof Screen screen) screen.session.close();
+    }
+    @Override public void close() {
+        closed = true;
+        org.bukkit.event.HandlerList.unregisterAll(this);
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.getOpenInventory().getTopInventory().getHolder() instanceof Screen screen) {
+                screen.session.close();
+                player.closeInventory();
+            }
+        }
+    }
     private void failure(Player player, Screen screen, Throwable error) {
         plugin.getLogger().log(java.util.logging.Level.WARNING, "Player menu failed for " + player.getUniqueId(), error);
         button(player, screen, 22, Material.RED_DYE, "cosmetics.retry", screen.refresh);

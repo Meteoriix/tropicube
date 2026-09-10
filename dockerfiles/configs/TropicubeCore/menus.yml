@@ -61,7 +61,7 @@ menus:
     frame: network
     buttons:
       previous:
-        slot: 45
+        slot: 48
         material: ARROW
         name-key: center.previous
         lore-key: center.previous-action
@@ -73,14 +73,14 @@ menus:
         lore-key: center.filter-action
         action: change_filter
       back:
-        slot: 49
+        slot: 45
         material: ARROW
         name-key: center.back
         lore-key: lobby.back-button-lore
         action: back
         required: true
       read-all:
-        slot: 50
+        slot: 49
         material: LIME_DYE
         name-key: center.mark-all-read
         lore-key: center.mark-all-read-action

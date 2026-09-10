@@ -186,6 +186,11 @@ public class LanguageManager {
     public void setPlayerLanguage(UUID uuid, String lang, boolean save) {
         if (!SUPPORTED_LANGUAGES.contains(lang)) return;
         playerLanguages.put(uuid, lang);
+        // Core screens also exist in game waiting areas without a Lobby language subscriber.
+        if (plugin.isEnabled()) plugin.getServer().getScheduler().runTask(plugin, () -> {
+            var player = plugin.getServer().getPlayer(uuid);
+            if (player != null && plugin.getPlayerCenterMenu() != null) plugin.getPlayerCenterMenu().refreshLanguage(player);
+        });
         plugin.getRedisManager().setPlayerLanguage(uuid.toString(), lang);
         plugin.getRedisManager().publishPlayerEvent("LANG_CHANGED", uuid + ":" + lang);
         if (save) {

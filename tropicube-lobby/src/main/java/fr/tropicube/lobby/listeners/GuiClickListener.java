@@ -161,11 +161,15 @@ public class GuiClickListener implements Listener {
 
     private void handleRankedSelector(Player player, int slot, RankedSelectorGUI.Holder holder) {
         if (slot == RankedSelectorGUI.CLOSE_SLOT) { player.closeInventory(); return; }
-        if (slot == RankedSelectorGUI.BACK_SLOT) { plugin.getGuiManager().openServerTypeSelector(player); return; }
+        if (slot == RankedSelectorGUI.BACK_SLOT) { plugin.getDiscoveryMenus().openModes(player, holder.type()); return; }
         if (slot == RankedSelectorGUI.CANCEL_SLOT) {
             plugin.getLobbyServerManager().cancelMatchmaking(player);
             player.sendMessage(LangHelper.component(player, "lobby.ranked-cancelled"));
-            Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.getGuiManager().openRankedSelector(player, "SHEEPWARS"), 2L);
+            var origin = player.getOpenInventory().getTopInventory();
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (player.isOnline() && player.getOpenInventory().getTopInventory() == origin)
+                    plugin.getGuiManager().openRankedSelector(player, holder.type());
+            }, 2L);
             return;
         }
         String template = holder.templateAt(slot);
@@ -181,7 +185,7 @@ public class GuiClickListener implements Listener {
                 return;
             }
             case ServerSelectorGUI.SLOT_BACK -> {
-                plugin.getGuiManager().openServerTypeSelector(player);
+                plugin.getDiscoveryMenus().openModes(player, serverHolder.getType());
                 return;
             }
             case ServerSelectorGUI.SLOT_BEST -> {
@@ -327,6 +331,7 @@ public class GuiClickListener implements Listener {
     private void handleVipShop(Player player, int slot, VipShopGUI.Holder holder) {
         if (holder.view() == VipShopGUI.View.HOME) {
             if (slot == VipShopGUI.HOME_CLOSE_SLOT) player.closeInventory();
+            else if (slot == VipShopGUI.HOME_COSMETICS_SLOT) plugin.getCosmeticMenus().openShop(player);
             else if (slot == VipShopGUI.HOME_GRADES_SLOT) plugin.getGuiManager().openVipGrades(player);
             return;
         }

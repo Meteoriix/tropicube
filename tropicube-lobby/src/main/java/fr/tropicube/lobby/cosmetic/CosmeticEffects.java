@@ -31,6 +31,7 @@ public final class CosmeticEffects implements Listener, AutoCloseable {
     private long renderCalls, renderNanos, maximumRenderNanos, emissions;
     /** Aggregate measurements are read on Paper, without logging or allocating every tick. */
     public record Metrics(long calls, long totalNanos, long maximumNanos, long recipientEmissions) { }
+    public int previewSeconds() { return previewTicks / 20; }
     public Metrics metrics() { return new Metrics(renderCalls, renderNanos, maximumRenderNanos, emissions); }
     public CosmeticEffects(TropicubeLobby plugin) {
         this.plugin = plugin;

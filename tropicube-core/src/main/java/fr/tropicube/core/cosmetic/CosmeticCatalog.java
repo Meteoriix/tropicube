@@ -30,13 +30,22 @@ public record CosmeticCatalog(List<Entry> entries) {
                 case CURRENCY -> purchased;
             };
         }
-        public String nameKey() { return "cosmetics.names." + id; }
+        public String nameKey() { return "cosmetics.name-" + id; }
     }
     public CosmeticCatalog {
         entries = List.copyOf(entries);
         var ids = new HashSet<String>();
         if (entries.isEmpty() || entries.size() > 100) throw new IllegalArgumentException("cosmetics.entries: expected 1..100 entries");
         for (Entry entry : entries) if (!ids.add(entry.id())) throw new IllegalArgumentException("Duplicate cosmetic: " + entry.id());
+    }
+    /** Rejects missing local labels rather than relying on a fallback or exposing technical identifiers. */
+    public void validateNames(java.util.function.BiPredicate<String, String> hasTranslation) {
+        for (String language : List.of("fr", "en", "de", "es")) {
+            for (Entry entry : entries) {
+                if (!hasTranslation.test(language, entry.nameKey()))
+                    throw new IllegalArgumentException("languages/" + language + ".yml: missing " + entry.nameKey());
+            }
+        }
     }
     /** Ordered future level rewards; already unlocked items are excluded. */
     public List<Entry> upcoming(int level) {

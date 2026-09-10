@@ -187,7 +187,7 @@ public class TropicubeLobby extends JavaPlugin {
                     guildMenus.refreshLanguage(player);
                     discoveryMenus.refreshLanguage(player);
                     cosmeticMenus.refreshLanguage(player);
-                    core.getPlayerCenterMenu().refreshLanguage(player);
+                    guiManager.refreshLanguage(player);
                     if (player.getOpenInventory().getTopInventory().getHolder() instanceof fr.tropicube.lobby.gui.SocialGUI.Holder holder)
                         guiManager.openSocial(player, holder.view());
                 });
@@ -216,6 +216,7 @@ public class TropicubeLobby extends JavaPlugin {
     public void onDisable() {
         if (cosmeticEffects != null) cosmeticEffects.close();
         if (cosmeticMenus != null) cosmeticMenus.close();
+        if (discoveryMenus != null) discoveryMenus.close();
         if (core != null && core.getPlayerCenterMenu() != null) core.getPlayerCenterMenu().clearLobbyOpeners();
         if (getServer().getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore corePlugin) corePlugin.backendStopped();
         getServer().getScheduler().cancelTasks(this);

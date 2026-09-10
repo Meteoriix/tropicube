@@ -19,7 +19,6 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
@@ -76,9 +75,9 @@ public final class PlayerCenterMenu implements Listener {
         inventory.setItem(13, playerHead(player, "center.profile", "center.profile-lore",
                 "center.profile-action", "PROFILE"));
         inventory.setItem(20, navigationItem(player, Material.WRITABLE_BOOK,
-                "center.missions", "center.missions-lore", "center.missions-action", "MISSIONS"));
+                "center.missions", "cosmetics.loading", "center.missions-action", "MISSIONS"));
         inventory.setItem(22, navigationItem(player, Material.BELL,
-                "center.notifications", "center.notifications-lore", "center.notifications-action", "NOTIFICATIONS"));
+                "center.notifications", "cosmetics.loading", "center.notifications-action", "NOTIFICATIONS"));
         inventory.setItem(31, navigationItem(player, Material.COMPARATOR,
                 "center.privacy", "center.privacy-lore", "center.privacy-action", "SETTINGS"));
         inventory.setItem(53, navigationItem(player, Material.BARRIER,
@@ -93,9 +92,14 @@ public final class PlayerCenterMenu implements Listener {
                 (missions, inbox) -> new long[]{missions.stream().filter(m -> m.completed() && !m.rewarded()).count(), inbox.unread()})
                 .whenComplete((counts, error) -> {
                     if (!plugin.isEnabled()) return;
-                    Bukkit.getScheduler().runTask(plugin, () -> {
+                    onServer(() -> {
                         if (!player.isOnline() || player.getOpenInventory().getTopInventory() != inventory) return;
-                        if (error != null) { player.sendMessage(message(player, "general.operation-failed")); return; }
+                        if (error != null) {
+                            inventory.setItem(20, navigationItem(player, Material.RED_DYE, "center.missions", "general.operation-failed", "cosmetics.retry-action", "RETRY"));
+                            inventory.setItem(22, navigationItem(player, Material.RED_DYE, "center.notifications", "general.operation-failed", "cosmetics.retry-action", "RETRY"));
+                            plugin.getLogger().log(java.util.logging.Level.WARNING, "Profile counters failed for " + player.getUniqueId(), error);
+                            return;
+                        }
                         inventory.setItem(20, countedNavigation(player, Material.WRITABLE_BOOK, "center.missions", "cosmetics.mission-count", "center.missions-action", "MISSIONS", counts[0]));
                         inventory.setItem(22, countedNavigation(player, Material.BELL, "center.notifications", "cosmetics.notification-count", "center.notifications-action", "NOTIFICATIONS", counts[1]));
                     });
@@ -131,7 +135,7 @@ public final class PlayerCenterMenu implements Listener {
         Inventory origin = loading(player, View.NOTIFICATIONS, page, filter);
         UUID playerId = player.getUniqueId();
         plugin.getNotificationService().page(playerId, filter, page, PAGE_SIZE).whenComplete((result, error) ->
-                Bukkit.getScheduler().runTask(plugin, () -> {
+                onServer(() -> {
                     Player online = Bukkit.getPlayer(playerId);
                     if (online == null || online.getOpenInventory().getTopInventory() != origin) return;
                     if (error != null) {
@@ -157,15 +161,15 @@ public final class PlayerCenterMenu implements Listener {
                         entry.setItemMeta(meta);
                         inventory.setItem(9 + slot, entry);
                     }
-                    inventory.setItem(45, actionItem(online, Material.ARROW,
+                    inventory.setItem(48, actionItem(online, Material.ARROW,
                             "center.previous", "center.previous-action", "PREVIOUS"));
                     inventory.setItem(47, actionItem(online, Material.HOPPER,
                             "center.filter", "center.filter-action", "FILTER",
                             messageText(online, "center.notification-category-value-"
                                     + filter.toLowerCase(Locale.ROOT).replace('_', '-'))));
-                    inventory.setItem(49, navigationItem(online, Material.ARROW,
+                    inventory.setItem(45, navigationItem(online, Material.ARROW,
                             "center.back", "lobby.back-button-lore", "BACK"));
-                    inventory.setItem(50, actionItem(online, Material.LIME_DYE,
+                    inventory.setItem(49, actionItem(online, Material.LIME_DYE,
                             "center.mark-all-read", "center.mark-all-read-action", "READ_ALL"));
                     inventory.setItem(51, actionItem(online, Material.LAVA_BUCKET,
                             "center.delete-read", "center.delete-read-action", "DELETE_READ"));
@@ -183,7 +187,7 @@ public final class PlayerCenterMenu implements Listener {
         Inventory origin = loading(player, View.PROFILE, 0, "ALL");
         UUID playerId = player.getUniqueId();
         plugin.getProfileService().view(playerId, playerId).whenComplete((profile, error) ->
-                Bukkit.getScheduler().runTask(plugin, () -> {
+                onServer(() -> {
                     Player online = Bukkit.getPlayer(playerId);
                     if (online == null || online.getOpenInventory().getTopInventory() != origin) return;
                     if (error != null || profile == null) { loadFailure(online, origin, error); return; }
@@ -237,7 +241,7 @@ public final class PlayerCenterMenu implements Listener {
         Inventory origin = loading(player, View.MISSIONS, 0, "ALL");
         UUID playerId = player.getUniqueId();
         plugin.getMissionService().current(playerId).whenComplete((missions, error) ->
-                Bukkit.getScheduler().runTask(plugin, () -> {
+                onServer(() -> {
                     Player online = Bukkit.getPlayer(playerId);
                     if (online == null || online.getOpenInventory().getTopInventory() != origin) return;
                     if (error != null) { loadFailure(online, origin, error); return; }
@@ -346,6 +350,9 @@ public final class PlayerCenterMenu implements Listener {
         }
     }
 
+    private void onServer(Runnable action) {
+        if (plugin.isEnabled()) Bukkit.getScheduler().runTask(plugin, () -> { if (plugin.isEnabled()) action.run(); });
+    }
     private void loadFailure(Player player, Inventory inventory, Throwable error) {
         if (error != null) plugin.getLogger().log(java.util.logging.Level.WARNING, "Profile menu load failed for " + player.getUniqueId(), error);
         inventory.setItem(22, navigationItem(player, Material.RED_DYE, "general.operation-failed", "cosmetics.retry-action", "RETRY"));
@@ -364,7 +371,7 @@ public final class PlayerCenterMenu implements Listener {
 
     private void refreshAfter(Player player, State expected, Runnable refresh) {
         if (!plugin.isEnabled()) return;
-        Bukkit.getScheduler().runTask(plugin, () -> {
+        onServer(() -> {
             if (player.isOnline() && states.get(player.getUniqueId()) == expected) refresh.run();
         });
     }

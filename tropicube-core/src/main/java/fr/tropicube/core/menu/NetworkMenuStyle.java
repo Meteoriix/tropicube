@@ -97,6 +97,11 @@ public final class NetworkMenuStyle {
         return isBedrockClient(username, clientBrand) ? Material.NAME_TAG : Material.PLAYER_HEAD;
     }
 
+    /** Inserts a localized button label as a component, so its MiniMessage tags never become visible text. */
+    public static fr.tropicube.language.PlaceholderValues actionPlaceholders(Component label) {
+        return fr.tropicube.language.PlaceholderValues.builder().putComponent("action", label).build();
+    }
+
     public static ItemStack close(Component name, Component lore) {
         return item(Material.BARRIER, name, lore);
     }

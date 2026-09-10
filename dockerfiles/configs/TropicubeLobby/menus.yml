@@ -143,7 +143,7 @@ menus:
     frame: network
     buttons:
       close:
-        slot: 22
+        slot: 26
         material: BARRIER
         name-key: lobby.close-button
         lore-key: lobby.close-button-lore
@@ -260,12 +260,12 @@ menus:
     frame: network
     buttons:
       previous:
-        slot: 45
+        slot: 48
         material: ARROW
         name-key: lobby.server-prev-page
         action: previous_page
       best:
-        slot: 48
+        slot: 49
         material: NETHER_STAR
         name-key: lobby.server-best
         lore-key: lobby.server-best-lore
@@ -276,21 +276,21 @@ menus:
         name-key: lobby.server-filter-name
         action: change_filter
       back:
-        slot: 49
+        slot: 45
         material: ARROW
         name-key: lobby.back-button
         lore-key: lobby.back-button-lore
         action: back
         required: true
       close:
-        slot: 50
+        slot: 53
         material: BARRIER
         name-key: lobby.close-button
         lore-key: lobby.close-button-lore
         action: close
         required: true
       next:
-        slot: 53
+        slot: 50
         material: ARROW
         name-key: lobby.server-next-page
         action: next_page
@@ -514,6 +514,12 @@ menus:
         name-key: lobby.shop-grades-tab
         lore-key: lobby.shop-grades-tab-lore
         action: grades
+      cosmetics:
+        slot: 15
+        material: FEATHER
+        name-key: cosmetics.wardrobe
+        lore-key: cosmetics.wardrobe-action
+        action: cosmetics
       close:
         slot: 26
         material: BARRIER
@@ -642,6 +648,23 @@ menus:
         required: true
   game-modes:
     title-key: cosmetics.modes-title
+    rows: 6
+    frame: network
+    buttons:
+      back:
+        slot: 45
+        material: ARROW
+        name-key: cosmetics.back
+        action: back
+        required: true
+      close:
+        slot: 53
+        material: BARRIER
+        name-key: cosmetics.close
+        action: close
+        required: true
+  player-loading:
+    title-key: cosmetics.loading
     rows: 6
     frame: network
     buttons:

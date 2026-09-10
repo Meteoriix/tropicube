@@ -30,12 +30,12 @@ public class ServerSelectorGUI {
     private static final int SIZE      = 54;
     private static final int PAGE_SIZE = 28; // 4 lignes × 7 colonnes intérieures
 
-    public static final int SLOT_PREV  = 45;
-    public static final int SLOT_BEST  = 48;
+    public static final int SLOT_PREV  = 48;
+    public static final int SLOT_BEST  = 49;
     public static final int SLOT_FILTER = 47;
-    public static final int SLOT_BACK  = 49;
-    public static final int SLOT_CLOSE = 50;
-    public static final int SLOT_NEXT  = 53;
+    public static final int SLOT_BACK  = 45;
+    public static final int SLOT_CLOSE = 53;
+    public static final int SLOT_NEXT  = 50;
 
     private static Component buildTitle(Player player, String type, int page) {
         return LangHelper.menuTitle(player, "server-selector",

@@ -294,7 +294,7 @@ Le lanceur planifié `windows_task.py` lit le même fichier sous `pythonw.exe` (
 
 ## Catalogue de personnalisation
 
-Core charge `cosmetics.yml` au démarrage, hors du thread Paper pendant son initialisation. Le fichier est livré aussi sous `dockerfiles/configs/TropicubeCore/`. `version` doit être l'entier `1`, `entries` contient de 1 à 100 entrées aux identifiants uniques `[a-z][a-z0-9-]{0,47}`. Chaque entrée définit `category` (`TRAIL` ou `SOUND`), `access` (`FREE`, `LEVEL`, `CURRENCY`, `VIP`), `requirement` entier et `effect` non vide. `FREE` exige 0, les autres règles un entier positif et `VIP` au plus 3. Une valeur textuelle ou fractionnaire n'est pas convertie silencieusement. Chaque identifiant possède un libellé `cosmetics.names.<id>` dans les quatre langues.
+Core charge `cosmetics.yml` au démarrage, hors du thread Paper pendant son initialisation. Le fichier est livré aussi sous `dockerfiles/configs/TropicubeCore/`. `version` doit être l'entier `1`, `entries` contient de 1 à 100 entrées aux identifiants uniques `[a-z][a-z0-9-]{0,47}`. Chaque entrée définit `category` (`TRAIL` ou `SOUND`), `access` (`FREE`, `LEVEL`, `CURRENCY`, `VIP`), `requirement` entier et `effect` non vide. `FREE` exige 0, les autres règles un entier positif et `VIP` au plus 3. Une valeur textuelle ou fractionnaire n'est pas convertie silencieusement. Chaque identifiant possède un libellé `cosmetics.name-<id>` dans les quatre langues.
 
 Le catalogue initial comprend Brise gratuite, Étincelles niveau 5, Lucioles 500, Cœurs VIP 1, Carillon gratuit, Xylophone niveau 3, Cristal 300 et Mélodie tropicale VIP 2. La Progression n'affiche que les seuils de niveau restant à atteindre. La courbe réseau et les récompenses de missions ne changent pas.
 
@@ -308,3 +308,18 @@ Le catalogue initial comprend Brise gratuite, Étincelles niveau 5, Lucioles 500
 | `range-blocks` | 24 | entier 1–24, rayon maximal |
 
 Les anciens fichiers reçoivent les défauts via la mise à jour habituelle. Les nombres fractionnaires et chaînes sont refusés. Le catalogue accepte uniquement des particules sans données additionnelles pour TRAIL et des clés de sons présentes dans le registre Paper pour SOUND ; Lobby valide les identifiants au démarrage. Les aperçus sonores jouent une fois, avec un intervalle minimal d'une seconde entre lectures. Les menus du vestiaire nécessitent six lignes pour conserver leurs actions et boutons communs. La préférence existante `lobbyEffectsEnabled` contrôle aussi les nouveaux effets.
+
+### Catalogue initial et achats
+
+| Catégorie | Identifiant stable / libellé FR | Accès | Rendu |
+|---|---|---|---|
+| Traînée | `breeze` / Brise | gratuit | CLOUD |
+| Traînée | `sparks` / Étincelles | niveau réseau 5 | CRIT |
+| Traînée | `fireflies` / Lucioles | 500 unités | END_ROD |
+| Traînée | `hearts` / Cœurs | VIP ≥ 1 | HEART |
+| Son | `chime` / Carillon | gratuit | minecraft:block.note_block.chime |
+| Son | `xylophone` / Xylophone | niveau réseau 3 | minecraft:block.note_block.xylophone |
+| Son | `crystal` / Cristal | 300 unités | minecraft:block.amethyst_block.chime |
+| Son | `tropical` / Mélodie tropicale | VIP ≥ 2 | minecraft:block.note_block.bell |
+
+Les prix représentent plusieurs missions quotidiennes de 35 à 50 unités et restent inférieurs au premier grade à 5 000. Un changement de catalogue nécessite un redémarrage de Core et Lobby dans le même lot. Les noms doivent exister dans les quatre langues locales : le démarrage refuse une entrée sans libellé. Garder les identifiants stables ; retirer une entrée suspend son rendu sans effacer les anciennes acquisitions/sélections. Le déséquipement de la catégorie reste possible même après ce retrait. Aucun nouveau pack, plugin tiers, commande ou variable d'environnement n'est requis.
