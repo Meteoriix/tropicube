@@ -147,3 +147,9 @@ Les assertions couvrent invitations expirées, acceptations simultanées face à
 Exécuter `python -m unittest discover -s tools/ops -p test_ops.py -v` pour les erreurs d'exploitation et `python tools/ops/integration_tests.py` avec Docker disponible pour les migrations/verrous/Redis réels. Les identifiants `integration-only` appartiennent exclusivement à cette pile jetable, jamais à la production. Les sources SQL historiques sont regroupées dans DatabaseSchema pour que le démarrage et les tests utilisent les mêmes tables de base.
 
 L'objectif de charge initial est 50 joueurs sur un hôte Linux. Conserver les rapports Spark et diagnostics dans un stockage privé ; relever le p95 des ticks et les ressources après vingt cycles. Ne pas optimiser des requêtes ou des fréquences de rafraîchissement sans comparer un scénario identique avant/après.
+
+## Validation des parcours joueur
+
+Tests automatiques : navigation des types de partie (gauche, droit, Maj, molette et gestes ignorés), seuils d'XP restante, accès au catalogue, prochains déblocages triés, catalogue YAML invalide, unicité et immutabilité. Les suites de langues auditent les références de tous les plugins et la parité FR/EN/DE/ES, y compris les copies Docker.
+
+Scénarios serveur Java/Bedrock à valider : hotbar inchangée ; Profil avec tête Java/icône Bedrock ; compteurs après réclamation et lecture ; fermeture pendant chargement sans réouverture tardive ; retour après action ; Guide sans ouverture automatique ; parcours Jeux entièrement au clic gauche et raccourcis Java préservés ; `/lang` sans reconnexion ; Profil dans l'attente SheepWars sans entrées Lobby. Le serveur client réel reste nécessaire pour valider visuellement ces parcours.

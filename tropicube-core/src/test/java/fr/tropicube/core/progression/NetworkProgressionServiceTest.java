@@ -12,6 +12,14 @@ class NetworkProgressionServiceTest {
         assertThrows(IllegalArgumentException.class, () -> NetworkProgressionService.levelForExperience(-1));
     }
 
+    @Test void remainingExperienceUsesTheRewardCurveAtBoundaries() {
+        assertEquals(100, NetworkProgressionService.experienceToNextLevel(0));
+        assertEquals(1, NetworkProgressionService.experienceToNextLevel(99));
+        assertEquals(300, NetworkProgressionService.experienceToNextLevel(100));
+        assertEquals(1, NetworkProgressionService.experienceToNextLevel(399));
+        assertThrows(IllegalArgumentException.class, () -> NetworkProgressionService.experienceToNextLevel(-1));
+    }
+
     @Test void experienceBarTracksProgressWithinTheCurrentLevel() {
         assertEquals(0.0f, NetworkProgressionService.progressWithinLevel(0), 0.0001f);
         assertEquals(0.5f, NetworkProgressionService.progressWithinLevel(50), 0.0001f);

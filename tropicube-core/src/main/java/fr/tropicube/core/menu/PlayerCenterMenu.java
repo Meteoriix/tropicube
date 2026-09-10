@@ -40,6 +40,7 @@ public final class PlayerCenterMenu implements Listener {
     private final NamespacedKey hotbarKey;
     private final Map<UUID, State> states = new ConcurrentHashMap<>();
     private volatile Consumer<Player> settingsOpener;
+    private Consumer<Player> wardrobeOpener, progressionOpener, guideOpener;
 
     public PlayerCenterMenu(TropicubeCore plugin) {
         this.plugin = plugin;
@@ -52,7 +53,7 @@ public final class PlayerCenterMenu implements Listener {
     public ItemStack createHotbarItem(Player player) {
         ItemStack item = NetworkMenuStyle.playerHead(player,
                 message(player, "center.profile-hotbar-name"), message(player, "center.profile-hotbar-lore"));
-        SkullMeta skullMeta = (SkullMeta) item.getItemMeta();
+        var skullMeta = item.getItemMeta();
         skullMeta.getPersistentDataContainer().set(hotbarKey, PersistentDataType.BYTE, (byte) 1);
         item.setItemMeta(skullMeta);
         return item;
@@ -74,16 +75,47 @@ public final class PlayerCenterMenu implements Listener {
         NetworkMenuStyle.frame(inventory, player);
         inventory.setItem(13, playerHead(player, "center.profile", "center.profile-lore",
                 "center.profile-action", "PROFILE"));
-        inventory.setItem(21, navigationItem(player, Material.WRITABLE_BOOK,
+        inventory.setItem(20, navigationItem(player, Material.WRITABLE_BOOK,
                 "center.missions", "center.missions-lore", "center.missions-action", "MISSIONS"));
-        inventory.setItem(23, navigationItem(player, Material.BELL,
+        inventory.setItem(22, navigationItem(player, Material.BELL,
                 "center.notifications", "center.notifications-lore", "center.notifications-action", "NOTIFICATIONS"));
         inventory.setItem(31, navigationItem(player, Material.COMPARATOR,
                 "center.privacy", "center.privacy-lore", "center.privacy-action", "SETTINGS"));
         inventory.setItem(53, navigationItem(player, Material.BARRIER,
                 "lobby.close-button", "lobby.close-button-lore", "CLOSE"));
+        if (wardrobeOpener != null) inventory.setItem(24, navigationItem(player, Material.FEATHER, "cosmetics.wardrobe", "cosmetics.wardrobe-action", "WARDROBE"));
+        if (progressionOpener != null) inventory.setItem(30, navigationItem(player, Material.EXPERIENCE_BOTTLE, "cosmetics.progression", "cosmetics.progression-action", "PROGRESSION"));
+        if (guideOpener != null) inventory.setItem(32, navigationItem(player, Material.BOOK, "cosmetics.guide", "cosmetics.guide-action", "GUIDE"));
         player.openInventory(inventory);
         states.put(player.getUniqueId(), new State(View.HOME, 0, "ALL"));
+        plugin.getMissionService().current(player.getUniqueId()).thenCombine(
+                plugin.getNotificationService().page(player.getUniqueId(), "ALL", 0, 1),
+                (missions, inbox) -> new long[]{missions.stream().filter(m -> m.completed() && !m.rewarded()).count(), inbox.unread()})
+                .whenComplete((counts, error) -> {
+                    if (!plugin.isEnabled()) return;
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                        if (!player.isOnline() || player.getOpenInventory().getTopInventory() != inventory) return;
+                        if (error != null) { player.sendMessage(message(player, "general.operation-failed")); return; }
+                        inventory.setItem(20, countedNavigation(player, Material.WRITABLE_BOOK, "center.missions", "cosmetics.mission-count", "center.missions-action", "MISSIONS", counts[0]));
+                        inventory.setItem(22, countedNavigation(player, Material.BELL, "center.notifications", "cosmetics.notification-count", "center.notifications-action", "NOTIFICATIONS", counts[1]));
+                    });
+                });
+    }
+
+    /** Registers optional Lobby screens without a Core dependency on the Lobby plugin. */
+    public void setLobbyOpeners(Consumer<Player> wardrobe, Consumer<Player> progression, Consumer<Player> guide) {
+        wardrobeOpener = wardrobe; progressionOpener = progression; guideOpener = guide;
+    }
+    public void clearLobbyOpeners() { wardrobeOpener = null; progressionOpener = null; guideOpener = null; }
+    public void refreshLanguage(Player player) {
+        State state = states.get(player.getUniqueId());
+        if (state == null) return;
+        switch (state.view()) {
+            case HOME -> openHome(player);
+            case PROFILE -> openProfile(player);
+            case MISSIONS -> openMissions(player);
+            case NOTIFICATIONS -> openNotifications(player, state.page(), state.filter());
+        }
     }
 
     /** Registers the Lobby-owned graphical settings page while that plugin is active. */
@@ -96,13 +128,14 @@ public final class PlayerCenterMenu implements Listener {
     }
 
     public void openNotifications(Player player, int page, String filter) {
+        Inventory origin = loading(player, View.NOTIFICATIONS, page, filter);
         UUID playerId = player.getUniqueId();
         plugin.getNotificationService().page(playerId, filter, page, PAGE_SIZE).whenComplete((result, error) ->
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     Player online = Bukkit.getPlayer(playerId);
-                    if (online == null) return;
+                    if (online == null || online.getOpenInventory().getTopInventory() != origin) return;
                     if (error != null) {
-                        online.sendMessage(message(online, "general.operation-failed"));
+                        loadFailure(online, origin, error);
                         return;
                     }
                     Inventory inventory = Bukkit.createInventory(null, menuSize("profile-notifications"),
@@ -147,12 +180,13 @@ public final class PlayerCenterMenu implements Listener {
     }
 
     public void openProfile(Player player) {
+        Inventory origin = loading(player, View.PROFILE, 0, "ALL");
         UUID playerId = player.getUniqueId();
         plugin.getProfileService().view(playerId, playerId).whenComplete((profile, error) ->
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     Player online = Bukkit.getPlayer(playerId);
-                    if (online == null) return;
-                    if (error != null || profile == null) { online.sendMessage(message(online, "general.operation-failed")); return; }
+                    if (online == null || online.getOpenInventory().getTopInventory() != origin) return;
+                    if (error != null || profile == null) { loadFailure(online, origin, error); return; }
                     Inventory inventory = Bukkit.createInventory(null, menuSize("profile-details"),
                             menuTitle(online, "profile-details", profile.username()));
                     NetworkMenuStyle.frame(inventory, online);
@@ -200,12 +234,13 @@ public final class PlayerCenterMenu implements Listener {
     }
 
     public void openMissions(Player player) {
+        Inventory origin = loading(player, View.MISSIONS, 0, "ALL");
         UUID playerId = player.getUniqueId();
         plugin.getMissionService().current(playerId).whenComplete((missions, error) ->
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     Player online = Bukkit.getPlayer(playerId);
-                    if (online == null) return;
-                    if (error != null) { online.sendMessage(message(online, "general.operation-failed")); return; }
+                    if (online == null || online.getOpenInventory().getTopInventory() != origin) return;
+                    if (error != null) { loadFailure(online, origin, error); return; }
                     Inventory inventory = Bukkit.createInventory(null, menuSize("profile-missions"),
                             menuTitle(online, "profile-missions"));
                     NetworkMenuStyle.frame(inventory, online);
@@ -256,13 +291,14 @@ public final class PlayerCenterMenu implements Listener {
         State state = states.get(player.getUniqueId());
         if (state == null) return;
         event.setCancelled(true);
+        if (event.getRawSlot() < 0 || event.getRawSlot() >= event.getView().getTopInventory().getSize()) return;
         ItemStack clicked = event.getCurrentItem();
         if (clicked == null || !clicked.hasItemMeta()) return;
         Long notificationId = clicked.getItemMeta().getPersistentDataContainer().get(idKey, PersistentDataType.LONG);
         if (notificationId != null && state.view() == View.NOTIFICATIONS) {
             if (event.getClick().isRightClick()) {
                 plugin.getNotificationService().delete(player.getUniqueId(), notificationId)
-                        .thenRun(() -> openNotifications(player, state.page(), state.filter()));
+                        .thenRun(() -> refreshAfter(player, state, () -> openNotifications(player, state.page(), state.filter())));
             } else if (event.getClick().isLeftClick()) {
                 plugin.getNotificationService().inbox(player.getUniqueId(), 100).thenAccept(values -> values.stream()
                         .filter(value -> value.id() == notificationId).findFirst().ifPresent(value -> {
@@ -273,7 +309,7 @@ public final class PlayerCenterMenu implements Listener {
                             }
                         })).thenCompose(ignored -> plugin.getNotificationService().markRead(
                                 player.getUniqueId(), notificationId))
-                        .thenRun(() -> openNotifications(player, state.page(), state.filter()));
+                        .thenRun(() -> refreshAfter(player, state, () -> openNotifications(player, state.page(), state.filter())));
             }
             return;
         }
@@ -282,6 +318,10 @@ public final class PlayerCenterMenu implements Listener {
         boolean missionAction = action.startsWith("MISSION:");
         if (!event.getClick().isLeftClick() && !(missionAction && event.getClick().isRightClick())) return;
         switch (action) {
+            case "WARDROBE" -> { if (wardrobeOpener != null) wardrobeOpener.accept(player); }
+            case "PROGRESSION" -> { if (progressionOpener != null) progressionOpener.accept(player); }
+            case "GUIDE" -> { if (guideOpener != null) guideOpener.accept(player); }
+            case "RETRY" -> refreshLanguage(player);
             case "PROFILE" -> openProfile(player);
             case "MISSIONS" -> openMissions(player);
             case "NOTIFICATIONS" -> openNotifications(player, 0, "ALL");
@@ -295,17 +335,42 @@ public final class PlayerCenterMenu implements Listener {
             case "NEXT" -> openNotifications(player, state.page() + 1, state.filter());
             case "FILTER" -> openNotifications(player, 0, nextFilter(state.filter()));
             case "READ_ALL" -> plugin.getNotificationService().markAllRead(player.getUniqueId())
-                    .thenRun(() -> openNotifications(player, state.page(), state.filter()));
+                    .thenRun(() -> refreshAfter(player, state, () -> openNotifications(player, state.page(), state.filter())));
             case "DELETE_READ" -> plugin.getNotificationService().deleteRead(player.getUniqueId())
-                    .thenRun(() -> openNotifications(player, state.page(), state.filter()));
+                    .thenRun(() -> refreshAfter(player, state, () -> openNotifications(player, state.page(), state.filter())));
             default -> {
                 if (action.startsWith("MISSION:")) handleMission(player, action, event.getClick());
                 else if (action.startsWith("TITLE:")) plugin.getProfileService().selectTitle(
-                        player.getUniqueId(), action.substring("TITLE:".length())).thenRun(() -> openProfile(player));
+                        player.getUniqueId(), action.substring("TITLE:".length())).thenRun(() -> refreshAfter(player, state, () -> openProfile(player)));
             }
         }
     }
 
+    private void loadFailure(Player player, Inventory inventory, Throwable error) {
+        if (error != null) plugin.getLogger().log(java.util.logging.Level.WARNING, "Profile menu load failed for " + player.getUniqueId(), error);
+        inventory.setItem(22, navigationItem(player, Material.RED_DYE, "general.operation-failed", "cosmetics.retry-action", "RETRY"));
+    }
+
+    private Inventory loading(Player player, View view, int page, String filter) {
+        Inventory inventory = Bukkit.createInventory(null, 54, message(player, "cosmetics.loading"));
+        NetworkMenuStyle.frame(inventory, player);
+        inventory.setItem(22, item(player, Material.CLOCK, "cosmetics.loading", "NONE"));
+        inventory.setItem(45, navigationItem(player, Material.ARROW, "center.back", "lobby.back-button-lore", "BACK"));
+        inventory.setItem(53, navigationItem(player, Material.BARRIER, "lobby.close-button", "lobby.close-button-lore", "CLOSE"));
+        player.openInventory(inventory);
+        states.put(player.getUniqueId(), new State(view, page, filter));
+        return inventory;
+    }
+
+    private void refreshAfter(Player player, State expected, Runnable refresh) {
+        if (!plugin.isEnabled()) return;
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (player.isOnline() && states.get(player.getUniqueId()) == expected) refresh.run();
+        });
+    }
+    @EventHandler public void drag(org.bukkit.event.inventory.InventoryDragEvent event) {
+        if (states.containsKey(event.getWhoClicked().getUniqueId())) event.setCancelled(true);
+    }
     @EventHandler public void close(InventoryCloseEvent event) {
         states.remove(event.getPlayer().getUniqueId());
     }
@@ -315,6 +380,13 @@ public final class PlayerCenterMenu implements Listener {
         var meta = item.getItemMeta();
         meta.getPersistentDataContainer().set(actionKey, PersistentDataType.STRING, action);
         item.setItemMeta(meta);
+        return item;
+    }
+
+    private ItemStack countedNavigation(Player player, Material material, String title, String countKey,
+                                        String clickKey, String action, long count) {
+        ItemStack item = NetworkMenuStyle.item(material, message(player, title), message(player, countKey, count), message(player, clickKey));
+        item.editMeta(meta -> meta.getPersistentDataContainer().set(actionKey, PersistentDataType.STRING, action));
         return item;
     }
 
@@ -344,7 +416,7 @@ public final class PlayerCenterMenu implements Listener {
                                  String actionLoreKey, String action, Object... nameArgs) {
         ItemStack item = NetworkMenuStyle.playerHead(player, message(player, nameKey, nameArgs),
                 message(player, descriptionKey), Component.empty(), message(player, actionLoreKey));
-        SkullMeta meta = (SkullMeta) item.getItemMeta();
+        var meta = item.getItemMeta();
         meta.getPersistentDataContainer().set(actionKey, PersistentDataType.STRING, action);
         item.setItemMeta(meta);
         return item;
@@ -353,7 +425,7 @@ public final class PlayerCenterMenu implements Listener {
     private ItemStack playerHead(Player player, String nameKey, String loreKey, String action, Object... nameArgs) {
         ItemStack item = NetworkMenuStyle.playerHead(player,
                 message(player, nameKey, nameArgs), message(player, loreKey));
-        SkullMeta meta = (SkullMeta) item.getItemMeta();
+        var meta = item.getItemMeta();
         meta.getPersistentDataContainer().set(actionKey, PersistentDataType.STRING, action);
         item.setItemMeta(meta);
         return item;
@@ -364,6 +436,7 @@ public final class PlayerCenterMenu implements Listener {
     }
 
     private void handleMission(Player player, String action, ClickType click) {
+        State expected = states.get(player.getUniqueId());
         String[] fields = action.split(":");
         if (fields.length != 3) return;
         try {
@@ -372,10 +445,10 @@ public final class PlayerCenterMenu implements Listener {
             if (click == ClickType.RIGHT && rotation == MissionService.Rotation.DAILY) {
                 int allowance = player.hasPermission("tropicube.missions.reroll.bonus") ? 4 : 2;
                 plugin.getMissionService().rerollDaily(player.getUniqueId(), slot, allowance)
-                        .thenRun(() -> openMissions(player));
+                        .thenRun(() -> refreshAfter(player, expected, () -> openMissions(player)));
             } else if (click.isLeftClick()) {
                 plugin.getMissionService().claim(player.getUniqueId(), rotation, slot)
-                        .thenRun(() -> openMissions(player));
+                        .thenRun(() -> refreshAfter(player, expected, () -> openMissions(player)));
             }
         } catch (IllegalArgumentException ignored) { }
     }

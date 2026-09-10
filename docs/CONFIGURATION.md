@@ -291,3 +291,9 @@ La configuration Docker livrée fixe `docker.memory-budget-mib` à `8192` Mio po
 `tools/ops/setup-windows.ps1` crée `.runtime/windows/settings.json` (ignoré par Git), qui décrit ces variables, `RESTIC_PASSWORD_FILE`, `TROPICUBE_OPS_STATE`, les chemins Python, Docker, Git et le répertoire des outils. Les données et la clé sont placées sous `%LOCALAPPDATA%/Tropicube/ops/<identifiant du dépôt>/`, avec accès limité au compte Windows, à SYSTEM et aux administrateurs. Les relances conservent la clé et les sauvegardes. `windows.ps1` charge ce fichier pour les opérations manuelles, sans modifier l'environnement global Windows.
 
 Le lanceur planifié `windows_task.py` lit le même fichier sous `pythonw.exe` (requis à côté du `python.exe` configuré). Il conserve les journaux et les codes de sortie sans créer de console. Aucune variable supplémentaire n'est nécessaire ; réinstaller les tâches avec `setup-windows.ps1 -InstallTasks` après cette mise à jour.
+
+## Catalogue de personnalisation
+
+Core charge `cosmetics.yml` au démarrage, hors du thread Paper pendant son initialisation. Le fichier est livré aussi sous `dockerfiles/configs/TropicubeCore/`. `version` doit être l'entier `1`, `entries` contient de 1 à 100 entrées aux identifiants uniques `[a-z][a-z0-9-]{0,47}`. Chaque entrée définit `category` (`TRAIL` ou `SOUND`), `access` (`FREE`, `LEVEL`, `CURRENCY`, `VIP`), `requirement` entier et `effect` non vide. `FREE` exige 0, les autres règles un entier positif et `VIP` au plus 3. Une valeur textuelle ou fractionnaire n'est pas convertie silencieusement. Chaque identifiant possède un libellé `cosmetics.names.<id>` dans les quatre langues.
+
+Le catalogue initial comprend Brise gratuite, Étincelles niveau 5, Lucioles 500, Cœurs VIP 1, Carillon gratuit, Xylophone niveau 3, Cristal 300 et Mélodie tropicale VIP 2. La Progression n'affiche que les seuils de niveau restant à atteindre. La courbe réseau et les récompenses de missions ne changent pas.

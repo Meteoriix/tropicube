@@ -1,0 +1,42 @@
+version: 1
+entries:
+  breeze:
+    category: TRAIL
+    access: FREE
+    requirement: 0
+    effect: CLOUD
+  sparks:
+    category: TRAIL
+    access: LEVEL
+    requirement: 5
+    effect: CRIT
+  fireflies:
+    category: TRAIL
+    access: CURRENCY
+    requirement: 500
+    effect: END_ROD
+  hearts:
+    category: TRAIL
+    access: VIP
+    requirement: 1
+    effect: HEART
+  chime:
+    category: SOUND
+    access: FREE
+    requirement: 0
+    effect: minecraft:block.note_block.chime
+  xylophone:
+    category: SOUND
+    access: LEVEL
+    requirement: 3
+    effect: minecraft:block.note_block.xylophone
+  crystal:
+    category: SOUND
+    access: CURRENCY
+    requirement: 300
+    effect: minecraft:block.amethyst_block.chime
+  tropical:
+    category: SOUND
+    access: VIP
+    requirement: 2
+    effect: minecraft:block.note_block.bell

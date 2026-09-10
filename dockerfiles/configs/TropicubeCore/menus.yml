@@ -13,13 +13,13 @@ menus:
         action: open_profile
         required: true
       missions:
-        slot: 21
+        slot: 20
         material: WRITABLE_BOOK
         name-key: center.missions
         lore-key: center.missions-lore
         action: open_missions
       notifications:
-        slot: 23
+        slot: 22
         material: BELL
         name-key: center.notifications
         lore-key: center.notifications-lore
@@ -37,6 +37,24 @@ menus:
         lore-key: lobby.close-button-lore
         action: close
         required: true
+      wardrobe:
+        slot: 24
+        material: FEATHER
+        name-key: cosmetics.wardrobe
+        lore-key: cosmetics.wardrobe-action
+        action: open_wardrobe
+      progression:
+        slot: 30
+        material: EXPERIENCE_BOTTLE
+        name-key: cosmetics.progression
+        lore-key: cosmetics.progression-action
+        action: open_progression
+      guide:
+        slot: 32
+        material: BOOK
+        name-key: cosmetics.guide
+        lore-key: cosmetics.guide-action
+        action: open_guide
   profile-notifications:
     title-key: center.notifications-title
     rows: 6

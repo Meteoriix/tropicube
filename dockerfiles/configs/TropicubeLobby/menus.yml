@@ -509,7 +509,7 @@ menus:
         action: none
         required: true
       grades:
-        slot: 13
+        slot: 11
         material: NAME_TAG
         name-key: lobby.shop-grades-tab
         lore-key: lobby.shop-grades-tab-lore
@@ -555,3 +555,105 @@ menus:
           - 15
         template-action: buy_grade
         preview-count: 3
+  wardrobe:
+    title-key: cosmetics.wardrobe
+    rows: 6
+    frame: network
+    buttons:
+      back:
+        slot: 45
+        material: ARROW
+        name-key: cosmetics.back
+        action: back
+        required: true
+      close:
+        slot: 53
+        material: BARRIER
+        name-key: cosmetics.close
+        action: close
+        required: true
+  cosmetic-detail:
+    title-key: cosmetics.detail-title
+    rows: 6
+    frame: network
+    buttons:
+      back:
+        slot: 45
+        material: ARROW
+        name-key: cosmetics.back
+        action: back
+        required: true
+      close:
+        slot: 53
+        material: BARRIER
+        name-key: cosmetics.close
+        action: close
+        required: true
+  cosmetic-confirm:
+    title-key: cosmetics.confirm-title
+    rows: 6
+    frame: network
+    buttons:
+      back:
+        slot: 45
+        material: ARROW
+        name-key: cosmetics.back
+        action: back
+        required: true
+      close:
+        slot: 53
+        material: BARRIER
+        name-key: cosmetics.close
+        action: close
+        required: true
+  player-progression:
+    title-key: cosmetics.progression
+    rows: 6
+    frame: network
+    buttons:
+      back:
+        slot: 45
+        material: ARROW
+        name-key: cosmetics.back
+        action: back
+        required: true
+      close:
+        slot: 53
+        material: BARRIER
+        name-key: cosmetics.close
+        action: close
+        required: true
+  player-guide:
+    title-key: cosmetics.guide
+    rows: 6
+    frame: network
+    buttons:
+      back:
+        slot: 45
+        material: ARROW
+        name-key: cosmetics.back
+        action: back
+        required: true
+      close:
+        slot: 53
+        material: BARRIER
+        name-key: cosmetics.close
+        action: close
+        required: true
+  game-modes:
+    title-key: cosmetics.modes-title
+    rows: 6
+    frame: network
+    buttons:
+      back:
+        slot: 45
+        material: ARROW
+        name-key: cosmetics.back
+        action: back
+        required: true
+      close:
+        slot: 53
+        material: BARRIER
+        name-key: cosmetics.close
+        action: close
+        required: true

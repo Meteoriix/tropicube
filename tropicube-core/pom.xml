@@ -98,7 +98,7 @@
                             <outputDirectory>${project.basedir}/../dockerfiles/configs/TropicubeCore</outputDirectory>
                             <changeDetection>content</changeDetection>
                             <resources><resource><directory>${project.basedir}/src/main/resources</directory>
-                                <includes><include>menus.yml</include></includes></resource></resources>
+                                <includes><include>menus.yml</include><include>cosmetics.yml</include></includes></resource></resources>
                         </configuration>
                     </execution>
                 </executions>

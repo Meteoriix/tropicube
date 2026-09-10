@@ -74,6 +74,7 @@ class PluginLanguageReferencesTest {
 
                         @Override public Void visitLiteral(LiteralTree node, Void ignored) {
                             if (!(node.getValue() instanceof String key) || !KEY.matcher(key).matches()) return null;
+                            if (key.endsWith(".yml") || key.startsWith("cosmetics.entries.")) return null;
                             Tree parent = getCurrentPath().getParentPath().getLeaf();
                             boolean translationCall = parent instanceof MethodInvocationTree call
                                     && (TRANSLATION_METHODS.contains(method(call)) || isTranslationGet(call));
@@ -122,6 +123,13 @@ class PluginLanguageReferencesTest {
             }
         }
         Map<String, Set<String>> families = new TreeMap<>();
+        families.put("cosmetics.access-", Set.of("free", "level", "currency", "vip"));
+        families.put("cosmetics.filter-", Set.of("all", "available", "locked"));
+        for (String prefix : List.of("cosmetics.guide-", "cosmetics.help-", "cosmetics.open-")) families.put(prefix, Set.of("play", "progress", "social", "customize"));
+        try (var input = Files.newInputStream(root.resolve("tropicube-core/src/main/resources/cosmetics.yml"))) {
+            families.put("cosmetics.names.", fr.tropicube.core.cosmetic.CosmeticCatalog.load(input).entries().stream()
+                    .map(fr.tropicube.core.cosmetic.CosmeticCatalog.Entry::id).collect(java.util.stream.Collectors.toSet()));
+        }
         Set<String> ranks = enums.get("tropicube-sheepwars/RankTier");
         for (String prefix : List.of("sw.rank-", "center.rank-", "season.reward-title-", "season.reward-badge-")) families.put(prefix, ranks);
         families.put("sw.sb-class-", enums.get("tropicube-sheepwars/PlayerClass"));

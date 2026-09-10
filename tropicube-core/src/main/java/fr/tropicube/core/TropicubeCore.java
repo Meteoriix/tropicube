@@ -84,6 +84,7 @@ public class TropicubeCore extends JavaPlugin {
     private final Set<UUID> staffModePlayers = ConcurrentHashMap.newKeySet();
     private NetworkProgressionService networkProgressionService;
     private MissionService missionService;
+    private fr.tropicube.core.cosmetic.CosmeticCatalog cosmeticCatalog;
     private ProfileService profileService;
     private GuildService guildService;
     private fr.tropicube.core.guild.GuildInvitations guildInvitations;
@@ -106,6 +107,7 @@ public class TropicubeCore extends JavaPlugin {
         saveDefaultLanguages();
         File missionFile = new File(getDataFolder(), "missions.yml");
         if (!missionFile.exists()) saveResource("missions.yml", false);
+        if (!new File(getDataFolder(), "cosmetics.yml").exists()) saveResource("cosmetics.yml", false);
 
         // Updates existing configuration files with new keys
         updateConfigs();
@@ -280,6 +282,9 @@ public class TropicubeCore extends JavaPlugin {
             privacyService = new fr.tropicube.core.network.PrivacyService(this, databaseManager);
             networkProgressionService = new NetworkProgressionService(this, databaseManager);
             profileService = new ProfileService(databaseManager, playerPreferenceService);
+            try (var input = java.nio.file.Files.newInputStream(new File(getDataFolder(), "cosmetics.yml").toPath())) {
+                cosmeticCatalog = fr.tropicube.core.cosmetic.CosmeticCatalog.load(input);
+            }
             try (var input = java.nio.file.Files.newInputStream(
                     new File(getDataFolder(), "missions.yml").toPath())) {
             missionService = new MissionService(this, databaseManager, MissionCatalog.load(input));
@@ -487,6 +492,7 @@ public class TropicubeCore extends JavaPlugin {
     public NetworkCommunicationService getCommunicationService() { return communicationService; }
     public StaffSecurityService getStaffSecurityService() { return staffSecurityService; }
     public NetworkProgressionService getNetworkProgressionService() { return networkProgressionService; }
+    public fr.tropicube.core.cosmetic.CosmeticCatalog getCosmeticCatalog() { return cosmeticCatalog; }
     public MissionService getMissionService() { return missionService; }
     public ProfileService getProfileService() { return profileService; }
     /** Shared private input boundary consumed before network chat publication. */

@@ -126,6 +126,11 @@ public final class NetworkProgressionService {
         return (float) Math.max(0.0, Math.min(0.999_999, progress));
     }
 
+    /** Remaining cumulative XP to the next level, using the same curve as mission rewards. */
+    public static long experienceToNextLevel(long experience) {
+        return Math.max(0, thresholdForLevel(levelForExperience(experience) + 1) - experience);
+    }
+
     private static long thresholdForLevel(int level) {
         long offset = Math.max(0L, (long) level - 1L);
         try {

@@ -28,7 +28,7 @@ import java.util.concurrent.CompletableFuture;
 public class GuiClickListener implements Listener {
 
     enum TypeSelectorAction {
-        QUICK_PLAY,
+        CHOOSE_MODE,
         RANKED,
         PUBLIC_INSTANCES,
         NONE
@@ -136,11 +136,7 @@ public class GuiClickListener implements Listener {
         if (type == null) return;
 
         switch (typeSelectorAction(click)) {
-            case QUICK_PLAY -> {
-                player.closeInventory();
-                if ("sheepwars".equalsIgnoreCase(type)) player.performCommand("quickplay");
-                else plugin.getLobbyServerManager().requestStartGame(player, type);
-            }
+            case CHOOSE_MODE -> plugin.getDiscoveryMenus().openModes(player, type);
             case RANKED -> plugin.getGuiManager().openRankedSelector(player, type);
             case PUBLIC_INSTANCES -> plugin.getGuiManager().openServerSelector(player, type, 0);
             case NONE -> {
@@ -158,7 +154,7 @@ public class GuiClickListener implements Listener {
         if (click == ClickType.SHIFT_LEFT || click == ClickType.MIDDLE) {
             return TypeSelectorAction.PUBLIC_INSTANCES;
         }
-        if (click.isLeftClick()) return TypeSelectorAction.QUICK_PLAY;
+        if (click.isLeftClick()) return TypeSelectorAction.CHOOSE_MODE;
         if (click.isRightClick()) return TypeSelectorAction.RANKED;
         return TypeSelectorAction.NONE;
     }

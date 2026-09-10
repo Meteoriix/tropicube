@@ -40,6 +40,7 @@ public class TropicubeLobby extends JavaPlugin {
     private RedisManager redisManager;
     private LobbyServerManager lobbyServerManager;
     private GuiManager guiManager;
+    private fr.tropicube.lobby.gui.GameDiscoveryMenus discoveryMenus;
     private fr.tropicube.lobby.gui.GuildMenuController guildMenus;
     public fr.tropicube.lobby.gui.GuildMenuController getGuildMenus() { return guildMenus; }
     private PlayerLobbyListener playerLobbyListener;
@@ -95,6 +96,9 @@ public class TropicubeLobby extends JavaPlugin {
             return;
         }
         core.getPlayerCenterMenu().setSettingsOpener(guiManager::openSettings);
+        discoveryMenus = new fr.tropicube.lobby.gui.GameDiscoveryMenus(this);
+        Bukkit.getPluginManager().registerEvents(discoveryMenus, this);
+        core.getPlayerCenterMenu().setLobbyOpeners(null, discoveryMenus::openProgression, discoveryMenus::openGuide);
         visibilityManager = new LobbyVisibilityManager(this, core);
 
         // Listeners
@@ -175,6 +179,8 @@ public class TropicubeLobby extends JavaPlugin {
                     playerLobbyListener.setupHotbar(player);
                     scoreboardManager.setup(player);
                     guildMenus.refreshLanguage(player);
+                    discoveryMenus.refreshLanguage(player);
+                    core.getPlayerCenterMenu().refreshLanguage(player);
                     if (player.getOpenInventory().getTopInventory().getHolder() instanceof fr.tropicube.lobby.gui.SocialGUI.Holder holder)
                         guiManager.openSocial(player, holder.view());
                 });
@@ -201,6 +207,7 @@ public class TropicubeLobby extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (core != null && core.getPlayerCenterMenu() != null) core.getPlayerCenterMenu().clearLobbyOpeners();
         if (getServer().getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore corePlugin) corePlugin.backendStopped();
         getServer().getScheduler().cancelTasks(this);
         getServer().getAsyncScheduler().cancelTasks(this);
@@ -249,6 +256,7 @@ public class TropicubeLobby extends JavaPlugin {
         return value == null || value.isBlank() ? getConfig().getString(configPath, "") : value;
     }
     public LobbyServerManager getLobbyServerManager() { return lobbyServerManager; }
+    public fr.tropicube.lobby.gui.GameDiscoveryMenus getDiscoveryMenus() { return discoveryMenus; }
     public GuiManager getGuiManager() { return guiManager; }
     public PlayerLobbyListener getPlayerLobbyListener() { return playerLobbyListener; }
     public LobbyScoreboardManager getScoreboardManager() { return scoreboardManager; }

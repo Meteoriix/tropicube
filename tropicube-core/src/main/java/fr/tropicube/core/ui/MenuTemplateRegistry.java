@@ -40,6 +40,8 @@ public final class MenuTemplateRegistry implements UiReloadParticipant {
     private Map<String, Menu> load() {
         File file = new File(plugin.getDataFolder(), "menus.yml");
         if (!file.exists()) plugin.saveResource("menus.yml", false);
+        try { fr.tropicube.core.util.ConfigUpdater.update(plugin, "menus.yml", file); }
+        catch (java.io.IOException error) { throw new IllegalStateException("Unable to update menus.yml", error); }
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
         if (yaml.getInt("version", -1) != 1) throw new IllegalArgumentException("menus.yml: version attendue=1");
         ConfigurationSection root = yaml.getConfigurationSection("menus");
