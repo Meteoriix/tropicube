@@ -94,7 +94,7 @@ Les plages doivent être valides, sans chevauchement et assez grandes pour le no
 - `health-check.stale-timeout-seconds` : durée maximale depuis la dernière réponse avant destruction complète, `60` secondes par défaut ;
 - `health-check.connect-timeout-millis` : délai maximal d'une tentative de connexion, `2000` ms par défaut.
 
-Ces trois valeurs doivent être strictement positives et le seuil d'expiration doit être supérieur ou égal à l'intervalle. Les instances `STARTING` ne sont pas concernées : leur initialisation dispose séparément de 120 secondes avant nettoyage. Une instance prête expirée est retirée de Docker, Velocity et Redis ; le maintien de `min-instances` peut ensuite recréer un lobby ou un serveur classique si nécessaire.
+Ces trois valeurs doivent être strictement positives et le seuil d'expiration doit être supérieur ou égal à l'intervalle. Les instances `STARTING` ne sont pas concernées : leur initialisation dispose séparément de 120 secondes avant nettoyage. Le flux Docker qui observe ce démarrage reste ouvert 150 secondes afin qu'un Paper silencieux pendant son initialisation ne soit pas supprimé prématurément. Une instance prête expirée est retirée de Docker, Velocity et Redis ; le maintien de `min-instances` peut ensuite recréer un lobby ou un serveur classique si nécessaire.
 
 ### Templates
 

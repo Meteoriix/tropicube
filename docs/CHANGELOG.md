@@ -6,6 +6,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-10
 
+- Corrige le démarrage des backends dynamiques : le flux de logs Docker reste ouvert au-delà de la fenêtre de disponibilité Paper, ce qui évite de supprimer un Lobby ou SheepWars encore en initialisation.
+
+- Migre la disposition Profil antérieure qui plaçait Guildes en case 24, désormais réservée au Vestiaire, avant validation de la configuration restaurée.
+
 - Intègre les cosmétiques à la Boutique avec confirmation et achat atomique sans double débit ; vérifie concurrence et rollback MySQL, relie les déblocages aux récompenses existantes et complète les protections de navigation/rafraîchissement après `/lang`.
 
 - Ajoute le vestiaire à filtres et aperçus privés, les sélections persistantes par catégorie, le rendu Lobby borné et la suspension des accès VIP perdus ; inclut export/anonymisation et tests MySQL isolés.

@@ -42,6 +42,12 @@ public class DockerManager implements Closeable {
     private static final String TEMPLATE_ID_LABEL = "fr.tropicube.template-id";
     private static final String DATA_VOLUME_PATH = "/data";
     private static final int MAX_VOLUME_NAME_LENGTH = 255;
+    /**
+     * The log stream used to observe a Paper boot must outlive Velocity's
+     * 120-second startup allowance. A shorter socket read timeout turns an
+     * otherwise healthy, quiet Paper boot into a false startup failure.
+     */
+    private static final Duration BACKEND_LOG_RESPONSE_TIMEOUT = Duration.ofSeconds(150);
 
     /** Internal port used by RCON inside the container. */
     private static final int RCON_INTERNAL_PORT = 25575;
@@ -146,12 +152,13 @@ public class DockerManager implements Closeable {
                 .withDockerHost(validatedDockerHost)
                 .build();
 
-        // Building the underlying Apache HTTP client with reasonable delays
+        // The log stream remains idle while Paper initializes; it needs a longer read timeout
+        // than ordinary Docker API calls and than the 120-second backend startup allowance.
         DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
                 .dockerHost(dockerHostUri)
                 .maxConnections(100)
                 .connectionTimeout(Duration.ofSeconds(30))
-                .responseTimeout(Duration.ofSeconds(45))
+                .responseTimeout(BACKEND_LOG_RESPONSE_TIMEOUT)
                 .build();
 
         this.dockerClient = DockerClientImpl.getInstance(config, httpClient);

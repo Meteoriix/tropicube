@@ -43,6 +43,13 @@ public final class MenuTemplateRegistry implements UiReloadParticipant {
         try { fr.tropicube.core.util.ConfigUpdater.update(plugin, "menus.yml", file); }
         catch (java.io.IOException error) { throw new IllegalStateException("Unable to update menus.yml", error); }
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+        if (removeLegacyProfileGuildsButton(yaml)) {
+            try {
+                yaml.save(file);
+            } catch (java.io.IOException error) {
+                throw new IllegalStateException("Unable to migrate the legacy profile menu", error);
+            }
+        }
         if (yaml.getInt("version", -1) != 1) throw new IllegalArgumentException("menus.yml: version attendue=1");
         ConfigurationSection root = yaml.getConfigurationSection("menus");
         if (root == null || root.getKeys(false).isEmpty()) throw new IllegalArgumentException("menus.yml: menus manquants");
@@ -71,6 +78,26 @@ public final class MenuTemplateRegistry implements UiReloadParticipant {
             parsed.put(id, new Menu(id, title, rows, source.getString("frame", "network"), Map.copyOf(buttons)));
         }
         return Map.copyOf(parsed);
+    }
+
+    /**
+     * Removes the Guilds button from the pre-wardrobe profile layout.
+     *
+     * <p>That entry occupied slot 24 in persisted runtime UI bundles. The
+     * wardrobe deliberately takes that slot now, so retaining it would make
+     * the complete menu catalog invalid and prevent Core from starting.</p>
+     *
+     * @param yaml persisted menu configuration to migrate.
+     * @return {@code true} when the configuration was changed.
+     */
+    static boolean removeLegacyProfileGuildsButton(YamlConfiguration yaml) {
+        ConfigurationSection buttons = yaml.getConfigurationSection("menus.profile-home.buttons");
+        if (buttons == null) return false;
+        ConfigurationSection guilds = buttons.getConfigurationSection("guilds");
+        if (guilds == null || guilds.getInt("slot", -1) != 24
+                || !"open_guilds".equals(guilds.getString("action"))) return false;
+        buttons.set("guilds", null);
+        return true;
     }
 
     private static String require(ConfigurationSection section, String key, String owner) {
