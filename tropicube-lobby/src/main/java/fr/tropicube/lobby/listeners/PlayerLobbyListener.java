@@ -365,7 +365,7 @@ public class PlayerLobbyListener implements Listener {
                         LangHelper.component(player, "lobby.welcome-title"),
                         LangHelper.component(player, "lobby.welcome-subtitle"),
                         Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(2500), Duration.ofMillis(750))));
-                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 0.7f, 1.2f);
+                plugin.getCosmeticEffects().playWelcome(player);
                 player.getWorld().spawnParticle(Particle.HAPPY_VILLAGER,
                         player.getLocation().add(0, 1, 0), 16, 0.7, 0.8, 0.7, 0.05);
             });

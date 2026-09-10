@@ -29,3 +29,10 @@ lobby:
 guilds:
   # Private menu input expires after this delay (10..600 seconds).
   input-timeout-seconds: 120
+
+# Cosmetic rendering: all values are validated at startup.
+cosmetics:
+  render-interval-ticks: 5
+  particles-per-emission: 2
+  range-blocks: 24
+  preview-seconds: 5

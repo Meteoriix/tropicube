@@ -123,6 +123,8 @@ class PluginLanguageReferencesTest {
             }
         }
         Map<String, Set<String>> families = new TreeMap<>();
+        families.put("cosmetics.result-", java.util.Arrays.stream(fr.tropicube.core.cosmetic.CosmeticService.Result.values())
+                .map(value -> value.name().toLowerCase(java.util.Locale.ROOT).replace('_', '-')).collect(java.util.stream.Collectors.toSet()));
         families.put("cosmetics.access-", Set.of("free", "level", "currency", "vip"));
         families.put("cosmetics.filter-", Set.of("all", "available", "locked"));
         for (String prefix : List.of("cosmetics.guide-", "cosmetics.help-", "cosmetics.open-")) families.put(prefix, Set.of("play", "progress", "social", "customize"));

@@ -6,3 +6,4 @@ V005__repeatable_sheepwars_matches.sql
 V006__flat_season_reward_translation_keys.sql
 V007__lobby_effects_preference.sql
 V008__access_levels.sql
+V009__cosmetics.sql

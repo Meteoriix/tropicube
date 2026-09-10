@@ -20,16 +20,26 @@ class SchemaMigrationIntegrationTest {
             migrations.migrate(connection);
             try (var statement = connection.createStatement()) {
                 try (var result = statement.executeQuery("SELECT COUNT(*) FROM tropicube_schema_migrations")) {
-                    assertTrue(result.next()); assertEquals(8, result.getInt(1));
+                    assertTrue(result.next()); assertEquals(9, result.getInt(1));
                 }
                 // Simulate an old installation without recorded fingerprints.
-                statement.executeUpdate("DELETE FROM tropicube_schema_checksums");
+                statement.executeUpdate("DELETE FROM tropicube_schema_checksums WHERE version <> 'V009'");
                 migrations.migrate(connection);
                 // V008 is designed to resume after its DDL has already been applied.
                 statement.executeUpdate("DELETE FROM tropicube_schema_migrations WHERE version='V008'");
                 migrations.migrate(connection);
-                statement.executeUpdate("UPDATE tropicube_schema_checksums SET checksum=REPEAT('0',64) WHERE version='V008'");
-                assertThrows(java.sql.SQLException.class, () -> migrations.migrate(connection));
+                String original;
+                try (var rows = statement.executeQuery("SELECT checksum FROM tropicube_schema_checksums WHERE version='V008'")) {
+                    assertTrue(rows.next()); original = rows.getString(1);
+                }
+                try {
+                    statement.executeUpdate("UPDATE tropicube_schema_checksums SET checksum=REPEAT('0',64) WHERE version='V008'");
+                    assertThrows(java.sql.SQLException.class, () -> migrations.migrate(connection));
+                } finally {
+                    try (var restore = connection.prepareStatement("UPDATE tropicube_schema_checksums SET checksum=? WHERE version='V008'")) {
+                        restore.setString(1, original); restore.executeUpdate();
+                    }
+                }
             }
         }
     }

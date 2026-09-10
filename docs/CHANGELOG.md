@@ -6,6 +6,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-10
 
+- Ajoute le vestiaire à filtres et aperçus privés, les sélections persistantes par catégorie, le rendu Lobby borné et la suspension des accès VIP perdus ; inclut export/anonymisation et tests MySQL isolés.
+
 - Rend le choix des modes de jeu accessible au clic gauche, ajoute Guide et Progression, recharge les compteurs du Profil et protège les lectures tardives ; corrige les icônes Profil Bedrock. Ajoute le catalogue configurable et validé des futurs déblocages.
 
 ### 2026-09-09

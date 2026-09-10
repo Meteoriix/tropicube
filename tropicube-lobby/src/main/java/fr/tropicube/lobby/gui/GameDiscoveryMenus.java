@@ -73,14 +73,14 @@ public final class GameDiscoveryMenus implements Listener {
         String[] topics = {"play", "progress", "social", "customize"};
         Runnable[] actions = {() -> plugin.getGuiManager().openServerTypeSelector(player),
                 () -> openProgression(player),
-                () -> plugin.getGuiManager().openSocial(player), () -> plugin.getGuiManager().openSettings(player)};
+                () -> plugin.getGuiManager().openSocial(player), () -> plugin.getCosmeticMenus().openWardrobe(player)};
         for (int index = 0; index < topics.length; index++) {
             String selected = topics[index];
             if (topic == null) button(player, screen, 19 + index*2, Material.BOOK, "cosmetics.guide-" + selected, () -> openGuide(player, selected));
             else if (topic.equals(selected)) {
                 screen.inventory.setItem(13, NetworkMenuStyle.item(Material.BOOK, LangHelper.component(player, "cosmetics.guide-"+selected),
-                        LangHelper.component(player, selected.equals("customize") ? "cosmetics.help-settings" : "cosmetics.help-"+selected)));
-                button(player, screen, 22, Material.COMPASS, selected.equals("customize") ? "center.privacy" : "cosmetics.open-"+selected, actions[index]);
+                        LangHelper.component(player, "cosmetics.help-"+selected)));
+                button(player, screen, 22, Material.COMPASS, "cosmetics.open-"+selected, actions[index]);
             }
         }
     }

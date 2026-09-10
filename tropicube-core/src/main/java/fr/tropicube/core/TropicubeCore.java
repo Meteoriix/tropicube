@@ -85,6 +85,7 @@ public class TropicubeCore extends JavaPlugin {
     private NetworkProgressionService networkProgressionService;
     private MissionService missionService;
     private fr.tropicube.core.cosmetic.CosmeticCatalog cosmeticCatalog;
+    private fr.tropicube.core.cosmetic.CosmeticService cosmeticService;
     private ProfileService profileService;
     private GuildService guildService;
     private fr.tropicube.core.guild.GuildInvitations guildInvitations;
@@ -284,6 +285,7 @@ public class TropicubeCore extends JavaPlugin {
             profileService = new ProfileService(databaseManager, playerPreferenceService);
             try (var input = java.nio.file.Files.newInputStream(new File(getDataFolder(), "cosmetics.yml").toPath())) {
                 cosmeticCatalog = fr.tropicube.core.cosmetic.CosmeticCatalog.load(input);
+                cosmeticService = new fr.tropicube.core.cosmetic.CosmeticService(databaseManager, cosmeticCatalog);
             }
             try (var input = java.nio.file.Files.newInputStream(
                     new File(getDataFolder(), "missions.yml").toPath())) {
@@ -493,6 +495,7 @@ public class TropicubeCore extends JavaPlugin {
     public StaffSecurityService getStaffSecurityService() { return staffSecurityService; }
     public NetworkProgressionService getNetworkProgressionService() { return networkProgressionService; }
     public fr.tropicube.core.cosmetic.CosmeticCatalog getCosmeticCatalog() { return cosmeticCatalog; }
+    public fr.tropicube.core.cosmetic.CosmeticService getCosmeticService() { return cosmeticService; }
     public MissionService getMissionService() { return missionService; }
     public ProfileService getProfileService() { return profileService; }
     /** Shared private input boundary consumed before network chat publication. */

@@ -297,3 +297,14 @@ Le lanceur planifié `windows_task.py` lit le même fichier sous `pythonw.exe` (
 Core charge `cosmetics.yml` au démarrage, hors du thread Paper pendant son initialisation. Le fichier est livré aussi sous `dockerfiles/configs/TropicubeCore/`. `version` doit être l'entier `1`, `entries` contient de 1 à 100 entrées aux identifiants uniques `[a-z][a-z0-9-]{0,47}`. Chaque entrée définit `category` (`TRAIL` ou `SOUND`), `access` (`FREE`, `LEVEL`, `CURRENCY`, `VIP`), `requirement` entier et `effect` non vide. `FREE` exige 0, les autres règles un entier positif et `VIP` au plus 3. Une valeur textuelle ou fractionnaire n'est pas convertie silencieusement. Chaque identifiant possède un libellé `cosmetics.names.<id>` dans les quatre langues.
 
 Le catalogue initial comprend Brise gratuite, Étincelles niveau 5, Lucioles 500, Cœurs VIP 1, Carillon gratuit, Xylophone niveau 3, Cristal 300 et Mélodie tropicale VIP 2. La Progression n'affiche que les seuils de niveau restant à atteindre. La courbe réseau et les récompenses de missions ne changent pas.
+
+### Rendu Lobby
+
+| Clé `cosmetics.*` dans `TropicubeLobby/config.yml` | Défaut | Bornes |
+|---|---|---|
+| `render-interval-ticks` | 5 | entier 1–100 |
+| `particles-per-emission` | 2 | entier 1–20, par destinataire |
+| `preview-seconds` | 5 | entier 1–15, aperçu privé de traînée |
+| `range-blocks` | 24 | entier 1–24, rayon maximal |
+
+Les anciens fichiers reçoivent les défauts via la mise à jour habituelle. Les nombres fractionnaires et chaînes sont refusés. Le catalogue accepte uniquement des particules sans données additionnelles pour TRAIL et des clés de sons présentes dans le registre Paper pour SOUND ; Lobby valide les identifiants au démarrage. Les aperçus sonores jouent une fois, avec un intervalle minimal d'une seconde entre lectures. Les menus du vestiaire nécessitent six lignes pour conserver leurs actions et boutons communs. La préférence existante `lobbyEffectsEnabled` contrôle aussi les nouveaux effets.

@@ -153,3 +153,9 @@ L'objectif de charge initial est 50 joueurs sur un hôte Linux. Conserver les ra
 Tests automatiques : navigation des types de partie (gauche, droit, Maj, molette et gestes ignorés), seuils d'XP restante, accès au catalogue, prochains déblocages triés, catalogue YAML invalide, unicité et immutabilité. Les suites de langues auditent les références de tous les plugins et la parité FR/EN/DE/ES, y compris les copies Docker.
 
 Scénarios serveur Java/Bedrock à valider : hotbar inchangée ; Profil avec tête Java/icône Bedrock ; compteurs après réclamation et lecture ; fermeture pendant chargement sans réouverture tardive ; retour après action ; Guide sans ouverture automatique ; parcours Jeux entièrement au clic gauche et raccourcis Java préservés ; `/lang` sans reconnexion ; Profil dans l'attente SheepWars sans entrées Lobby. Le serveur client réel reste nécessaire pour valider visuellement ces parcours.
+
+### Validation du vestiaire
+
+JUnit couvre le partitionnement des filtres, l'immuabilité des instantanés, l'accès suspendu sans perte de sélection, les sessions fermées/occupées, l'expiration des aperçus et les limites de rendu/destinataires. CosmeticIntegrationTest utilise uniquement une base jetable `tropicube_integration` en boucle locale : migration idempotente avec un compte préexistant, sélections persistantes après reconnexion, catégories indépendantes, répétition du déséquipement, revalidation VIP et suppression en cascade.
+
+Le coût du rendu est instrumenté par `CosmeticEffects.metrics()` sur Paper : nombre de passages, nanosecondes cumulées, maximum et émissions par destinataire. Sur une pile de test avec clients, relever les différences sur 60 secondes, sans puis avec traînées (immobiles, mouvement dispersé, groupe dense, joueurs masqués, effets désactivés), et les timings Paper/TPS. Moyenne = delta totalNanos / delta calls. Les tests de logique ne constituent pas une mesure du coût réseau/client ni des performances Paper sous charge.

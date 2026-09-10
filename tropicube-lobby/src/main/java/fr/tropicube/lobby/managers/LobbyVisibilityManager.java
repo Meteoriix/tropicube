@@ -55,6 +55,7 @@ public final class LobbyVisibilityManager {
     private void apply(UUID viewerId, Snapshot snapshot) {
         Player viewer = Bukkit.getPlayer(viewerId);
         if (viewer == null) return;
+        plugin.getCosmeticEffects().setEffectsEnabled(viewerId, snapshot.preferences().lobbyEffectsEnabled());
         for (Player target : Bukkit.getOnlinePlayers()) {
             if (target.equals(viewer)) continue;
             boolean hiddenStaff = core.isStaffMode(target.getUniqueId()) && !viewer.hasPermission("tropicube.staff");

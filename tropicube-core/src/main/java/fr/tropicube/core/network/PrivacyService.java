@@ -49,6 +49,8 @@ public final class PrivacyService {
                 export.put("transactions", rows(connection, "SELECT * FROM tropicube_transactions WHERE from_uuid = ? OR to_uuid = ?", playerId, playerId));
                 export.put("accessAudit", rows(connection,
                         "SELECT * FROM tropicube_access_audit WHERE target_uuid = ? ORDER BY changed_at DESC", playerId));
+                export.put("cosmeticPurchases", rows(connection, "SELECT * FROM tropicube_cosmetic_purchases WHERE player_uuid = ?", playerId));
+                export.put("cosmeticEquipment", rows(connection, "SELECT * FROM tropicube_cosmetic_equipment WHERE player_uuid = ?", playerId));
                 export.put("preferences", rows(connection, "SELECT * FROM tropicube_player_preferences WHERE player_uuid = ?", playerId));
                 export.put("comfort", rows(connection, "SELECT * FROM tropicube_player_comfort WHERE player_uuid = ?", playerId));
                 export.put("progression", rows(connection, "SELECT * FROM tropicube_network_progression WHERE player_uuid = ?", playerId));
