@@ -50,6 +50,19 @@ public final class NetworkMenuStyle {
         }
     }
 
+    /**
+     * Applies a manifest-declared visual treatment.  Keeping the choice here
+     * prevents a screen from silently drifting away from its declared layout.
+     */
+    public static void applyFrame(Inventory inventory, Player player, String frame) {
+        switch (frame) {
+            case "network" -> frame(inventory, player);
+            case "neutral" -> fill(inventory, player);
+            case "none" -> { /* Native inventories such as anvils own their surface. */ }
+            default -> throw new IllegalArgumentException("Cadre de menu inconnu : " + frame);
+        }
+    }
+
     /** Returns whether this player is connected through Geyser/Floodgate. */
     public static boolean isBedrockClient(Player player) {
         return isBedrockClient(player.getName(), player.getClientBrandName());

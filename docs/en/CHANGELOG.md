@@ -4,6 +4,11 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+### 2026-09-10
+
+- Core, Lobby, and SheepWars menus now apply the frame declared by their manifests, including neutral fast-choice screens. Manifests now validate frames and dynamic regions when loaded.
+- Grade purchases and permanent deletion of read notifications now show a clear confirmation in all four languages.
+
 ### 2026-09-06
 
 - An automated audit checks translation references across all plugins in all four languages, including known dynamic families. Guild result, insufficient balance and quick-play filter keys are corrected; Docker copies remain synchronized.

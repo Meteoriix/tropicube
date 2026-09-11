@@ -169,7 +169,7 @@ public final class GuildGUI {
     private static Holder frame(Player player, GuildScreen screen, long guildId) {
         Holder holder = new Holder(screen, guildId);
         holder.inventory = Bukkit.createInventory(holder, LangHelper.menuSize("social"), LangHelper.component(player, titleKey(screen.view())));
-        NetworkMenuStyle.frame(holder.inventory, player);
+        NetworkMenuStyle.applyFrame(holder.inventory, player, LangHelper.menuFrame("social"));
         holder.inventory.setItem(2, SocialGUI.navigationItem(player, SocialGUI.FRIENDS_HEAD_ID, "social.menu-friends", false));
         holder.inventory.setItem(4, SocialGUI.navigationItem(player, SocialGUI.PARTY_HEAD_ID, "social.menu-party", false));
         holder.actions.put(2, new GuildScreen.Action(FRIENDS));

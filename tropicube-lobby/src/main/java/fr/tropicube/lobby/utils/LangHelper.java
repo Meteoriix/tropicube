@@ -76,6 +76,11 @@ public final class LangHelper {
         return TropicubeLobby.getInstance().getMenuTemplates().menu(menuId).rows() * 9;
     }
 
+    /** Returns the shared frame declared for this menu. */
+    public static String menuFrame(String menuId) {
+        return TropicubeLobby.getInstance().getMenuTemplates().menu(menuId).frame();
+    }
+
     /**
      * Returns the MiniMessage name including prefix and grade color.
      * The raw name provided is used as a fallback if Core is unavailable.

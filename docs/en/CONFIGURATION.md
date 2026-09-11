@@ -8,6 +8,8 @@ The local language editor uses `LIBRETRANSLATE_URL` (default `http://127.0.0.1:5
 
 `menus.yml`, `scoreboards.yml`, and `tablists.yml` use the versioned `version: 1` schema. Menus declare their title, rows, frame, static buttons, and dynamic regions; scoreboards declare a title and variants containing 1–15 lines; tablists declare one header key and one footer key for every state. Builds synchronize embedded resources with Docker mirrors.
 
+For a menu, `frame` is `network`, `neutral`, or `none`. Each dynamic region declares unique slots valid for the inventory size; static buttons may deliberately serve as a loading or empty state for a region. The registry rejects any other frame or invalid layout at startup.
+
 | Variable | Purpose |
 |---|---|
 | `TROPICUBE_REDIS_HOST`, `TROPICUBE_REDIS_PORT`, `TROPICUBE_REDIS_PASSWORD` | Redis connection |

@@ -51,7 +51,7 @@ public final class SocialGUI {
                 LangHelper.component(player, view == View.FRIENDS
                         ? "social.menu-title" : "social.menu-party-title"));
         holder.inventory = inventory;
-        NetworkMenuStyle.frame(inventory, player);
+        NetworkMenuStyle.applyFrame(inventory, player, LangHelper.menuFrame("social"));
 
         inventory.setItem(FRIENDS_TAB_SLOT, navigationItem(player, FRIENDS_HEAD_ID,
                 "social.menu-friends", view == View.FRIENDS));

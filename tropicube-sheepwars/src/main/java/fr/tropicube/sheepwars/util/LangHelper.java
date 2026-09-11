@@ -68,6 +68,11 @@ public final class LangHelper {
         return sheepwars().getMenuTemplates().menu(menuId).rows() * 9;
     }
 
+    /** Returns the shared frame declared for this menu. */
+    public static String menuFrame(String menuId) {
+        return sheepwars().getMenuTemplates().menu(menuId).frame();
+    }
+
     private static TropicubeSheepwars sheepwars() {
         Plugin plugin = Bukkit.getPluginManager().getPlugin("TropicubeSheepwars");
         if (plugin instanceof TropicubeSheepwars sheepwars && sheepwars.isEnabled()) return sheepwars;

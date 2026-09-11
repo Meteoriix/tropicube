@@ -171,7 +171,7 @@ public class ServerSelectorGUI {
     }
 
     private static void drawBorder(Inventory inv, Player player) {
-        NetworkMenuStyle.frame(inv, player);
+        NetworkMenuStyle.applyFrame(inv, player, LangHelper.menuFrame("server-selector"));
     }
 
     private static void drawControls(Inventory inv, Player player, boolean hasPrev, boolean hasNext, Filter filter) {

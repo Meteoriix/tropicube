@@ -123,6 +123,12 @@ public class GuiManager {
         openVipShop(player, true);
     }
 
+    /** Opens the local confirmation screen using a price computed from the displayed grade. */
+    public void openVipGradeConfirmation(Player player, String gradeKey, int price) {
+        openGuis.put(player.getUniqueId(), GuiType.VIP_SHOP);
+        player.openInventory(VipShopGUI.buildConfirmation(player, gradeKey, price));
+    }
+
     private void openVipShop(Player player, boolean grades) {
         var corePlugin = Bukkit.getPluginManager().getPlugin("TropicubeCore");
         if (!(corePlugin instanceof TropicubeCore core)) {
@@ -344,7 +350,7 @@ public class GuiManager {
     /** Rebuilds active settings/shop/routing screens after a language change. */
     public void refreshLanguage(Player player) {
         var holder = player.getOpenInventory().getTopInventory().getHolder();
-        if (holder instanceof VipShopGUI.Holder shop) openVipShop(player, shop.view() == VipShopGUI.View.GRADES);
+        if (holder instanceof VipShopGUI.Holder shop) openVipShop(player, shop.view() != VipShopGUI.View.HOME);
         else if (holder instanceof SettingsGUI.Holder) openSettings(player);
         else if (holder instanceof RankedSelectorGUI.Holder ranked) openRankedSelector(player, ranked.type());
         else if (holder instanceof ServerTypeSelectorGUI.Holder) openServerTypeSelector(player);

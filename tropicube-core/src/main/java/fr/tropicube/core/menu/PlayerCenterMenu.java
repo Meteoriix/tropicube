@@ -71,7 +71,7 @@ public final class PlayerCenterMenu implements Listener {
 
     public void openHome(Player player) {
         Inventory inventory = Bukkit.createInventory(null, menuSize("profile-home"), menuTitle(player, "profile-home"));
-        NetworkMenuStyle.frame(inventory, player);
+        NetworkMenuStyle.applyFrame(inventory, player, menuFrame("profile-home"));
         inventory.setItem(13, playerHead(player, "center.profile", "center.profile-lore",
                 "center.profile-action", "PROFILE"));
         inventory.setItem(20, navigationItem(player, Material.WRITABLE_BOOK,
@@ -340,8 +340,10 @@ public final class PlayerCenterMenu implements Listener {
             case "FILTER" -> openNotifications(player, 0, nextFilter(state.filter()));
             case "READ_ALL" -> plugin.getNotificationService().markAllRead(player.getUniqueId())
                     .thenRun(() -> refreshAfter(player, state, () -> openNotifications(player, state.page(), state.filter())));
-            case "DELETE_READ" -> plugin.getNotificationService().deleteRead(player.getUniqueId())
-                    .thenRun(() -> refreshAfter(player, state, () -> openNotifications(player, state.page(), state.filter())));
+            case "DELETE_READ" -> openDeleteReadConfirmation(player, state.page(), state.filter());
+            case "CONFIRM_DELETE_READ" -> plugin.getNotificationService().deleteRead(player.getUniqueId())
+                    .thenRun(() -> onServer(() -> openNotifications(player, state.page(), state.filter())));
+            case "CANCEL_DELETE_READ" -> openNotifications(player, state.page(), state.filter());
             default -> {
                 if (action.startsWith("MISSION:")) handleMission(player, action, event.getClick());
                 else if (action.startsWith("TITLE:")) plugin.getProfileService().selectTitle(
@@ -360,13 +362,27 @@ public final class PlayerCenterMenu implements Listener {
 
     private Inventory loading(Player player, View view, int page, String filter) {
         Inventory inventory = Bukkit.createInventory(null, 54, message(player, "cosmetics.loading"));
-        NetworkMenuStyle.frame(inventory, player);
+        NetworkMenuStyle.applyFrame(inventory, player, menuFrame("profile-notifications"));
         inventory.setItem(22, item(player, Material.CLOCK, "cosmetics.loading", "NONE"));
         inventory.setItem(45, navigationItem(player, Material.ARROW, "center.back", "lobby.back-button-lore", "BACK"));
         inventory.setItem(53, navigationItem(player, Material.BARRIER, "lobby.close-button", "lobby.close-button-lore", "CLOSE"));
         player.openInventory(inventory);
         states.put(player.getUniqueId(), new State(view, page, filter));
         return inventory;
+    }
+
+    /** Shows the exact irreversible effect before removing the player's read inbox entries. */
+    private void openDeleteReadConfirmation(Player player, int page, String filter) {
+        Inventory inventory = Bukkit.createInventory(null, menuSize("profile-notification-confirm"),
+                menuTitle(player, "profile-notification-confirm"));
+        NetworkMenuStyle.applyFrame(inventory, player, menuFrame("profile-notification-confirm"));
+        inventory.setItem(13, item(player, Material.LAVA_BUCKET, "center.delete-read-confirm-details", "NONE"));
+        inventory.setItem(11, navigationItem(player, Material.LIME_DYE, "center.confirm", "center.confirm-action",
+                "CONFIRM_DELETE_READ"));
+        inventory.setItem(15, navigationItem(player, Material.RED_DYE, "center.cancel", "center.cancel-action",
+                "CANCEL_DELETE_READ"));
+        player.openInventory(inventory);
+        states.put(player.getUniqueId(), new State(View.CONFIRM_DELETE_READ, page, filter));
     }
 
     private void refreshAfter(Player player, State expected, Runnable refresh) {
@@ -471,6 +487,10 @@ public final class PlayerCenterMenu implements Listener {
     private Component menuTitle(Player player, String id, Object... args) {
         return message(player, plugin.getMenuTemplates().menu(id).titleKey(), args);
     }
+
+    private String menuFrame(String id) {
+        return plugin.getMenuTemplates().menu(id).frame();
+    }
     private String messageText(Player player, String key, Object... args) {
         return plugin.getLanguageManager().get(player.getUniqueId(), key, args);
     }
@@ -487,6 +507,6 @@ public final class PlayerCenterMenu implements Listener {
         int index = FILTERS.indexOf(current == null ? "ALL" : current);
         return FILTERS.get((Math.max(0, index) + 1) % FILTERS.size());
     }
-    private enum View { HOME, PROFILE, MISSIONS, NOTIFICATIONS }
+    private enum View { HOME, PROFILE, MISSIONS, NOTIFICATIONS, CONFIRM_DELETE_READ }
     private record State(View view, int page, String filter) {}
 }

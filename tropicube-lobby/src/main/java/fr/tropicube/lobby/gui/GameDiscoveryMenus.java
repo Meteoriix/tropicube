@@ -37,7 +37,7 @@ public final class GameDiscoveryMenus implements Listener, AutoCloseable {
         var definition = plugin.getMenuTemplates().menu(template);
         Screen screen = new Screen(); screen.refresh = refresh;
         screen.inventory = Bukkit.createInventory(screen, definition.rows() * 9, LangHelper.component(player, definition.titleKey()));
-        NetworkMenuStyle.frame(screen.inventory, player);
+        NetworkMenuStyle.applyFrame(screen.inventory, player, LangHelper.menuFrame(template));
         button(player, screen, 45, Material.ARROW, "cosmetics.back", back);
         button(player, screen, 53, Material.BARRIER, "cosmetics.close", player::closeInventory);
         player.openInventory(screen.inventory);

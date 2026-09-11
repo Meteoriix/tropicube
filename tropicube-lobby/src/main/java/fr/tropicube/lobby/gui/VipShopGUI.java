@@ -33,15 +33,27 @@ public class VipShopGUI {
     public static final int HOME_CLOSE_SLOT = 26;
     public static final int GRADES_BACK_SLOT = 45;
     public static final int GRADES_CLOSE_SLOT = 53;
+    public static final int CONFIRM_SLOT = 11;
+    public static final int CONFIRM_CANCEL_SLOT = 15;
+    public static final int CONFIRM_CLOSE_SLOT = 26;
     private static final int[] GRADE_SLOTS = {11, 13, 15};
     private static final int[] ACTIVE_SLOTS  = {20, 22, 24};
     private static final int[] SOON_SLOTS  = {29, 31, 33};
 
     public static final class Holder implements InventoryHolder {
         private final View view;
+        private final String gradeKey;
+        private final int price;
         private Inventory inventory;
-        private Holder(View view) { this.view = view; }
+        private Holder(View view) { this(view, null, 0); }
+        private Holder(View view, String gradeKey, int price) {
+            this.view = view;
+            this.gradeKey = gradeKey;
+            this.price = price;
+        }
         public View view() { return view; }
+        public String gradeKey() { return gradeKey; }
+        public int price() { return price; }
         @Override public @NonNull Inventory getInventory() { return inventory; }
         private void setInventory(Inventory inventory)     { this.inventory = inventory; }
     }
@@ -51,7 +63,7 @@ public class VipShopGUI {
         Inventory inv = Bukkit.createInventory(holder, LangHelper.menuSize("vip-shop-home"),
                 LangHelper.menuTitle(player, "vip-shop-home"));
         holder.setInventory(inv);
-        NetworkMenuStyle.frame(inv, player);
+        NetworkMenuStyle.applyFrame(inv, player, LangHelper.menuFrame("vip-shop-home"));
         inv.setItem(4, new ItemBuilder(Material.GOLD_INGOT)
                 .name(LangHelper.get(player, "lobby.shop-home-name"))
                 .lore(LangHelper.get(player, "lobby.vip-banner-balance", formatCoins((int) balance))).glow(player).build());
@@ -65,13 +77,12 @@ public class VipShopGUI {
     }
 
     public static Inventory buildGrades(Player player, double balance, String currentGrade) {
-        int size = 54;
         Holder holder = new Holder(View.GRADES);
         Inventory inv = Bukkit.createInventory(holder, LangHelper.menuSize("vip-shop-grades"),
                 LangHelper.menuTitle(player, "vip-shop-grades"));
         holder.setInventory(inv);
 
-        NetworkMenuStyle.frame(inv, player);
+        NetworkMenuStyle.applyFrame(inv, player, LangHelper.menuFrame("vip-shop-grades"));
 
         inv.setItem(4, new ItemBuilder(Material.GOLD_INGOT)
                 .name(LangHelper.get(player, "lobby.vip-banner-name"))
@@ -114,6 +125,26 @@ public class VipShopGUI {
         inv.setItem(GRADES_CLOSE_SLOT, ItemBuilder.closeButton(player));
 
         return inv;
+    }
+
+    /** Builds a focused, explicit purchase checkpoint before any balance mutation. */
+    public static Inventory buildConfirmation(Player player, String gradeKey, int price) {
+        Holder holder = new Holder(View.CONFIRM, gradeKey, price);
+        Inventory inventory = Bukkit.createInventory(holder, LangHelper.menuSize("vip-shop-confirm"),
+                LangHelper.menuTitle(player, "vip-shop-confirm"));
+        holder.setInventory(inventory);
+        NetworkMenuStyle.applyFrame(inventory, player, LangHelper.menuFrame("vip-shop-confirm"));
+        inventory.setItem(13, new ItemBuilder(Material.GOLD_INGOT)
+                .name(LangHelper.get(player, "lobby.vip-confirm-details", getDisplayNameForGrade(gradeKey), formatCoins(price)))
+                .lore(LangHelper.get(player, "lobby.vip-confirm-warning")).build());
+        inventory.setItem(CONFIRM_SLOT, new ItemBuilder(Material.LIME_DYE)
+                .name(LangHelper.get(player, "lobby.vip-confirm"))
+                .lore(LangHelper.get(player, "lobby.vip-confirm-action")).build());
+        inventory.setItem(CONFIRM_CANCEL_SLOT, new ItemBuilder(Material.RED_DYE)
+                .name(LangHelper.get(player, "lobby.vip-cancel"))
+                .lore(LangHelper.get(player, "lobby.vip-cancel-action")).build());
+        inventory.setItem(CONFIRM_CLOSE_SLOT, ItemBuilder.closeButton(player));
+        return inventory;
     }
 
     // Metadata consulted by the click manager.
@@ -220,7 +251,7 @@ public class VipShopGUI {
 
     public record ShopEntry(String gradeKey, Material material, String displayName,
                             int price, List<String> advantages) {}
-    public enum View { HOME, GRADES }
+    public enum View { HOME, GRADES, CONFIRM }
 
     public static void validateConfiguration(TropicubeLobby lobby) {
         Set<String> keys = new HashSet<>();

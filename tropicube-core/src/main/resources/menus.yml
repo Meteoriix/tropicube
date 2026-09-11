@@ -171,6 +171,31 @@ menus:
         lore-key: lobby.close-button-lore
         action: close
         required: true
+  profile-notification-confirm:
+    title-key: center.delete-read-confirm-title
+    rows: 3
+    frame: network
+    buttons:
+      confirm:
+        slot: 11
+        material: LIME_DYE
+        name-key: center.confirm
+        lore-key: center.confirm-action
+        action: confirm_delete_read
+        required: true
+      details:
+        slot: 13
+        material: LAVA_BUCKET
+        name-key: center.delete-read-confirm-details
+        action: none
+        required: true
+      cancel:
+        slot: 15
+        material: RED_DYE
+        name-key: center.cancel
+        lore-key: center.cancel-action
+        action: cancel_delete_read
+        required: true
   profile-missions:
     title-key: center.missions-title
     rows: 6

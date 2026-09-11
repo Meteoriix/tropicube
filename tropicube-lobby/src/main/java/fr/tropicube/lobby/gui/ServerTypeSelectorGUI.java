@@ -83,7 +83,7 @@ public class ServerTypeSelectorGUI {
                 LangHelper.menuTitle(player, "server-type-selector"));
         holder.setInventory(inv);
 
-        NetworkMenuStyle.frame(inv, player);
+        NetworkMenuStyle.applyFrame(inv, player, LangHelper.menuFrame("server-type-selector"));
 
         for (Map.Entry<Integer, String> e : slotToType.entrySet()) {
             inv.setItem(e.getKey(), buildTypeItem(plugin, player, e.getValue()));

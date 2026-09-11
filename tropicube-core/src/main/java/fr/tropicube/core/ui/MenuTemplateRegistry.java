@@ -7,6 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -59,6 +60,10 @@ public final class MenuTemplateRegistry implements UiReloadParticipant {
             String title = require(source, "title-key", id);
             int rows = source.getInt("rows", -1);
             if (rows < 1 || rows > 6) throw new IllegalArgumentException("menus.yml: " + id + ".rows doit valoir 1..6");
+            String frame = source.getString("frame", "network");
+            if (!List.of("network", "neutral", "none").contains(frame)) {
+                throw new IllegalArgumentException("menus.yml: " + id + ".frame doit valoir network, neutral ou none");
+            }
             Map<String, Button> buttons = new LinkedHashMap<>();
             ConfigurationSection buttonRoot = source.getConfigurationSection("buttons");
             if (buttonRoot != null) for (String buttonId : buttonRoot.getKeys(false)) {
@@ -75,7 +80,21 @@ public final class MenuTemplateRegistry implements UiReloadParticipant {
                         button.getBoolean("required"), Math.max(1, button.getInt("amount", 1)),
                         button.getBoolean("glow")));
             }
-            parsed.put(id, new Menu(id, title, rows, source.getString("frame", "network"), Map.copyOf(buttons)));
+            Map<String, DynamicRegion> regions = new LinkedHashMap<>();
+            ConfigurationSection regionRoot = source.getConfigurationSection("dynamic-regions");
+            if (regionRoot != null) for (String regionId : regionRoot.getKeys(false)) {
+                ConfigurationSection region = Objects.requireNonNull(regionRoot.getConfigurationSection(regionId));
+                List<Integer> slots = region.getIntegerList("slots");
+                // A dynamic region may deliberately replace a static loading or empty-state card.
+                if (slots.isEmpty() || slots.stream().anyMatch(slot -> slot < 0 || slot >= rows * 9)
+                        || slots.stream().distinct().count() != slots.size()) {
+                    throw new IllegalArgumentException("menus.yml: slots invalides dans " + id + ".dynamic-regions." + regionId);
+                }
+                regions.put(regionId, new DynamicRegion(List.copyOf(slots),
+                        require(region, "template-action", id + ".dynamic-regions." + regionId),
+                        Math.max(1, region.getInt("preview-count", 1))));
+            }
+            parsed.put(id, new Menu(id, title, rows, frame, Map.copyOf(buttons), Map.copyOf(regions)));
         }
         return Map.copyOf(parsed);
     }
@@ -106,7 +125,20 @@ public final class MenuTemplateRegistry implements UiReloadParticipant {
         return value;
     }
 
-    public record Menu(String id, String titleKey, int rows, String frame, Map<String, Button> buttons) { }
+    public record Menu(String id, String titleKey, int rows, String frame, Map<String, Button> buttons,
+                       Map<String, DynamicRegion> dynamicRegions) {
+        public Button button(String id) {
+            Button button = buttons.get(id);
+            if (button == null) throw new IllegalArgumentException("Bouton inconnu dans " + this.id + " : " + id);
+            return button;
+        }
+        public DynamicRegion dynamicRegion(String id) {
+            DynamicRegion region = dynamicRegions.get(id);
+            if (region == null) throw new IllegalArgumentException("Région inconnue dans " + this.id + " : " + id);
+            return region;
+        }
+    }
     public record Button(int slot, Material material, String nameKey, String loreKey, String action,
                          boolean required, int amount, boolean glow) { }
+    public record DynamicRegion(List<Integer> slots, String templateAction, int previewCount) { }
 }

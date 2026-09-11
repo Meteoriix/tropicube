@@ -109,7 +109,7 @@ public final class WhitelistMenu implements Listener {
         Inventory inventory = Bukkit.createInventory(holder, LangHelper.menuSize("whitelist"),
                 LangHelper.menuTitle(player, "whitelist"));
         holder.inventory = inventory;
-        NetworkMenuStyle.frame(inventory, player);
+        NetworkMenuStyle.applyFrame(inventory, player, LangHelper.menuFrame("whitelist"));
 
         int index = 0;
         for (Map.Entry<UUID, String> member : members.entrySet()) {

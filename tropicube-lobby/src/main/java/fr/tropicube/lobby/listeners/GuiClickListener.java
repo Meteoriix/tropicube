@@ -329,6 +329,12 @@ public class GuiClickListener implements Listener {
     }
 
     private void handleVipShop(Player player, int slot, VipShopGUI.Holder holder) {
+        if (holder.view() == VipShopGUI.View.CONFIRM) {
+            if (slot == VipShopGUI.CONFIRM_CLOSE_SLOT) player.closeInventory();
+            else if (slot == VipShopGUI.CONFIRM_CANCEL_SLOT) plugin.getGuiManager().openVipGrades(player);
+            else if (slot == VipShopGUI.CONFIRM_SLOT) purchaseVipGrade(player, holder.gradeKey());
+            return;
+        }
         if (holder.view() == VipShopGUI.View.HOME) {
             if (slot == VipShopGUI.HOME_CLOSE_SLOT) player.closeInventory();
             else if (slot == VipShopGUI.HOME_COSMETICS_SLOT) plugin.getCosmeticMenus().openShop(player);
@@ -347,6 +353,16 @@ public class GuiClickListener implements Listener {
         String gradeKey = VipShopGUI.getEntryForSlot(slot);
         if (gradeKey == null) return;
 
+        String currentGrade = coreGrade(player.getUniqueId());
+        int price = VipShopGUI.getUpgradePrice(currentGrade, gradeKey);
+        if (price <= 0) {
+            plugin.getGuiManager().openVipGrades(player);
+            return;
+        }
+        plugin.getGuiManager().openVipGradeConfirmation(player, gradeKey, price);
+    }
+
+    private void purchaseVipGrade(Player player, String gradeKey) {
         var playerId = player.getUniqueId();
         player.closeInventory();
         player.sendMessage(LangHelper.component(player, "lobby.vip-processing"));

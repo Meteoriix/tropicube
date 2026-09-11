@@ -19,6 +19,8 @@ L'éditeur local utilise `LIBRETRANSLATE_URL` (défaut `http://127.0.0.1:5000`),
 
 Les fichiers `menus.yml`, `scoreboards.yml` et `tablists.yml` utilisent le schéma versionné `version: 1`. Les menus déclarent titre, nombre de lignes, cadrage, boutons statiques et régions dynamiques ; les scoreboards déclarent un titre et des variantes de 1 à 15 lignes ; les tablists déclarent, pour chaque état, une clé d'en-tête et une clé de pied. Les ressources embarquées et leurs miroirs Docker sont synchronisés au build.
 
+Pour un menu, `frame` vaut `network`, `neutral` ou `none`. Chaque région dynamique déclare des cases uniques et valides pour la taille de l'inventaire ; les boutons fixes peuvent volontairement servir d'état de chargement ou vide à une région. Le registre rejette toute autre valeur de cadre ou toute disposition invalide au démarrage.
+
 ### Grades et niveaux d'accès
 
 Chaque entrée `grades.<nom>` contient uniquement son affichage, sa priorité cosmétique et `default-vip-level` (0–3) / `default-mod-level` (0–4). Appliquer ou faire expirer un grade remplace toujours les niveaux courants par ces valeurs. `access.audit-retention-days`, fixé à 365 par défaut, contrôle la purge quotidienne du journal SQL.

@@ -6,6 +6,9 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-10
 
+- Harmonise les menus Core, Lobby et SheepWars avec le cadrage déclaré par leurs manifestes, y compris les choix rapides neutres. Les manifestes valident maintenant cadres et régions dynamiques au chargement.
+- Ajoute une confirmation claire avant l'achat d'un grade et la suppression définitive des notifications lues, dans les quatre langues.
+
 - Corrige le démarrage des backends dynamiques : le flux de logs Docker reste ouvert au-delà de la fenêtre de disponibilité Paper, ce qui évite de supprimer un Lobby ou SheepWars encore en initialisation.
 
 - Migre la disposition Profil antérieure qui plaçait Guildes en case 24, désormais réservée au Vestiaire, avant validation de la configuration restaurée.

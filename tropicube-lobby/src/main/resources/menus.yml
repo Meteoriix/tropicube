@@ -561,6 +561,39 @@ menus:
           - 15
         template-action: buy_grade
         preview-count: 3
+  vip-shop-confirm:
+    title-key: lobby.vip-confirm-title
+    rows: 3
+    frame: network
+    buttons:
+      confirm:
+        slot: 11
+        material: LIME_DYE
+        name-key: lobby.vip-confirm
+        lore-key: lobby.vip-confirm-action
+        action: confirm_purchase
+        required: true
+      details:
+        slot: 13
+        material: GOLD_INGOT
+        name-key: lobby.vip-confirm-details
+        lore-key: lobby.vip-confirm-warning
+        action: none
+        required: true
+      cancel:
+        slot: 15
+        material: RED_DYE
+        name-key: lobby.vip-cancel
+        lore-key: lobby.vip-cancel-action
+        action: cancel_purchase
+        required: true
+      close:
+        slot: 26
+        material: BARRIER
+        name-key: lobby.close-button
+        lore-key: lobby.close-button-lore
+        action: close
+        required: true
   wardrobe:
     title-key: cosmetics.wardrobe
     rows: 6
