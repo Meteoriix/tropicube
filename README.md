@@ -59,6 +59,8 @@ chmod +x deploy.sh
 ./deploy.sh
 ```
 
+Pendant le développement, relancer cette même commande redéploie directement les images vérifiées : elle recrée Velocity sans mode maintenance, sauvegarde ni délai de drain, et interrompt les parties dynamiques en cours. Pour une livraison de production, construire d'abord un lot avec `-SkipRestart` / `--skip-restart`, puis utiliser la procédure d'activation sécurisée décrite dans le [guide de déploiement](docs/DEPLOYMENT.md).
+
 Le proxy écoute sur `25565/tcp` pour Java et sur `${BEDROCK_PORT:-19132}/udp` pour Bedrock. MySQL (`3306`), Redis (`6379`) et les interfaces de développement optionnelles sont publiés uniquement sur `127.0.0.1`.
 
 ## Développement

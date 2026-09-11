@@ -5,7 +5,7 @@
 #   .\deploy.ps1                  Full build + image rebuild
 #   .\deploy.ps1 -SkipTests       Skip unit tests (faster)
 #   .\deploy.ps1 -OnlyImages      Skip Maven, redistribute target/ artifacts, then rebuild images
-# .\deploy.ps1 -SkipRestart Built without rebuilding the Velocity service
+# .\deploy.ps1 -SkipRestart Builds a candidate lot without changing the development stack
 # .\deploy.ps1 -ValidateOnly Checks and redistributes artifacts without building an image
 
 param(
@@ -421,8 +421,17 @@ if ($LASTEXITCODE -ne 0) { Fail "Geyser/Floodgate artifacts are incomplete in tr
 Ok "Velocity contains the pinned Geyser and Floodgate artifacts."
 
 if (-not $SkipRestart) {
-    & python tools/ops/tropicube_ops.py activate $buildTag
-    if ($LASTEXITCODE -ne 0) { Fail "Lot activation failed; review the operations manifest." }
+    Step "Deploying verified images to the development stack..."
+    foreach ($build in $dockerBuilds) {
+        & docker tag "tropicube-$($build.Name):$buildTag" $build.Tag
+        if ($LASTEXITCODE -ne 0) { Fail "Could not update $($build.Tag) from development lot $buildTag." }
+    }
+    & docker compose up -d --no-build --force-recreate --wait --wait-timeout 180 velocity
+    if ($LASTEXITCODE -ne 0) { Fail "Development redeploy failed while recreating Velocity." }
+    Ok "Development stack redeployed without maintenance or backup."
 }
 Write-Host "Verified image lot: $buildTag" -ForegroundColor Green
-Write-Host "-SkipRestart leaves the lot staged without changing live image tags."
+if ($SkipRestart) {
+    Write-Host "-SkipRestart leaves the lot staged without changing live image tags."
+    Write-Host "Activate it with tools/ops/tropicube_ops.py only for a production deployment."
+}

@@ -4,6 +4,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-09-11
+
+- Simplifie le redéploiement de développement : `deploy.ps1` et `deploy.sh` recréent directement Velocity avec les images vérifiées, sans maintenance, sauvegarde ni délai de drain ; les parties dynamiques en cours sont arrêtées. La livraison de production reste une activation explicite d'un lot préparé.
+
 ### 2026-09-10
 
 - Harmonise les menus Core, Lobby et SheepWars avec le cadrage déclaré par leurs manifestes, y compris les choix rapides neutres. Les manifestes valident maintenant cadres et régions dynamiques au chargement.

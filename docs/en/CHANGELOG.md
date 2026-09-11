@@ -4,6 +4,10 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+### 2026-09-11
+
+- Simplified development redeploys: `deploy.ps1` and `deploy.sh` now recreate Velocity directly from verified images without maintenance, backup, or drain delay; running dynamic games are stopped. Production releases still require explicit activation of a prepared lot.
+
 ### 2026-09-10
 
 - Core, Lobby, and SheepWars menus now apply the frame declared by their manifests, including neutral fast-choice screens. Manifests now validate frames and dynamic regions when loaded.

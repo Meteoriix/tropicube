@@ -17,7 +17,7 @@ Requires: Bash 4+, Java 25, Maven, Docker Engine with Compose v2, and Python 3.
 Options:
   --skip-tests       Skip unit tests during the Maven build
   --only-images      Reuse existing Maven artifacts
-  --skip-restart     Build images without recreating Velocity
+  --skip-restart     Build a candidate lot without changing the development stack
   --validate-only    Validate and distribute artifacts without building images
   -h, --help         Show this help
 EOF
@@ -386,7 +386,17 @@ docker run --rm --entrypoint /bin/sh "tropicube-velocity:$build_tag" -c "$proxy_
 ok 'Velocity contains the pinned Geyser and Floodgate artifacts.'
 
 if ! $skip_restart; then
-  python3 tools/ops/tropicube_ops.py activate "$build_tag" || fail 'Lot activation failed; review the operations manifest.'
+  step 'Deploying verified images to the development stack...'
+  for name in "${build_names[@]}"; do
+    docker tag "tropicube-$name:$build_tag" "tropicube-$name:latest" \
+      || fail "Could not update tropicube-$name:latest from development lot $build_tag."
+  done
+  docker compose up -d --no-build --force-recreate --wait --wait-timeout 180 velocity \
+    || fail 'Development redeploy failed while recreating Velocity.'
+  ok 'Development stack redeployed without maintenance or backup.'
 fi
 printf '\n==> Verified image lot: %s.\n' "$build_tag"
-printf '    --skip-restart leaves this lot staged and does not change live image tags.\n'
+if $skip_restart; then
+  printf '%s\n' '    --skip-restart leaves this lot staged without changing live image tags.'
+  printf '%s\n' '    Activate it with tools/ops/tropicube_ops.py only for a production deployment.'
+fi

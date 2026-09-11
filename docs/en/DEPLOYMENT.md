@@ -53,9 +53,9 @@ Velocity RCON is enabled only inside its container for local editor language rel
 .\deploy.ps1 -OnlyImages -ValidateOnly
 ```
 
-- the default path builds, redistributes artifacts, rebuilds images, and recreates the required services;
+- the default path is the development redeploy: it builds, redistributes and verifies images, then tags them as `latest` and recreates Velocity without maintenance, backup, or a drain delay; running dynamic games are interrupted;
 - `-OnlyImages` skips Maven when already validated artifacts are available;
-- `-SkipRestart` avoids recreating Velocity;
+- `-SkipRestart` builds and verifies a UTC candidate lot without changing `latest` tags or recreating Velocity;
 - `-ValidateOnly` checks inputs and artifact redistribution without building an image.
 
 ## Linux workflow
@@ -126,9 +126,13 @@ Keep image tags and deployment inputs reproducible. Roll back by restoring the p
 
 Update Core and Lobby together, then check Java and Bedrock: three Social tabs, no Guilds button in Profile, private name/tag creation, invitations, lists exceeding 21 members, challenges and empty/populated rankings. Check member/officer/owner permissions and removal/transfer/leave confirmations, including last-member deletion. Private input must never reach other players' chat. Test `!`, timeout, logout, navigation during loading, double clicks and `/lang` in all four languages. Simulate a SQL failure and use Refresh. No production port or volume change is needed.
 
+## Development redeploy
+
+`./deploy.ps1` and `./deploy.sh` are the normal development commands. After image verification, they update all three `latest` tags and run `docker compose up -d --no-build --force-recreate --wait --wait-timeout 180 velocity`. They do not call `/maintenance`, create a Restic backup, or wait for a drain. Velocity's default `shutdown.stop-dynamic-servers: true` therefore immediately stops dynamic instances and running games.
+
 ## Reliable image lots, backups and acceptance
 
-`--skip-restart` / `-SkipRestart` now builds and verifies only UTC candidate tags without modifying live tags. Activate a verified lot with `python3 tools/ops/tropicube_ops.py activate YYYYMMDD-HHMMSS`. On a running network, activation drains maintenance for one minute, requires an off-host backup, stops Velocity and requires all dynamic backends to stop. Previous image IDs are retained in private release manifests and local `previous` tags. Compose/proxy and lobby readiness must pass before maintenance is lifted. Incompatible schemas require a matching backup, not just older images.
+For a production release, `--skip-restart` / `-SkipRestart` builds and verifies only UTC candidate tags without modifying live tags. Activate a verified lot with `python3 tools/ops/tropicube_ops.py activate YYYYMMDD-HHMMSS`. On a running network, activation drains maintenance for one minute, requires an off-host backup, stops Velocity and requires all dynamic backends to stop. Previous image IDs are retained in private release manifests and local `previous` tags. Compose/proxy and lobby readiness must pass before maintenance is lifted. Incompatible schemas require a matching backup, not just older images.
 
 Install the systemd units in `tools/ops/systemd`, configure `/etc/tropicube/ops.env` from the supplied example with mode 0600 and initialize the remote Restic repository. Enable the backup and diagnostic timers. Daily backups contain a consistent MySQL dump protected against concurrent migrations, Redis RDB, Floodgate data, source worlds, configurations and private environment. Ephemeral game volumes/player world data are excluded. Retention is 7 daily, 4 weekly, 3 monthly snapshots. The success timestamp advances only after backup, retention and repository checks succeed.
 

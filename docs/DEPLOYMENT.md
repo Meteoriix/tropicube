@@ -132,7 +132,7 @@ Le premier `docker compose up` télécharge MySQL, Redis, le proxy de socket et 
 | Vérifie Paper, le JAR Mojang, le runtime patché et les configurations de démarrage dans les images | oui | oui | oui |
 | Crée les tags `latest` et UTC horodaté | oui | oui | oui |
 | Attend tous les builds et restitue leurs logs | oui | oui | oui |
-| Recrée Velocity, sauf option contraire | oui | oui | oui |
+| Redéploie directement Velocity en développement, sauf option contraire | oui | oui | oui |
 | Affiche le tag utilisable pour un rollback | oui | oui | oui |
 
 Différence de prérequis : Bash délègue la lecture des ZIP et la validation YAML à Python 3. PowerShell utilise directement .NET et n'a donc pas ce prérequis. Le résultat et les validations sont identiques.
@@ -143,7 +143,7 @@ Différence de prérequis : Bash délègue la lecture des ZIP et la validation Y
 |---|---|---|
 | `-SkipTests` | `--skip-tests` | Compile et package sans exécuter les tests |
 | `-OnlyImages` | `--only-images` | Réutilise les JAR de `target` après contrôle de fraîcheur |
-| `-SkipRestart` | `--skip-restart` | Construit les images mais ne recrée pas Velocity |
+| `-SkipRestart` | `--skip-restart` | Construit et vérifie un lot UTC sans changer les tags `latest` ni recréer Velocity |
 | `-ValidateOnly` | `--validate-only` | Compile si nécessaire, distribue/vérifie les JAR et synchronise les langues, sans image ni conteneur |
 
 `ValidateOnly` ne modifie aucun conteneur ni image, mais peut copier des JAR sous `dockerfiles/plugins` et remplacer les traductions de déploiement par leurs sources. `OnlyImages` n'est accepté que si aucun POM ou fichier source dépendant n'est plus récent que son artefact.
@@ -166,7 +166,11 @@ Exemples :
 ./deploy.sh --only-images --validate-only
 ```
 
-## Ce que fait un déploiement complet
+## Redéploiement de développement
+
+La commande habituelle `./deploy.ps1` ou `./deploy.sh` est le chemin de développement : elle ne lance ni `/maintenance`, ni sauvegarde Restic, ni attente de drain. Après les vérifications de build, elle applique les tags `latest` aux trois images puis recrée Velocity avec Compose. L'arrêt propre du proxy interrompt donc immédiatement les parties et instances dynamiques selon `shutdown.stop-dynamic-servers: true`.
+
+## Ce que fait le redéploiement de développement
 
 1. validation des outils, du daemon, de Compose et de `.env` ;
 2. compilation Maven de tout le réacteur ;
@@ -174,14 +178,14 @@ Exemples :
 4. synchronisation exacte des traductions sources vers les configurations Docker ;
 5. construction parallèle de `tropicube-lobby`, `tropicube-sheepwars` et `tropicube-velocity` ;
 6. vérification des caches Paper/Mojang et des configurations de démarrage dans les deux images de backend ;
-7. double tag `latest` et `YYYYMMDD-HHMMSS` UTC ;
-8. `docker compose up -d --force-recreate velocity` puis suppression contrôlée de l'éventuel ancien volume anonyme `/server`.
+7. tag UTC `YYYYMMDD-HHMMSS`, puis mise à jour des trois tags `latest` ;
+8. `docker compose up -d --no-build --force-recreate --wait --wait-timeout 180 velocity`.
 
 Compose démarre ou vérifie automatiquement Redis, MySQL et `docker-proxy` grâce aux dépendances de santé. Par défaut, l'arrêt de l'ancien Velocity supprime les backends dynamiques et leurs volumes de données éphémères avant le redémarrage. Le `/server` de Velocity est un `tmpfs` initialisé depuis l'image : son contenu disparaît à l'arrêt et le JAR fraîchement construit ne peut pas être masqué par un ancien volume. Le sous-dossier Floodgate est un volume nommé imbriqué : sa clé privée `key.pem` survit aux recréations et ne doit jamais être supprimée lors d'un déploiement normal. Lors de la première migration, les scripts suppriment précisément l'ancien volume anonyme détecté sur `/server`, sans toucher à `floodgate-data`. Les futures instances utilisent les nouvelles images `latest`.
 
 Le RCON de Velocity est activé uniquement dans son conteneur pour permettre le rechargement des langues par l'éditeur local ; son port n'est pas publié sur l'hôte. Les commandes dédiées `languageeditorreload` de Core et Velocity refusent les joueurs. Après une première livraison de ces commandes, l'éditeur copie les YAML validés et les recharge sans reconstruire les images.
 
-Pour conserver exceptionnellement les parties actives pendant un redéploiement, régler auparavant `shutdown.stop-dynamic-servers: false` dans la configuration Velocity déployée. Le nouveau proxy restaurera alors les backends encore actifs. Cette option ne doit pas être utilisée pour un arrêt complet.
+Le redéploiement quotidien de développement interrompt volontairement les parties. La conservation exceptionnelle de parties actives reste réservée à une opération d'exploitation explicitement préparée : régler auparavant `shutdown.stop-dynamic-servers: false` dans la configuration Velocity déployée. Le nouveau proxy restaurera alors les backends encore actifs. Cette option ne doit pas être utilisée pour un arrêt complet.
 
 Le build compile aussi le squelette `tropicube-fallenkingdoms`, mais aucun artefact de ce module n'est distribué ou incorporé à une image tant qu'il ne constitue pas un plugin complet.
 
@@ -355,7 +359,7 @@ Pour un lot déjà construit, remplacer `deploy` par `activate -Tag YYYYMMDD-HHM
 
 La cible initiale reste un seul hôte Linux avec Compose et un objectif de 50 joueurs à mesurer. Python 3.11+, Restic, OpenSSH et systemd complètent les prérequis d'exploitation Linux. Le build et les vérifications Python fonctionnent également sous Windows.
 
-Les scripts construisent désormais uniquement les tags UTC candidats et vérifient les trois images avant activation. `-SkipRestart` / `--skip-restart` laisse le lot préparé sans changer les tags `latest`. Pour activer ensuite un lot vérifié :
+Pour une livraison de production, utiliser `-SkipRestart` / `--skip-restart` afin de construire uniquement les tags UTC candidats et de vérifier les trois images sans toucher la pile. Pour activer ensuite un lot vérifié :
 
 ```bash
 python3 tools/ops/tropicube_ops.py activate YYYYMMDD-HHMMSS

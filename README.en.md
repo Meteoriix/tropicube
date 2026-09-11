@@ -57,6 +57,8 @@ docker compose --env-file .env.example config --quiet
 ./deploy.sh --only-images --validate-only
 ```
 
+During development, `./deploy.ps1` and `./deploy.sh` directly redeploy verified images: they recreate Velocity without maintenance mode, backup, or drain delay, and interrupt running dynamic games. For a production release, first build a lot with `-SkipRestart` / `--skip-restart`, then use the secure activation procedure in the [deployment guide](docs/en/DEPLOYMENT.md).
+
 ## Documentation
 
 - [Architecture](docs/en/ARCHITECTURE.md)

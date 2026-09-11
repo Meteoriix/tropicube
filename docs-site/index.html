@@ -51,6 +51,7 @@
 <div class="code-block"><span class="code-language">bash</span><pre class=""><code>cp .env.example .env
 chmod +x deploy.sh
 ./deploy.sh</code></pre></div>
+<p>Pendant le développement, relancer cette même commande redéploie directement les images vérifiées : elle recrée Velocity sans mode maintenance, sauvegarde ni délai de drain, et interrompt les parties dynamiques en cours. Pour une livraison de production, construire d'abord un lot avec <code>-SkipRestart</code> / <code>--skip-restart</code>, puis utiliser la procédure d'activation sécurisée décrite dans le <a href="deployment.html">guide de déploiement</a>.</p>
 <p>Le proxy écoute sur <code>25565/tcp</code> pour Java et sur <code>${BEDROCK_PORT:-19132}/udp</code> pour Bedrock. MySQL (<code>3306</code>), Redis (<code>6379</code>) et les interfaces de développement optionnelles sont publiés uniquement sur <code>127.0.0.1</code>.</p>
 <h2 id="developpement">Développement<a class="heading-anchor" href="#developpement" aria-label="Lien vers cette section">#</a></h2>
 <p>Windows :</p>
