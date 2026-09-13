@@ -41,6 +41,8 @@ server-types:
     material: COMPASS
   sheepwars:
     head-id: "79740"
+  fallenkingdoms:
+    material: END_CRYSTAL
 
 # ──────────────────────────────────────────────────────────────────────────────
 # VIP Shop — entries displayed in the /vip menu.

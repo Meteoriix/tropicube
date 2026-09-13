@@ -1,0 +1,15 @@
+name: TropicubeFallenKingdoms
+version: 1.0.0
+main: fr.tropicube.fallenkingdoms.TropicubeFallenKingdoms
+api-version: '26.2'
+description: "Tropicube - mini-jeu Fallen Kingdoms"
+authors: [Tropicube-Team]
+depend: [TropicubeCore]
+commands:
+  fkadmin:
+    description: "Administre l'instance Fallen Kingdoms"
+    usage: "/fkadmin <status|start|cancel|stop|reload>"
+permissions:
+  fallenkingdoms.admin:
+    description: "Administre une instance Fallen Kingdoms"
+    default: op

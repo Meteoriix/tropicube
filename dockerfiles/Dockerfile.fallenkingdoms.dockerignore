@@ -1,0 +1,5 @@
+*
+!dockerfiles/Dockerfile.fallenkingdoms
+!dockerfiles/configs/**
+!dockerfiles/plugins/fallenkingdoms/**
+!dockerfiles/worlds/fallenkingdoms/**

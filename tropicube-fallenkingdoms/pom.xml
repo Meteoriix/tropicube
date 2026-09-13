@@ -12,6 +12,52 @@
     <artifactId>tropicube-fallenkingdoms</artifactId>
     <packaging>jar</packaging>
     <name>Tropicube Fallen Kingdoms</name>
-    <description>Squelette du futur module de jeu Fallen Kingdoms</description>
+    <description>Mini-jeu Fallen Kingdoms pour le réseau Tropicube</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>fr.tropicube</groupId>
+            <artifactId>tropicube-language-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.tropicube</groupId>
+            <artifactId>tropicube-core</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.tropicube</groupId>
+            <artifactId>tropicube-docker-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions><execution><phase>package</phase><goals><goal>shade</goal></goals>
+                    <configuration><shadedArtifactAttached>true</shadedArtifactAttached>
+                        <shadedClassifierName>all</shadedClassifierName><createDependencyReducedPom>false</createDependencyReducedPom>
+                        <artifactSet><excludes><exclude>fr.tropicube:tropicube-core</exclude><exclude>fr.tropicube:tropicube-docker-api</exclude><exclude>fr.tropicube:tropicube-language-api</exclude></excludes></artifactSet>
+                    </configuration>
+                </execution></executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

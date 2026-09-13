@@ -271,7 +271,7 @@ if (-not $OnlyImages) {
 # ── 2. Distribute JARs ────────────────────────────────────────────────────────
 Step "Distributing verified JARs..."
 
-$null = New-Item -ItemType Directory -Force dockerfiles\plugins\lobby, dockerfiles\plugins\sheepwars, dockerfiles\plugins\velocity
+$null = New-Item -ItemType Directory -Force dockerfiles\plugins\lobby, dockerfiles\plugins\sheepwars, dockerfiles\plugins\fallenkingdoms, dockerfiles\plugins\velocity
 
 function script:Resolve-BuiltArtifact([string]$module) {
     $matches = @(Get-ChildItem "$module\target\$module-*-all.jar" -File -ErrorAction SilentlyContinue)
@@ -282,9 +282,10 @@ function script:Resolve-BuiltArtifact([string]$module) {
 }
 
 $artifacts = @(
-    [pscustomobject]@{ Source = Resolve-BuiltArtifact "tropicube-core"; Destinations = @("dockerfiles\plugins\lobby\tropicube-core.jar", "dockerfiles\plugins\sheepwars\tropicube-core.jar"); Module = "tropicube-core"; InputModules = @("tropicube-core", "tropicube-language-api", "tropicube-docker-api") }
+    [pscustomobject]@{ Source = Resolve-BuiltArtifact "tropicube-core"; Destinations = @("dockerfiles\plugins\lobby\tropicube-core.jar", "dockerfiles\plugins\sheepwars\tropicube-core.jar", "dockerfiles\plugins\fallenkingdoms\tropicube-core.jar"); Module = "tropicube-core"; InputModules = @("tropicube-core", "tropicube-language-api", "tropicube-docker-api") }
     [pscustomobject]@{ Source = Resolve-BuiltArtifact "tropicube-lobby"; Destinations = @("dockerfiles\plugins\lobby\tropicube-lobby.jar"); Module = "tropicube-lobby"; InputModules = @("tropicube-lobby", "tropicube-core", "tropicube-language-api", "tropicube-docker-api") }
     [pscustomobject]@{ Source = Resolve-BuiltArtifact "tropicube-sheepwars"; Destinations = @("dockerfiles\plugins\sheepwars\tropicube-sheepwars.jar"); Module = "tropicube-sheepwars"; InputModules = @("tropicube-sheepwars", "tropicube-core", "tropicube-language-api", "tropicube-docker-api") }
+    [pscustomobject]@{ Source = Resolve-BuiltArtifact "tropicube-fallenkingdoms"; Destinations = @("dockerfiles\plugins\fallenkingdoms\tropicube-fallenkingdoms.jar"); Module = "tropicube-fallenkingdoms"; InputModules = @("tropicube-fallenkingdoms", "tropicube-core", "tropicube-language-api", "tropicube-docker-api") }
     [pscustomobject]@{ Source = Resolve-BuiltArtifact "tropicube-velocity"; Destinations = @("dockerfiles\plugins\velocity\tropicube-velocity.jar"); Module = "tropicube-velocity"; InputModules = @("tropicube-velocity", "tropicube-docker-api") }
 )
 
@@ -363,13 +364,14 @@ if ($ValidateOnly) {
 }
 
 # ── 3. Rebuild Docker images (parallel) ──────────────────────────────────────
-Step "Building Docker images in parallel (lobby / sheepwars / velocity)..."
+Step "Building Docker images in parallel (lobby / sheepwars / fallenkingdoms / velocity)..."
 
 $rootDir = $PWD.Path
 $buildTag = (Get-Date).ToUniversalTime().ToString("yyyyMMdd-HHmmss")
 $dockerBuilds = @(
     [pscustomobject]@{ Name = "lobby";     File = "Dockerfile.lobby";     Tag = "tropicube-lobby:latest" }
     [pscustomobject]@{ Name = "sheepwars"; File = "Dockerfile.sheepwars"; Tag = "tropicube-sheepwars:latest" }
+    [pscustomobject]@{ Name = "fallenkingdoms"; File = "Dockerfile.fallenkingdoms"; Tag = "tropicube-fallenkingdoms:latest" }
     [pscustomobject]@{ Name = "velocity";  File = "Dockerfile.velocity";  Tag = "tropicube-velocity:latest" }
 )
 
@@ -408,7 +410,7 @@ if ($anyFailed) { exit 1 }
 
 Step "Verifying prewarmed Paper runtimes..."
 $paperCacheCheck = 'set -eu; test -s "/data/paper-${TROPICUBE_PAPER_VERSION}-${TROPICUBE_PAPER_BUILD}.jar"; test -s "/data/cache/mojang_${TROPICUBE_PAPER_VERSION}.jar"; test -s "/data/versions/${TROPICUBE_PAPER_VERSION}/paper-${TROPICUBE_PAPER_VERSION}.jar"; test -s "/data/bukkit.yml"; test -s "/data/config/paper-world-defaults.yml"'
-foreach ($image in @("tropicube-lobby:$buildTag", "tropicube-sheepwars:$buildTag")) {
+foreach ($image in @("tropicube-lobby:$buildTag", "tropicube-sheepwars:$buildTag", "tropicube-fallenkingdoms:$buildTag")) {
     & docker run --rm --entrypoint /bin/sh $image -c $paperCacheCheck
     if ($LASTEXITCODE -ne 0) { Fail "Prewarmed Paper runtime is incomplete in $image." }
     Ok "$image contains Paper runtime artifacts and offline startup configs."

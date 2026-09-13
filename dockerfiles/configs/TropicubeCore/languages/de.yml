@@ -1126,3 +1126,12 @@ cosmetics:
   name-xylophone: "<aqua>Xylophon"
   name-crystal: "<aqua>Kristall"
   name-tropical: "<aqua>Tropische Melodie"
+fk:
+  permission-denied: "<tc><red>✖ Du hast keine Berechtigung, Fallen Kingdoms zu verwalten."
+  status: "<tc><aqua>Fallen Kingdoms <gray>— Status: <white>{state}"
+  countdown-started: "<tc><green>✔ Fallen-Kingdoms-Countdown gestartet."
+  countdown-cancelled: "<tc><yellow>Fallen-Kingdoms-Countdown abgebrochen."
+  transition-refused: "<tc><red>✖ Diese Aktion ist im aktuellen Status nicht möglich."
+  stopped: "<tc><yellow>Fallen-Kingdoms-Spiel administrativ beendet."
+  reloaded: "<tc><green>✔ Fallen-Kingdoms-Konfiguration neu geladen."
+  usage: '<tc><yellow>Verwendung: <white>/fkadmin \<status|start|cancel|stop|reload>'

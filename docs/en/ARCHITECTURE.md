@@ -16,7 +16,7 @@ The local editor keeps Maven resources as the source of truth and Docker mirrors
 | Core | SQL profiles, economy, cosmetic grades, VIP/mod levels, localization, moderation, and Paper-side nick application |
 | Lobby | Server catalogs, menus, custom game creation, reconnect and replay entry points |
 | SheepWars | Explicit game state machine, teams, kits, sheep abilities, scoreboard, spectators, and match cleanup |
-| Fallen Kingdoms | Empty implementation slot governed by the separate design and technical specification |
+| Fallen Kingdoms | Installable Paper foundation governed by the separate design and technical specification; its Velocity template is disabled until a production map is validated |
 
 Game modules may depend on Core and Docker API, but they must never depend on another game's business classes.
 

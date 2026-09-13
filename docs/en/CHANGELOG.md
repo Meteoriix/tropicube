@@ -4,6 +4,8 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+- Added the Fallen Kingdoms foundation: Paper module, testable phase and heart domain rules, public kingdom balancing, validated configuration, administration command, Docker image, and a disabled Velocity template pending a production map.
+
 - Updated Fallen Kingdoms documentation for its future instance lifecycle, localized UI, Geyser/Floodgate, and deployment integration without presenting the empty module as available.
 - Fallen Kingdoms ranked play is planned after the V1 foundation, with FK-specific fixed formats and Elo independent from SheepWars.
 

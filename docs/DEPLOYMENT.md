@@ -187,7 +187,7 @@ Le RCON de Velocity est activé uniquement dans son conteneur pour permettre le 
 
 Le redéploiement quotidien de développement interrompt volontairement les parties. La conservation exceptionnelle de parties actives reste réservée à une opération d'exploitation explicitement préparée : régler auparavant `shutdown.stop-dynamic-servers: false` dans la configuration Velocity déployée. Le nouveau proxy restaurera alors les backends encore actifs. Cette option ne doit pas être utilisée pour un arrêt complet.
 
-Le build compile aussi le squelette `tropicube-fallenkingdoms`, mais aucun artefact de ce module n'est distribué ou incorporé à une image tant qu'il ne constitue pas un plugin complet.
+Le build distribue aussi le plugin `tropicube-fallenkingdoms` et construit son image. Son template Velocity est désactivé par défaut : ajouter une carte FK immutable sous `dockerfiles/worlds/fallenkingdoms/` via Git LFS, renseigner et valider ses positions dans la configuration, puis activer le template lors de la livraison de jeu.
 
 ## Contrôles après déploiement
 

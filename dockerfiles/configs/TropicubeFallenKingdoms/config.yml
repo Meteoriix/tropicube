@@ -1,0 +1,14 @@
+game:
+  countdown-seconds: 30
+  result-display-seconds: 10
+  min-players-per-kingdom: 4
+  max-players-per-kingdom: 6
+  max-kingdoms: 5
+phases:
+  pvp-at-seconds: 900
+  assault-at-seconds: 1500
+  sudden-death-at-seconds: 4500
+  force-end-at-seconds: 5400
+hearts: { max-health: 500.0 }
+respawn: { delay-seconds: 10 }
+sudden-death: { final-border-size: 50.0 }

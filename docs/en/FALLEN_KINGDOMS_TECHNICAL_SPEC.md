@@ -2,7 +2,7 @@
 
 ## Document status
 
-This specification defines the approved direction for the first Tropicube Fallen Kingdoms implementation. As of 14 September 2026, the Maven module is an empty placeholder: it has no Paper dependency, Java class, `plugin.yml`, resources, Docker image, or Velocity template. No runtime behavior should be inferred until the module is implemented and tested.
+This specification defines the approved direction for the first Tropicube Fallen Kingdoms implementation. As of 14 September 2026, the module provides a compilable Paper foundation: pure domain rules, state machine, kingdom balancing, heart and protection rules, validated configuration, `/fkadmin`, Docker image, and a disabled Velocity template. It remains unavailable publicly until an immutable production map, Git LFS regions, positions, and full Paper session adapters are delivered.
 
 The document distinguishes services already provided by the network from FK work that remains to be delivered. Future behavior must never be presented as available gameplay.
 

@@ -4,6 +4,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+- Socle Fallen Kingdoms : module Paper, modèle de phases et de cœurs testable, équilibrage public des royaumes, configuration validée, commande d'administration, image Docker et template Velocity désactivé en attente d'une carte de production.
+
 - Documentation Fallen Kingdoms actualisée : intégration future au cycle d'instances, aux interfaces localisées, à Geyser/Floodgate et au déploiement, sans présenter le module encore vide comme disponible.
 - Le classement Fallen Kingdoms est prévu après le socle V1 avec des formats fixes propres au jeu et une cote Elo indépendante de SheepWars.
 

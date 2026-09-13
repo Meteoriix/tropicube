@@ -154,7 +154,7 @@ Les explosions offensives séparent désormais trois responsabilités : l'explos
 
 ### `tropicube-fallenkingdoms`
 
-Ce module est pour l'instant un squelette Maven sans classe, ressource, dépendance Paper ni intégration Docker. Il participe au build global pour réserver son identité, mais n'est pas un plugin installable. Son futur déploiement nécessitera au minimum une classe `JavaPlugin`, un `plugin.yml`, une dépendance Paper/Core, une configuration, une image et un template Velocity.
+Ce module contient le socle installable : une machine à états, les règles métier pures de royaumes, cœurs, phases et protections, ainsi que le bootstrap Paper. Son image et son template Velocity restent désactivés jusqu'à l'ajout d'une carte FK immuable et validée. Le domaine ne dépend pas de SheepWars.
 
 ## Contrats Redis
 

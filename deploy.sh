@@ -111,7 +111,7 @@ if ! $only_images; then
 fi
 
 step 'Distributing verified JARs...'
-mkdir -p dockerfiles/plugins/{lobby,sheepwars,velocity}
+mkdir -p dockerfiles/plugins/{lobby,sheepwars,fallenkingdoms,velocity}
 
 resolve_artifact() {
   local module=$1
@@ -126,6 +126,7 @@ resolve_artifact() {
 core_jar=$(resolve_artifact tropicube-core)
 lobby_jar=$(resolve_artifact tropicube-lobby)
 sheepwars_jar=$(resolve_artifact tropicube-sheepwars)
+fallenkingdoms_jar=$(resolve_artifact tropicube-fallenkingdoms)
 velocity_jar=$(resolve_artifact tropicube-velocity)
 
 artifact_is_fresh() {
@@ -165,6 +166,7 @@ if $only_images; then
   artifact_is_fresh "$core_jar" tropicube-core tropicube-language-api tropicube-docker-api
   artifact_is_fresh "$lobby_jar" tropicube-lobby tropicube-core tropicube-language-api tropicube-docker-api
   artifact_is_fresh "$sheepwars_jar" tropicube-sheepwars tropicube-core tropicube-language-api tropicube-docker-api
+  artifact_is_fresh "$fallenkingdoms_jar" tropicube-fallenkingdoms tropicube-core tropicube-language-api tropicube-docker-api
   artifact_is_fresh "$velocity_jar" tropicube-velocity tropicube-docker-api
 fi
 
@@ -172,6 +174,8 @@ copy_verified "$core_jar" dockerfiles/plugins/lobby/tropicube-core.jar
 copy_verified "$core_jar" dockerfiles/plugins/sheepwars/tropicube-core.jar
 copy_verified "$lobby_jar" dockerfiles/plugins/lobby/tropicube-lobby.jar
 copy_verified "$sheepwars_jar" dockerfiles/plugins/sheepwars/tropicube-sheepwars.jar
+copy_verified "$core_jar" dockerfiles/plugins/fallenkingdoms/tropicube-core.jar
+copy_verified "$fallenkingdoms_jar" dockerfiles/plugins/fallenkingdoms/tropicube-fallenkingdoms.jar
 copy_verified "$velocity_jar" dockerfiles/plugins/velocity/tropicube-velocity.jar
 
 step 'Synchronizing language configuration...'
@@ -330,7 +334,7 @@ if $validate_only; then
   exit 0
 fi
 
-step 'Building Docker images in parallel (lobby / sheepwars / velocity)...'
+step 'Building Docker images in parallel (lobby / sheepwars / fallenkingdoms / velocity)...'
 build_tag="$(date -u +%Y%m%d-%H%M%S)"
 readonly build_tag
 build_log_dir=$(mktemp -d "${TMPDIR:-/tmp}/tropicube-build.XXXXXX")
@@ -342,10 +346,11 @@ cleanup_logs() {
 }
 trap cleanup_logs EXIT
 
-build_names=(lobby sheepwars velocity)
+build_names=(lobby sheepwars fallenkingdoms velocity)
 declare -A build_files=(
   [lobby]=Dockerfile.lobby
   [sheepwars]=Dockerfile.sheepwars
+  [fallenkingdoms]=Dockerfile.fallenkingdoms
   [velocity]=Dockerfile.velocity
 )
 declare -A build_pids=()
@@ -373,7 +378,7 @@ $build_failed && exit 1
 
 step 'Verifying prewarmed Paper runtimes...'
 paper_cache_check='set -eu; test -s "/data/paper-${TROPICUBE_PAPER_VERSION}-${TROPICUBE_PAPER_BUILD}.jar"; test -s "/data/cache/mojang_${TROPICUBE_PAPER_VERSION}.jar"; test -s "/data/versions/${TROPICUBE_PAPER_VERSION}/paper-${TROPICUBE_PAPER_VERSION}.jar"; test -s "/data/bukkit.yml"; test -s "/data/config/paper-world-defaults.yml"'
-for image in "tropicube-lobby:$build_tag" "tropicube-sheepwars:$build_tag"; do
+for image in "tropicube-lobby:$build_tag" "tropicube-sheepwars:$build_tag" "tropicube-fallenkingdoms:$build_tag"; do
   docker run --rm --entrypoint /bin/sh "$image" -c "$paper_cache_check" \
     || fail "Prewarmed Paper runtime is incomplete in $image."
   ok "$image contains Paper runtime artifacts and offline startup configs."

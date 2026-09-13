@@ -250,3 +250,35 @@ templates:
       SIMULATION_DISTANCE: "5"
       SYNC_CHUNK_WRITES: "false"
       TZ: "Europe/Paris"
+
+  fallenkingdoms:
+    # Disabled until an immutable production map is supplied in the FK image.
+    enabled: false
+    name: "Fallen Kingdoms"
+    image: "tropicube-fallenkingdoms:latest"
+    type: "FALLENKINGDOMS"
+    port-min: 25660
+    port-max: 25669
+    max-players: 30
+    spectator-slots: 10
+    ram-min: 2048
+    ram-max: 4096
+    auto-start: true
+    auto-stop: true
+    auto-stop-delay: 300
+    min-instances: 0
+    max-instances: 2
+    environment:
+      GAME_MODE: "QUICK_PLAY"
+      TYPE: "PAPER"
+      VERSION: "26.2"
+      PAPER_BUILD: "97"
+      DIFFICULTY: "normal"
+      SPAWN_PROTECTION: "0"
+      ONLINE_MODE: "false"
+      OVERRIDE_SERVER_PROPERTIES: "true"
+      USE_AIKAR_FLAGS: "true"
+      VIEW_DISTANCE: "8"
+      SIMULATION_DISTANCE: "5"
+      SYNC_CHUNK_WRITES: "false"
+      TZ: "Europe/Paris"

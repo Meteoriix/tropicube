@@ -123,7 +123,7 @@ La configuration de partie, la sélection de carte, d'équipe, de classe et de k
 
 ## Tropicube Fallen Kingdoms
 
-Le module est actuellement vide et n'ajoute donc aucune commande ni permission.
+Le socle expose `/fkadmin <status|start|cancel|stop|reload>` avec la permission `fallenkingdoms.admin`. Le template reste désactivé tant qu'aucune carte de production n'est validée.
 
 ## TropicubeVelocity — proxy
 

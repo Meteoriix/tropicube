@@ -110,6 +110,7 @@ export const PLACEHOLDER_DESCRIPTIONS: Record<string, string> = {
     badge: 'Nom localisé du badge affiché sur le profil.',
     requirement: 'Niveau, seuil VIP ou prix requis pour débloquer un cosmétique.',
     remaining: 'Solde de monnaie restant après un achat cosmétique.',
+    state: 'État localisé ou technique actuel d’une partie, d’une instance ou d’un processus.',
     balance: 'Solde actuel du joueur en TropiCoins.',
     best_killer: 'Pseudo du joueur ayant réalisé le plus d’éliminations.',
     best_thrower: 'Pseudo du joueur ayant lancé le plus de moutons.',
