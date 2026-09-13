@@ -4,6 +4,9 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+- Documentation Fallen Kingdoms actualisée : intégration future au cycle d'instances, aux interfaces localisées, à Geyser/Floodgate et au déploiement, sans présenter le module encore vide comme disponible.
+- Le classement Fallen Kingdoms est prévu après le socle V1 avec des formats fixes propres au jeu et une cote Elo indépendante de SheepWars.
+
 ### 2026-09-11
 
 - Simplifie le redéploiement de développement : `deploy.ps1` et `deploy.sh` recréent directement Velocity avec les images vérifiées, sans maintenance, sauvegarde ni délai de drain ; les parties dynamiques en cours sont arrêtées. La livraison de production reste une activation explicite d'un lot préparé.

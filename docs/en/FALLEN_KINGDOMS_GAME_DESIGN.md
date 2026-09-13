@@ -1,8 +1,18 @@
-# Epicube Fallen Kingdoms — complete game-mode description
+# Epicube Fallen Kingdoms — historical game design and Tropicube target
 
 ## Document purpose
 
-This document preserves the historical design references for a future Tropicube adaptation. It describes the intended player experience and notable Epicube rules; it is not an implementation claim. Where sources are incomplete, the technical specification records explicit V1 decisions and temporary assumptions.
+This document preserves the historical design references for a future Tropicube adaptation. It describes the intended player experience and notable Epicube rules; it is not an implementation claim. As of 14 September 2026, `tropicube-fallenkingdoms` is a Maven placeholder with no Paper plugin, resource, Docker image, or Velocity template. Where sources are incomplete, the technical specification records explicit V1 decisions and temporary assumptions.
+
+## Planned Tropicube adaptation
+
+Tropicube keeps the defining loop: several kingdoms build, gather resources, defend a heart, and organize sieges. The approved V1 target has two to five balanced kingdoms, four to six players per kingdom, the Miner, Farmer, Scout, and Enchanter kits, and preparation, PvP, siege, sudden-death, and result phases.
+
+Players will choose Fallen Kingdoms from **Games**, join a public `QUICK_PLAY` instance, or create a public/private custom match when their access level permits it. Kingdom, kit, and map choices belong to localized in-instance menus; players arriving after the roster is locked spectate. At the result, Velocity returns players to a lobby and destroys the disposable game instance.
+
+All player UI follows the current Tropicube rules: Adventure/MiniMessage, `fr`, `en`, `de`, and `es` resources, explicit click outcomes, `NetworkMenuStyle` framing, and live refresh after `/lang`. Bedrock players connected through Geyser/Floodgate use the same flow with compatible visual fallbacks.
+
+Fallen Kingdoms ranked play is planned **after the V1 foundation**. It will use fixed formats designed for FK, and every player will have a Fallen Kingdoms Elo independent from their SheepWars Elo. Multi-kingdom rating and queue composition rules will be approved with that later ranked phase; SheepWars 4v4/8v8 rules are not defaults for FK.
 
 ## 1. General concept
 
@@ -102,7 +112,7 @@ The final surviving kingdom wins. A time limit may trigger sudden death or a det
 
 Inside their own base, players receive the broadest construction freedom. Neutral land allows tactical structures within anti-grief limits. Enemy territory becomes modifiable only in authorized phases and must prevent lava, water, obsidian, bedrock, portal, height-limit, and unbreakable-containment abuse.
 
-The server records changed blocks or restores the world from an immutable template after each match.
+Tropicube V1 does not journal blocks to replay a match in the same process: every match uses an immutable map in a disposable instance, then removes its container and ephemeral volume.
 
 ## 10. Combat and assaults
 
@@ -137,3 +147,5 @@ Four kingdoms enter their bases and divide work. Miners and farmers establish th
 ## 15. Reliability of information
 
 Historical details should be treated according to source confidence. Confirmed Tropicube V1 rules in the [technical specification](FALLEN_KINGDOMS_TECHNICAL_SPEC.md) override uncertain memories or third-party descriptions. Reversible balance values remain configurable; architectural or experience-changing ambiguity must be resolved before implementation.
+
+The best-attested historical elements are the five colors, approximately six players per kingdom, Cactus/Apocalypse/Yeti, the four kits, the End Crystal heart, elimination following its destruction, and spectator handling. Exact phase lengths, kit durability, heart health, and building exceptions varied. The 500-health reconstruction and detailed kit inventories are useful references rather than surviving official documentation. Sources include a [2016 Epicube-style technical reconstruction](https://skript-mc.fr/forum/topic/8182-un-skript-fallenkindoms-style-epicube/), an [Epicube promotional video](https://www.youtube.com/watch?v=lYZv11VIid8), an [Apocalypse match](https://www.youtube.com/watch?v=zhPhpN6Nh4A), a [historical Epicube playlist](https://www.youtube.com/playlist?list=PLzHrXSFcjLGp4OiA-NKbECQmPdT1-nnsB), and [community rules for the original concept](https://www.jeuxvideo.com/forums/1-24777-2074535-1-0-1-0-principe-regles-du-fallen-kingdom.htm).

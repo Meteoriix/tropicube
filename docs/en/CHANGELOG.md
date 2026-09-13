@@ -4,6 +4,9 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+- Updated Fallen Kingdoms documentation for its future instance lifecycle, localized UI, Geyser/Floodgate, and deployment integration without presenting the empty module as available.
+- Fallen Kingdoms ranked play is planned after the V1 foundation, with FK-specific fixed formats and Elo independent from SheepWars.
+
 ### 2026-09-11
 
 - Simplified development redeploys: `deploy.ps1` and `deploy.sh` now recreate Velocity directly from verified images without maintenance, backup, or drain delay; running dynamic games are stopped. Production releases still require explicit activation of a prepared lot.

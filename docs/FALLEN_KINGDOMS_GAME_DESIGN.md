@@ -1,4 +1,20 @@
-# Fallen Kingdoms d’Epicube — description complète du mode de jeu
+# Fallen Kingdoms d’Epicube — game design historique et cible Tropicube
+
+## Statut et rôle du document
+
+Cette page conserve les références historiques du Fallen Kingdoms d’Epicube et explique l'expérience que Tropicube souhaite adapter. Elle ne décrit pas un serveur Fallen Kingdoms déjà disponible : au 14 septembre 2026, `tropicube-fallenkingdoms` est un squelette Maven sans plugin Paper, ressource, image Docker ni template Velocity.
+
+La [spécification technique](FALLEN_KINGDOMS_TECHNICAL_SPEC.md) fixe les règles V1 Tropicube lorsqu'elles diffèrent de l'historique ou lorsqu'une source manque. Elle distingue les services réseau déjà disponibles des travaux qui restent à livrer. Les détails historiques incertains ne doivent jamais devenir une règle implicite du futur jeu.
+
+## Adaptation Tropicube prévue
+
+Tropicube conserve le cœur du mode : plusieurs royaumes bâtissent, exploitent les ressources, défendent un cœur et organisent des sièges. La V1 approuvée prévoit deux à cinq royaumes équilibrés, quatre à six joueurs par royaume, les kits Mineur, Fermier, Éclaireur et Enchanteur, ainsi que les phases de préparation, JcJ, assaut, mort subite et résultat.
+
+Le parcours réseau cible suit les conventions actuelles : le joueur choisit Fallen Kingdoms depuis **Jeux**, rejoint une instance publique `QUICK_PLAY` ou crée une partie personnalisée publique ou privée s'il possède le niveau requis. Les choix de royaume, kit et carte s'effectuent dans l'instance au moyen de menus localisés ; une arrivée après le verrouillage du roster est spectatrice. À la fin, Velocity transfère les joueurs vers un lobby puis détruit l'instance éphémère.
+
+Toutes les surfaces joueur doivent respecter les conventions Tropicube : Adventure/MiniMessage, les quatre langues `fr`, `en`, `de` et `es`, actions de clic explicites, cadrage `NetworkMenuStyle`, retour à gauche et fermeture à droite. Menus, hotbar, scoreboard et tablist se rafraîchissent après `/lang` sans reconnexion. Les clients Bedrock via Geyser/Floodgate participent au même flux et reçoivent les alternatives visuelles nécessaires lorsque le rendu Java n'est pas fiable.
+
+Le classement Fallen Kingdoms est prévu **après le socle V1**. Ses files seront des formats fixes propres au jeu et sa cote Elo est indépendante de celle de SheepWars : un joueur dispose d'une cote par jeu, non d'une cote réseau commune. Les règles de composition des files et la politique de variation de cote multi-royaumes seront définies lors de cette phase classée ; elles ne réutiliseront pas par défaut les formats 4v4/8v8 de SheepWars.
 
 Le Fallen Kingdoms d’Epicube était un jeu Minecraft de stratégie, de survie et de PvP opposant plusieurs royaumes. Chaque équipe devait exploiter les ressources de la carte, s’équiper, défendre sa base puis attaquer les royaumes adverses afin de détruire leur cœur.
 

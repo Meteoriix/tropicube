@@ -2,13 +2,38 @@
 
 ## Document status
 
-This specification defines the approved direction for the first Tropicube Fallen Kingdoms implementation. The Maven module is currently an empty placeholder. No runtime behavior should be inferred until the module is implemented and tested.
+This specification defines the approved direction for the first Tropicube Fallen Kingdoms implementation. As of 14 September 2026, the Maven module is an empty placeholder: it has no Paper dependency, Java class, `plugin.yml`, resources, Docker image, or Velocity template. No runtime behavior should be inferred until the module is implemented and tested.
+
+The document distinguishes services already provided by the network from FK work that remains to be delivered. Future behavior must never be presented as available gameplay.
 
 ## First-version scope
 
 V1 must deliver a complete match lifecycle: waiting lobby, balanced kingdom selection, kits, map validation, timed phase transitions, protections, PvP, hearts, last lives, elimination, sudden death, victory, statistics, reconnect handling, world restoration, Redis/Velocity integration, localization, Docker templates, and cleanup.
 
 The implementation must remain independent from SheepWars business classes. Only genuinely shared services belong in Core or Docker API.
+
+## Approved V1 rules
+
+Public matches require at least eight players: two to five kingdoms, four to six players per kingdom, and a final size difference of at most one. The target kingdom count is `max(2, ceil(players / 6))`, capped at five; the public thresholds are 8–12, 13–18, 19–24, and 25–30 players for two through five kingdoms. Player color choices are preferences only and maps must provide a valid layout for every enabled kingdom count.
+
+All deadlines are measured from `PREPARATION`: preparation starts at 00:00, common-area PvP opens at 15:00, enemy bases and hearts open at 25:00, all remaining hearts are destroyed at 75:00 for sudden death, and the match resolves at 90:00. One kingdom with living players wins early. The public combat profile is native Paper 26.2; a custom match may select the intentionally limited `LEGACY_1_8` profile. Friendly direct and indirect damage is always cancelled.
+
+Each heart has 500 health. Before assault it is protected and inaccessible; during assault only enemy melee and projectile damage applies. TNT makes approved breaches but never directly damages a heart. Heart destruction puts surviving members into last life, cancels pending respawns, and permanently eliminates members already dead. A kingdom becomes neutral ruins only when its final survivor dies. Before its heart falls, a death drops inventory, spectates for ten seconds, then respawns without kit. Disconnect counts as a death; a returning roster member may only resume while their heart remains alive, and late arrivals spectate.
+
+At sudden death, respawns stop and the border reaches exactly 50 × 50 blocks at 90:00. At the limit, the kingdom or kingdoms with the most survivors win; an equal maximum is a draw. An administrative abort records no competitive statistics.
+
+The default configuration validates a 30-second countdown, a 10-second result display, the ordered 15/25/75/90-minute phase deadlines, positive heart health, at least one kit, valid material identifiers, compatible layouts, non-overlapping coherent regions, and positions inside the playable map. Custom matches may vary only explicitly allowed gameplay settings; technical protections, no friendly damage, container preservation, and non-blocking I/O cannot be overridden.
+
+## Existing platform baseline and required FK work
+
+| Area | Available network capability | Fallen Kingdoms work |
+|---|---|---|
+| Dynamic instances | Velocity creates, restores, probes, and destroys instances with `ServerInstance` lifecycle states. | Add a `FALLENKINGDOMS` template, image, non-overlapping port range, and `GAME_WAITING` through `GAME_ENDING` publication. |
+| Match finish | Velocity handles `PROXY:FINISH_GAME:<instanceId>`, lobby transfer, and ephemeral volume cleanup. | Publish it only after the immutable result is fixed and gameplay is frozen. |
+| Worlds | Pre-warmed Paper images are copied into an instance-owned `/data` volume. | Package immutable validated maps; keep `.mca` regions in Git LFS and never commit runtime/player data. |
+| Core | Profiles, language, access levels, economy, moderation, and a Java API are available. | Use Core for network concerns while keeping FK domain logic isolated. |
+| UI and language | Core distributes versioned language/UI generations through Redis. | Add FK menu, scoreboard, tablist, and four-language resources to the bundle, editor, and deployment mirrors. |
+| Bedrock | Geyser/Floodgate are connected at Velocity. | Preserve the same player flow and provide safe visual fallbacks. |
 
 ## Confirmed rules
 
@@ -59,10 +84,10 @@ Unconfirmed historical details remain explicit assumptions, never hidden constan
 ## State machine
 
 ```text
-LOADING -> WAITING -> STARTING -> PREPARATION -> PVP -> SIEGE
-                                              -> SUDDEN_DEATH
-                                              -> ENDING -> ENDED
-Any active state -> ABORTED on unrecoverable failure
+WAITING -> COUNTDOWN -> PREPARATION -> PVP -> ASSAULT -> SUDDEN_DEATH -> ENDING -> ENDED
+   ^          |              |             |              |
+   +-- invalid roster/map ---+-------------+--------------+
+Any active state -> ENDING with ADMIN_ABORT on shutdown or administrator abort
 ```
 
 ### State invariants
@@ -70,13 +95,13 @@ Any active state -> ABORTED on unrecoverable failure
 - only one state is active;
 - transitions validate their expected source;
 - a completed transition may be called again without duplicating effects;
-- `ENDING`, `ENDED`, and `ABORTED` reject gameplay events;
+- `ENDING` and `ENDED` reject gameplay events;
 - every state-owned task is cancelled when leaving that state;
 - world mutations occur only on the Paper scheduler.
 
 ### Trigger events
 
-Player thresholds trigger countdown evaluation. Scheduled deadlines trigger phase changes. Heart destruction and eligible-player counts trigger ruin or victory evaluation. Proxy shutdown, plugin disable, invalid map state, or unrecoverable persistence failure trigger controlled abort and cleanup.
+Player thresholds trigger countdown evaluation. Scheduled deadlines trigger phase changes. Heart destruction and eligible-player counts trigger ruin or victory evaluation. Proxy shutdown, plugin disable, invalid map state, or administrator abort triggers controlled `ADMIN_ABORT` cleanup. A state-owned task captures the expected session ID and ignores late callbacks.
 
 ## Component responsibilities
 
@@ -124,7 +149,7 @@ Deployment copies must remain synchronized with embedded resources. Player messa
 
 ## Target commands and permissions
 
-Normal gameplay should use menus and items. Administrative setup may expose commands for map selection, region points, kingdom spawns, heart locations, validation, forced phase transitions, and diagnostics. Every command and permission must be documented when implemented.
+Normal gameplay uses menus and items. The planned Paper administrative command is `/fkadmin status|start|cancel|stop|reload`, protected by `fallenkingdoms.admin`; reload is allowed only in `WAITING`. The future proxy `/stats [player]` is part of the shared statistics delivery, not of the currently installed command catalog. Every command and permission must be documented when implemented.
 
 ## Protection matrix
 
@@ -154,6 +179,14 @@ Production games use immutable world templates or disposable containers. Local d
 
 Core supplies language, player, grade, permission, economy, and database services where their responsibility is network-wide. MySQL stores durable statistics. Redis stores bounded ephemeral state with documented TTLs. Velocity creates, registers, routes, and destroys instances without learning Fallen Kingdoms business rules.
 
+The shared cross-game statistics contract is future work. It must migrate existing SheepWars data only with explicit schema compatibility and regression tests; it is not a claim that a global `/stats` implementation currently exists.
+
+## Future Fallen Kingdoms ranked play
+
+Ranked Fallen Kingdoms is explicitly post-V1. The V1 result contract reserves a stable game identifier and immutable placements, wins, draws, eliminations, and objective contributions so that the ranked phase can introduce its own rating policy.
+
+Competitive profiles are namespaced by game. A player's Fallen Kingdoms Elo is fully independent from their SheepWars Elo and from future games. The ranked phase will define one or more FK-specific fixed queue formats, eligible maps, kingdom sizes, party/reconnect policy, multi-kingdom placement calculation, and rating movement. It must not inherit SheepWars `RANKED_4V4`, `RANKED_8V8`, party limits, or matchmaking policy by default. Redis and MySQL work remain asynchronous, and rating/result writes are idempotent by match ID.
+
 ## Mandatory edge cases
 
 - countdown threshold gained and lost repeatedly;
@@ -179,6 +212,8 @@ State transitions, team balancing, phase deadlines, protection matrices, heart i
 
 Configuration loads, four-language keys and placeholders match, embedded and deployment resources agree, plugin descriptors are valid, Maven dependencies preserve game boundaries, and documentation links build in both languages.
 
+The later competitive module must prove that two game results for the same player update isolated Elo profiles and that no FK operation reads or writes SheepWars rating.
+
 ### Paper and Docker scenarios
 
 Manual validation covers a complete match, every phase boundary, combat opening, legal and illegal building, heart destruction, reconnects, late arrival, sudden death, result transfer, container removal, world reset, `/lang`, and shutdown during play.
@@ -194,3 +229,5 @@ Manual validation covers a complete match, every phase boundary, combat opening,
 7. Add maps and deployment templates through Git LFS.
 8. Run targeted tests after every coherent step.
 9. Finish with the complete reactor, Docker validation, documentation site, diff review, and staged in-game acceptance scenarios.
+
+Ranked play follows the V1 foundation as a separate delivery with its own migration, fixed-format queue acceptance tests, multi-kingdom rating tests, and operational validation.

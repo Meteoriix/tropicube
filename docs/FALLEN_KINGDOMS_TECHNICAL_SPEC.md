@@ -4,6 +4,8 @@
 
 Cette page transforme le [game design historique](FALLEN_KINGDOMS_GAME_DESIGN.md) en contrat technique pour la première version Tropicube de Fallen Kingdoms. Elle décrit le comportement à implémenter ; elle ne signifie pas que le module, les commandes ou les intégrations cités existent déjà.
 
+**État du dépôt au 14 septembre 2026 :** `tropicube-fallenkingdoms` est un squelette Maven sans classe, dépendance Paper, `plugin.yml`, configuration, langues, image Docker ni template Velocity. Les mécanismes décrits ci-dessous comme « existants » sont des capacités du réseau que Fallen Kingdoms devra consommer ; les mécanismes « à créer » ne doivent pas être annoncés aux joueurs avant leur livraison.
+
 Les règles marquées **confirmées** sont approuvées. Les valeurs marquées **configurables** ont une valeur publique par défaut, mais peuvent être modifiées dans les limites indiquées. Les éléments marqués **HYPOTHÈSE TEMPORAIRE** doivent rester faciles à changer et devront être validés en jeu avant une publication.
 
 En cas de divergence, cette spécification prévaut pour la V1 Tropicube. Le game design historique reste la source de contexte et d'intention.
@@ -21,9 +23,9 @@ La V1 comprend :
 - un cœur par royaume, les dernières vies, les réapparitions et les spectateurs ;
 - la ruine contrôlée d'une base éliminée ;
 - la réduction de bordure en mort subite ;
-- les messages, HUD, scoreboards et bossbars localisés par Core ;
+- les messages, HUD, scoreboards et bossbars localisés via Core et les manifestes FK ;
 - des commandes d'administration minimales ;
-- la persistance asynchrone des préférences et statistiques globales, consultables sur Velocity ;
+- la persistance asynchrone des préférences et résultats, préparant le futur contrat de statistiques réseau ;
 - l'arrêt propre de l'instance par le flux Docker/Velocity existant.
 
 Ne font pas partie de la V1 : une monnaie ou des récompenses économiques, un éditeur de carte en jeu, une restauration du monde permettant plusieurs parties dans le même conteneur, une reproduction exhaustive du combat Minecraft 1.8, et les cartes de production elles-mêmes.
@@ -174,6 +176,17 @@ PREPARATION ──15:00──> PVP ──25:00──> ASSAULT ──75:00──>
 
 Chaque transition est idempotente et exécutée sur le thread serveur pour les mutations Paper. Une transition refusée ne produit aucun effet partiel. Les tâches capturent l'identifiant de session attendu ; elles ignorent un callback tardif si la session ou l'état ne correspond plus.
 
+## Plateforme réseau existante et intégrations à créer
+
+| Sujet | Capacité actuelle | Intégration Fallen Kingdoms attendue |
+|---|---|---|
+| Instance | Velocity crée, restaure, surveille et détruit les conteneurs dynamiques ; `ServerInstance` publie les états `CREATING` à `STOPPED`. | Ajouter un template `FALLENKINGDOMS`, son image et une plage de ports non chevauchante ; publier `GAME_WAITING`, `GAME_STARTING`, `GAME_PLAYING` et `GAME_ENDING`. |
+| Fin de partie | Le proxy gère `PROXY:FINISH_GAME:<instanceId>`, transfert au lobby et nettoyage du conteneur/volume éphémère. | Envoyer ce signal seulement après résultat immuable, persistance demandée et gel du jeu. |
+| Monde | Les images Paper préchauffées sont copiées dans un volume `/data` propre à l'instance, supprimé avec elle. | Embarquer une carte immuable validée ; conserver ses régions `.mca` dans Git LFS et ne jamais versionner données joueur ou mutations runtime. |
+| Core | Profils, langues, grades cosmétiques, niveaux d'accès, économie, modération et API Java sont déjà disponibles. | Dépendre de Core pour les responsabilités réseau, sans importer de métier SheepWars. |
+| UI et langues | Core publie une génération Redis de langues et manifestes UI ; Lobby et SheepWars chargent menus, scoreboards et tablists versionnés. | Ajouter les ressources FK, leurs copies Docker et leurs entrées au bundle/éditeur ; assurer la parité des clés et placeholders dans quatre langues. |
+| Accès Bedrock | Geyser/Floodgate sont raccordés à Velocity. | Prévoir les rendus d'items et de têtes compatibles Bedrock, sans introduire de parcours distinct. |
+
 ## Responsabilités des composants
 
 | Composant | Responsabilité |
@@ -190,7 +203,7 @@ Chaque transition est idempotente et exécutée sur le thread serveur pour les m
 | `RespawnService` | Programme les dix secondes, annule à la destruction du cœur et réapparaît sans kit. |
 | `RuinService` | Exécute les vagues visuelles et la destruction filtrée, puis neutralise la région. |
 | `BorderService` | Initialise la bordure et garantit son interpolation vers 50 × 50 à 90 minutes. |
-| `HudService` | Produit scoreboard, bossbars, titres, hotbar et rafraîchissement après changement de langue. |
+| `HudService` | Produit scoreboard, bossbars, titres, hotbar et rafraîchissement après changement de langue à partir des manifestes FK. |
 | `TaskRegistry` | Enregistre toutes les tâches Paper et les annule de façon idempotente à la fin. |
 | `StatisticsService` | Construit un résultat immuable, orchestre l'écriture durable et la mise à jour du cache. |
 | `StatisticsRepository` | Persiste les détails et agrégats dans MySQL hors thread Paper. |
@@ -466,7 +479,7 @@ Si l'arrêt Docker échoue, Velocity marque l'instance non joignable et le méca
 
 Fallen Kingdoms réutilise les services génériques de Core pour profils joueur, langues, Adventure/MiniMessage, grades et permissions. Le choix de kit préféré est une préférence par jeu. Le domaine Fallen Kingdoms reste dans son module.
 
-Les statistiques deviennent un contrat réseau commun : parties jouées, victoires, nuls, éliminations, morts et objectifs/cœurs détruits sont agrégés globalement et détaillés par mini-jeu. SheepWars devra alimenter le même contrat lors de l'implémentation, avec tests de non-régression.
+Les statistiques deviennent un contrat réseau commun : parties jouées, victoires, nuls, éliminations, morts et objectifs/cœurs détruits sont agrégés globalement et détaillés par mini-jeu. Ce contrat est à créer : les statistiques actuelles de SheepWars ne doivent pas être modifiées sans migration, compatibilité et tests de non-régression.
 
 ### MySQL et Redis
 
@@ -476,7 +489,13 @@ Redis ne remplace pas MySQL. Il transporte les snapshots d'instance, événement
 
 ### Velocity
 
-Velocity route les joueurs, expose `/stats`, déclenche une lecture asynchrone contrôlée en cas de cache absent et affiche une erreur localisée en cas de délai dépassé. Aucun appel SQL/Redis ne bloque un event loop Velocity. La vue présente d'abord l'agrégat tous jeux, puis le détail Fallen Kingdoms, SheepWars et des futurs jeux.
+L'extension future de Velocity routera les joueurs et exposera `/stats`. Elle déclenchera une lecture asynchrone contrôlée en cas de cache absent et affichera une erreur localisée en cas de délai dépassé. Aucun appel SQL/Redis ne bloque un event loop Velocity. La vue présentera d'abord l'agrégat tous jeux, puis le détail Fallen Kingdoms, SheepWars et des futurs jeux.
+
+### Classement Fallen Kingdoms — phase ultérieure
+
+Le classement ne fait pas partie du socle V1. Le socle réserve néanmoins un identifiant de jeu stable et des résultats immuables suffisants pour une future politique de cote. Chaque profil compétitif est indexé par jeu : la cote Elo Fallen Kingdoms d'un joueur est indépendante de sa cote SheepWars et des futurs jeux.
+
+La phase classée ajoutera une ou plusieurs files **à format fixe** propres à Fallen Kingdoms. Elle définira alors les tailles de royaumes, les cartes admissibles, les règles de présence/reconnexion, le calcul de placement et la politique de gain ou perte Elo adaptée à plusieurs royaumes. Aucun format SheepWars (`RANKED_4V4`, `RANKED_8V8`), seuil de party ou algorithme d'appariement ne constitue un défaut pour Fallen Kingdoms. Les opérations Redis et les lectures MySQL de cette future file restent asynchrones et son résultat est idempotent par identifiant de partie.
 
 ## Cas limites obligatoires
 
@@ -524,6 +543,7 @@ Velocity route les joueurs, expose `/stats`, déclenche une lecture asynchrone c
 - Les permissions déclarées correspondent aux commandes et à la documentation.
 - Fallen Kingdoms dépend des API partagées de Core/Docker API, jamais du métier SheepWars.
 - Les contrats de statistiques compilent et leurs consommateurs Core, SheepWars, Fallen Kingdoms et Velocity disposent de tests de compatibilité.
+- Deux résultats de jeux distincts pour un même joueur alimentent des profils Elo distincts ; aucun calcul FK ne lit ou n'écrit la cote SheepWars.
 
 ### Scénarios sur serveur Paper/Docker
 
@@ -554,5 +574,7 @@ Chaque étape doit compiler et disposer de tests ciblés avant la suivante :
 10. ajouter commandes administratives, arrêt, transfert et nettoyage idempotent ;
 11. intégrer template Docker, monde de test, routage et scripts de déploiement ;
 12. exécuter les scénarios Paper/Docker, le réacteur complet, les validations documentaires et la revue de sécurité.
+
+Le classement Fallen Kingdoms est une étape post-V1. Il ne commence qu'après la stabilisation du socle et définit ses propres formats fixes, ses migrations, ses tests de matchmaking multi-royaumes et sa politique Elo isolée.
 
 Toute modification de Core ou SheepWars doit être motivée par le contrat partagé de l'étape 9 et livrée avec ses tests de non-régression. Aucune étape ne doit masquer une compilation rouge par un stub ou une implémentation vide.
