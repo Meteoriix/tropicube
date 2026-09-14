@@ -16,9 +16,11 @@ The local editor keeps Maven resources as the source of truth and Docker mirrors
 | Core | SQL profiles, economy, cosmetic grades, VIP/mod levels, localization, moderation, and Paper-side nick application |
 | Lobby | Server catalogs, menus, custom game creation, reconnect and replay entry points |
 | SheepWars | Explicit game state machine, teams, kits, sheep abilities, scoreboard, spectators, and match cleanup |
-| Fallen Kingdoms | Installable Paper foundation governed by the separate design and technical specification; its Velocity template is disabled until a production map is validated |
+| Fallen Kingdoms | Dynamic Paper game with a generic map catalog, explicit phases, territorial protections, hearts, lives, kits, sudden death, and terminal cleanup |
 
 Game modules may depend on Core and Docker API, but they must never depend on another game's business classes.
+
+Fallen Kingdoms sessions consume an immutable `MapDefinition`; Cactus is only the first YAML entry and `MAP_ID` selects any enabled map. Core writes immutable results atomically to generic game result and aggregate tables, invalidates the statistics cache after commit, and then publishes `PROXY:FINISH_GAME:<instance>` for Velocity cleanup.
 
 Each placeholder name represents one business meaning and is reused by translations receiving the same information. Core and Velocity enrich every localized rendering with `{instance_name}`. Paper resolves it from the instance environment, while the proxy resolves it from the player's current connection; the shared language API excludes that runtime value when mapping any remaining positional arguments. Player-targeted rendering also exposes `{player_grade}` as the formatted grade prefix without the username. Core resolves it from its local cache without SQL and publishes `tropicube:player:grade-display:<uuid>` to Redis with a 24-hour TTL so Velocity can maintain an in-memory cache. This independent value follows last-writer-wins semantics, and Velocity temporarily uses the default grade until the first cache load arrives.
 

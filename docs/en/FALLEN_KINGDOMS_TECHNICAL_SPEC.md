@@ -2,7 +2,7 @@
 
 ## Document status
 
-This specification defines the approved direction for the first Tropicube Fallen Kingdoms implementation. As of 14 September 2026, the module provides a compilable Paper foundation: pure domain rules, state machine, kingdom balancing, heart and protection rules, validated configuration, `/fkadmin`, Docker image, and a disabled Velocity template. It remains unavailable publicly until an immutable production map, Git LFS regions, positions, and full Paper session adapters are delivered.
+This specification defines the approved Tropicube Fallen Kingdoms V1. As of 14 September 2026, the playable Paper runtime and active Velocity template ship with Cactus. Sessions use a generic map catalog and implement phases, protections, hearts, lives, kits, ruins, sudden death, localized HUD, idempotent MySQL results, and Redis-driven instance cleanup. Paper/Docker scenarios below remain the manual production acceptance checks.
 
 The document distinguishes services already provided by the network from FK work that remains to be delivered. Future behavior must never be presented as available gameplay.
 

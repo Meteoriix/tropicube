@@ -4,7 +4,7 @@
 
 Cette page transforme le [game design historique](FALLEN_KINGDOMS_GAME_DESIGN.md) en contrat technique pour la première version Tropicube de Fallen Kingdoms. Elle décrit le comportement à implémenter ; elle ne signifie pas que le module, les commandes ou les intégrations cités existent déjà.
 
-**État du dépôt au 14 septembre 2026 :** le module fournit désormais le socle Paper compilable : modèle de domaine pur, machine à états, calcul d'équilibrage, règles de cœur et de protection, configuration validée, commande `/fkadmin`, image Docker et template Velocity désactivé. Il reste volontairement indisponible publiquement tant qu'une carte de production immuable, ses régions Git LFS, ses positions et les adaptateurs Paper complets de session ne sont pas livrés. Les mécanismes décrits ci-dessous comme « existants » sont des capacités du réseau que Fallen Kingdoms devra consommer ; les mécanismes « à créer » ne doivent pas être annoncés aux joueurs avant leur livraison.
+**État du dépôt au 14 septembre 2026 :** la V1 Paper est livrée et son template Velocity est actif avec Cactus. Le runtime consomme un catalogue de cartes générique, gère le cycle de partie, les protections, cœurs, vies, kits, ruines, mort subite, HUD, résultat MySQL idempotent et fin d'instance Redis. Les scénarios marqués « sur serveur Paper/Docker » restent les contrôles manuels de recette avant une ouverture publique de production.
 
 Les règles marquées **confirmées** sont approuvées. Les valeurs marquées **configurables** ont une valeur publique par défaut, mais peuvent être modifiées dans les limites indiquées. Les éléments marqués **HYPOTHÈSE TEMPORAIRE** doivent rester faciles à changer et devront être validés en jeu avant une publication.
 

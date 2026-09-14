@@ -4,11 +4,16 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+### 2026-09-14
+
+- Delivered a playable Fallen Kingdoms V1 with map-independent sessions, kingdom and kit selectors, territorial protections, hearts, lives and reconnects, ruins, sudden death, localized HUD, idempotent result persistence, and Velocity cleanup.
+- Enabled the Fallen Kingdoms Velocity template with the immutable Cactus map and added the generic `V010__game_statistics.sql` MySQL migration.
+
 - Added the Cactus Fallen Kingdoms map: Git LFS world, five bases, hearts, spawns, playable region, and a 490-block initial border.
 
-- Added the Fallen Kingdoms foundation: Paper module, testable phase and heart domain rules, public kingdom balancing, validated configuration, administration command, Docker image, and a disabled Velocity template pending a production map.
+- Added the Fallen Kingdoms foundation: Paper module, testable phase and heart domain rules, public kingdom balancing, validated configuration, administration command, and Docker image.
 
-- Updated Fallen Kingdoms documentation for its future instance lifecycle, localized UI, Geyser/Floodgate, and deployment integration without presenting the empty module as available.
+- Updated Fallen Kingdoms documentation for its instance lifecycle, localized UI, Geyser/Floodgate, and deployment integration.
 - Fallen Kingdoms ranked play is planned after the V1 foundation, with FK-specific fixed formats and Elo independent from SheepWars.
 
 ### 2026-09-11

@@ -155,6 +155,9 @@ class PluginLanguageReferencesTest {
         Set<String> settings = new HashSet<>();
         for (String type : List.of("ProfileVisibility", "MessagePrivacy", "LobbyVisibility")) enums.get("tropicube-core/" + type).forEach(value -> settings.add(value.replace('_', '-')));
         families.put("lobby.settings-value-", settings);
+        families.put("fk.phase-", Set.of("preparation", "pvp", "assault", "sudden_death"));
+        families.put("fk.team-", Set.of("blue", "red", "green", "yellow", "orange", "spectator"));
+        families.put("fk.kit-", Set.of("miner", "farmer", "scout", "enchanter"));
         var lobby = YamlConfiguration.loadConfiguration(root.resolve("tropicube-lobby/src/main/resources/config.yml").toFile());
         // Grade entries are configuration-driven; the configured grade identifiers are audited below.
         Set<String> grades = new HashSet<>();

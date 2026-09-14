@@ -105,6 +105,8 @@ For private custom games, Velocity injects `HOST_UUID` and `CUSTOM_GAME_PRIVATE=
 
 The proxy's normal shutdown may preserve or remove dynamic instances according to `remove-dynamic-servers-on-shutdown`. Production deployments should validate this choice explicitly.
 
+The enabled `fallenkingdoms` template uses private ports 25660–25669 and injects `MAP_ID=cactus`. Its image copies the immutable world from `dockerfiles/worlds/fallenkingdoms/`; player data, locks, and old level backups stay outside Git and the image context. Add another enabled `locations.maps` definition and change `MAP_ID` to deploy another map without changing game code.
+
 ## Operational checks
 
 - confirm Velocity can reach Redis, MySQL, and the Docker socket proxy;
@@ -114,6 +116,7 @@ The proxy's normal shutdown may preserve or remove dynamic instances according t
 - confirm Paper receives forwarded identities and cannot be reached publicly;
 - confirm lobby selectors reflect `GAME_WAITING`, `GAME_STARTING`, `GAME_PLAYING`, and `GAME_ENDING` correctly;
 - confirm a playing SheepWars instance admits late arrivals as spectators;
+- start Fallen Kingdoms with 8 players, verify the Cactus spawns and regions, destroy a heart during a pending respawn, and confirm the final 50×50 border and Velocity cleanup;
 - confirm SheepWars exposes one power-up block at a time, changes its location after activation, and shows no literal MiniMessage tag in the final summary;
 - confirm shutdown removes scheduled tasks, subscriptions, containers, and ephemeral game volumes as configured;
 - inspect logs without exposing credentials.

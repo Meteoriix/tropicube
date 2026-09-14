@@ -187,7 +187,7 @@ Le RCON de Velocity est activé uniquement dans son conteneur pour permettre le 
 
 Le redéploiement quotidien de développement interrompt volontairement les parties. La conservation exceptionnelle de parties actives reste réservée à une opération d'exploitation explicitement préparée : régler auparavant `shutdown.stop-dynamic-servers: false` dans la configuration Velocity déployée. Le nouveau proxy restaurera alors les backends encore actifs. Cette option ne doit pas être utilisée pour un arrêt complet.
 
-Le build distribue aussi le plugin `tropicube-fallenkingdoms` et construit son image. La carte immuable est copiée depuis `dockerfiles/worlds/fallenkingdoms/`; les données `players/`, fichiers `session.lock` et sauvegardes `level.dat_old*` sont exclus du contexte Docker. Son template Velocity est désactivé par défaut : renseigner et valider ses positions dans la configuration, puis l'activer lors de la livraison de jeu.
+Le build distribue aussi le plugin `tropicube-fallenkingdoms` et construit son image. La carte immuable est copiée depuis `dockerfiles/worlds/fallenkingdoms/`; les données `players/`, fichiers `session.lock` et sauvegardes `level.dat_old*` sont exclus du contexte Docker. Le template Velocity `fallenkingdoms` est actif sur la plage privée 25660–25669 et injecte `MAP_ID=cactus`. Pour livrer une autre carte, ajouter son monde à l'image, déclarer une entrée activée sous `locations.maps`, puis changer `MAP_ID`.
 
 ## Contrôles après déploiement
 

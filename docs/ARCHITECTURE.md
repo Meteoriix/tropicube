@@ -154,7 +154,9 @@ Les explosions offensives séparent désormais trois responsabilités : l'explos
 
 ### `tropicube-fallenkingdoms`
 
-Ce module contient le socle installable : une machine à états, les règles métier pures de royaumes, cœurs, phases et protections, ainsi que le bootstrap Paper. Son image et son template Velocity restent désactivés jusqu'à l'ajout d'une carte FK immuable et validée. Le domaine ne dépend pas de SheepWars.
+Ce module exécute une session éphémère sur une `MapDefinition` immuable chargée depuis le catalogue YAML. La session ne connaît aucun nom de carte : Cactus est la première entrée de configuration et `MAP_ID` permet au template de choisir n'importe quelle carte activée. Les agencements 2 à 5 royaumes, spawns, cœurs, régions et bordures sont validés avant l'ouverture du backend.
+
+La machine à états pilote préparation, JcJ, assaut, mort subite et résultat. Les adaptateurs Paper appliquent les protections territoriales, les dégâts de cœur, les vies, la reconnexion, la ruine bornée, les menus de royaume/kit et le HUD localisé. Core persiste les résultats dans les tables génériques `tropicube_game_results`, `tropicube_game_result_players` et `tropicube_game_statistics`; l'identifiant de partie rend l'écriture idempotente. Après la persistance, le canal Redis `PROXY:FINISH_GAME:<instance>` rend l'instance à Velocity. Le domaine ne dépend pas de SheepWars.
 
 ## Contrats Redis
 
@@ -166,7 +168,8 @@ Ce module contient le socle installable : une machine à états, les règles mé
 | `instances:active` | Velocity | Lobby/Velocity | Ensemble des identifiants actifs |
 | `instances:type:<type>` | Velocity | Lobby/Velocity | Index par type |
 | canal `servers` | Velocity | Intégrations | `SERVER_STARTED` / `SERVER_STOPPED` |
-| canal `commands` | Lobby/SheepWars/Velocity | Velocity/SheepWars | Commandes ciblées, notamment `PROXY:CONNECT:<uuid>:<serveur>`, la demande acquittée `PROXY:HOST_WHITELIST:<hôte>:<opération>:<requête>:<joueur>`, sa réponse `SHEEPWARS:HOST_WHITELIST_RESULT:<hôte>:<requête>` et `PROXY:FINISH_GAME:<instanceId>` |
+| canal `commands` | Lobby/jeux/Velocity | Velocity/jeux | Commandes ciblées, notamment `PROXY:CONNECT:<uuid>:<serveur>`, la demande acquittée `PROXY:HOST_WHITELIST:<hôte>:<opération>:<requête>:<joueur>`, sa réponse `SHEEPWARS:HOST_WHITELIST_RESULT:<hôte>:<requête>` et `PROXY:FINISH_GAME:<instanceId>` |
+| `statistics:<uuid>` | Core | Core/Velocity | Cache de statistiques invalidé seulement après commit MySQL d'un résultat de jeu |
 | canal `players` | Velocity | Intégrations | Changements de serveur d'un joueur |
 | `party:member:<uuid>` | Core | Core/Velocity/Lobby | Index vers la party du joueur, TTL 24 h |
 | `party:<id>:leader` / `party:<id>:members` | Core | Core/Velocity/Lobby | Chef et hash `uuid -> follow`, mis à jour atomiquement par scripts Lua, TTL 24 h |
@@ -188,6 +191,7 @@ Ce module contient le socle installable : une machine à états, les règles mé
 | `host-creation:<uuid>` | Velocity | Lobby/Velocity | Verrou atomique et temporaire empêchant deux créations personnalisées simultanées |
 | `player:uuid:<pseudo>` / `player:name:<uuid>` | Velocity | Velocity/SheepWars | Résolution des membres de whitelist déjà vus ; TTL 30 jours renouvelé à la connexion |
 | `post-game:<uuid>` | SheepWars | Lobby | Cible et type proposés par `/playnext`, TTL 120 s |
+| `game:rejoin:<uuid>` | Velocity | Velocity | Dernière instance de jeu encore en cours, TTL 5 min ; permet notamment la reconnexion Fallen Kingdoms |
 | `settings:auto-replay:<uuid>` | Lobby | Lobby | `OFF`, compteur restant ou `0` en attente de confirmation ; persistant dans Redis |
 | `nick:<uuid>` | Velocity | Core/mini-jeux | Pseudonyme, skin et grade d'affichage factice actifs, TTL 24 h renouvelé après reconnexion |
 | `player:access:<uuid>` | Core | Velocity | `vipLevel:modLevel:revision`, persistant et remis en cache localement sans I/O dans les callbacks de permissions |

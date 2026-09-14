@@ -11,7 +11,14 @@ public final class KingdomAllocator {
     public Map<UUID, KingdomId> allocate(Collection<PlayerPreference> preferences) {
         List<PlayerPreference> players = preferences.stream().sorted(Comparator.comparing(p -> p.player().toString())).toList();
         int kingdoms = kingdomCount(players.size());
-        List<KingdomId> ids = Arrays.asList(KingdomId.values()).subList(0, kingdoms);
+        return allocate(players, Arrays.asList(KingdomId.values()).subList(0, kingdoms));
+    }
+    /** Allocates against the exact kingdom layout declared by the selected map. */
+    public Map<UUID, KingdomId> allocate(Collection<PlayerPreference> preferences, List<KingdomId> ids) {
+        List<PlayerPreference> players = preferences.stream().sorted(Comparator.comparing(p -> p.player().toString())).toList();
+        int kingdoms = kingdomCount(players.size());
+        if (ids.size() != kingdoms || ids.stream().distinct().count() != kingdoms)
+            throw new IllegalArgumentException("L'agencement doit contenir exactement " + kingdoms + " royaumes distincts.");
         int base = players.size() / kingdoms, extra = players.size() % kingdoms;
         Map<KingdomId, Integer> capacity = new EnumMap<>(KingdomId.class);
         for (int index = 0; index < kingdoms; index++) capacity.put(ids.get(index), base + (index < extra ? 1 : 0));

@@ -2,7 +2,7 @@
 
 ## Document purpose
 
-This document preserves the historical design references for a future Tropicube adaptation. It describes the intended player experience and notable Epicube rules; it is not an implementation claim. As of 14 September 2026, `tropicube-fallenkingdoms` is a Maven placeholder with no Paper plugin, resource, Docker image, or Velocity template. Where sources are incomplete, the technical specification records explicit V1 decisions and temporary assumptions.
+This document preserves the historical design references used by the Tropicube adaptation. As of 14 September 2026, `tropicube-fallenkingdoms` provides a playable Paper V1 and its active Velocity template uses Cactus. Where sources are incomplete, the technical specification records explicit V1 decisions and temporary assumptions.
 
 ## Planned Tropicube adaptation
 

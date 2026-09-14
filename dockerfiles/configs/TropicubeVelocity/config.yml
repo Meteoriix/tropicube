@@ -52,6 +52,7 @@ motd:
   games-separator: " <dark_gray>•</dark_gray> "
   no-games: "<gray>De nouveaux jeux arrivent bientôt</gray>"
   game-SHEEPWARS: "SheepWars"
+  game-FALLENKINGDOMS: "Fallen Kingdoms"
   maintenance-line: "<red>Maintenance en cours</red>"
 
 announcements:
@@ -268,3 +269,44 @@ templates:
       SIMULATION_DISTANCE: "5"
       SYNC_CHUNK_WRITES: "false"
       TZ: "Europe/Paris"
+
+  fallenkingdoms:
+    enabled: true
+    name: "Fallen Kingdoms"
+    image: "tropicube-fallenkingdoms:latest"
+    type: "FALLENKINGDOMS"
+    port-min: 25660
+    port-max: 25669
+    max-players: 30
+    spectator-slots: 10
+    ram-min: 2048
+    ram-max: 4096
+    auto-start: true
+    auto-stop: true
+    auto-stop-delay: 300
+    min-instances: 0
+    max-instances: 2
+    environment:
+      GAME_MODE: "QUICK_PLAY"
+      MAP_ID: "cactus"
+      TYPE: "PAPER"
+      VERSION: "26.2"
+      PAPER_BUILD: "97"
+      DIFFICULTY: "normal"
+      SPAWN_PROTECTION: "0"
+      ONLINE_MODE: "false"
+      OVERRIDE_SERVER_PROPERTIES: "true"
+      USE_AIKAR_FLAGS: "true"
+      VIEW_DISTANCE: "8"
+      SIMULATION_DISTANCE: "5"
+      SYNC_CHUNK_WRITES: "false"
+      TZ: "Europe/Paris"
+      REPLACE_ENV_VARIABLES: "true"
+      REPLACE_ENV_VARIABLE_PREFIX: "CFG_"
+      CFG_REDIS_PASSWORD: "${REDIS_PASSWORD}"
+      CFG_FORWARDING_SECRET: "${FORWARDING_SECRET}"
+      TROPICUBE_REDIS_PASSWORD: "${REDIS_PASSWORD}"
+      TROPICUBE_DB_NAME: "${MYSQL_DATABASE}"
+      TROPICUBE_DB_USER: "${MYSQL_USER}"
+      TROPICUBE_DB_PASSWORD: "${MYSQL_PASSWORD}"
+      TROPICUBE_TOTP_MASTER_KEY: "${TOTP_MASTER_KEY}"

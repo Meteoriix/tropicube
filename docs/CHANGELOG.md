@@ -4,11 +4,16 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-09-14
+
+- Livre Fallen Kingdoms V1 jouable : session générique indépendante des cartes, sélecteurs de royaume et kit, protections territoriales, cœurs, réapparitions/reconnexions, ruines, mort subite, HUD multilingue, résultat persistant idempotent et nettoyage Velocity.
+- Active le template Velocity Fallen Kingdoms avec la carte Cactus immuable et ajoute la migration MySQL générique `V010__game_statistics.sql`.
+
 - Carte Cactus Fallen Kingdoms : intégration du monde Git LFS, de ses cinq bases, cœurs, spawns, zone jouable et bordure initiale de 490 blocs.
 
-- Socle Fallen Kingdoms : module Paper, modèle de phases et de cœurs testable, équilibrage public des royaumes, configuration validée, commande d'administration, image Docker et template Velocity désactivé en attente d'une carte de production.
+- Socle Fallen Kingdoms : module Paper, modèle de phases et de cœurs testable, équilibrage public des royaumes, configuration validée, commande d'administration et image Docker.
 
-- Documentation Fallen Kingdoms actualisée : intégration future au cycle d'instances, aux interfaces localisées, à Geyser/Floodgate et au déploiement, sans présenter le module encore vide comme disponible.
+- Documentation Fallen Kingdoms actualisée : cycle d'instances, interfaces localisées, Geyser/Floodgate et déploiement.
 - Le classement Fallen Kingdoms est prévu après le socle V1 avec des formats fixes propres au jeu et une cote Elo indépendante de SheepWars.
 
 ### 2026-09-11

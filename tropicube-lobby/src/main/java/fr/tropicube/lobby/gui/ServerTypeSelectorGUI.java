@@ -175,6 +175,7 @@ public class ServerTypeSelectorGUI {
 
     static String displayType(Player player, String type) {
         if ("SHEEPWARS".equalsIgnoreCase(type)) return LangHelper.get(player, "lobby.game-type-sheepwars");
+        if ("FALLENKINGDOMS".equalsIgnoreCase(type)) return LangHelper.get(player, "lobby.game-type-fallenkingdoms");
         if (type == null || type.isBlank()) return LangHelper.get(player, "lobby.game-type-unknown");
         String value = type.toLowerCase(Locale.ROOT).replace('_', ' ').replace('-', ' ');
         return Character.toUpperCase(value.charAt(0)) + value.substring(1);

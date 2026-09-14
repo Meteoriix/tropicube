@@ -117,3 +117,5 @@ Operations need Python 3.11+, Restic and SSH. Configure `RESTIC_REPOSITORY` as a
 `dockerfiles/configs/TropicubeFallenKingdoms/config.yml` declares the `cactus` map. Its playable region is `(-947, 0, -898)` to `(-468, 150, -433)`. The five bases, hearts, and spawns are configured for blue, red, green, yellow, and orange kingdoms. Its 490-block initial border is centered at `(-702, -653)`, covering the maximum 245-block distance from the center to the declared playable region. Sudden death still ends with a 50-block border.
 
 The same configuration is embedded in the module. Update both files until FK resource synchronization is added.
+
+`game.default-map` selects the local map and the instance `MAP_ID` environment variable overrides it in production. Every enabled `locations.maps` entry owns its playable region, border, layouts, and bases, so another map requires configuration rather than Java changes. Startup validates positions, overlaps, layouts, phase times, protections, ruin settings, and the item list under `kits.definitions`.

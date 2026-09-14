@@ -15,7 +15,7 @@ Tropicube is a modular Minecraft 26.2 network available to Java Edition and Bedr
 | `tropicube-core` | Player data, economy, grades, permissions, languages, moderation, friends, and parties |
 | `tropicube-lobby` | Lobby menus, server selection, Social menu, language selection, and custom games |
 | `tropicube-sheepwars` | Complete SheepWars minigame |
-| `tropicube-fallenkingdoms` | Reserved module for the future Fallen Kingdoms implementation |
+| `tropicube-fallenkingdoms` | Dynamic Paper game for 2–5 kingdoms with configurable maps, hearts, kits, phase protections, respawns, and sudden death |
 
 ## Runtime architecture
 

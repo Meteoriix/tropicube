@@ -23,6 +23,14 @@ class GameDomainTest {
         Map<KingdomId, Long> sizes = first.values().stream().collect(java.util.stream.Collectors.groupingBy(v -> v, java.util.stream.Collectors.counting()));
         assertTrue(sizes.values().stream().allMatch(size -> size >= 4 && size <= 5));
     }
+    @Test void allocationUsesTheSelectedMapLayout() {
+        List<KingdomAllocator.PlayerPreference> players = new ArrayList<>();
+        for (int index = 0; index < 8; index++) players.add(new KingdomAllocator.PlayerPreference(new UUID(0, index), null));
+        Map<UUID, KingdomId> result = new KingdomAllocator().allocate(players, List.of(KingdomId.GREEN, KingdomId.ORANGE));
+        assertEquals(Set.of(KingdomId.GREEN, KingdomId.ORANGE), Set.copyOf(result.values()));
+        assertThrows(IllegalArgumentException.class,
+                () -> new KingdomAllocator().allocate(players, List.of(KingdomId.BLUE, KingdomId.BLUE)));
+    }
     @Test void timelineAndStateMachineHaveExactBoundaries() {
         PhaseTimeline timeline = new PhaseTimeline(900, 1500, 4500, 5400);
         assertEquals(GameState.PREPARATION, timeline.targetAt(899)); assertEquals(GameState.PVP, timeline.targetAt(900));
@@ -37,5 +45,15 @@ class GameDomainTest {
         assertEquals(0, heart.damage(KingdomId.RED, 10, false)); heart.makeVulnerable();
         assertEquals(0, heart.damage(KingdomId.BLUE, 10, false)); assertEquals(0, heart.damage(KingdomId.RED, 10, true));
         assertEquals(500, heart.damage(KingdomId.RED, 600, false)); assertEquals(HeartState.DESTROYED, heart.state());
+    }
+    @Test void winnerCalculationSupportsTiesAndAdministrativeAbortSemantics() {
+        VictoryRules rules = new VictoryRules();
+        UUID session = UUID.randomUUID();
+        GameResult unique = rules.lastKingdom(session, Map.of(KingdomId.BLUE, 2, KingdomId.RED, 0));
+        assertEquals(EndCause.LAST_KINGDOM, unique.cause());
+        assertEquals(Set.of(KingdomId.BLUE), unique.winners());
+        GameResult tie = rules.timeLimit(session, Map.of(KingdomId.BLUE, 2, KingdomId.RED, 2, KingdomId.GREEN, 1));
+        assertEquals(EndCause.DRAW, tie.cause());
+        assertEquals(Set.of(KingdomId.BLUE, KingdomId.RED), tie.winners());
     }
 }

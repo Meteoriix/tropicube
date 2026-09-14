@@ -59,17 +59,25 @@ public class PlayerConnectionListener {
     public void onPlayerChooseInitialServer(PlayerChooseInitialServerEvent event) {
         Player player = event.getPlayer();
 
-        // Automatic reconnection to the left SheepWars game if it still exists.
-        String rejoinInstanceId = redisManager.get("sw:rejoin:" + player.getUniqueId());
+        // Automatic reconnection to the active game instance the player left.
+        String genericRejoinKey = "game:rejoin:" + player.getUniqueId();
+        String rejoinInstanceId = redisManager.get(genericRejoinKey);
+        if (rejoinInstanceId == null) rejoinInstanceId = redisManager.get("sw:rejoin:" + player.getUniqueId());
         if (rejoinInstanceId != null) {
-            serverManager.getInstanceById(rejoinInstanceId).ifPresent(instance ->
+            String selectedInstance = rejoinInstanceId;
+            serverManager.getInstanceById(selectedInstance)
+                    .filter(instance -> instance.getStatus() == ServerInstance.Status.GAME_PLAYING)
+                    .ifPresent(instance ->
                 plugin.getServer().getServer(instance.getServerName()).ifPresent(srv -> {
                     event.setInitialServer(srv);
+                    redisManager.delete(genericRejoinKey);
                     redisManager.delete("sw:rejoin:" + player.getUniqueId());
-                    logger.debug(MessageStyle.log("SHEEPWARS", "<dark_gray>" + "Rejoin auto de {} vers {}"), player.getUsername(), instance.getServerName());
+                    logger.debug(MessageStyle.log("PROXY", "<dark_gray>" + "Rejoin auto de {} vers {}"), player.getUsername(), instance.getServerName());
                 })
             );
             if (event.getInitialServer().isPresent()) return;
+            redisManager.delete(genericRejoinKey);
+            redisManager.delete("sw:rejoin:" + player.getUniqueId());
         }
 
         serverManager.getBestLobby().ifPresentOrElse(lobby -> {
@@ -120,8 +128,14 @@ public class PlayerConnectionListener {
                 player.getUniqueId() + ":" + player.getUsername());
         plugin.getPartyCoordinator().onPlayerDisconnected(player.getUniqueId());
 
-        // If SheepWars reports an active game in Redis, keeps a game key
-        // reconnection so that the player finds the same instance within five minutes.
+        // Active games share one reconnect marker; the legacy SheepWars marker remains readable.
+        if (instanceId != null) {
+            ServerInstance instance = redisManager.getInstance(instanceId);
+            if (instance != null && instance.getStatus() == ServerInstance.Status.GAME_PLAYING
+                    && !"LOBBY".equalsIgnoreCase(instance.getServerType())) {
+                redisManager.set("game:rejoin:" + player.getUniqueId(), instanceId, 300);
+            }
+        }
         if (instanceId != null && redisManager.exists("sw:game-started:" + instanceId)) {
             ServerInstance instance = redisManager.getInstance(instanceId);
             if (instance != null && "SHEEPWARS".equalsIgnoreCase(instance.getServerType())) {

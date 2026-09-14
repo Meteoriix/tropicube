@@ -1,4 +1,6 @@
 game:
+  auto-start: true
+  default-map: cactus
   countdown-seconds: 30
   result-display-seconds: 10
   min-players-per-kingdom: 4
@@ -12,6 +14,55 @@ phases:
 hearts: { max-health: 500.0 }
 respawn: { delay-seconds: 10 }
 sudden-death: { final-border-size: 50.0 }
+ruins:
+  waves: 3
+  ticks-between-waves: 10
+  radius: 8.0
+  destruction-ratio: 0.35
+  preserve-containers: true
+combat:
+  default-profile: PAPER_26_2
+  allowed-custom-profiles: [PAPER_26_2, LEGACY_1_8]
+  friendly-fire: false
+protections:
+  forbidden-base-materials: [OBSIDIAN, BEDROCK]
+  common-placement-whitelist: [COBBLESTONE, OAK_PLANKS, LADDER, TORCH]
+  tnt-breaches-enabled: true
+  block-portal-bypass: true
+  block-teleport-bypass: true
+  block-piston-crossing: true
+  block-fluid-crossing: true
+kits:
+  default: miner
+  definitions:
+    miner:
+      enabled: true
+      icon: IRON_PICKAXE
+      items:
+        - { material: STONE_PICKAXE, amount: 1, slot: 0 }
+        - { material: IRON_PICKAXE, amount: 1, slot: 1 }
+    farmer:
+      enabled: true
+      icon: WHEAT
+      items:
+        - { material: BONE_MEAL, amount: 16, slot: 0 }
+        - { material: WOODEN_SWORD, amount: 1, slot: 1 }
+    scout:
+      enabled: true
+      icon: FEATHER
+      items:
+        - { material: POTION, potion-type: SWIFTNESS, amount: 1, slot: 0 }
+        - { material: POTION, potion-type: STRONG_SWIFTNESS, amount: 1, slot: 1 }
+        - { material: POTION, potion-type: LONG_SWIFTNESS, amount: 1, slot: 2 }
+        - { material: SPLASH_POTION, potion-type: STRONG_SWIFTNESS, amount: 1, slot: 3 }
+        - { material: SPLASH_POTION, potion-type: LONG_SWIFTNESS, amount: 1, slot: 4 }
+    enchanter:
+      enabled: true
+      icon: ENCHANTING_TABLE
+      items:
+        - { material: EXPERIENCE_BOTTLE, amount: 64, slot: 0 }
+        - { material: EXPERIENCE_BOTTLE, amount: 64, slot: 1 }
+        - { material: ANVIL, amount: 1, slot: 2 }
 locations:
   world: world
   lobby: { x: -702.0, y: 94.0, z: -653.0, yaw: -90.0, pitch: 0.0 }

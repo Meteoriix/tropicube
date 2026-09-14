@@ -246,6 +246,10 @@ La section `gameplay-balance` est validée au démarrage. Une valeur manquante, 
 
 Le fichier `dockerfiles/configs/TropicubeFallenKingdoms/config.yml` déclare la carte `cactus`. Sa zone jouable est comprise entre `(-947, 0, -898)` et `(-468, 150, -433)`. Les cinq bases, cœurs et spawns sont configurés pour les royaumes bleu, rouge, vert, jaune et orange. La bordure initiale de `490` blocs est centrée en `(-702, -653)` : elle couvre la distance maximale de 245 blocs entre le centre et la zone jouable. La bordure de mort subite reste fixée à 50 blocs.
 
+`game.default-map` choisit la carte locale et la variable d'instance `MAP_ID` la remplace en production. Chaque entrée activée sous `locations.maps` fournit sa propre traduction, région jouable, bordure, agencements et bases : ajouter Apocalypse ou Yeti ne demande donc aucun changement Java. Le démarrage est refusé si l'agencement correspondant à l'effectif manque, si deux bases se chevauchent ou si une position sort des régions déclarées.
+
+`game.auto-start`, les quatre échéances de phase, la vie des cœurs, le délai de réapparition, les matériaux autorisés, la bordure finale, les paramètres de ruine et tous les objets de kits sont validés au chargement. Les kits se trouvent sous `kits.definitions`; `kits.default` doit référencer un kit activé.
+
 La même configuration est embarquée dans le module. Toute modification doit être effectuée dans les deux fichiers jusqu'à l'ajout de la synchronisation automatique des ressources FK.
 
 ## Langues

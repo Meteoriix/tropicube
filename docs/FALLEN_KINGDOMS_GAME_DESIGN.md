@@ -2,7 +2,7 @@
 
 ## Statut et rôle du document
 
-Cette page conserve les références historiques du Fallen Kingdoms d’Epicube et explique l'expérience que Tropicube souhaite adapter. Elle ne décrit pas un serveur Fallen Kingdoms déjà disponible : au 14 septembre 2026, `tropicube-fallenkingdoms` est un squelette Maven sans plugin Paper, ressource, image Docker ni template Velocity.
+Cette page conserve les références historiques du Fallen Kingdoms d’Epicube et explique l'expérience adaptée par Tropicube. Au 14 septembre 2026, `tropicube-fallenkingdoms` fournit une V1 Paper jouable et le template Velocity actif utilise la carte Cactus.
 
 La [spécification technique](FALLEN_KINGDOMS_TECHNICAL_SPEC.md) fixe les règles V1 Tropicube lorsqu'elles diffèrent de l'historique ou lorsqu'une source manque. Elle distingue les services réseau déjà disponibles des travaux qui restent à livrer. Les détails historiques incertains ne doivent jamais devenir une règle implicite du futur jeu.
 
