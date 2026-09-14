@@ -242,6 +242,12 @@ Les types désactivés sont exclus avant normalisation. Le menu affiche le pourc
 
 La section `gameplay-balance` est validée au démarrage. Une valeur manquante, non numérique, négative, ou nulle lorsqu'un rayon, une durée ou une cadence doit être strictement positif empêche le plugin de démarrer avec un message indiquant la clé fautive. `ConfigUpdater` complète les anciennes configurations avant cette validation.
 
+## Tropicube Fallen Kingdoms
+
+Le fichier `dockerfiles/configs/TropicubeFallenKingdoms/config.yml` déclare la carte `cactus`. Sa zone jouable est comprise entre `(-947, 0, -898)` et `(-468, 150, -433)`. Les cinq bases, cœurs et spawns sont configurés pour les royaumes bleu, rouge, vert, jaune et orange. La bordure initiale de `490` blocs est centrée en `(-702, -653)` : elle couvre la distance maximale de 245 blocs entre le centre et la zone jouable. La bordure de mort subite reste fixée à 50 blocs.
+
+La même configuration est embarquée dans le module. Toute modification doit être effectuée dans les deux fichiers jusqu'à l'ajout de la synchronisation automatique des ressources FK.
+
 ## Langues
 
 Core et Velocity prennent en charge `fr`, `en`, `es` et `de`. Les textes utilisent MiniMessage et exclusivement des placeholders nommés en `lower_snake_case`, par exemple `{player}`, `{balance}` ou `{countdown}`. `{instance_name}` est fourni automatiquement : Core lit le nom visible injecté dans `SERVER_NAME`, avec repli sur `INSTANCE_ID` puis le nom Paper, tandis que Velocity lit le serveur actuellement associé au joueur. Pour ajouter une clé :

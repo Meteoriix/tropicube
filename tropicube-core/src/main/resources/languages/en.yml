@@ -1137,6 +1137,7 @@ cosmetics:
   name-crystal: "<aqua>Crystal"
   name-tropical: "<aqua>Tropical melody"
 fk:
+  map-cactus: "Cactus"
   permission-denied: "<tc><red>✖ You do not have permission to administer Fallen Kingdoms."
   status: "<tc><aqua>Fallen Kingdoms <gray>— state: <white>{state}"
   countdown-started: "<tc><green>✔ Fallen Kingdoms countdown started."

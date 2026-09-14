@@ -4,6 +4,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+- Carte Cactus Fallen Kingdoms : intégration du monde Git LFS, de ses cinq bases, cœurs, spawns, zone jouable et bordure initiale de 490 blocs.
+
 - Socle Fallen Kingdoms : module Paper, modèle de phases et de cœurs testable, équilibrage public des royaumes, configuration validée, commande d'administration, image Docker et template Velocity désactivé en attente d'une carte de production.
 
 - Documentation Fallen Kingdoms actualisée : intégration future au cycle d'instances, aux interfaces localisées, à Geyser/Floodgate et au déploiement, sans présenter le module encore vide comme disponible.

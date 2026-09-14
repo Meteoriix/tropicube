@@ -112,3 +112,8 @@ Core SQL defaults: `database.pool.max-size=10`, `pool.min-idle=2`, `connection-t
 Velocity `docker.memory-budget-mib=16384` covers dynamic container limits only. Reserve memory separately for the OS and static services. Template `memory-overhead-mib=0` computes `max(512, ceil(ram-max/4))` MiB beyond Java heap; positive values override the margin. Memory environment variables are derived from these settings. Existing configurations receive compatibility defaults on restart.
 
 Operations need Python 3.11+, Restic and SSH. Configure `RESTIC_REPOSITORY` as an off-host `sftp:` repository, `RESTIC_PASSWORD_FILE`, and optionally `TROPICUBE_OPS_STATE` (default `.runtime/ops`; systemd uses `/var/lib/tropicube-ops`). Keep recovery credentials outside Git and outside this host. Static and dynamic containers use Docker local logging with five 20 MiB files.
+## Fallen Kingdoms
+
+`dockerfiles/configs/TropicubeFallenKingdoms/config.yml` declares the `cactus` map. Its playable region is `(-947, 0, -898)` to `(-468, 150, -433)`. The five bases, hearts, and spawns are configured for blue, red, green, yellow, and orange kingdoms. Its 490-block initial border is centered at `(-702, -653)`, covering the maximum 245-block distance from the center to the declared playable region. Sudden death still ends with a 50-block border.
+
+The same configuration is embedded in the module. Update both files until FK resource synchronization is added.

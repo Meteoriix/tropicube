@@ -12,3 +12,28 @@ phases:
 hearts: { max-health: 500.0 }
 respawn: { delay-seconds: 10 }
 sudden-death: { final-border-size: 50.0 }
+locations:
+  world: world
+  lobby: { x: -702.0, y: 94.0, z: -653.0, yaw: -90.0, pitch: 0.0 }
+  spectator: { x: -702.0, y: 94.0, z: -653.0, yaw: -90.0, pitch: 0.0 }
+  maps:
+    cactus:
+      enabled: true
+      display-name-key: fk.map-cactus
+      playable-region:
+        min: { x: -947, y: 0, z: -898 }
+        max: { x: -468, y: 150, z: -433 }
+      border:
+        center: { x: -702.0, z: -653.0 }
+        initial-size: 490.0
+      layouts:
+        "2": [BLUE, RED]
+        "3": [BLUE, RED, GREEN]
+        "4": [BLUE, RED, GREEN, YELLOW]
+        "5": [BLUE, RED, GREEN, YELLOW, ORANGE]
+      kingdoms:
+        blue: { spawn: { x: -727.0, y: 72.0, z: -738.0, yaw: 180.0, pitch: 0.0 }, heart: { x: -727, y: 73, z: -735 }, base-region: { min: { x: -742, y: 0, z: -750 }, max: { x: -712, y: 92, z: -720 } } }
+        red: { spawn: { x: -643.0, y: 72.0, z: -623.0, yaw: -180.0, pitch: 0.0 }, heart: { x: -643, y: 73, z: -620 }, base-region: { min: { x: -658, y: 0, z: -635 }, max: { x: -628, y: 92, z: -605 } } }
+        green: { spawn: { x: -782.0, y: 72.0, z: -664.0, yaw: 90.0, pitch: 0.0 }, heart: { x: -779, y: 73, z: -664 }, base-region: { min: { x: -794, y: 0, z: -679 }, max: { x: -764, y: 92, z: -649 } } }
+        yellow: { spawn: { x: -640.0, y: 72.0, z: -708.0, yaw: -90.0, pitch: 0.0 }, heart: { x: -643, y: 73, z: -708 }, base-region: { min: { x: -658, y: 0, z: -723 }, max: { x: -628, y: 90, z: -693 } } }
+        orange: { spawn: { x: -727.0, y: 72.0, z: -591.0, yaw: 0.0, pitch: 0.0 }, heart: { x: -727, y: 73, z: -593 }, base-region: { min: { x: -742, y: 0, z: -608 }, max: { x: -712, y: 92, z: -578 } } }
