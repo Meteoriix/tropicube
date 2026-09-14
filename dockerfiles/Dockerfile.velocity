@@ -1,4 +1,4 @@
-FROM itzg/mc-proxy:java25@sha256:6a5285415fb3847c83c1244f28e6fb83c1da88f9ffbcbe7f7941d43108e49966 AS upstream
+FROM itzg/mc-proxy:java25@sha256:1d135686c96ae537ac2cbc1b2d15697e9f26abecb55a2172a85de3129cc44644 AS upstream
 
 # Rebuild the final metadata from scratch so the upstream VOLUME /server
 # declaration cannot allocate a hidden anonymous volume below the tmpfs.
