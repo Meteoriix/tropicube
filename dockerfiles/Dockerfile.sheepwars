@@ -1,7 +1,7 @@
 ARG PAPER_VERSION=26.2
 ARG PAPER_BUILD=97
 
-FROM itzg/minecraft-server:java25@sha256:2a9d96d24be985fc81f01ab7cbe548ae2a92fa62b5a39c79efac3fec7c1f3c22 AS paper-runtime
+FROM itzg/minecraft-server:java25@sha256:769a826c340586e9d483a0eb6437b8e2c3611aea6a115ff072a2fe372d43e2be AS paper-runtime
 
 ARG PAPER_VERSION
 ARG PAPER_BUILD
@@ -17,7 +17,7 @@ RUN mc-image-helper install-paper \
     && java -Dpaperclip.patchonly=true \
         -jar "paper-${PAPER_VERSION}-${PAPER_BUILD}.jar"
 
-FROM itzg/minecraft-server:java25@sha256:2a9d96d24be985fc81f01ab7cbe548ae2a92fa62b5a39c79efac3fec7c1f3c22
+FROM itzg/minecraft-server:java25@sha256:769a826c340586e9d483a0eb6437b8e2c3611aea6a115ff072a2fe372d43e2be
 
 ARG PAPER_VERSION
 ARG PAPER_BUILD
