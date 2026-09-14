@@ -3,3 +3,6 @@
 !dockerfiles/configs/**
 !dockerfiles/plugins/fallenkingdoms/**
 !dockerfiles/worlds/fallenkingdoms/**
+dockerfiles/worlds/fallenkingdoms/players/
+dockerfiles/worlds/fallenkingdoms/session.lock
+dockerfiles/worlds/fallenkingdoms/level.dat_old*

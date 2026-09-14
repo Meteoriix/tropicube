@@ -17,4 +17,5 @@ COPY --chown=1000:1000 dockerfiles/configs/spigot.yml /data/spigot.yml
 COPY --chown=1000:1000 dockerfiles/configs/TropicubeCore /data/plugins/TropicubeCore/
 COPY --chown=1000:1000 dockerfiles/configs/TropicubeFallenKingdoms /data/plugins/TropicubeFallenKingdoms/
 COPY --chown=1000:1000 dockerfiles/plugins/fallenkingdoms /data/plugins/
-# A production map is intentionally not embedded yet; add it under dockerfiles/worlds/fallenkingdoms/ via Git LFS.
+# The immutable map is copied into each ephemeral instance. Player/session files are excluded by the Docker context.
+COPY --chown=1000:1000 dockerfiles/worlds/fallenkingdoms /data/world/
