@@ -13,7 +13,7 @@ Modules Maven :
 - `tropicube-core` : données joueur, économie, grades, permissions, langues et modération ;
 - `tropicube-lobby` : accueil, menus, sélection de serveurs et fonctionnalités lobby ;
 - `tropicube-sheepwars` : mini-jeu SheepWars ;
-- `tropicube-fallenkingdoms` : emplacement réservé à un futur mini-jeu.
+- `tropicube-fallenkingdoms` : mini-jeu Fallen Kingdoms, cartes, royaumes, cœurs, kits et cycle de partie.
 
 Les fichiers Markdown sous `docs/` sont la documentation source. `docs-site/` est une sortie HTML statique générée par `docs-site/build.mjs`.
 

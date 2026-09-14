@@ -164,7 +164,7 @@ Le coût du rendu est instrumenté par `CosmeticEffects.metrics()` sur Paper : n
 
 L'intégration MySQL vérifie huit achats concurrents du même objet (un succès, sept réponses déjà acquis, un seul débit/journal), deux achats concurrents dépassant ensemble le solde, le solde insuffisant au centime près, un prix confirmé obsolète, l'absence d'équipement implicite et un échec injecté lors de l'écriture du journal. Ce dernier annule le débit et l'acquisition et autorise une nouvelle tentative. Une nouvelle connexion retrouve acquisitions et sélections ; la suppression joueur les retire en cascade. Les tests sont exécutés via `python tools/ops/integration_tests.py`, qui ne cible que son projet Docker jetable.
 
-La revue statique couvre tous les constructeurs d'inventaires Core, Lobby et SheepWars ; FallenKingdoms n'en contient pas. L'audit automatique des clés et placeholders couvre les quatre langues de tous les plugins. Les tests de rendu typé vérifient aussi qu'un libellé localisé ne devient pas une chaîne de balises visibles et que les objets gratuits se rendent sans argument positionnel superflu.
+La revue statique couvre les constructeurs d'inventaires Core, Lobby, SheepWars et les sélecteurs de salle d'attente Fallen Kingdoms. L'audit automatique des clés et placeholders couvre les quatre langues de tous les plugins. Les tests de rendu typé vérifient aussi qu'un libellé localisé ne devient pas une chaîne de balises visibles et que les objets gratuits se rendent sans argument positionnel superflu.
 
 | Inventaires examinés | Résultat de la revue statique |
 |---|---|

@@ -19,8 +19,8 @@ Sources historiques : [présentation d'Epicube et origine du nom](https://www.mi
 | Catégorie | Décision |
 |---|---|
 | Réutilisable tel quel | Les profils, niveaux réseau, missions, guildes, parties Redis, instances Docker et préférences de langue restent fournis par Core, Docker API et Velocity. |
-| À généraliser | Le mode fonctionnel d'une instance et les événements réseau sont des contrats partagés ; aucune règle de cote ou de kit SheepWars n'est déplacée dans Core. |
-| Propre aux jeux existants | Les moutons, cartes, équipes, classes, kits et la machine à états demeurent strictement dans `tropicube-sheepwars`. FallenKingdoms reste un module vide et n'est pas une dépendance. |
+| À généraliser | Le mode fonctionnel d'une instance est un contrat partagé ; aucune règle de cote ou de kit SheepWars n'est déplacée dans Core. |
+| Propre aux jeux existants | Les moutons, cartes, équipes, classes, kits et la machine à états demeurent strictement dans `tropicube-sheepwars`. Fallen Kingdoms conserve son propre domaine et n'est pas une dépendance. |
 | Nouveau | Quick Play, files classées 4v4/8v8, cote et incertitude, saisons, sanctions d'abandon, maîtrise des kits, scrutin court et résumés de partie. |
 
 ## Boucle de jeu

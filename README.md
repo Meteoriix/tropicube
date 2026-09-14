@@ -81,8 +81,6 @@ Le wrapper télécharge Maven 3.9.11 si nécessaire. Le parent Maven impose Java
 
 La CI GitHub Actions reproduit ces contrôles sous Linux, valide Docker Compose, les scripts Windows/Linux et le site documentaire. Dependabot surveille les dépendances Maven et les actions GitHub. Le processus complet est décrit dans [le guide de développement](docs/DEVELOPMENT.md).
 
-Le module Fallen Kingdoms est actuellement vide : il compile dans le réacteur mais ne contient encore ni plugin Paper, ni ressource, ni image Docker. Les scripts ne tentent donc pas de le déployer.
-
 ## Avertissements essentiels
 
 - Ne versionnez jamais `.env` ni un secret réel. Le fichier est ignoré par Git.

@@ -49,7 +49,7 @@ Les créations classiques SheepWars ne sont pas limitées à `min-instances` : d
 
 Le cycle nominal utilise `CREATING`, `STARTING`, `GAME_WAITING`, `GAME_STARTING`, `GAME_PLAYING`, `GAME_ENDING`, `STOPPING` et `STOPPED`, avec `ERROR` comme sortie d'échec. Une instance n'est joignable que si son état et sa capacité le permettent.
 
-Chaque instance porte aussi un mode fonctionnel rétrocompatible : `LOBBY`, `QUICK_PLAY`, `RANKED_4V4`, `RANKED_8V8` ou `CUSTOM`. Les nouveaux événements réseau utilisent une enveloppe JSON versionnée avec identifiant unique, source et horodatage afin de permettre leur déduplication.
+Chaque instance porte aussi un mode fonctionnel rétrocompatible : `LOBBY`, `QUICK_PLAY`, `RANKED_4V4`, `RANKED_8V8` ou `CUSTOM`.
 
 La maintenance globale ou par type est orchestrée par Velocity. Elle bloque les nouvelles entrées et créations, laisse les parties actives se terminer jusqu'à l'échéance, puis transfère vers un lobby ou déconnecte proprement. L'état court est partagé dans Redis ; les limites de connexions ne conservent que des compteurs en mémoire et des quarantaines temporaires.
 

@@ -6,6 +6,8 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-14
 
+- Removed the unconsumed `NetworkEvent` Redis envelope, strictly empty Minecraft regions, and leftover mod or legacy-format files from world templates; also removed stale descriptions of the Fallen Kingdoms module.
+- Replaced the deprecated Paper maximum-health call in Fallen Kingdoms, removed the Velocity Redis configuration varargs warning, and aligned the integration test with the actual migration index.
 - Distributed the verified third-party Paper plugins to Fallen Kingdoms so Core's HeadDatabase dependency is available when an instance starts.
 - Adjusted the development Fallen Kingdoms memory envelope to 1–2 GiB so an instance can start alongside Lobby and SheepWars within the local 8 GiB budget.
 - Aligned the Fallen Kingdoms image Paper metadata with the other backends so the prewarming check permits deployment.

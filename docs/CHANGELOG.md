@@ -6,6 +6,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-14
 
+- Supprime l'enveloppe Redis `NetworkEvent` restée sans consommateur, les régions Minecraft strictement vides et les reliquats de mods ou d'anciens formats présents dans les mondes modèles ; retire aussi les descriptions obsolètes du module Fallen Kingdoms.
+- Remplace l'appel Paper déprécié de santé maximale dans Fallen Kingdoms, élimine l'avertissement varargs de la configuration Redis Velocity et aligne le test d'intégration sur l'index réel des migrations.
 - Distribue les plugins Paper tiers vérifiés vers Fallen Kingdoms afin que la dépendance HeadDatabase de Core soit satisfaite au démarrage d'une instance.
 - Ajuste l'enveloppe mémoire Fallen Kingdoms du profil de développement à 1–2 Gio afin qu'une instance puisse démarrer avec Lobby et SheepWars dans le budget local de 8 Gio.
 - Aligne les métadonnées Paper de l'image Fallen Kingdoms sur les autres backends afin que le contrôle de préchauffage autorise son déploiement.

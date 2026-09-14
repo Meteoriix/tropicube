@@ -167,7 +167,7 @@ public class TropicubeVelocity {
         int port = config.node("redis", "port").getInt(6379);
         String password = environmentOrConfig("REDIS_PASSWORD", "redis", "password");
         redisManager = new RedisManager(host, port, password, fr.tropicube.docker.client.RedisOptions.read(
-                (key, fallback) -> config.node(("redis." + key).split("\\.")).getInt(fallback)));
+                (key, fallback) -> config.node((Object[]) ("redis." + key).split("\\.")).getInt(fallback)));
         redisManager.initialize();
         logger.info(MessageStyle.log("PROXY", "<gray>Redis connecté sur {}:{}"), host, port);
     }

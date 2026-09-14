@@ -10,6 +10,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -23,6 +24,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import net.kyori.adventure.text.Component;
@@ -136,7 +138,8 @@ public final class GameSession {
 
     private void prepareParticipant(Player player, KingdomId kingdom) {
         player.getInventory().clear();
-        player.setHealth(player.getMaxHealth());
+        player.setHealth(Objects.requireNonNull(player.getAttribute(Attribute.MAX_HEALTH),
+                "player max health attribute").getValue());
         player.setFoodLevel(20);
         player.setGameMode(GameMode.SURVIVAL);
         kits.give(player, players.get(player.getUniqueId()).kitId());

@@ -41,7 +41,7 @@ Velocity authenticates Java profiles directly. Geyser translates Bedrock traffic
 
 ## Server lifecycle
 
-Every instance carries a backward-compatible functional mode: `LOBBY`, `QUICK_PLAY`, `RANKED_4V4`, `RANKED_8V8`, or `CUSTOM`. New network events use a versioned JSON envelope with a unique identifier, source, and timestamp so consumers can deduplicate them.
+Every instance carries a backward-compatible functional mode: `LOBBY`, `QUICK_PLAY`, `RANKED_4V4`, `RANKED_8V8`, or `CUSTOM`.
 
 Velocity orchestrates network-wide and game-type maintenance. It blocks new entries and creations, lets active games finish until the deadline, then transfers players to a lobby or disconnects them cleanly. Short-lived state is shared through Redis; connection limits keep only in-memory counters and temporary quarantines.
 

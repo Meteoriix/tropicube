@@ -11,6 +11,7 @@ Tropicube is a modular Minecraft 26.2 network available to Java Edition and Bedr
 | Module | Responsibility |
 |---|---|
 | `tropicube-docker-api` | Shared server models plus Docker and Redis access |
+| `tropicube-language-api` | Safe MiniMessage rendering with named placeholders shared by Paper and Velocity |
 | `tropicube-velocity` | Proxy routing, queues, dynamic instance lifecycle, and `/nick` |
 | `tropicube-core` | Player data, economy, grades, permissions, languages, moderation, friends, and parties |
 | `tropicube-lobby` | Lobby menus, server selection, Social menu, language selection, and custom games |

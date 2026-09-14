@@ -3,6 +3,7 @@ package fr.tropicube.core.managers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import java.sql.DriverManager;
+import java.util.Properties;
 import static org.junit.jupiter.api.Assertions.*;
 
 /** Runs only against the disposable database created by tools/ops/integration_tests.py. */
@@ -11,6 +12,19 @@ class SchemaMigrationIntegrationTest {
     @Test void migratesFreshDatabaseResumesAndDetectsTampering() throws Exception {
         String url = System.getenv("TROPICUBE_TEST_MYSQL_URL");
         assertTrue(url.contains("/tropicube_integration"), "Refuse any non-test database");
+        int expectedMigrationCount;
+        var legacyChecksums = new Properties();
+        try (var input = java.util.Objects.requireNonNull(
+                getClass().getResourceAsStream("/db/migration/index.txt"), "migration index");
+             var reader = new java.io.BufferedReader(new java.io.InputStreamReader(
+                     input, java.nio.charset.StandardCharsets.UTF_8))) {
+            expectedMigrationCount = SchemaMigrationManager.readIndex(reader.lines().toList()).size();
+        }
+        try (var input = java.util.Objects.requireNonNull(
+                getClass().getResourceAsStream("/db/migration/legacy-checksums.properties"),
+                "legacy migration checksums")) {
+            legacyChecksums.load(input);
+        }
         try (var connection = DriverManager.getConnection(url, "tropicube_test", "integration-only")) {
             for (String sql : DatabaseSchema.baseStatements()) {
                 try (var statement = connection.createStatement()) { statement.execute(sql); }
@@ -20,10 +34,18 @@ class SchemaMigrationIntegrationTest {
             migrations.migrate(connection);
             try (var statement = connection.createStatement()) {
                 try (var result = statement.executeQuery("SELECT COUNT(*) FROM tropicube_schema_migrations")) {
-                    assertTrue(result.next()); assertEquals(9, result.getInt(1));
+                    assertTrue(result.next()); assertEquals(expectedMigrationCount, result.getInt(1));
                 }
                 // Simulate an old installation without recorded fingerprints.
-                statement.executeUpdate("DELETE FROM tropicube_schema_checksums WHERE version <> 'V009'");
+                try (var delete = connection.prepareStatement(
+                        "DELETE FROM tropicube_schema_checksums WHERE version=?")) {
+                    for (Object resource : legacyChecksums.keySet()) {
+                        String name = resource.toString();
+                        delete.setString(1, name.substring(0, name.indexOf("__")));
+                        delete.addBatch();
+                    }
+                    delete.executeBatch();
+                }
                 migrations.migrate(connection);
                 // V008 is designed to resume after its DDL has already been applied.
                 statement.executeUpdate("DELETE FROM tropicube_schema_migrations WHERE version='V008'");
