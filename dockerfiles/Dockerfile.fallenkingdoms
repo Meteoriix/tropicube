@@ -9,6 +9,12 @@ RUN mc-image-helper install-paper --version "${PAPER_VERSION}" --build "${PAPER_
     && java -Dpaperclip.patchonly=true -jar "paper-${PAPER_VERSION}-${PAPER_BUILD}.jar"
 
 FROM itzg/minecraft-server:java25@sha256:2a9d96d24be985fc81f01ab7cbe548ae2a92fa62b5a39c79efac3fec7c1f3c22
+ARG PAPER_VERSION
+ARG PAPER_BUILD
+
+ENV TROPICUBE_PAPER_VERSION="${PAPER_VERSION}" \
+    TROPICUBE_PAPER_BUILD="${PAPER_BUILD}"
+
 COPY --from=paper-runtime --chown=1000:1000 /opt/tropicube/paper/ /data/
 COPY --chown=1000:1000 dockerfiles/configs/paper-global.yml /data/config/paper-global.yml
 COPY --chown=1000:1000 dockerfiles/configs/paper-world-defaults.yml /data/config/paper-world-defaults.yml

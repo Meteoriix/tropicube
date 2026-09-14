@@ -6,6 +6,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-14
 
+- Aligne les métadonnées Paper de l'image Fallen Kingdoms sur les autres backends afin que le contrôle de préchauffage autorise son déploiement.
 - Livre Fallen Kingdoms V1 jouable : session générique indépendante des cartes, sélecteurs de royaume et kit, protections territoriales, cœurs, réapparitions/reconnexions, ruines, mort subite, HUD multilingue, résultat persistant idempotent et nettoyage Velocity.
 - Active le template Velocity Fallen Kingdoms avec la carte Cactus immuable et ajoute la migration MySQL générique `V010__game_statistics.sql`.
 
