@@ -6,6 +6,8 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-14
 
+- Distributed the verified third-party Paper plugins to Fallen Kingdoms so Core's HeadDatabase dependency is available when an instance starts.
+- Adjusted the development Fallen Kingdoms memory envelope to 1–2 GiB so an instance can start alongside Lobby and SheepWars within the local 8 GiB budget.
 - Aligned the Fallen Kingdoms image Paper metadata with the other backends so the prewarming check permits deployment.
 - Delivered a playable Fallen Kingdoms V1 with map-independent sessions, kingdom and kit selectors, territorial protections, hearts, lives and reconnects, ruins, sudden death, localized HUD, idempotent result persistence, and Velocity cleanup.
 - Enabled the Fallen Kingdoms Velocity template with the immutable Cactus map and added the generic `V010__game_statistics.sql` MySQL migration.

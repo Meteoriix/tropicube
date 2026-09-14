@@ -178,6 +178,18 @@ copy_verified "$core_jar" dockerfiles/plugins/fallenkingdoms/tropicube-core.jar
 copy_verified "$fallenkingdoms_jar" dockerfiles/plugins/fallenkingdoms/tropicube-fallenkingdoms.jar
 copy_verified "$velocity_jar" dockerfiles/plugins/velocity/tropicube-velocity.jar
 
+# Core declares HeadDatabase as a hard Paper dependency. Keep third-party JARs
+# outside Git, but distribute the operator-provided verified copies to every backend.
+for pattern in 'HeadDatabase-*.jar' 'NoChatReports-*.jar'; do
+  matches=()
+  for candidate in dockerfiles/plugins/lobby/$pattern; do
+    [[ -f $candidate ]] && matches+=("$candidate")
+  done
+  ((${#matches[@]} == 1)) || fail "Expected exactly one $pattern in dockerfiles/plugins/lobby, found ${#matches[@]}."
+  copy_verified "${matches[0]}" "dockerfiles/plugins/sheepwars/${matches[0]##*/}"
+  copy_verified "${matches[0]}" "dockerfiles/plugins/fallenkingdoms/${matches[0]##*/}"
+done
+
 step 'Synchronizing language configuration...'
 stale_languages='dockerfiles/configs/TropicubeCore/languages/languages'
 if [[ -d $stale_languages ]]; then

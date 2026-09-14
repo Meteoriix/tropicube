@@ -312,6 +312,23 @@ foreach ($artifact in $artifacts) {
     }
 }
 
+# Core declares HeadDatabase as a hard Paper dependency. Keep third-party JARs
+# outside Git, but distribute the operator-provided verified copies to every backend.
+foreach ($pattern in @("HeadDatabase-*.jar", "NoChatReports-*.jar")) {
+    $matches = @(Get-ChildItem "dockerfiles\plugins\lobby\$pattern" -File -ErrorAction SilentlyContinue)
+    if ($matches.Count -ne 1) {
+        Fail "Expected exactly one $pattern in dockerfiles\plugins\lobby, found $($matches.Count)."
+    }
+    foreach ($backend in @("sheepwars", "fallenkingdoms")) {
+        $destination = "dockerfiles\plugins\$backend\$($matches[0].Name)"
+        Copy-Item $matches[0].FullName $destination -Force
+        if ((Get-FileHash $matches[0].FullName).Hash -ne (Get-FileHash $destination).Hash) {
+            Fail "Third-party JAR verification failed after copy: $destination"
+        }
+        Ok $destination
+    }
+}
+
 # ── 2b. Synchronize language configuration ───────────────────────────────────
 Step "Synchronizing language configuration..."
 

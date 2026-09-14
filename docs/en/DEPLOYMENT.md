@@ -40,7 +40,7 @@ node docs-site/build.mjs
 node docs-site/validate.mjs
 ```
 
-The Maven build creates normal and shaded plugin JARs under each module's `target/` directory. Deployment scripts copy the runtime artifacts into the Docker build contexts. The Velocity image downloads pinned official Geyser and Floodgate builds and BuildKit verifies their SHA-256 hashes, so no third-party JAR is committed. During `process-resources`, Core and Velocity also copy their `src/main/resources/languages/*.yml` files to the matching directories under `dockerfiles/configs`. These embedded files are the source of truth; direct edits to Docker language copies are overwritten. Deployment repeats and verifies the exact copy, including in `OnlyImages` mode. A red build must never be deployed.
+The Maven build creates normal and shaded plugin JARs under each module's `target/` directory. Deployment scripts copy the runtime artifacts into the Docker build contexts. The operator-provided HeadDatabase and NoChatReports references live outside Git under `dockerfiles/plugins/lobby`; deployment copies them with hash verification to SheepWars and Fallen Kingdoms. The Velocity image downloads pinned official Geyser and Floodgate builds and BuildKit verifies their SHA-256 hashes, so no third-party JAR is committed. During `process-resources`, Core and Velocity also copy their `src/main/resources/languages/*.yml` files to the matching directories under `dockerfiles/configs`. These embedded files are the source of truth; direct edits to Docker language copies are overwritten. Deployment repeats and verifies the exact copy, including in `OnlyImages` mode. A red build must never be deployed.
 
 Velocity RCON is enabled only inside its container for local editor language reloads; its port is not published on the host. The dedicated Core and Velocity `languageeditorreload` commands reject players. After these commands have been delivered once, the editor copies validated YAML files and reloads them without rebuilding images.
 
@@ -105,7 +105,7 @@ For private custom games, Velocity injects `HOST_UUID` and `CUSTOM_GAME_PRIVATE=
 
 The proxy's normal shutdown may preserve or remove dynamic instances according to `remove-dynamic-servers-on-shutdown`. Production deployments should validate this choice explicitly.
 
-The enabled `fallenkingdoms` template uses private ports 25660–25669 and injects `MAP_ID=cactus`. Its image copies the immutable world from `dockerfiles/worlds/fallenkingdoms/`; player data, locks, and old level backups stay outside Git and the image context. Add another enabled `locations.maps` definition and change `MAP_ID` to deploy another map without changing game code.
+The enabled `fallenkingdoms` template uses private ports 25660–25669 and injects `MAP_ID=cactus`. Its image copies the immutable world from `dockerfiles/worlds/fallenkingdoms/`; player data, locks, and old level backups stay outside Git and the image context. Add another enabled `locations.maps` definition and change `MAP_ID` to deploy another map without changing game code. The embedded profile reserves 2–4 GiB; the development Docker configuration caps FK instances at 1–2 GiB so Lobby, SheepWars, and Fallen Kingdoms fit together within the local 8 GiB budget.
 
 ## Operational checks
 

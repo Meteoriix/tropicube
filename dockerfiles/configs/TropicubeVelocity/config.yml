@@ -279,8 +279,9 @@ templates:
     port-max: 25669
     max-players: 30
     spectator-slots: 10
-    ram-min: 2048
-    ram-max: 4096
+    # Development profile: leaves room for Lobby, SheepWars and FK inside the 8192 MiB node budget.
+    ram-min: 1024
+    ram-max: 2048
     auto-start: true
     auto-stop: true
     auto-stop-delay: 300

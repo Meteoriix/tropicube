@@ -65,7 +65,7 @@ Pour Docker rootless, régler `DOCKER_SOCKET_PATH`, par exemple `/run/user/1000/
 
 1. Placer le projet sur la machine de déploiement.
 2. Vérifier que les mondes existent sous `dockerfiles/worlds/lobby` et `dockerfiles/worlds/sheepwars`.
-3. Vérifier les plugins tiers dans `dockerfiles/plugins/lobby` et `dockerfiles/plugins/sheepwars`, notamment HeadDatabase.
+3. Vérifier les exemplaires de référence des plugins tiers dans `dockerfiles/plugins/lobby`, notamment HeadDatabase et NoChatReports ; les scripts les copient avec contrôle d'empreinte vers SheepWars et Fallen Kingdoms.
 4. Créer `.env` et remplacer tous les secrets.
 5. Adapter les UUID administrateurs, OPS, cartes et coordonnées.
 6. Valider sans construire d'image.
@@ -187,7 +187,7 @@ Le RCON de Velocity est activé uniquement dans son conteneur pour permettre le 
 
 Le redéploiement quotidien de développement interrompt volontairement les parties. La conservation exceptionnelle de parties actives reste réservée à une opération d'exploitation explicitement préparée : régler auparavant `shutdown.stop-dynamic-servers: false` dans la configuration Velocity déployée. Le nouveau proxy restaurera alors les backends encore actifs. Cette option ne doit pas être utilisée pour un arrêt complet.
 
-Le build distribue aussi le plugin `tropicube-fallenkingdoms` et construit son image. La carte immuable est copiée depuis `dockerfiles/worlds/fallenkingdoms/`; les données `players/`, fichiers `session.lock` et sauvegardes `level.dat_old*` sont exclus du contexte Docker. Le template Velocity `fallenkingdoms` est actif sur la plage privée 25660–25669 et injecte `MAP_ID=cactus`. Pour livrer une autre carte, ajouter son monde à l'image, déclarer une entrée activée sous `locations.maps`, puis changer `MAP_ID`.
+Le build distribue aussi le plugin `tropicube-fallenkingdoms` et construit son image. La carte immuable est copiée depuis `dockerfiles/worlds/fallenkingdoms/`; les données `players/`, fichiers `session.lock` et sauvegardes `level.dat_old*` sont exclus du contexte Docker. Le template Velocity `fallenkingdoms` est actif sur la plage privée 25660–25669 et injecte `MAP_ID=cactus`. Pour livrer une autre carte, ajouter son monde à l'image, déclarer une entrée activée sous `locations.maps`, puis changer `MAP_ID`. Le profil embarqué réserve 2 à 4 Gio ; la configuration Docker de développement limite chaque instance FK à 1–2 Gio pour permettre à Lobby, SheepWars et Fallen Kingdoms de tenir ensemble dans le budget local de 8 Gio.
 
 ## Contrôles après déploiement
 

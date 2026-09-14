@@ -6,6 +6,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-14
 
+- Distribue les plugins Paper tiers vérifiés vers Fallen Kingdoms afin que la dépendance HeadDatabase de Core soit satisfaite au démarrage d'une instance.
+- Ajuste l'enveloppe mémoire Fallen Kingdoms du profil de développement à 1–2 Gio afin qu'une instance puisse démarrer avec Lobby et SheepWars dans le budget local de 8 Gio.
 - Aligne les métadonnées Paper de l'image Fallen Kingdoms sur les autres backends afin que le contrôle de préchauffage autorise son déploiement.
 - Livre Fallen Kingdoms V1 jouable : session générique indépendante des cartes, sélecteurs de royaume et kit, protections territoriales, cœurs, réapparitions/reconnexions, ruines, mort subite, HUD multilingue, résultat persistant idempotent et nettoyage Velocity.
 - Active le template Velocity Fallen Kingdoms avec la carte Cactus immuable et ajoute la migration MySQL générique `V010__game_statistics.sql`.
