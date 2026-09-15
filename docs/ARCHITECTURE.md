@@ -40,7 +40,7 @@ Deux réseaux Docker séparent les flux :
 4. `TropiServerManager` attend que le backend soit joignable avant de l'enregistrer auprès de Velocity.
 5. Les comptes de joueurs et l'état de l'instance sont actualisés dans Redis.
 6. À la fin d'une partie, le backend demande sa clôture à Velocity. Le proxy réessaie les transferts tant que tous les joueurs ne sont pas revenus au lobby, puis tue et supprime immédiatement le conteneur.
-7. Une instance vide et éligible à `auto-stop` est arrêtée après `auto-stop-delay`, sans descendre sous `min-instances`.
+7. Une instance vide et éligible à `auto-stop` est arrêtée après `auto-stop-delay`, sans descendre sous `min-instances`. Les templates Lobby, SheepWars Quick Play et Fallen Kingdoms Quick Play maintiennent chacun une instance dès le démarrage du proxy.
 8. Velocity sonde toutes les 10 secondes les backends prêts. Après 60 secondes sans réponse, il force la suppression du conteneur, de son entrée Velocity et de toutes ses références Redis connues.
 
 Les créations classiques SheepWars ne sont pas limitées à `min-instances` : dès qu'aucune instance `GAME_WAITING` ou `GAME_STARTING` n'a de place, le matchmaking partage une nouvelle création entre les joueurs en attente, jusqu'à `max-instances`. Une seule création simultanée par template est lancée afin d'éviter les doublons, puis une création suivante peut démarrer si des joueurs restent en attente.

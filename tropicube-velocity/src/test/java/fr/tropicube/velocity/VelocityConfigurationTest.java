@@ -28,6 +28,17 @@ class VelocityConfigurationTest {
     }
 
     @Test
+    void bundledQuickPlayTemplatesStartWithTheProxy() throws IOException {
+        ConfigurationNode config = loadBundledConfig();
+
+        for (String templateId : new String[]{"sheepwars", "fallenkingdoms"}) {
+            ConfigurationNode template = config.node("templates", templateId);
+            assertTrue(template.node("auto-start").getBoolean());
+            assertEquals(1, template.node("min-instances").getInt());
+        }
+    }
+
+    @Test
     void bundledPaperTemplatesPinThePrewarmedRuntime() throws IOException {
         ConfigurationNode config = loadBundledConfig();
 

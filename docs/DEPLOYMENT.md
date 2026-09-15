@@ -16,7 +16,7 @@ Le profil Compose facultatif `language-editor` démarre LibreTranslate sur local
 - Docker Engine récent et daemon démarré ;
 - plugin Docker Compose v2 (`docker compose`, pas l'ancien binaire `docker-compose`) ;
 - ports hôte `25565/tcp`, `${BEDROCK_PORT:-19132}/udp`, `3306`, `6379`, et éventuellement `8080`/`8081`, disponibles ;
-- mémoire suffisante pour Velocity, MySQL, Redis et au moins deux backends Paper. Prévoir au minimum 6 à 8 Gio pour un environnement de test confortable, davantage en production.
+- mémoire suffisante pour Velocity, MySQL, Redis et les trois backends Paper préchauffés (Lobby, SheepWars et Fallen Kingdoms). Prévoir au minimum 8 Gio pour un environnement de test confortable, davantage en production.
 
 Les versions Java et Maven sont aussi contrôlées par Maven Enforcer. Les images Minecraft utilisées sont des images Linux : même sous Windows, Docker doit fonctionner en mode conteneurs Linux.
 

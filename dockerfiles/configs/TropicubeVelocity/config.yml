@@ -285,7 +285,7 @@ templates:
     auto-start: true
     auto-stop: true
     auto-stop-delay: 300
-    min-instances: 0
+    min-instances: 1
     max-instances: 2
     environment:
       GAME_MODE: "QUICK_PLAY"

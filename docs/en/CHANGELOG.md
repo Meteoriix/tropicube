@@ -8,6 +8,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 - Removed the intermediate mode menu: left-clicking a game once again starts its Quick Play flow directly, while the Ranked and Public Matches shortcuts remain available.
 - Removed backups, player data, session files, temporary mod data, and empty regions generated while editing the Fallen Kingdoms world, then strengthened their Git exclusions.
+- Automatically starts one Fallen Kingdoms Quick Play instance with the proxy and maintains that floor like SheepWars.
 
 ### 2026-09-14
 
