@@ -29,5 +29,8 @@ public final class PlayerSession {
     public void recordDeath() { deaths++; }
     public void recordElimination() { eliminations++; }
     public void recordObjective() { objectives++; }
-    public boolean surviving() { return state == PlayerLifeState.ACTIVE || state == PlayerLifeState.RESPAWNING || state == PlayerLifeState.LAST_LIFE; }
+    public boolean surviving() {
+        return state == PlayerLifeState.ACTIVE || state == PlayerLifeState.RESPAWNING
+                || state == PlayerLifeState.LAST_LIFE || state == PlayerLifeState.OFFLINE;
+    }
 }

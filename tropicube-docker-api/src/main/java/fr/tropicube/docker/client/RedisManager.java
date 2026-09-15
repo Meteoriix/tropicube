@@ -881,6 +881,11 @@ public class RedisManager {
         subscribe(CHANNEL_PLAYERS, handler);
     }
 
+    /** Removes a handler previously registered through {@link #subscribeToPlayerEvents(Consumer)}. */
+    public void unsubscribeFromPlayerEvents(Consumer<String> handler) {
+        unsubscribe(CHANNEL_PLAYERS, handler);
+    }
+
     /** Shortcut to subscribe to remote commands (tropicube:commands channel). */
     public void subscribeToCommands(Consumer<String> handler) {
         subscribe(CHANNEL_COMMANDS, handler);

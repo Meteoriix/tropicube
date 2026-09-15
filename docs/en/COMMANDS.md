@@ -79,7 +79,7 @@ Team, class, kit, map, host settings, start/cancel, and return-to-lobby actions 
 
 ## Fallen Kingdoms controls
 
-`/fkadmin <status|start|cancel|stop|reload>` requires `fallenkingdoms.admin`. Status reports the state, selected map, and roster size; start validates both roster size and map layout; reload applies a fully valid configuration only while waiting; stop produces an `ADMIN_ABORT` without competitive statistics. Players use waiting-room items to choose their kingdom preference and kit.
+`/fkadmin <status|start|cancel|stop|reload>` requires `fallenkingdoms.admin`. Status reports the session ID, state, selected map, roster size, and next deadline; start validates roster size and map layout; reload atomically applies a valid configuration only while waiting; stop produces an `ADMIN_ABORT` without competitive statistics. In a custom match, its host may also run `status`, `start`, and `cancel` without receiving the administrative permission. Players use waiting-room items to choose their kingdom preference, kit, and map.
 
 The lobby hotbar keeps stable positions: Games in slot 0, Social in slot 2, the player's Profile head in slot 4, and Shop in slot 8. Custom-game creation and Settings live in the game selector and Profile respectively.
 

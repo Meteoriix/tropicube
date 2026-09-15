@@ -12,6 +12,8 @@ class GameDomainTest {
         assertEquals(4, KingdomAllocator.kingdomCount(19));
         assertEquals(5, KingdomAllocator.kingdomCount(25));
         assertThrows(IllegalArgumentException.class, () -> KingdomAllocator.kingdomCount(31));
+        assertEquals(4, KingdomAllocator.kingdomCount(16, 4, 5));
+        assertThrows(IllegalArgumentException.class, () -> KingdomAllocator.kingdomCount(17, 4, 4));
     }
     @Test void allocationIsBalancedAndDeterministic() {
         List<KingdomAllocator.PlayerPreference> players = new ArrayList<>();
@@ -55,5 +57,26 @@ class GameDomainTest {
         GameResult tie = rules.timeLimit(session, Map.of(KingdomId.BLUE, 2, KingdomId.RED, 2, KingdomId.GREEN, 1));
         assertEquals(EndCause.DRAW, tie.cause());
         assertEquals(Set.of(KingdomId.BLUE, KingdomId.RED), tie.winners());
+    }
+    @Test void mapVoteIsOneVotePerPlayerAndDeterministicOnTies(){
+        MapVote vote=new MapVote();UUID first=new UUID(1,1),second=new UUID(2,2);
+        vote.vote(first,"yeti");vote.vote(first,"cactus");vote.vote(second,"yeti");
+        assertEquals(1,vote.count("cactus"));assertEquals(1,vote.count("yeti"));
+        assertEquals("cactus",vote.winner("fallback"));
+    }
+    @Test void legacyKnockbackIsBoundedAndAttackDamageValidated(){
+        assertEquals(7.0,LegacyCombatRules.attackDamage(7.0));
+        assertThrows(IllegalArgumentException.class,()->LegacyCombatRules.attackDamage(-1));
+        assertEquals(8.0,LegacyCombatRules.attackDamage(org.bukkit.Material.DIAMOND_SWORD,7.0));
+        assertEquals(6.0,LegacyCombatRules.attackDamage(org.bukkit.Material.DIAMOND_AXE,9.0));
+        var knockback=LegacyCombatRules.knockback(0,0,0,1,0,true);
+        assertEquals(.5,knockback.x());assertEquals(.4,knockback.y());
+    }
+    @Test void disconnectedPlayerRemainsARespawnEligibleSurvivor(){
+        PlayerSession player=new PlayerSession(UUID.randomUUID(),KingdomId.BLUE);
+        player.state(PlayerLifeState.OFFLINE);
+        assertTrue(player.surviving());
+        player.state(PlayerLifeState.ELIMINATED);
+        assertFalse(player.surviving());
     }
 }

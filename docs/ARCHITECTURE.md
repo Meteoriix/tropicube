@@ -158,6 +158,8 @@ Ce module exécute une session éphémère sur une `MapDefinition` immuable char
 
 La machine à états pilote préparation, JcJ, assaut, mort subite et résultat. Les adaptateurs Paper appliquent les protections territoriales, les dégâts de cœur, les vies, la reconnexion, la ruine bornée, les menus de royaume/kit et le HUD localisé. Core persiste les résultats dans les tables génériques `tropicube_game_results`, `tropicube_game_result_players` et `tropicube_game_statistics`; l'identifiant de partie rend l'écriture idempotente. Après la persistance, le canal Redis `PROXY:FINISH_GAME:<instance>` rend l'instance à Velocity. Le domaine ne dépend pas de SheepWars.
 
+Le Lobby encode les seuls réglages FK autorisés dans `PROXY:CREATE_HOST:<uuid>:<template>:<privé>:<options>`. Velocity vérifie le type du template, les noms et le format des valeurs avant de les injecter au conteneur. Paper effectue une seconde validation métier. Les événements publics de phase, dégâts/destruction de cœur, réapparition, élimination, ruine et fin portent tous l'identifiant immuable de session. Un fichier `active-session.lock` interdit de réutiliser un volume dont une partie avait déjà verrouillé le monde.
+
 ## Contrats Redis
 
 `RedisManager` préfixe automatiquement les clés avec `tropicube:`. Les appels applicatifs utilisent donc les noms logiques ci-dessous.

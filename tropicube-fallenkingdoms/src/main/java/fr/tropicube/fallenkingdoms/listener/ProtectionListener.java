@@ -65,11 +65,11 @@ public final class ProtectionListener implements Listener {
     }
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void entityExplosion(EntityExplodeEvent event) {
-        event.blockList().removeIf(block -> !session.mayExplosionChange(block.getLocation()));
+        event.blockList().removeIf(block -> !session.mayExplosionChange(block));
     }
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void blockExplosion(BlockExplodeEvent event) {
-        event.blockList().removeIf(block -> !session.mayExplosionChange(block.getLocation()));
+        event.blockList().removeIf(block -> !session.mayExplosionChange(block));
     }
     @EventHandler(priority = EventPriority.HIGH)
     public void vehicleMove(VehicleMoveEvent event) {
@@ -78,7 +78,7 @@ public final class ProtectionListener implements Listener {
         if (passenger != null && !session.mayEnter(passenger, event.getTo())) event.getVehicle().teleport(event.getFrom());
     }
     private boolean sameTerritory(Location from, Location to) {
-        return session.territoryAt(from, null) == session.territoryAt(to, null);
+        return session.sameProtectionRegion(from,to);
     }
     private static boolean changedBlock(Location from, Location to) {
         return from.getBlockX() != to.getBlockX() || from.getBlockY() != to.getBlockY() || from.getBlockZ() != to.getBlockZ();

@@ -1,0 +1,7 @@
+version: 1
+tablists:
+  fallenkingdoms:
+    variants:
+      waiting: { header-key: fk.tab-header, footer-key: fk.tab-footer-waiting }
+      active: { header-key: fk.tab-header, footer-key: fk.tab-footer-active }
+      ending: { header-key: fk.tab-header, footer-key: fk.tab-footer-ending }

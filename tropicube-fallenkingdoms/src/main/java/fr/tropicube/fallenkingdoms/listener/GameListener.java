@@ -10,6 +10,13 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.TNTPrimed;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.entity.PotionSplashEvent;
+import org.bukkit.event.entity.AreaEffectCloudApplyEvent;
+import org.bukkit.entity.AreaEffectCloud;
+import org.bukkit.Material;
 
 /** Thin Paper listener delegating game rules to the session. */
 public final class GameListener implements Listener {
@@ -22,9 +29,19 @@ public final class GameListener implements Listener {
     @EventHandler public void respawn(PlayerRespawnEvent event) { session.respawn(event.getPlayer()); }
     @EventHandler public void playerDamage(EntityDamageByEntityEvent event) {
         if (!(event.getEntity() instanceof Player victim)) return;
-        Player attacker = event.getDamager() instanceof Player direct ? direct
-                : event.getDamager() instanceof Projectile projectile && projectile.getShooter() instanceof Player shooter ? shooter : null;
+        Player attacker = attacker(event);
         if (attacker == null) return;
         if (!session.allowsPvp(attacker, victim)) event.setCancelled(true);
+        else session.applyCombatProfile(event,attacker,victim);
+    }
+    @EventHandler public void swapHands(PlayerSwapHandItemsEvent event){if(session.legacyCombat())event.setCancelled(true);}
+    @EventHandler public void shield(PlayerInteractEvent event){if(session.legacyCombat()&&event.getItem()!=null&&event.getItem().getType()==Material.SHIELD)event.setCancelled(true);}
+    @EventHandler public void splash(PotionSplashEvent event){if(!(event.getPotion().getShooter() instanceof Player shooter))return;for(var target:event.getAffectedEntities())if(target instanceof Player player&&session.sameKingdom(shooter,player))event.setIntensity(target,0);}
+    @EventHandler public void lingering(AreaEffectCloudApplyEvent event){AreaEffectCloud cloud=event.getEntity();if(!(cloud.getSource() instanceof Player shooter))return;event.getAffectedEntities().removeIf(entity->entity instanceof Player player&&session.sameKingdom(shooter,player));}
+    private static Player attacker(EntityDamageByEntityEvent event){
+        if(event.getDamager() instanceof Player player)return player;
+        if(event.getDamager() instanceof Projectile projectile&&projectile.getShooter() instanceof Player player)return player;
+        if(event.getDamager() instanceof TNTPrimed tnt&&tnt.getSource() instanceof Player player)return player;
+        return null;
     }
 }

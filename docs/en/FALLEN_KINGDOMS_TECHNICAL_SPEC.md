@@ -2,7 +2,7 @@
 
 ## Document status
 
-This specification defines the approved Tropicube Fallen Kingdoms V1. As of 14 September 2026, the playable Paper runtime and active Velocity template ship with Cactus. Sessions use a generic map catalog and implement phases, protections, hearts, lives, kits, ruins, sudden death, localized HUD, idempotent MySQL results, and Redis-driven instance cleanup. Paper/Docker scenarios below remain the manual production acceptance checks.
+This specification defines the approved Tropicube Fallen Kingdoms V1. As of 15 September 2026, the playable Paper runtime and active Velocity template ship with Cactus. Sessions use a generic map catalog and implement voting, persistent preferences, phases, protections, hearts, lives, kits, ruins, configurable combat, localized HUD, Paper events, idempotent MySQL results, and Redis-driven instance cleanup. The Lobby sends custom settings through an allowlist validated by Velocity and Paper. Paper/Docker scenarios below remain the manual production acceptance checks.
 
 The document distinguishes services already provided by the network from FK work that remains to be delivered. Future behavior must never be presented as available gameplay.
 

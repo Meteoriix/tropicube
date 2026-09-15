@@ -119,3 +119,7 @@ Operations need Python 3.11+, Restic and SSH. Configure `RESTIC_REPOSITORY` as a
 The same configuration is embedded in the module. Update both files until FK resource synchronization is added.
 
 `game.default-map` selects the local map and the instance `MAP_ID` environment variable overrides it in production. Every enabled `locations.maps` entry owns its playable region, border, layouts, and bases, so another map requires configuration rather than Java changes. Startup validates positions, overlaps, layouts, phase times, protections, ruin settings, and the item list under `kits.definitions`.
+
+Custom matches use the FK setup screen in the Lobby. Velocity only accepts `FK_AUTO_START`, `FK_COMBAT_PROFILE`, `FK_COUNTDOWN_SECONDS`, `FK_MAX_PLAYERS_PER_KINGDOM`, `FK_MAX_KINGDOMS`, `FK_PVP_AT_SECONDS`, `FK_ASSAULT_AT_SECONDS`, `FK_SUDDEN_DEATH_AT_SECONDS`, `FK_FORCE_END_AT_SECONDS`, `FK_HEART_HEALTH`, `FK_RESPAWN_DELAY_SECONDS`, `FK_ENABLED_KITS`, `FK_RUIN_WAVES`, `FK_RUIN_RADIUS`, and `FK_RUIN_DESTRUCTION_RATIO`. The proxy rejects every other key and command-like value; Paper then validates ranges, phase ordering, kits, and mandatory protections. Host instances disable automatic start by default and their owner may use `status`, `start`, and `cancel`.
+
+`scoreboards.yml` and `tablists.yml` provide `waiting`, `active`, and `ending` variants and participate in Core UI reloads. Migration `V011__fallenkingdoms_preferences.sql` stores each player's last kit and preferred kingdom color.

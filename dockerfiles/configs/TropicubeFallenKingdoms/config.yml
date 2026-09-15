@@ -11,9 +11,16 @@ phases:
   assault-at-seconds: 1500
   sudden-death-at-seconds: 4500
   force-end-at-seconds: 5400
-hearts: { max-health: 500.0 }
-respawn: { delay-seconds: 10 }
-sudden-death: { final-border-size: 50.0 }
+hearts:
+  max-health: 500.0
+  tnt-direct-damage: false
+respawn:
+  delay-seconds: 10
+  drop-inventory: true
+  reissue-kit: false
+  disconnect-counts-as-death: true
+sudden-death:
+  final-border-size: 50.0
 ruins:
   waves: 3
   ticks-between-waves: 10
@@ -39,14 +46,14 @@ kits:
       enabled: true
       icon: IRON_PICKAXE
       items:
-        - { material: STONE_PICKAXE, amount: 1, slot: 0 }
-        - { material: IRON_PICKAXE, amount: 1, slot: 1 }
+        - { material: STONE_PICKAXE, amount: 1, slot: 0, enchantments: { efficiency: 1 } }
+        - { material: IRON_PICKAXE, amount: 1, slot: 1, damage: 125, enchantments: { efficiency: 1 } }
     farmer:
       enabled: true
       icon: WHEAT
       items:
         - { material: BONE_MEAL, amount: 16, slot: 0 }
-        - { material: WOODEN_SWORD, amount: 1, slot: 1 }
+        - { material: WOODEN_SWORD, amount: 1, slot: 1, damage: 25, enchantments: { looting: 3, fire_aspect: 1 } }
     scout:
       enabled: true
       icon: FEATHER
@@ -63,6 +70,13 @@ kits:
         - { material: EXPERIENCE_BOTTLE, amount: 64, slot: 0 }
         - { material: EXPERIENCE_BOTTLE, amount: 64, slot: 1 }
         - { material: ANVIL, amount: 1, slot: 2 }
+        - { material: ENCHANTED_BOOK, amount: 1, slot: 3, enchantments: { sharpness: 1 } }
+        - { material: ENCHANTED_BOOK, amount: 1, slot: 4, enchantments: { sharpness: 2 } }
+        - { material: ENCHANTED_BOOK, amount: 1, slot: 5, enchantments: { protection: 1 } }
+        - { material: ENCHANTED_BOOK, amount: 1, slot: 6, enchantments: { protection: 2 } }
+        - { material: ENCHANTED_BOOK, amount: 1, slot: 7, enchantments: { thorns: 1 } }
+        - { material: ENCHANTED_BOOK, amount: 1, slot: 8, enchantments: { knockback: 2 } }
+# Shared map schema. Add future maps under locations.maps without changing Java code.
 locations:
   world: world
   lobby: { x: -702.0, y: 94.0, z: -653.0, yaw: -90.0, pitch: 0.0 }
@@ -83,8 +97,33 @@ locations:
         "4": [BLUE, RED, GREEN, YELLOW]
         "5": [BLUE, RED, GREEN, YELLOW, ORANGE]
       kingdoms:
-        blue: { spawn: { x: -727.0, y: 72.0, z: -738.0, yaw: 180.0, pitch: 0.0 }, heart: { x: -727, y: 73, z: -735 }, base-region: { min: { x: -742, y: 0, z: -750 }, max: { x: -712, y: 92, z: -720 } } }
-        red: { spawn: { x: -643.0, y: 72.0, z: -623.0, yaw: -180.0, pitch: 0.0 }, heart: { x: -643, y: 73, z: -620 }, base-region: { min: { x: -658, y: 0, z: -635 }, max: { x: -628, y: 92, z: -605 } } }
-        green: { spawn: { x: -782.0, y: 72.0, z: -664.0, yaw: 90.0, pitch: 0.0 }, heart: { x: -779, y: 73, z: -664 }, base-region: { min: { x: -794, y: 0, z: -679 }, max: { x: -764, y: 92, z: -649 } } }
-        yellow: { spawn: { x: -640.0, y: 72.0, z: -708.0, yaw: -90.0, pitch: 0.0 }, heart: { x: -643, y: 73, z: -708 }, base-region: { min: { x: -658, y: 0, z: -723 }, max: { x: -628, y: 90, z: -693 } } }
-        orange: { spawn: { x: -727.0, y: 72.0, z: -591.0, yaw: 0.0, pitch: 0.0 }, heart: { x: -727, y: 73, z: -593 }, base-region: { min: { x: -742, y: 0, z: -608 }, max: { x: -712, y: 92, z: -578 } } }
+        blue:
+          spawn: { x: -727.0, y: 72.0, z: -738.0, yaw: 180.0, pitch: 0.0 }
+          heart: { x: -727, y: 73, z: -735 }
+          base-region:
+            min: { x: -742, y: 0, z: -750 }
+            max: { x: -712, y: 92, z: -720 }
+        red:
+          spawn: { x: -643.0, y: 72.0, z: -623.0, yaw: -180.0, pitch: 0.0 }
+          heart: { x: -643, y: 73, z: -620 }
+          base-region:
+            min: { x: -658, y: 0, z: -635 }
+            max: { x: -628, y: 92, z: -605 }
+        green:
+          spawn: { x: -782.0, y: 72.0, z: -664.0, yaw: 90.0, pitch: 0.0 }
+          heart: { x: -779, y: 73, z: -664 }
+          base-region:
+            min: { x: -794, y: 0, z: -679 }
+            max: { x: -764, y: 92, z: -649 }
+        yellow:
+          spawn: { x: -640.0, y: 72.0, z: -708.0, yaw: -90.0, pitch: 0.0 }
+          heart: { x: -643, y: 73, z: -708 }
+          base-region:
+            min: { x: -658, y: 0, z: -723 }
+            max: { x: -628, y: 90, z: -693 }
+        orange:
+          spawn: { x: -727.0, y: 72.0, z: -591.0, yaw: 0.0, pitch: 0.0 }
+          heart: { x: -727, y: 73, z: -593 }
+          base-region:
+            min: { x: -742, y: 0, z: -608 }
+            max: { x: -712, y: 92, z: -578 }

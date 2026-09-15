@@ -110,7 +110,7 @@ public class TropiServerManager {
             // Format: "PROXY:CREATE_HOST:<uuid>:<templateId>:<whitelisted>"
             if (message.startsWith("PROXY:CREATE_HOST:")) {
                 String rest = message.substring("PROXY:CREATE_HOST:".length());
-                String[] args = rest.split(":");
+                String[] args = rest.split(":",4);
                 if (args.length < 3) return;
                 String uuidStr = args[0];
                 String templateId = args[1];
@@ -132,10 +132,9 @@ public class TropiServerManager {
                         redisManager.publishCommand("LOBBY", "CREATE_HOST_EXISTS:" + uuidStr);
                         return;
                     }
-                    Map<String, String> extraEnv = Map.of(
-                            "IS_HOST", "true",
-                            "HOST_UUID", uuidStr,
-                            "CUSTOM_GAME_PRIVATE", Boolean.toString(whitelisted));
+                    Map<String,String> extraEnv=new HashMap<>();
+                    extraEnv.put("IS_HOST","true");extraEnv.put("HOST_UUID",uuidStr);extraEnv.put("CUSTOM_GAME_PRIVATE",Boolean.toString(whitelisted));
+                    if(args.length==4){if(!"FALLENKINGDOMS".equalsIgnoreCase(tpl.getServerType()))throw new IllegalArgumentException("Options FK sur un autre type de serveur");extraEnv.putAll(FallenKingdomsCustomEnvironment.parse(args[3]));}
                     createServer(templateId, null, whitelisted, extraEnv)
                             .thenAccept(instance -> {
                                 if (whitelisted) {

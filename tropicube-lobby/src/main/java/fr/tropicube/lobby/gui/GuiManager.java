@@ -37,6 +37,7 @@ public class GuiManager {
         VIP_SHOP,
         SERVER_TYPE_SELECTOR,
         CUSTOM_GAME,
+        FALLENKINGDOMS_CUSTOM_GAME,
         CUSTOM_GAME_TYPE_SELECTOR,
         SETTINGS,
         SOCIAL,
@@ -330,6 +331,9 @@ public class GuiManager {
         openGuis.put(player.getUniqueId(), GuiType.CUSTOM_GAME);
         player.openInventory(inv);
     }
+    public void openFallenKingdomsCustomGame(Player player,FallenKingdomsCustomGameGUI.Holder holder){
+        openGuis.put(player.getUniqueId(),GuiType.FALLENKINGDOMS_CUSTOM_GAME);player.openInventory(FallenKingdomsCustomGameGUI.build(player,holder));
+    }
 
     public void openCustomGameTypeMenu(Player player) {
         if (hasCustomGameOrCreation(player.getUniqueId())) {
@@ -355,6 +359,7 @@ public class GuiManager {
         else if (holder instanceof RankedSelectorGUI.Holder ranked) openRankedSelector(player, ranked.type());
         else if (holder instanceof ServerTypeSelectorGUI.Holder) openServerTypeSelector(player);
         else if (holder instanceof ServerSelectorGUI.Holder servers) openServerSelector(player, servers.getType(), servers.getPage(), servers.getFilter());
+        else if(holder instanceof FallenKingdomsCustomGameGUI.Holder fk)openFallenKingdomsCustomGame(player,fk);
     }
 
     // ── Suivi ────────────────────────────────────────────────────────────────

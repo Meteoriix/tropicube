@@ -16,6 +16,7 @@ class BundledMapCatalogTest {
             assertEquals("cactus", catalog.select("cactus").id());
             assertEquals(5, catalog.select("cactus").bases().size());
             assertEquals(4, KitCatalog.load(config).definitions().size());
+            assertEquals(9,KitCatalog.load(config).definitions().get("enchanter").items().size());
             assertTrue(config.getBoolean("game.auto-start"));
         }
     }

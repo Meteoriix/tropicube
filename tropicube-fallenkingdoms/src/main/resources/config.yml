@@ -13,8 +13,12 @@ phases:
   force-end-at-seconds: 5400
 hearts:
   max-health: 500.0
+  tnt-direct-damage: false
 respawn:
   delay-seconds: 10
+  drop-inventory: true
+  reissue-kit: false
+  disconnect-counts-as-death: true
 sudden-death:
   final-border-size: 50.0
 ruins:
@@ -42,14 +46,14 @@ kits:
       enabled: true
       icon: IRON_PICKAXE
       items:
-        - { material: STONE_PICKAXE, amount: 1, slot: 0 }
-        - { material: IRON_PICKAXE, amount: 1, slot: 1 }
+        - { material: STONE_PICKAXE, amount: 1, slot: 0, enchantments: { efficiency: 1 } }
+        - { material: IRON_PICKAXE, amount: 1, slot: 1, damage: 125, enchantments: { efficiency: 1 } }
     farmer:
       enabled: true
       icon: WHEAT
       items:
         - { material: BONE_MEAL, amount: 16, slot: 0 }
-        - { material: WOODEN_SWORD, amount: 1, slot: 1 }
+        - { material: WOODEN_SWORD, amount: 1, slot: 1, damage: 25, enchantments: { looting: 3, fire_aspect: 1 } }
     scout:
       enabled: true
       icon: FEATHER
@@ -66,6 +70,12 @@ kits:
         - { material: EXPERIENCE_BOTTLE, amount: 64, slot: 0 }
         - { material: EXPERIENCE_BOTTLE, amount: 64, slot: 1 }
         - { material: ANVIL, amount: 1, slot: 2 }
+        - { material: ENCHANTED_BOOK, amount: 1, slot: 3, enchantments: { sharpness: 1 } }
+        - { material: ENCHANTED_BOOK, amount: 1, slot: 4, enchantments: { sharpness: 2 } }
+        - { material: ENCHANTED_BOOK, amount: 1, slot: 5, enchantments: { protection: 1 } }
+        - { material: ENCHANTED_BOOK, amount: 1, slot: 6, enchantments: { protection: 2 } }
+        - { material: ENCHANTED_BOOK, amount: 1, slot: 7, enchantments: { thorns: 1 } }
+        - { material: ENCHANTED_BOOK, amount: 1, slot: 8, enchantments: { knockback: 2 } }
 # Shared map schema. Add future maps under locations.maps without changing Java code.
 locations:
   world: world

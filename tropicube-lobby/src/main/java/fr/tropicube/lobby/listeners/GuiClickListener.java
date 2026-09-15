@@ -68,6 +68,7 @@ public class GuiClickListener implements Listener {
             case SettingsGUI.Holder _ -> handleSettings(player, slot);
             case VipShopGUI.Holder shopHolder -> handleVipShop(player, slot, shopHolder);
             case CustomGameGUI.Holder customHolder -> handleCustomGame(player, slot, customHolder);
+            case FallenKingdomsCustomGameGUI.Holder fkHolder -> handleFallenKingdomsCustomGame(player,slot,fkHolder,e.getClick());
             case CustomGameTypeGUI.Holder customTypeHolder -> handleCustomGameType(player, slot, customTypeHolder);
             case SocialGUI.Holder socialHolder -> handleSocial(player, slot, socialHolder, e.getClick());
             case FriendRequestsGUI.Holder requestsHolder ->
@@ -110,6 +111,7 @@ public class GuiClickListener implements Listener {
             || holder instanceof SettingsGUI.Holder
             || holder instanceof VipShopGUI.Holder
             || holder instanceof CustomGameGUI.Holder
+            || holder instanceof FallenKingdomsCustomGameGUI.Holder
             || holder instanceof CustomGameTypeGUI.Holder
             || holder instanceof SocialGUI.Holder
             || holder instanceof FriendRequestsGUI.Holder
@@ -414,9 +416,21 @@ public class GuiClickListener implements Listener {
             return;
         }
 
+        if(templateId.equalsIgnoreCase("fallenkingdoms")){plugin.getGuiManager().openFallenKingdomsCustomGame(player,new FallenKingdomsCustomGameGUI.Holder(templateId,holder.isWhitelisted()));return;}
         player.closeInventory();
         player.sendMessage(LangHelper.component(player, "lobby.custom-game-creating"));
         plugin.getRedisManager().publishCommand("PROXY", "CREATE_HOST:" + player.getUniqueId() + ":" + templateId + ":" + holder.isWhitelisted());
+    }
+
+    private void handleFallenKingdomsCustomGame(Player player,int slot,FallenKingdomsCustomGameGUI.Holder holder,ClickType click){
+        if(slot==FallenKingdomsCustomGameGUI.CLOSE_SLOT){player.closeInventory();return;}
+        if(slot==FallenKingdomsCustomGameGUI.BACK_SLOT){plugin.getGuiManager().openCustomGameMenu(player,holder.whitelisted());return;}
+        if(slot==FallenKingdomsCustomGameGUI.CREATE_SLOT){
+            if(plugin.getGuiManager().hasCustomGameOrCreation(player.getUniqueId())){player.closeInventory();player.sendMessage(LangHelper.component(player,"lobby.host-already-exists"));return;}
+            player.closeInventory();player.sendMessage(LangHelper.component(player,"lobby.custom-game-creating"));
+            plugin.getRedisManager().publishCommand("PROXY","CREATE_HOST:"+player.getUniqueId()+":"+holder.templateId()+":"+holder.whitelisted()+":"+holder.encodedOptions());return;
+        }
+        holder.cycle(slot,click.isRightClick());plugin.getGuiManager().openFallenKingdomsCustomGame(player,holder);
     }
 
     private void handleCustomGameType(Player player, int slot, CustomGameTypeGUI.Holder holder) {

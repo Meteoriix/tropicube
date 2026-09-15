@@ -1,0 +1,31 @@
+version: 1
+scoreboards:
+  fallenkingdoms:
+    title-key: fk.sb-title
+    variants:
+      waiting:
+        lines:
+          - key: fk.sb-separator
+          - key: fk.sb-waiting
+          - key: fk.sb-map
+          - key: fk.sb-players
+          - key: fk.sb-separator
+      active:
+        lines:
+          - key: fk.sb-separator
+          - key: fk.sb-phase
+          - key: fk.sb-time
+          - key: fk.sb-team
+          - blank: true
+          - key: fk.sb-blue
+          - key: fk.sb-red
+          - key: fk.sb-green
+          - key: fk.sb-yellow
+          - key: fk.sb-orange
+          - key: fk.sb-separator
+      ending:
+        lines:
+          - key: fk.sb-separator
+          - key: fk.sb-ending
+          - key: fk.sb-map
+          - key: fk.sb-separator

@@ -11,6 +11,7 @@ public final class Heart {
         this.owner = owner; this.maximumHealth = maximumHealth; this.health = maximumHealth;
     }
     public KingdomId owner() { return owner; }
+    public double maximumHealth() { return maximumHealth; }
     public double health() { return health; }
     public HeartState state() { return state; }
     public void makeVulnerable() { if (state == HeartState.PROTECTED) state = HeartState.VULNERABLE; }

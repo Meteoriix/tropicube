@@ -250,6 +250,10 @@ Le fichier `dockerfiles/configs/TropicubeFallenKingdoms/config.yml` déclare la 
 
 `game.auto-start`, les quatre échéances de phase, la vie des cœurs, le délai de réapparition, les matériaux autorisés, la bordure finale, les paramètres de ruine et tous les objets de kits sont validés au chargement. Les kits se trouvent sous `kits.definitions`; `kits.default` doit référencer un kit activé.
 
+Une partie personnalisée passe par l'écran de réglages FK du Lobby. Velocity accepte uniquement `FK_AUTO_START`, `FK_COMBAT_PROFILE`, `FK_COUNTDOWN_SECONDS`, `FK_MAX_PLAYERS_PER_KINGDOM`, `FK_MAX_KINGDOMS`, `FK_PVP_AT_SECONDS`, `FK_ASSAULT_AT_SECONDS`, `FK_SUDDEN_DEATH_AT_SECONDS`, `FK_FORCE_END_AT_SECONDS`, `FK_HEART_HEALTH`, `FK_RESPAWN_DELAY_SECONDS`, `FK_ENABLED_KITS`, `FK_RUIN_WAVES`, `FK_RUIN_RADIUS` et `FK_RUIN_DESTRUCTION_RATIO`. Le proxy refuse toute autre clé ou valeur contenant des caractères de commande. Le plugin revalide ensuite les bornes, l'ordre des phases, les kits et les protections au démarrage. Une instance hôte désactive le démarrage automatique par défaut ; son propriétaire peut utiliser `status`, `start` et `cancel`.
+
+`scoreboards.yml` et `tablists.yml` définissent les variantes `waiting`, `active` et `ending`. Ils rejoignent le bundle UI de Core et se rechargent avec les langues. La migration `V011__fallenkingdoms_preferences.sql` conserve le dernier kit et la dernière couleur préférée de chaque joueur.
+
 La même configuration est embarquée dans le module. Toute modification doit être effectuée dans les deux fichiers jusqu'à l'ajout de la synchronisation automatique des ressources FK.
 
 ## Langues

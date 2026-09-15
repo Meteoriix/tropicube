@@ -23,7 +23,7 @@ public final class RuinService {
     public RuinService(TropicubeFallenKingdoms plugin, TaskRegistry tasks, FallenKingdomsSettings settings) {
         this.plugin = plugin; this.tasks = tasks; this.settings = settings;
     }
-    public void ruin(World world, BaseDefinition base, long seed) {
+    public void ruin(World world, BaseDefinition base, long seed, Runnable completed) {
         var center = base.heart();
         int radius = (int) Math.ceil(settings.ruinRadius());
         List<Block> candidates = new ArrayList<>();
@@ -38,7 +38,10 @@ public final class RuinService {
         List<Block> selected = List.copyOf(candidates.subList(0, selectedCount));
         for (int wave = 0; wave < settings.ruinWaves(); wave++) {
             int currentWave = wave;
-            tasks.register(Bukkit.getScheduler().runTaskLater(plugin, () -> applyWave(world, selected, currentWave),
+            tasks.register(Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                applyWave(world, selected, currentWave);
+                if (currentWave == settings.ruinWaves() - 1) completed.run();
+            },
                     (long) wave * settings.ruinTicksBetweenWaves()));
         }
     }

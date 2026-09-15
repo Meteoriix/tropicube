@@ -1,6 +1,7 @@
 package fr.tropicube.fallenkingdoms.config;
 
 import fr.tropicube.fallenkingdoms.game.PhaseTimeline;
+import fr.tropicube.fallenkingdoms.game.CombatProfile;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.Material;
 import java.util.Set;
@@ -11,8 +12,10 @@ public record FallenKingdomsSettings(int countdownSeconds, int resultDisplaySeco
                                      int maxPlayersPerKingdom, int maxKingdoms, PhaseTimeline timeline,
                                      double heartHealth, int respawnDelaySeconds, double finalBorderSize,
                                      Set<Material> forbiddenBaseMaterials, Set<Material> commonPlacementMaterials,
-                                     boolean autoStart, int ruinWaves, int ruinTicksBetweenWaves,
-                                     double ruinRadius, double ruinDestructionRatio, boolean preserveContainers) {
+                                      boolean autoStart, int ruinWaves, int ruinTicksBetweenWaves,
+                                      double ruinRadius, double ruinDestructionRatio, boolean preserveContainers,
+                                      CombatProfile combatProfile, boolean tntBreachesEnabled,
+                                      boolean dropInventory, boolean disconnectCountsAsDeath) {
     public static FallenKingdomsSettings load(FileConfiguration config) {
         int min = config.getInt("game.min-players-per-kingdom");
         int max = config.getInt("game.max-players-per-kingdom");
@@ -32,11 +35,53 @@ public record FallenKingdomsSettings(int countdownSeconds, int resultDisplaySeco
         if (ruinWaves < 1 || ruinWaves > 10 || ruinTicks < 1 || ruinRadius <= 0 || ruinRadius > 32
                 || ruinRatio <= 0 || ruinRatio > 1)
             throw new IllegalArgumentException("ruins: vagues, délai, rayon ou proportion invalide");
-        return new FallenKingdomsSettings(countdown, display, min, max, kingdoms,
-                new PhaseTimeline(config.getInt("phases.pvp-at-seconds"), config.getInt("phases.assault-at-seconds"),
-                        config.getInt("phases.sudden-death-at-seconds"), config.getInt("phases.force-end-at-seconds")), heart, respawn, border,
-                forbidden, common, config.getBoolean("game.auto-start", true), ruinWaves, ruinTicks,
-                ruinRadius, ruinRatio, config.getBoolean("ruins.preserve-containers", true));
+        if(config.getBoolean("combat.friendly-fire",true)||config.getBoolean("hearts.tnt-direct-damage",true)
+                ||!config.getBoolean("ruins.preserve-containers",false)||!config.getBoolean("protections.block-portal-bypass",false)
+                ||!config.getBoolean("protections.block-teleport-bypass",false)||!config.getBoolean("protections.block-piston-crossing",false)
+                ||!config.getBoolean("protections.block-fluid-crossing",false))
+            throw new IllegalArgumentException("Les protections techniques obligatoires ne peuvent pas être désactivées");
+        CombatProfile profile;
+        try { profile = CombatProfile.valueOf(environment("FK_COMBAT_PROFILE", config.getString("combat.default-profile", "PAPER_26_2"))); }
+        catch (IllegalArgumentException failure) { throw new IllegalArgumentException("combat.default-profile: profil inconnu", failure); }
+        if (!config.getStringList("combat.allowed-custom-profiles").contains(profile.name()))
+            throw new IllegalArgumentException("combat.default-profile: profil non autorisé " + profile);
+        int effectiveMax=integerOverride("FK_MAX_PLAYERS_PER_KINGDOM",max),effectiveKingdoms=integerOverride("FK_MAX_KINGDOMS",kingdoms);
+        if(effectiveMax<min||effectiveMax>6||effectiveKingdoms<2||effectiveKingdoms>5)throw new IllegalArgumentException("Surcharges de capacité FK invalides");
+        int effectiveCountdown=integerOverride("FK_COUNTDOWN_SECONDS", countdown);
+        int effectiveRespawn=integerOverride("FK_RESPAWN_DELAY_SECONDS", respawn);
+        double effectiveHeart=doubleOverride("FK_HEART_HEALTH", heart);
+        int effectiveRuinWaves=integerOverride("FK_RUIN_WAVES",ruinWaves);
+        double effectiveRuinRadius=doubleOverride("FK_RUIN_RADIUS",ruinRadius);
+        double effectiveRuinRatio=doubleOverride("FK_RUIN_DESTRUCTION_RATIO",ruinRatio);
+        if(effectiveCountdown<=0||effectiveRespawn<0||effectiveHeart<=0||effectiveRuinWaves<1||effectiveRuinWaves>10
+                ||effectiveRuinRadius<=0||effectiveRuinRadius>32||effectiveRuinRatio<=0||effectiveRuinRatio>1)
+            throw new IllegalArgumentException("Surcharges de délais, cœur ou ruine FK invalides");
+        boolean host=Boolean.parseBoolean(System.getenv().getOrDefault("IS_HOST","false"));
+        return new FallenKingdomsSettings(effectiveCountdown, display, min,
+                effectiveMax, effectiveKingdoms,
+                new PhaseTimeline(integerOverride("FK_PVP_AT_SECONDS",config.getInt("phases.pvp-at-seconds")),integerOverride("FK_ASSAULT_AT_SECONDS",config.getInt("phases.assault-at-seconds")),
+                        integerOverride("FK_SUDDEN_DEATH_AT_SECONDS",config.getInt("phases.sudden-death-at-seconds")),integerOverride("FK_FORCE_END_AT_SECONDS",config.getInt("phases.force-end-at-seconds"))),
+                effectiveHeart, effectiveRespawn, border,
+                forbidden, common, booleanOverride("FK_AUTO_START",host?false:config.getBoolean("game.auto-start", true)), effectiveRuinWaves, ruinTicks,
+                effectiveRuinRadius, effectiveRuinRatio, config.getBoolean("ruins.preserve-containers", true), profile,
+                config.getBoolean("protections.tnt-breaches-enabled", true),
+                config.getBoolean("respawn.drop-inventory", true), config.getBoolean("respawn.disconnect-counts-as-death", true));
+    }
+    private static String environment(String name, String fallback) {
+        String value = System.getenv(name); return value == null || value.isBlank() ? fallback : value.trim().toUpperCase(java.util.Locale.ROOT);
+    }
+    private static int integerOverride(String name, int fallback) {
+        String value = System.getenv(name); if (value == null || value.isBlank()) return fallback;
+        try { return Integer.parseInt(value); } catch (NumberFormatException failure) { throw new IllegalArgumentException(name + ": entier attendu", failure); }
+    }
+    private static double doubleOverride(String name, double fallback) {
+        String value = System.getenv(name); if (value == null || value.isBlank()) return fallback;
+        try { return Double.parseDouble(value); } catch (NumberFormatException failure) { throw new IllegalArgumentException(name + ": nombre attendu", failure); }
+    }
+    private static boolean booleanOverride(String name, boolean fallback) {
+        String value=System.getenv(name);if(value==null||value.isBlank())return fallback;
+        if(!value.equalsIgnoreCase("true")&&!value.equalsIgnoreCase("false"))throw new IllegalArgumentException(name+": booléen attendu");
+        return Boolean.parseBoolean(value);
     }
     private static Set<Material> materials(FileConfiguration config, String path) {
         try {

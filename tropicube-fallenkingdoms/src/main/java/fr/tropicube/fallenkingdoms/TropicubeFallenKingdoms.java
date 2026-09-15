@@ -22,6 +22,13 @@ import fr.tropicube.fallenkingdoms.game.PlayerSession;
 import fr.tropicube.fallenkingdoms.game.EndCause;
 import java.util.Collection;
 import java.util.stream.Collectors;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.util.concurrent.TimeUnit;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import java.io.File;
+import java.util.function.Consumer;
 
 /** Boots one ephemeral Fallen Kingdoms Paper instance. */
 public final class TropicubeFallenKingdoms extends JavaPlugin {
@@ -31,6 +38,7 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
     private GameListener gameListener;
     private ProtectionListener protectionListener;
     private LobbyMenuListener lobbyMenuListener;
+    private Consumer<String> languageChangeHandler;
     @Override public void onEnable() {
         saveDefaultConfig();
         TropicubeCore core = (TropicubeCore) getServer().getPluginManager().getPlugin("TropicubeCore");
@@ -38,18 +46,22 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
         core.initializeBackend(this, () -> { }, this::finishStartup);
     }
     private void finishStartup() {
-        try { loadSession(); updateInstanceStatus(ServerInstance.Status.GAME_WAITING); }
+        try {
+            if(Files.exists(sessionMarker()))throw new IllegalArgumentException("ce volume contient une ancienne session; recréez l'instance");
+            loadSession(); subscribeLanguageChanges(); updateInstanceStatus(ServerInstance.Status.GAME_WAITING);
+        }
         catch (IllegalArgumentException exception) { getLogger().severe("Configuration Fallen Kingdoms invalide: " + exception.getMessage()); getServer().getPluginManager().disablePlugin(this); }
     }
-    private void loadSession() {
-        FallenKingdomsSettings loadedSettings = FallenKingdomsSettings.load(getConfig());
-        MapCatalog maps = MapCatalog.load(getConfig());
+    private void loadSession() { loadSession(getConfig()); }
+    private void loadSession(FileConfiguration config) {
+        FallenKingdomsSettings loadedSettings = FallenKingdomsSettings.load(config);
+        MapCatalog maps = MapCatalog.load(config);
         String selectedMap = System.getenv("MAP_ID");
-        if (selectedMap == null || selectedMap.isBlank()) selectedMap = getConfig().getString("game.default-map", "");
-        GameSession loadedSession = new GameSession(this, stateMachine, maps.select(selectedMap), loadedSettings);
+        if (selectedMap == null || selectedMap.isBlank()) selectedMap = config.getString("game.default-map", "");
+        GameSession loadedSession = new GameSession(this, stateMachine, maps, selectedMap, loadedSettings,config);
         if (gameListener != null) HandlerList.unregisterAll(gameListener);
         if (protectionListener != null) HandlerList.unregisterAll(protectionListener);
-        if (lobbyMenuListener != null) HandlerList.unregisterAll(lobbyMenuListener);
+        if (lobbyMenuListener != null) { HandlerList.unregisterAll(lobbyMenuListener); lobbyMenuListener.unregister(); }
         if (session != null) session.shutdown();
         settings = loadedSettings;
         session = loadedSession;
@@ -59,26 +71,47 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
         getServer().getPluginManager().registerEvents(gameListener, this);
         getServer().getPluginManager().registerEvents(protectionListener, this);
         getServer().getPluginManager().registerEvents(lobbyMenuListener, this);
+        lobbyMenuListener.refreshViewers();
+    }
+    private void subscribeLanguageChanges(){
+        TropicubeCore core=(TropicubeCore)getServer().getPluginManager().getPlugin("TropicubeCore");
+        if(core!=null){languageChangeHandler=message->{
+            if(!message.startsWith("LANG_CHANGED:"))return;
+            if(!isEnabled())return;
+            String[] parts=message.split(":",3);if(parts.length<2)return;
+            try{java.util.UUID playerId=java.util.UUID.fromString(parts[1]);getServer().getScheduler().runTask(this,()->{var player=getServer().getPlayer(playerId);if(player!=null){session.refreshHud(player);lobbyMenuListener.refresh(player);}});}catch(IllegalArgumentException ignored){}
+        };core.getRedisManager().subscribeToPlayerEvents(languageChangeHandler);}
     }
     @Override public void onDisable() {
+        if (lobbyMenuListener != null) lobbyMenuListener.unregister();
+        if (session != null) session.abortForShutdown();
         if (session != null) session.shutdown();
-        if (stateMachine.state().active()) stateMachine.transitionTo(GameState.ENDING);
-        if (getServer().getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core) core.backendStopped();
+        if (getServer().getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core) {
+            if(languageChangeHandler!=null)core.getRedisManager().unsubscribeFromPlayerEvents(languageChangeHandler);
+            core.backendStopped();
+        }
     }
     @Override public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("fallenkingdoms.admin")) { message(sender, "fk.permission-denied"); return true; }
         String action = args.length == 0 ? "status" : args[0].toLowerCase(java.util.Locale.ROOT);
+        boolean host=isHost(sender);
+        if (!sender.hasPermission("fallenkingdoms.admin") && !(host&&java.util.Set.of("status","start","cancel").contains(action))) { message(sender, "fk.permission-denied"); return true; }
         if (action.equals("status")) status(sender);
         else if (action.equals("start")) message(sender, session.startCountdown() ? "fk.countdown-started" : "fk.transition-refused");
         else if (action.equals("cancel")) message(sender, session.cancelCountdown() ? "fk.countdown-cancelled" : "fk.transition-refused");
         else if (action.equals("stop")) { session.abort(); message(sender, "fk.stopped"); }
         else if (action.equals("reload") && stateMachine.state() == GameState.WAITING) {
-            reloadConfig();
-            try { loadSession(); message(sender, "fk.reloaded"); }
+            try {
+                FileConfiguration candidate=YamlConfiguration.loadConfiguration(new File(getDataFolder(),"config.yml"));
+                loadSession(candidate);reloadConfig();message(sender, "fk.reloaded");
+            }
             catch (IllegalArgumentException exception) { message(sender, "fk.reload-failed", PlaceholderValues.of("error", exception.getMessage())); }
         }
         else message(sender, "fk.usage");
         return true;
+    }
+    private boolean isHost(CommandSender sender){
+        if(!(sender instanceof org.bukkit.entity.Player player))return false;
+        String host=System.getenv("HOST_UUID");return host!=null&&host.equalsIgnoreCase(player.getUniqueId().toString());
     }
     public FallenKingdomsSettings settings() { return settings; }
     public GameStateMachine stateMachine() { return stateMachine; }
@@ -90,19 +123,23 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
         Runnable transfer = () -> {
             if (instanceId != null && !instanceId.isBlank()) core.getRedisManager().publishCommand("PROXY", "FINISH_GAME:" + instanceId);
         };
-        if (result.cause() == EndCause.ADMIN_ABORT) { getServer().getScheduler().runTaskAsynchronously(this, transfer); return; }
+        if (result.cause() == EndCause.ADMIN_ABORT) { core.getDatabaseManager().runAsync(transfer); return; }
         var networkResult = new NetworkGameResult(result.sessionId(), "fallenkingdoms", result.cause().name(),
                 result.winners().stream().map(Enum::name).collect(Collectors.toUnmodifiableSet()), result.endedAt(),
                 players.stream().map(player -> new NetworkGameResult.PlayerResult(player.playerId(),
                         result.winners().contains(player.kingdom()), result.cause() == EndCause.DRAW,
                         player.eliminations(), player.deaths(), player.objectives())).toList());
-        new GameStatisticsService(core.getDatabaseManager(), core.getRedisManager()).persist(networkResult)
-                .whenComplete((inserted, failure) -> {
-                    if (failure != null) getLogger().log(java.util.logging.Level.SEVERE,
-                            "Échec de persistance du résultat " + result.sessionId(), failure);
-                    transfer.run();
-                });
+        persistResult(new GameStatisticsService(core.getDatabaseManager(), core.getRedisManager()),networkResult,transfer,1);
     }
+    private void persistResult(GameStatisticsService service,NetworkGameResult result,Runnable transfer,int attempt){
+        service.persist(result).orTimeout(5,TimeUnit.SECONDS).whenComplete((inserted,failure)->{
+            if(failure==null){transfer.run();return;}
+            getLogger().log(java.util.logging.Level.SEVERE,"Échec de persistance du résultat "+result.matchId()+" (tentative "+attempt+")",failure);
+            if(attempt>=3){transfer.run();return;}
+            getServer().getScheduler().runTaskLaterAsynchronously(this,()->persistResult(service,result,transfer,attempt+1),20L*attempt);
+        });
+    }
+    public Path sessionMarker(){return getDataFolder().toPath().resolve("active-session.lock");}
     public void updateInstanceStatus(ServerInstance.Status status) {
         TropicubeCore core = (TropicubeCore) getServer().getPluginManager().getPlugin("TropicubeCore");
         String instanceId = System.getenv("INSTANCE_ID");
@@ -129,7 +166,8 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
                         .putComponent("map", core.getLanguageManager().getComponent(
                                 sender instanceof org.bukkit.entity.Player player ? player.getUniqueId() : null,
                                 session.mapDisplayNameKey()))
-                        .put("players", session.participantCount()).build()));
+                        .put("players", session.participantCount())
+                        .put("session",session.sessionId()).put("time",session.remainingTime(session.elapsedSeconds())).build()));
     }
     private static String stateDisplayKey(GameState state) {
         return switch (state) {

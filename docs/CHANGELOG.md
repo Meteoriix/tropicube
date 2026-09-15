@@ -6,6 +6,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-15
 
+- Termine le contrat Fallen Kingdoms V1 : vote de carte, préférences persistantes, kits historiques complets, combat 1.8 limité, dégâts indirects alliés neutralisés, événements Paper, décompte de réapparition, ruines neutralisées, HUD manifeste, fin atomique et reprise d'instance protégée.
+- Ajoute l'écran Lobby des parties Fallen Kingdoms personnalisées et transmet à Velocity une liste blanche de capacités, chronologie, cœurs, réapparition, combat, kits et ruines.
 - Supprime le menu intermédiaire de choix du mode : le clic gauche sur un jeu lance de nouveau directement sa partie Quick Play, tandis que les raccourcis Classé et Parties publiques restent disponibles.
 - Nettoie les sauvegardes, données joueur, fichiers de session, données temporaires de mod et régions vides générés lors de l'édition du monde Fallen Kingdoms, puis renforce leur exclusion de Git.
 - Démarre automatiquement une instance Fallen Kingdoms Quick Play avec le proxy et maintient ce plancher comme pour SheepWars.

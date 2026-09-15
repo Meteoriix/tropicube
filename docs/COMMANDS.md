@@ -123,7 +123,7 @@ La configuration de partie, la sélection de carte, d'équipe, de classe et de k
 
 ## Tropicube Fallen Kingdoms
 
-`/fkadmin <status|start|cancel|stop|reload>` utilise la permission `fallenkingdoms.admin`. `status` affiche état, carte et effectif; `start` valide l'effectif et l'agencement; `reload` applique atomiquement une configuration valide uniquement en attente; `stop` produit un `ADMIN_ABORT` sans statistiques compétitives. Les joueurs choisissent royaume et kit avec les objets du lobby d'attente.
+`/fkadmin <status|start|cancel|stop|reload>` utilise la permission `fallenkingdoms.admin`. `status` affiche identifiant de session, état, carte, effectif et prochaine échéance; `start` valide l'effectif et l'agencement; `reload` applique atomiquement une configuration valide uniquement en attente; `stop` produit un `ADMIN_ABORT` sans statistiques compétitives. Dans sa partie personnalisée, l'hôte peut aussi exécuter `status`, `start` et `cancel` sans obtenir la permission administrative. Les joueurs choisissent royaume, kit et carte avec les objets du lobby d'attente.
 
 ## TropicubeVelocity — proxy
 
