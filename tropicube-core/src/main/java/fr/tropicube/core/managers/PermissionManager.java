@@ -167,13 +167,18 @@ public class PermissionManager {
     }
 
     public Grade getGradeInfo(UUID uuid) {
-        return gradeRegistry.getOrDefault(getGrade(uuid), gradeRegistry.get("JOUEUR"));
+        return resolveGrade(gradeRegistry, getGrade(uuid));
     }
 
     /** Returns the configured grade prefix only, without a username and without performing SQL. */
     public String getCachedGradeDisplay(UUID uuid) {
-        Grade grade = gradeRegistry.getOrDefault(playerGrades.get(uuid), gradeRegistry.get("JOUEUR"));
+        Grade grade = resolveGrade(gradeRegistry, playerGrades.get(uuid));
         return formatGradeDisplay(grade);
+    }
+
+    static Grade resolveGrade(Map<String, Grade> registry, String gradeName) {
+        Grade fallback = registry.get("JOUEUR");
+        return gradeName == null ? fallback : registry.getOrDefault(gradeName, fallback);
     }
 
     static String formatGradeDisplay(Grade grade) {

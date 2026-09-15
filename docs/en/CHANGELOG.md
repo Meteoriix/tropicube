@@ -6,6 +6,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-15
 
+- Fixed the Fallen Kingdoms selector opening on the first connection tick while the player's grade is still loading asynchronously.
 - Completed the Fallen Kingdoms V1 contract with map voting, persistent preferences, complete historical kits, limited 1.8 combat, friendly indirect-damage protection, Paper events, respawn countdowns, neutral ruins, manifest-driven HUD, atomic ending, and stale-instance protection.
 - Added the Lobby setup screen for custom Fallen Kingdoms games and an allowlisted Velocity transport for capacity, timeline, hearts, respawn, combat, kit, and ruin settings.
 - Removed the intermediate mode menu: left-clicking a game once again starts its Quick Play flow directly, while the Ranked and Public Matches shortcuts remain available.
