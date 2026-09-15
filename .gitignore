@@ -31,7 +31,8 @@ dockerfiles/plugins/**/*.jar
 # État volatil et données personnelles des mondes modèles
 dockerfiles/worlds/**/players/
 dockerfiles/worlds/**/session.lock
-dockerfiles/worlds/**/level.dat_old
+dockerfiles/worlds/**/level.dat_old*
+dockerfiles/worlds/**/hole_filler_mod_*_data.dat
 
 # Local operations state, exports and Python caches
 .runtime/

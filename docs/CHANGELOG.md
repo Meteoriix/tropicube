@@ -7,6 +7,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 ### 2026-09-15
 
 - Supprime le menu intermédiaire de choix du mode : le clic gauche sur un jeu lance de nouveau directement sa partie Quick Play, tandis que les raccourcis Classé et Parties publiques restent disponibles.
+- Nettoie les sauvegardes, données joueur, fichiers de session, données temporaires de mod et régions vides générés lors de l'édition du monde Fallen Kingdoms, puis renforce leur exclusion de Git.
 
 ### 2026-09-14
 

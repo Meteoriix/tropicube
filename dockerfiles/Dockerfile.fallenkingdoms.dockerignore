@@ -6,3 +6,4 @@
 dockerfiles/worlds/fallenkingdoms/players/
 dockerfiles/worlds/fallenkingdoms/session.lock
 dockerfiles/worlds/fallenkingdoms/level.dat_old*
+dockerfiles/worlds/fallenkingdoms/**/hole_filler_mod_*_data.dat
