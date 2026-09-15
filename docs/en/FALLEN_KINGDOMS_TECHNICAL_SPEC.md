@@ -149,7 +149,7 @@ Deployment copies must remain synchronized with embedded resources. Player messa
 
 ## Target commands and permissions
 
-Normal gameplay uses menus and items. The planned Paper administrative command is `/fkadmin status|start|cancel|stop|reload`, protected by `fallenkingdoms.admin`; reload is allowed only in `WAITING`. The future proxy `/stats [player]` is part of the shared statistics delivery, not of the currently installed command catalog. Every command and permission must be documented when implemented.
+Normal gameplay uses menus and items. The waiting hotbar follows the SheepWars flow: kingdom, kit, and map in slots 0 through 2, host start or cancellation in slot 4, Profile in slot 7, and return to the lobby in slot 8. Items show the current choice and exact click. Inventories share the network frame, keep back on the left and close on the right, distinguish the selected entry, and show kingdom preferences, kit descriptions, and vote totals. The Paper administrative command is `/fkadmin status|start|cancel|stop|reload`, protected by `fallenkingdoms.admin`; reload is allowed only in `WAITING`. The proxy `/stats [player]` belongs to shared statistics delivery. Every command and permission must be documented when implemented.
 
 ## Protection matrix
 

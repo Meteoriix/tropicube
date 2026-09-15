@@ -29,6 +29,10 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.util.function.Consumer;
+import fr.tropicube.core.ui.MenuTemplateRegistry;
+import fr.tropicube.core.ui.UiReloadParticipant;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.ServicePriority;
 
 /** Boots one ephemeral Fallen Kingdoms Paper instance. */
 public final class TropicubeFallenKingdoms extends JavaPlugin {
@@ -38,6 +42,7 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
     private GameListener gameListener;
     private ProtectionListener protectionListener;
     private LobbyMenuListener lobbyMenuListener;
+    private MenuTemplateRegistry menuTemplates;
     private Consumer<String> languageChangeHandler;
     @Override public void onEnable() {
         saveDefaultConfig();
@@ -48,6 +53,9 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
     private void finishStartup() {
         try {
             if(Files.exists(sessionMarker()))throw new IllegalArgumentException("ce volume contient une ancienne session; recréez l'instance");
+            menuTemplates = new MenuTemplateRegistry(this);
+            getServer().getServicesManager().register(UiReloadParticipant.class, menuTemplates, this,
+                    ServicePriority.Normal);
             loadSession(); subscribeLanguageChanges(); updateInstanceStatus(ServerInstance.Status.GAME_WAITING);
         }
         catch (IllegalArgumentException exception) { getLogger().severe("Configuration Fallen Kingdoms invalide: " + exception.getMessage()); getServer().getPluginManager().disablePlugin(this); }
@@ -84,6 +92,7 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
     }
     @Override public void onDisable() {
         if (lobbyMenuListener != null) lobbyMenuListener.unregister();
+        if (menuTemplates != null) getServer().getServicesManager().unregister(UiReloadParticipant.class, menuTemplates);
         if (session != null) session.abortForShutdown();
         if (session != null) session.shutdown();
         if (getServer().getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core) {
@@ -110,8 +119,18 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
         return true;
     }
     private boolean isHost(CommandSender sender){
-        if(!(sender instanceof org.bukkit.entity.Player player))return false;
+        if(!(sender instanceof Player player))return false;
+        return isHost(player);
+    }
+    public boolean isHost(Player player){
         String host=System.getenv("HOST_UUID");return host!=null&&host.equalsIgnoreCase(player.getUniqueId().toString());
+    }
+    public MenuTemplateRegistry menuTemplates() { return menuTemplates; }
+    public void refreshWaitingRoom(Player player) {
+        if (lobbyMenuListener != null && player.isOnline()) lobbyMenuListener.refresh(player);
+    }
+    public void refreshWaitingRoomViewers() {
+        if (lobbyMenuListener != null) lobbyMenuListener.refreshViewers();
     }
     public FallenKingdomsSettings settings() { return settings; }
     public GameStateMachine stateMachine() { return stateMachine; }

@@ -110,6 +110,7 @@ public final class RuntimeUiBundle {
         result.put("sheepwars/menus.yml", plugins.resolve("TropicubeSheepwars/menus.yml"));
         result.put("sheepwars/scoreboards.yml", plugins.resolve("TropicubeSheepwars/scoreboards.yml"));
         result.put("sheepwars/tablists.yml", plugins.resolve("TropicubeSheepwars/tablists.yml"));
+        result.put("fallenkingdoms/menus.yml", plugins.resolve("TropicubeFallenKingdoms/menus.yml"));
         result.put("fallenkingdoms/scoreboards.yml", plugins.resolve("TropicubeFallenKingdoms/scoreboards.yml"));
         result.put("fallenkingdoms/tablists.yml", plugins.resolve("TropicubeFallenKingdoms/tablists.yml"));
         return result;

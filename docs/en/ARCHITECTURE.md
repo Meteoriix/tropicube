@@ -20,7 +20,7 @@ The local editor keeps Maven resources as the source of truth and Docker mirrors
 
 Game modules may depend on Core and Docker API, but they must never depend on another game's business classes.
 
-Fallen Kingdoms sessions consume an immutable `MapDefinition`; Cactus is only the first YAML entry and `MAP_ID` selects any enabled map. Core writes immutable results atomically to generic game result and aggregate tables, invalidates the statistics cache after commit, and then publishes `PROXY:FINISH_GAME:<instance>` for Velocity cleanup.
+Fallen Kingdoms sessions consume an immutable `MapDefinition`; Cactus is only the first YAML entry and `MAP_ID` selects any enabled map. Its waiting room follows the SheepWars navigation while retaining a module-owned `menus.yml`, kingdom preferences, kits, and map voting. Core writes immutable results atomically to generic game result and aggregate tables, invalidates the statistics cache after commit, and then publishes `PROXY:FINISH_GAME:<instance>` for Velocity cleanup.
 
 The Lobby encodes allowed FK settings in `PROXY:CREATE_HOST:<uuid>:<template>:<private>:<options>`. Velocity validates the template type, names, and value format before injecting them into the container; Paper then performs gameplay validation. Public phase, heart damage/destruction, respawn, elimination, ruin, and ending events carry the immutable session ID. An `active-session.lock` marker prevents reuse of a volume after its world was locked by a match.
 

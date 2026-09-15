@@ -127,7 +127,7 @@ class YamlResourcesTest {
             while (matcher.find()) placeholders.add(matcher.group(1));
         }
 
-        assertEquals(158, placeholders.size(),
+        assertEquals(159, placeholders.size(),
                 "Le catalogue canonique doit évoluer explicitement avec les descriptions de l’éditeur");
         assertTrue(Set.of(
                 "friend_accepted",
@@ -146,7 +146,8 @@ class YamlResourcesTest {
         Map<String, Object> translations = leafValues(Path.of("src/main/resources/languages/fr.yml"));
         for (Path manifest : List.of(Path.of("src/main/resources/menus.yml"),
                 Path.of("../tropicube-lobby/src/main/resources/menus.yml"),
-                Path.of("../tropicube-sheepwars/src/main/resources/menus.yml"))) {
+                Path.of("../tropicube-sheepwars/src/main/resources/menus.yml"),
+                Path.of("../tropicube-fallenkingdoms/src/main/resources/menus.yml"))) {
             YamlConfiguration yaml = YamlConfiguration.loadConfiguration(manifest.toFile());
             ConfigurationSection menus = yaml.getConfigurationSection("menus");
             assertNotNull(menus);
@@ -167,7 +168,8 @@ class YamlResourcesTest {
             }
         }
         for (Path manifest : List.of(Path.of("../tropicube-lobby/src/main/resources/scoreboards.yml"),
-                Path.of("../tropicube-sheepwars/src/main/resources/scoreboards.yml"))) {
+                Path.of("../tropicube-sheepwars/src/main/resources/scoreboards.yml"),
+                Path.of("../tropicube-fallenkingdoms/src/main/resources/scoreboards.yml"))) {
             YamlConfiguration yaml = YamlConfiguration.loadConfiguration(manifest.toFile());
             ConfigurationSection scoreboards = yaml.getConfigurationSection("scoreboards");
             assertNotNull(scoreboards);
@@ -183,7 +185,8 @@ class YamlResourcesTest {
             }
         }
         for (Path manifest : List.of(Path.of("../tropicube-lobby/src/main/resources/tablists.yml"),
-                Path.of("../tropicube-sheepwars/src/main/resources/tablists.yml"))) {
+                Path.of("../tropicube-sheepwars/src/main/resources/tablists.yml"),
+                Path.of("../tropicube-fallenkingdoms/src/main/resources/tablists.yml"))) {
             YamlConfiguration yaml = YamlConfiguration.loadConfiguration(manifest.toFile());
             ConfigurationSection tablists = yaml.getConfigurationSection("tablists");
             assertNotNull(tablists);

@@ -105,6 +105,7 @@ public final class GameSession {
             if (countdownRemaining-- <= 0) start();
         }, 0L, 20L));
         plugin.updateInstanceStatus(ServerInstance.Status.GAME_STARTING);
+        plugin.refreshWaitingRoomViewers();
         return true;
     }
 
@@ -112,7 +113,10 @@ public final class GameSession {
         if (state.state() != GameState.COUNTDOWN) return false;
         if (countdownTask != null) countdownTask.cancel();
         boolean changed = transition(GameState.WAITING);
-        if (changed) plugin.updateInstanceStatus(ServerInstance.Status.GAME_WAITING);
+        if (changed) {
+            plugin.updateInstanceStatus(ServerInstance.Status.GAME_WAITING);
+            plugin.refreshWaitingRoomViewers();
+        }
         return changed;
     }
 
@@ -329,6 +333,7 @@ public final class GameSession {
                 if (failure != null || loaded == null || (state.state() != GameState.WAITING && state.state() != GameState.COUNTDOWN)) return;
                 if (loaded.kitId() != null && kits.definitions().containsKey(loaded.kitId())) kitPreferences.put(player.getUniqueId(), loaded.kitId());
                 if (loaded.kingdom() != null && map.bases().containsKey(loaded.kingdom())) kingdomPreferences.put(player.getUniqueId(), loaded.kingdom());
+                plugin.refreshWaitingRoom(player);
             }));
             return;
         }
@@ -502,6 +507,19 @@ public final class GameSession {
         mapVote.vote(playerId, candidate.id()); return true;
     }
     public long mapVotes(String mapId) { return mapVote.count(mapId); }
+    public String mapVoteOf(UUID playerId) { return mapVote.voteOf(playerId); }
+    public String waitingMapDisplayNameKey(UUID playerId) {
+        String vote = mapVote.voteOf(playerId);
+        if (vote == null) return map.displayNameKey();
+        return maps.maps().stream().filter(candidate -> candidate.id().equals(vote))
+                .map(MapDefinition::displayNameKey).findFirst().orElse(map.displayNameKey());
+    }
+    public String preferredKit(UUID playerId) { return kitPreferences.getOrDefault(playerId, kits.defaultKit()); }
+    public KingdomId preferredKingdom(UUID playerId) { return kingdomPreferences.get(playerId); }
+    public long kingdomPreferences(KingdomId kingdom) {
+        return kingdomPreferences.values().stream().filter(kingdom::equals).count();
+    }
+    public int maxPlayersPerKingdom() { return settings.maxPlayersPerKingdom(); }
     public KingdomId kingdomOf(Player player) { PlayerSession runtime = players.get(player.getUniqueId()); return runtime == null ? null : runtime.kingdom(); }
     public boolean isParticipant(Player player) { return players.containsKey(player.getUniqueId()); }
     public void refreshHud(Player player){hud.update(player,elapsedSeconds());}

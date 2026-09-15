@@ -396,7 +396,7 @@ L'exemple est un schéma cible, pas une carte prête à jouer. `enabled: false` 
 | `/stats` | `tropicube.stats` | Affiche sur Velocity les agrégats globaux puis le détail par jeu. |
 | `/stats <joueur>` | `tropicube.stats.others` | Affiche les statistiques globales d'un autre joueur. |
 
-La sélection de carte, royaume et kit reste graphique. Une commande refusée ne modifie jamais partiellement la session. Les textes sont fournis en `fr`, `en`, `de` et `es` via Adventure/MiniMessage.
+La sélection de carte, royaume et kit reste graphique. La hotbar d'attente reprend le parcours SheepWars : royaume, kit et carte aux emplacements 0 à 2, lancement ou annulation pour l'hôte en 4, Profil en 7 et retour au lobby en 8. Les objets affichent le choix courant et le clic attendu. Les inventaires partagent le cadrage réseau, placent le retour à gauche et la fermeture à droite, distinguent le choix actif et présentent les demandes par royaume, la description des kits et le nombre de votes. Une commande refusée ne modifie jamais partiellement la session. Les textes sont fournis en `fr`, `en`, `de` et `es` via Adventure/MiniMessage.
 
 ## Protections par phase
 
