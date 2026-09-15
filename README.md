@@ -4,7 +4,7 @@
 
 Tropicube est une infrastructure Minecraft multi-serveurs pour **Minecraft 26.2**, accessible depuis Java Edition et Bedrock Edition grâce à Geyser/Floodgate. Elle associe un proxy Velocity, des serveurs Paper créés dynamiquement dans Docker, Redis pour l'état partagé et les événements, et MySQL pour les données persistantes.
 
-Le Profil donne accès aux missions, notifications, à la progression et au guide. Au Lobby, le vestiaire permet de prévisualiser et choisir des traînées et sons personnels ; la Boutique propose des acquisitions confirmées et persistantes. Le choix des modes de jeu est accessible au clic gauche, avec la hotbar habituelle. Voir les [parcours et contrats](docs/ARCHITECTURE.md) et le [catalogue configurable](docs/CONFIGURATION.md).
+Le Profil donne accès aux missions, notifications, à la progression et au guide. Au Lobby, le vestiaire permet de prévisualiser et choisir des traînées et sons personnels ; la Boutique propose des acquisitions confirmées et persistantes. Dans le sélecteur de jeux, le clic gauche lance directement Quick Play, le clic droit ouvre le Classé et Maj + clic gauche affiche les parties publiques. Voir les [parcours et contrats](docs/ARCHITECTURE.md) et le [catalogue configurable](docs/CONFIGURATION.md).
 
 ## Documentation
 

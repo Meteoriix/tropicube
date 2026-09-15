@@ -67,7 +67,7 @@ public class GuiManager {
     public void openRankedSelector(Player player, String type) {
         UUID playerId = player.getUniqueId();
         Inventory loading = plugin.getDiscoveryMenus().loading(player, () -> openRankedSelector(player, type),
-                () -> plugin.getDiscoveryMenus().openModes(player, type));
+                () -> openServerTypeSelector(player));
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 plugin.getLobbyServerManager().refreshPlayerMatchmaking(playerId);

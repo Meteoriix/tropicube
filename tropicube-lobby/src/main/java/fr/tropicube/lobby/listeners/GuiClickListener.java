@@ -28,7 +28,7 @@ import java.util.concurrent.CompletableFuture;
 public class GuiClickListener implements Listener {
 
     enum TypeSelectorAction {
-        CHOOSE_MODE,
+        QUICK_PLAY,
         RANKED,
         PUBLIC_INSTANCES,
         NONE
@@ -136,7 +136,11 @@ public class GuiClickListener implements Listener {
         if (type == null) return;
 
         switch (typeSelectorAction(click)) {
-            case CHOOSE_MODE -> plugin.getDiscoveryMenus().openModes(player, type);
+            case QUICK_PLAY -> {
+                player.closeInventory();
+                if ("sheepwars".equalsIgnoreCase(type)) player.performCommand("quickplay");
+                else plugin.getLobbyServerManager().requestStartGame(player, type);
+            }
             case RANKED -> plugin.getGuiManager().openRankedSelector(player, type);
             case PUBLIC_INSTANCES -> plugin.getGuiManager().openServerSelector(player, type, 0);
             case NONE -> {
@@ -154,14 +158,14 @@ public class GuiClickListener implements Listener {
         if (click == ClickType.SHIFT_LEFT || click == ClickType.MIDDLE) {
             return TypeSelectorAction.PUBLIC_INSTANCES;
         }
-        if (click.isLeftClick()) return TypeSelectorAction.CHOOSE_MODE;
+        if (click.isLeftClick()) return TypeSelectorAction.QUICK_PLAY;
         if (click.isRightClick()) return TypeSelectorAction.RANKED;
         return TypeSelectorAction.NONE;
     }
 
     private void handleRankedSelector(Player player, int slot, RankedSelectorGUI.Holder holder) {
         if (slot == RankedSelectorGUI.CLOSE_SLOT) { player.closeInventory(); return; }
-        if (slot == RankedSelectorGUI.BACK_SLOT) { plugin.getDiscoveryMenus().openModes(player, holder.type()); return; }
+        if (slot == RankedSelectorGUI.BACK_SLOT) { plugin.getGuiManager().openServerTypeSelector(player); return; }
         if (slot == RankedSelectorGUI.CANCEL_SLOT) {
             plugin.getLobbyServerManager().cancelMatchmaking(player);
             player.sendMessage(LangHelper.component(player, "lobby.ranked-cancelled"));
@@ -185,7 +189,7 @@ public class GuiClickListener implements Listener {
                 return;
             }
             case ServerSelectorGUI.SLOT_BACK -> {
-                plugin.getDiscoveryMenus().openModes(player, serverHolder.getType());
+                plugin.getGuiManager().openServerTypeSelector(player);
                 return;
             }
             case ServerSelectorGUI.SLOT_BEST -> {

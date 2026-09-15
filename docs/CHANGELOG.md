@@ -4,6 +4,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-09-15
+
+- Supprime le menu intermédiaire de choix du mode : le clic gauche sur un jeu lance de nouveau directement sa partie Quick Play, tandis que les raccourcis Classé et Parties publiques restent disponibles.
+
 ### 2026-09-14
 
 - Supprime l'enveloppe Redis `NetworkEvent` restée sans consommateur, les régions Minecraft strictement vides et les reliquats de mods ou d'anciens formats présents dans les mondes modèles ; retire aussi les descriptions obsolètes du module Fallen Kingdoms.

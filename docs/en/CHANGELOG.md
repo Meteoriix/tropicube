@@ -4,6 +4,10 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+### 2026-09-15
+
+- Removed the intermediate mode menu: left-clicking a game once again starts its Quick Play flow directly, while the Ranked and Public Matches shortcuts remain available.
+
 ### 2026-09-14
 
 - Removed the unconsumed `NetworkEvent` Redis envelope, strictly empty Minecraft regions, and leftover mod or legacy-format files from world templates; also removed stale descriptions of the Fallen Kingdoms module.

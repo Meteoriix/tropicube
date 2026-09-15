@@ -679,23 +679,6 @@ menus:
         name-key: cosmetics.close
         action: close
         required: true
-  game-modes:
-    title-key: cosmetics.modes-title
-    rows: 6
-    frame: network
-    buttons:
-      back:
-        slot: 45
-        material: ARROW
-        name-key: cosmetics.back
-        action: back
-        required: true
-      close:
-        slot: 53
-        material: BARRIER
-        name-key: cosmetics.close
-        action: close
-        required: true
   player-loading:
     title-key: cosmetics.loading
     rows: 6

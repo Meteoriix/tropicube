@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static fr.tropicube.lobby.listeners.GuiClickListener.TypeSelectorAction.NONE;
 import static fr.tropicube.lobby.listeners.GuiClickListener.TypeSelectorAction.PUBLIC_INSTANCES;
-import static fr.tropicube.lobby.listeners.GuiClickListener.TypeSelectorAction.CHOOSE_MODE;
+import static fr.tropicube.lobby.listeners.GuiClickListener.TypeSelectorAction.QUICK_PLAY;
 import static fr.tropicube.lobby.listeners.GuiClickListener.TypeSelectorAction.RANKED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -13,9 +13,9 @@ class GuiClickListenerTest {
 
     @Test
     void routesSupportedGameSelectorClicks() {
-        assertEquals(CHOOSE_MODE, GuiClickListener.typeSelectorAction(ClickType.LEFT));
-        assertEquals(CHOOSE_MODE, GuiClickListener.typeSelectorAction(ClickType.DOUBLE_CLICK));
-        assertEquals(CHOOSE_MODE, GuiClickListener.typeSelectorAction(ClickType.CREATIVE));
+        assertEquals(QUICK_PLAY, GuiClickListener.typeSelectorAction(ClickType.LEFT));
+        assertEquals(QUICK_PLAY, GuiClickListener.typeSelectorAction(ClickType.DOUBLE_CLICK));
+        assertEquals(QUICK_PLAY, GuiClickListener.typeSelectorAction(ClickType.CREATIVE));
         assertEquals(RANKED, GuiClickListener.typeSelectorAction(ClickType.RIGHT));
         assertEquals(RANKED, GuiClickListener.typeSelectorAction(ClickType.SHIFT_RIGHT));
         assertEquals(PUBLIC_INSTANCES, GuiClickListener.typeSelectorAction(ClickType.SHIFT_LEFT));

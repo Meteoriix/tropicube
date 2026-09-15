@@ -19,7 +19,7 @@ public final class GameDiscoveryMenus implements Listener, AutoCloseable {
     private final TropicubeLobby plugin;
     public GameDiscoveryMenus(TropicubeLobby plugin) {
         this.plugin = plugin;
-        for (String id : List.of("game-modes", "player-guide", "player-progression", "player-loading")) {
+        for (String id : List.of("player-guide", "player-progression", "player-loading")) {
             if (plugin.getMenuTemplates().menu(id).rows() != 6)
                 throw new IllegalArgumentException("menus." + id + ".rows: expected 6 for discovery navigation");
         }
@@ -89,18 +89,6 @@ public final class GameDiscoveryMenus implements Listener, AutoCloseable {
                 button(player, screen, 22, Material.COMPASS, "cosmetics.open-"+selected, actions[index]);
             }
         }
-    }
-    public void openModes(Player player, String type) {
-        Screen screen = screen(player, "game-modes", () -> openModes(player, type), () -> plugin.getGuiManager().openServerTypeSelector(player));
-        if (plugin.getLobbyServerManager().getTemplateIdForType(type).isPresent()) button(player, screen, 20, Material.COMPASS, "cosmetics.quick", () -> {
-            player.closeInventory();
-            if ("sheepwars".equalsIgnoreCase(type)) player.performCommand("quickplay");
-            else plugin.getLobbyServerManager().requestStartGame(player, type);
-        });
-        else screen.inventory.setItem(20, NetworkMenuStyle.locked(LangHelper.component(player, "cosmetics.quick"), LangHelper.component(player, "cosmetics.mode-unavailable")));
-        if (!plugin.getLobbyServerManager().getRankedTemplatesForType(type).isEmpty()) button(player, screen, 22, Material.IRON_SWORD, "cosmetics.ranked", () -> plugin.getGuiManager().openRankedSelector(player, type));
-        else screen.inventory.setItem(22, NetworkMenuStyle.locked(LangHelper.component(player, "cosmetics.ranked"), LangHelper.component(player, "cosmetics.mode-unavailable")));
-        button(player, screen, 24, Material.SPYGLASS, "cosmetics.browse", () -> plugin.getGuiManager().openServerSelector(player, type, 0));
     }
     public void refreshLanguage(Player player) {
         if (player.getOpenInventory().getTopInventory().getHolder() instanceof Screen screen) screen.refresh.run();
