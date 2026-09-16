@@ -390,7 +390,7 @@ sw:
   rank-ascendant: "Ascendant"
   rank-immortal: "Immortel"
   rank-radiant: "Radiant"
-  sb-kit: Kit • {player_kit}
+  sb-kit: "<light_purple>✦ Kit</light_purple><dark_gray> • </dark_gray><white>{player_kit}</white>"
 
 season:
   reward-title-iron: "Classé Fer"

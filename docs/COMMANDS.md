@@ -117,8 +117,6 @@ Après la saisie de `/`, le client reçoit toutes les commandes et tous les alia
 | `/sheepwars mastery [a|b]` | aucune | Ouvre les deux branches horizontales ou sélectionne directement la branche exclusive du kit courant |
 | `/sheepwars summary <public|team|private>` | aucune | Règle le détail public des résumés |
 
-`sheepwars.mapvote.weight.2` porte le poids d'un vote de carte à deux.
-
 La configuration de partie, la sélection de carte, d'équipe, de classe et de kit passent par les inventaires graphiques. La hotbar d'attente propose aussi le centre joueur global au slot 7 ; cet objet disparaît au lancement pour ne jamais occuper un emplacement de combat. Les commandes Core restent disponibles puisque `TropicubeCore` est chargé sur l'instance.
 
 ## Tropicube Fallen Kingdoms

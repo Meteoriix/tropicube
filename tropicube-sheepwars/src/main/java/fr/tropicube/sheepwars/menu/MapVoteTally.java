@@ -11,9 +11,8 @@ import java.util.UUID;
 public final class MapVoteTally {
     private MapVoteTally() { }
 
-    public static Standing standing(List<GameMap> maps, Map<UUID, GameMap> votes,
-                                    Map<UUID, Integer> voteWeights) {
-        Map<GameMap, Integer> counts = counts(maps, votes, voteWeights);
+    public static Standing standing(List<GameMap> maps, Map<UUID, GameMap> votes) {
+        Map<GameMap, Integer> counts = counts(maps, votes);
         if (counts.isEmpty()) return new Standing(Status.EMPTY, null, 0);
         int maximum = counts.values().stream().mapToInt(Integer::intValue).max().orElse(0);
         List<GameMap> leaders = counts.entrySet().stream()
@@ -25,13 +24,12 @@ public final class MapVoteTally {
                 : new Standing(Status.TIE, null, maximum);
     }
 
-    public static Map<GameMap, Integer> counts(List<GameMap> maps, Map<UUID, GameMap> votes,
-                                                Map<UUID, Integer> voteWeights) {
+    public static Map<GameMap, Integer> counts(List<GameMap> maps, Map<UUID, GameMap> votes) {
         Map<GameMap, Integer> counts = new LinkedHashMap<>();
         maps.forEach(map -> counts.put(map, 0));
         votes.forEach((playerId, map) -> {
             if (counts.containsKey(map)) {
-                counts.computeIfPresent(map, (_, count) -> count + voteWeights.getOrDefault(playerId, 1));
+                counts.computeIfPresent(map, (_, count) -> count + 1);
             }
         });
         return counts;

@@ -1,9 +1,11 @@
 package fr.tropicube.docker.model;
 
 import java.util.Map;
+import java.util.Set;
 
 /** Pure cumulative policy used by Paper and Velocity compatibility adapters. */
 public final class AccessPolicy {
+    private static final Set<String> RETIRED_PERMISSIONS = Set.of("sheepwars.mapvote.weight.2");
     private static final Map<String, Integer> DEFAULT_VIP_PERMISSIONS = Map.ofEntries(
             Map.entry("tropicube.vip", 1),
             Map.entry("tropicube.kit.vip", 1),
@@ -13,7 +15,6 @@ public final class AccessPolicy {
             Map.entry("tropicube.lobby.jump.double", 2),
             Map.entry("tropicube.custom-game.create", 2),
             Map.entry("tropicube.queue.priority", 2),
-            Map.entry("sheepwars.mapvote.weight.2", 2),
             Map.entry("tropicube.premium", 3),
             Map.entry("tropicube.kit.premium", 3),
             Map.entry("tropicube.lobby.infinitejump", 3),
@@ -68,6 +69,8 @@ public final class AccessPolicy {
                                               int maximum, String axis) {
         var merged = new java.util.HashMap<>(defaults);
         if (overrides != null) overrides.forEach((permission, level) -> {
+            // Old deployed configurations may still contain retired capabilities.
+            if (RETIRED_PERMISSIONS.contains(permission)) return;
             if (!defaults.containsKey(permission)) throw new IllegalArgumentException(
                     "Permission " + axis + " configurable inconnue: " + permission);
             if (level == null || level < 1 || level > maximum) throw new IllegalArgumentException(

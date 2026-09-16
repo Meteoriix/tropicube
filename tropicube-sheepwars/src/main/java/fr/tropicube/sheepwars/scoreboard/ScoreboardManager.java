@@ -5,6 +5,7 @@ import fr.tropicube.sheepwars.game.GameState;
 import fr.tropicube.sheepwars.game.GameTeam;
 import fr.tropicube.sheepwars.player.GamePlayer;
 import fr.tropicube.sheepwars.player.PlayerClass;
+import fr.tropicube.sheepwars.player.PlayerKit;
 import fr.tropicube.sheepwars.menu.MapVoteTally;
 import fr.tropicube.sheepwars.util.LangHelper;
 import fr.tropicube.sheepwars.util.PlayerDisplayName;
@@ -79,6 +80,7 @@ public class ScoreboardManager implements UiReloadParticipant {
                 .put("red_players", red)
                 .put("blue_players", blue)
                 .putComponent("player_class", MessageStyle.component(localizedClassName(player, gp.getPlayerClass())))
+                .putComponent("player_kit", MessageStyle.component(localizedKitName(player, gp.getKit())))
                 .put("kills", gp.getKills())
                 .put("sheep_thrown", gp.getSheepThrown());
         if (!spectator) {
@@ -187,6 +189,10 @@ public class ScoreboardManager implements UiReloadParticipant {
         return LangHelper.get(player, "sw.sb-class-" + playerClass.name().toLowerCase(Locale.ROOT));
     }
 
+    private String localizedKitName(Player player, PlayerKit kit) {
+        return LangHelper.get(player, "sw.catalog-kit-" + kit.name().toLowerCase(Locale.ROOT) + "-name");
+    }
+
     /**
      * Reasserts the SheepWars-owned tablist identity after Core changes a nick
      * profile or display grade. Scoreboard teams are rebuilt because their
@@ -268,7 +274,7 @@ public class ScoreboardManager implements UiReloadParticipant {
     }
 
     static Component blankLine() {
-        return Component.text(" ");
+        return Component.text("\u00A0");
     }
 
     private String formatTime(int seconds) {

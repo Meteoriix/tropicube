@@ -30,7 +30,7 @@ class ScoreboardManagerTest {
     }
 
     @Test
-    void blankScoreboardLinesContainAVisibleSpace() {
-        assertEquals(Component.text(" "), ScoreboardManager.blankLine());
+    void blankScoreboardLinesUseANonBreakingSpace() {
+        assertEquals(Component.text("\u00A0"), ScoreboardManager.blankLine());
     }
 }

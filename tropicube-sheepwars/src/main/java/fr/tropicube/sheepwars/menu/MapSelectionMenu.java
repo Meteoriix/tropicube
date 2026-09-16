@@ -31,7 +31,6 @@ public class MapSelectionMenu implements Listener {
 
     /** playerUuid → the map they voted for (or host-selected map when vote disabled) */
     private final Map<UUID, GameMap> votes = new HashMap<>();
-    private final Map<UUID, Integer> voteWeights = new HashMap<>();
     private final Map<UUID, OpenMenu> openMenus = new HashMap<>();
 
     public MapSelectionMenu(TropicubeSheepwars plugin) {
@@ -90,7 +89,7 @@ public class MapSelectionMenu implements Listener {
         NetworkMenuStyle.applyFrame(inv, player, LangHelper.menuFrame(menuId));
 
         GameMap myVote = votes.get(player.getUniqueId());
-        Map<GameMap, Integer> counts = MapVoteTally.counts(maps, votes, voteWeights);
+        Map<GameMap, Integer> counts = MapVoteTally.counts(maps, votes);
 
         int offset = page * slots.size();
         for (int index = 0; index < slots.size() && offset + index < maps.size(); index++) {
@@ -204,7 +203,6 @@ public class MapSelectionMenu implements Listener {
 
         if (openMenu.voteMode && plugin.getGameSettingsMenu().isMapVoteEnabled()) {
             votes.put(uuid, clicked);
-            voteWeights.put(uuid, player.hasPermission("sheepwars.mapvote.weight.2") ? 2 : 1);
             plugin.getScoreboardManager().updateAll();
             player.sendMessage(LangHelper.component(player, "sw.map-vote-cast", clicked.getName()));
             player.closeInventory();
@@ -233,7 +231,7 @@ public class MapSelectionMenu implements Listener {
         List<GameMap> maps = plugin.getGameManager().getGameMaps();
         if (maps.isEmpty()) return null;
 
-        Map<GameMap, Integer> counts = MapVoteTally.counts(maps, votes, voteWeights);
+        Map<GameMap, Integer> counts = MapVoteTally.counts(maps, votes);
         int max = counts.values().stream().mapToInt(Integer::intValue).max().orElse(0);
 
         List<GameMap> winners = counts.entrySet().stream()
@@ -242,25 +240,22 @@ public class MapSelectionMenu implements Listener {
                 .toList();
 
         votes.clear();
-        voteWeights.clear();
         return winners.get(ThreadLocalRandom.current().nextInt(winners.size()));
     }
 
     public void reset() {
         votes.clear();
-        voteWeights.clear();
     }
 
     public void removeVote(UUID uuid) {
         GameMap removed = votes.remove(uuid);
-        voteWeights.remove(uuid);
         if (removed != null) refreshOpenMenus();
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────
 
     public MapVoteTally.Standing currentStanding() {
-        return MapVoteTally.standing(plugin.getGameManager().getGameMaps(), votes, voteWeights);
+        return MapVoteTally.standing(plugin.getGameManager().getGameMaps(), votes);
     }
 
     private void refreshOpenMenus() {

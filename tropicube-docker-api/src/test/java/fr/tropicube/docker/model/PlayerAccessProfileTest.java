@@ -32,6 +32,13 @@ class PlayerAccessProfileTest {
     }
 
     @Test
+    void retiredMapVoteWeightIsAcceptedButNoLongerGranted() {
+        AccessPolicy policy = new AccessPolicy(Map.of("sheepwars.mapvote.weight.2", 2), Map.of());
+
+        assertFalse(policy.hasPermission(new PlayerAccessProfile(3, 0, 1), "sheepwars.mapvote.weight.2"));
+    }
+
+    @Test
     void rejectsUnknownPermissionsAndInvalidThresholds() {
         assertThrows(IllegalArgumentException.class,
                 () -> new AccessPolicy(Map.of("tropicube.unknown", 1), Map.of()));

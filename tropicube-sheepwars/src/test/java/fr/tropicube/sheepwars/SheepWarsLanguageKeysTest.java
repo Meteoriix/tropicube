@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SheepWarsLanguageKeysTest {
     private static final Pattern JAVA_KEY = Pattern.compile("\\\"(sw\\.[a-z0-9][a-z0-9.-]*)\\\"");
@@ -35,6 +36,21 @@ class SheepWarsLanguageKeysTest {
             for (String key : required) {
                 assertTrue(translations.isSet(key), () -> key + " manquant dans " + language + ".yml");
             }
+        }
+    }
+
+    @Test
+    void everyScoreboardVariantDisplaysTheSelectedKit() {
+        YamlConfiguration resource = YamlConfiguration.loadConfiguration(
+                Path.of("src/main/resources/scoreboards.yml").toFile());
+        var variants = resource.getConfigurationSection("scoreboards.sheepwars.variants");
+        assertTrue(variants != null);
+
+        for (String variant : variants.getKeys(false)) {
+            long kitLines = variants.getMapList(variant + ".lines").stream()
+                    .filter(line -> "sw.sb-kit".equals(line.get("key")))
+                    .count();
+            assertEquals(1, kitLines, () -> variant + " doit afficher exactement une ligne de kit");
         }
     }
 

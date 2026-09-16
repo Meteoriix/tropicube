@@ -12,6 +12,7 @@ scoreboards:
           - blank: true
           - key: sw.sb-your-team
           - key: sw.sb-class
+          - key: sw.sb-kit
           - key: sw.sb-separator
       waiting_spectator:
         lines:
@@ -23,6 +24,7 @@ scoreboards:
           - key: sw.sb-separator
           - key: sw.sb-spectator
           - key: sw.sb-class
+          - key: sw.sb-kit
           - key: sw.sb-separator
       starting_alive:
         lines:
@@ -33,6 +35,7 @@ scoreboards:
           - key: sw.sb-separator
           - key: sw.sb-your-team
           - key: sw.sb-class
+          - key: sw.sb-kit
           - key: sw.sb-separator
       starting_spectator:
         lines:
@@ -43,6 +46,7 @@ scoreboards:
           - key: sw.sb-separator
           - key: sw.sb-spectator
           - key: sw.sb-class
+          - key: sw.sb-kit
           - key: sw.sb-separator
       playing_alive:
         lines:
@@ -55,6 +59,7 @@ scoreboards:
           - key: sw.sb-separator
           - key: sw.sb-your-team
           - key: sw.sb-class
+          - key: sw.sb-kit
           - key: sw.sb-kills
           - key: sw.sb-sheep-thrown
           - key: sw.sb-separator
@@ -69,6 +74,7 @@ scoreboards:
           - key: sw.sb-separator
           - key: sw.sb-spectator
           - key: sw.sb-class
+          - key: sw.sb-kit
           - key: sw.sb-kills
           - key: sw.sb-sheep-thrown
           - key: sw.sb-separator
@@ -81,6 +87,7 @@ scoreboards:
           - key: sw.sb-separator
           - key: sw.sb-your-team
           - key: sw.sb-class
+          - key: sw.sb-kit
           - key: sw.sb-kills
           - key: sw.sb-sheep-thrown
           - key: sw.sb-separator
@@ -93,6 +100,7 @@ scoreboards:
           - key: sw.sb-separator
           - key: sw.sb-spectator
           - key: sw.sb-class
+          - key: sw.sb-kit
           - key: sw.sb-kills
           - key: sw.sb-sheep-thrown
           - key: sw.sb-separator

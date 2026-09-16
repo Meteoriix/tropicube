@@ -6,6 +6,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-16
 
+- Corrige SheepWars : chaque joueur dispose d'une seule voix au vote de carte, les lignes vides du scoreboard sont conservées par le client et le kit localisé s'affiche et s'actualise immédiatement dans tous les états.
 - Allège la tablist du Lobby avec un libellé sans icône et une adresse violette, puis aère le scoreboard d'attente SheepWars avec une ligne vide après la carte.
 - Restaure immédiatement le pseudo réel après `/nick off` dans SheepWars et Fallen Kingdoms en rafraîchissant leurs HUD après la mutation Core achevée ; `/pull` suggère et résout désormais le pseudo authentifié des joueurs nickés.
 - Corrige le démarrage de SheepWars après la pagination du vote de carte : les sections YAML vides écrites sous la forme `{}` sont développées avant l'insertion de sous-clés et les anciennes géométries des menus de carte sont migrées ensemble.

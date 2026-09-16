@@ -199,6 +199,7 @@ public class ClassKitSelectionMenu implements Listener {
                     gp.setPlayerClass(PlayerClass.NONE);
                 }
                 plugin.getPlayerDataManager().updateKit(player.getUniqueId(), PlayerKit.NONE);
+                plugin.getScoreboardManager().update(player);
                 player.sendMessage(LangHelper.component(player, "sw.kit-selected", kitName(uuid, PlayerKit.NONE)));
                 player.closeInventory();
                 return;
@@ -231,6 +232,7 @@ public class ClassKitSelectionMenu implements Listener {
                     gp.setPlayerClass(pc);
                 }
                 plugin.getPlayerDataManager().updateKit(player.getUniqueId(), selected);
+                plugin.getScoreboardManager().update(player);
                 player.sendMessage(LangHelper.component(player, "sw.kit-selected", kitName(uuid, selected)));
                 player.closeInventory();
             }
