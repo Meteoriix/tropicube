@@ -239,40 +239,114 @@ menus:
         required: true
   map-vote:
     title-key: sw.map-vote-title
-    rows: 1
-    frame: neutral
-    buttons: {}
+    rows: 6
+    frame: network
+    buttons:
+      previous:
+        slot: 45
+        material: ARROW
+        name-key: sw.map-page-previous-name
+        lore-key: sw.map-page-previous-lore
+        action: previous_page
+      close:
+        slot: 49
+        material: BARRIER
+        name-key: sw.map-page-close-name
+        lore-key: sw.map-page-close-lore
+        action: close
+      next:
+        slot: 53
+        material: ARROW
+        name-key: sw.map-page-next-name
+        lore-key: sw.map-page-next-lore
+        action: next_page
     dynamic-regions:
       maps:
         slots:
-          - 0
-          - 1
-          - 2
-          - 3
-          - 4
-          - 5
-          - 6
-          - 7
-          - 8
+          - 10
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15
+          - 16
+          - 19
+          - 20
+          - 21
+          - 22
+          - 23
+          - 24
+          - 25
+          - 28
+          - 29
+          - 30
+          - 31
+          - 32
+          - 33
+          - 34
+          - 37
+          - 38
+          - 39
+          - 40
+          - 41
+          - 42
+          - 43
         template-action: vote_map
         preview-count: 5
   map-pick:
     title-key: sw.map-pick-title
-    rows: 1
-    frame: neutral
-    buttons: {}
+    rows: 6
+    frame: network
+    buttons:
+      previous:
+        slot: 45
+        material: ARROW
+        name-key: sw.map-page-previous-name
+        lore-key: sw.map-page-previous-lore
+        action: previous_page
+      close:
+        slot: 49
+        material: BARRIER
+        name-key: sw.map-page-close-name
+        lore-key: sw.map-page-close-lore
+        action: close
+      next:
+        slot: 53
+        material: ARROW
+        name-key: sw.map-page-next-name
+        lore-key: sw.map-page-next-lore
+        action: next_page
     dynamic-regions:
       maps:
         slots:
-          - 0
-          - 1
-          - 2
-          - 3
-          - 4
-          - 5
-          - 6
-          - 7
-          - 8
+          - 10
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15
+          - 16
+          - 19
+          - 20
+          - 21
+          - 22
+          - 23
+          - 24
+          - 25
+          - 28
+          - 29
+          - 30
+          - 31
+          - 32
+          - 33
+          - 34
+          - 37
+          - 38
+          - 39
+          - 40
+          - 41
+          - 42
+          - 43
         template-action: pick_map
         preview-count: 5
   team-selection:

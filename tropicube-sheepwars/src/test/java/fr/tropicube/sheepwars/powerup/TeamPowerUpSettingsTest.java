@@ -23,6 +23,8 @@ class TeamPowerUpSettingsTest {
         assertEquals(0.85, settings.hitRadius());
         assertEquals(100, settings.weights().values().stream().mapToInt(Integer::intValue).sum());
         assertEquals(3, settings.poisonArrowCount());
+        assertEquals(100, settings.poisonDurationTicks());
+        assertEquals(0, settings.poisonAmplifier());
     }
 
     @Test

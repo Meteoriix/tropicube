@@ -148,6 +148,8 @@ public class GameManager {
 
     public SheepWarsMode getMode() { return mode; }
 
+    public TeamPowerUpManager getTeamPowerUpManager() { return teamPowerUpManager; }
+
     /** Returns a mastery effect only in Quick Play; ranked and custom games keep base kits. */
     public double masteryEffect(GamePlayer player, String key, double fallback) {
         if (player == null || !mode.kitMasteryEnabled() || player.getKit() == PlayerKit.NONE) return fallback;
@@ -549,6 +551,7 @@ public class GameManager {
             currentTask = null;
         }
         state = GameState.PLAYING;
+        Bukkit.getOnlinePlayers().forEach(Player::closeInventory);
         gameStartedAt = System.currentTimeMillis();
         updateInstanceStatus(ServerInstance.Status.GAME_PLAYING);
         if (instanceId != null) {
@@ -786,7 +789,20 @@ public class GameManager {
             distributeSpecialSheep();
         }
 
+        applyMapHazards();
+
         plugin.getScoreboardManager().updateAll();
+    }
+
+    private void applyMapHazards() {
+        if (selectedMap == null || !selectedMap.getHazards().waterPoisonEnabled()) return;
+        var hazards = selectedMap.getHazards();
+        for (GamePlayer gamePlayer : getAlivePlayers()) {
+            Player player = gamePlayer.getBukkitPlayer();
+            if (player == null || !player.isInWater()) continue;
+            player.addPotionEffect(new PotionEffect(PotionEffectType.POISON,
+                    hazards.waterPoisonDurationTicks(), hazards.waterPoisonAmplifier(), false, true, true), false);
+        }
     }
 
     private void distributeSpecialSheep() {
@@ -1161,8 +1177,10 @@ public class GameManager {
         cancelReconnectTasks();
         sheepDeliverySchedule = null;
         teamPowerUpManager.stop();
-        players.values().stream().map(GamePlayer::getBukkitPlayer).filter(Objects::nonNull)
-                .forEach(this::restoreCombatAttributes);
+        players.values().stream().map(GamePlayer::getBukkitPlayer).filter(Objects::nonNull).forEach(player -> {
+            restoreCombatAttributes(player);
+            plugin.getCorePlugin().getNetworkProgressionService().releaseDisplay(player.getUniqueId());
+        });
         players.clear();
         glowingEntities.disable();
         if (plugin.getSheepManager() != null) plugin.getSheepManager().reset();

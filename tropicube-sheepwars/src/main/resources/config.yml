@@ -198,6 +198,12 @@ locations:
     name: "Map 12345"
     enabled: true
     void_limit: 100
+    hazards:
+      void-kill-enabled: true
+      water-poison:
+        enabled: false
+        duration-ticks: 20
+        amplifier: 0
     # Candidate centers for the single floating target (target1, target2, ...).
     powerups:
     spawns:
@@ -207,6 +213,12 @@ locations:
     name: "Map 678910"
     enabled: false
     void_limit: 100
+    hazards:
+      void-kill-enabled: true
+      water-poison:
+        enabled: false
+        duration-ticks: 20
+        amplifier: 0
     powerups:
     spawns:
       red:

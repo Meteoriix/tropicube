@@ -32,8 +32,7 @@ public class MapSelectionMenu implements Listener {
     /** playerUuid → the map they voted for (or host-selected map when vote disabled) */
     private final Map<UUID, GameMap> votes = new HashMap<>();
     private final Map<UUID, Integer> voteWeights = new HashMap<>();
-    private List<GameMap> ballot = List.of();
-    private final Set<UUID> openMenus = new HashSet<>();
+    private final Map<UUID, OpenMenu> openMenus = new HashMap<>();
 
     public MapSelectionMenu(TropicubeSheepwars plugin) {
         this.plugin = plugin;
@@ -77,39 +76,52 @@ public class MapSelectionMenu implements Listener {
     // ── Vote menu (all players, vote mode enabled) ─────────────────────────
 
     private void openVoteMenu(Player player, List<GameMap> maps) {
-        List<GameMap> candidates = ballot(maps);
-        Inventory inv = Bukkit.createInventory(null, LangHelper.menuSize("map-vote"),
-                LangHelper.menuTitle(player, "map-vote"));
-        NetworkMenuStyle.applyFrame(inv, player, LangHelper.menuFrame("map-vote"));
+        openMapMenu(player, maps, true, 0);
+    }
+
+    private void openMapMenu(Player player, List<GameMap> maps, boolean voteMode, int requestedPage) {
+        String menuId = voteMode ? "map-vote" : "map-pick";
+        var template = plugin.getMenuTemplates().menu(menuId);
+        List<Integer> slots = template.dynamicRegion("maps").slots();
+        int pageCount = Math.max(1, (maps.size() + slots.size() - 1) / slots.size());
+        int page = Math.max(0, Math.min(requestedPage, pageCount - 1));
+        Inventory inv = Bukkit.createInventory(null, LangHelper.menuSize(menuId),
+                LangHelper.menuTitle(player, menuId));
+        NetworkMenuStyle.applyFrame(inv, player, LangHelper.menuFrame(menuId));
 
         GameMap myVote = votes.get(player.getUniqueId());
-        Map<GameMap, Integer> counts = countVotes(candidates);
+        Map<GameMap, Integer> counts = MapVoteTally.counts(maps, votes, voteWeights);
 
-        for (int i = 0; i < candidates.size(); i++) {
-            GameMap map = candidates.get(i);
-            boolean voted = map == myVote;
-            inv.setItem(i, voteItem(player, map, counts.getOrDefault(map, 0), voted));
+        int offset = page * slots.size();
+        for (int index = 0; index < slots.size() && offset + index < maps.size(); index++) {
+            GameMap map = maps.get(offset + index);
+            inv.setItem(slots.get(index), voteMode
+                    ? voteItem(player, map, counts.getOrDefault(map, 0), map == myVote)
+                    : pickItem(player, map, map == plugin.getGameManager().getSelectedMap()));
         }
+        if (page > 0) setTemplateButton(inv, player, template.button("previous"));
+        setTemplateButton(inv, player, template.button("close"));
+        if (page + 1 < pageCount) setTemplateButton(inv, player, template.button("next"));
 
         player.openInventory(inv);
-        openMenus.add(player.getUniqueId());
+        openMenus.put(player.getUniqueId(), new OpenMenu(voteMode, page));
     }
 
     // ── Host pick menu (vote mode disabled) ────────────────────────────────
 
     private void openPickMenu(Player player, List<GameMap> maps) {
-        Inventory inv = Bukkit.createInventory(null, LangHelper.menuSize("map-pick"),
-                LangHelper.menuTitle(player, "map-pick"));
-        NetworkMenuStyle.applyFrame(inv, player, LangHelper.menuFrame("map-pick"));
+        openMapMenu(player, maps, false, 0);
+    }
 
-        GameMap selected = plugin.getGameManager().getSelectedMap();
-        for (int i = 0; i < maps.size() && i < 9; i++) {
-            GameMap map = maps.get(i);
-            inv.setItem(i, pickItem(player, map, map == selected));
-        }
-
-        player.openInventory(inv);
-        openMenus.add(player.getUniqueId());
+    private void setTemplateButton(Inventory inventory, Player player,
+                                   fr.tropicube.core.ui.MenuTemplateRegistry.Button button) {
+        List<Component> lore = button.loreKey() == null ? List.of()
+                : List.of(LangHelper.component(player, button.loreKey()));
+        inventory.setItem(button.slot(), new ItemBuilder(button.material())
+                .name(LangHelper.component(player, button.nameKey()).decoration(TextDecoration.ITALIC, false))
+                .lore(lore)
+                .noTooltip()
+                .build());
     }
 
     // ── Item builders ──────────────────────────────────────────────────────
@@ -160,26 +172,44 @@ public class MapSelectionMenu implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
         UUID uuid = player.getUniqueId();
-        if (!openMenus.contains(uuid)) return;
+        OpenMenu openMenu = openMenus.get(uuid);
+        if (openMenu == null) return;
 
         event.setCancelled(true);
         if (event.getCurrentItem() == null) return;
         if (event.getClickedInventory() == null
                 || event.getClickedInventory() == player.getInventory()) return;
 
+        String menuId = openMenu.voteMode ? "map-vote" : "map-pick";
+        var template = plugin.getMenuTemplates().menu(menuId);
         int slot = event.getRawSlot();
-        List<GameMap> maps = plugin.getGameSettingsMenu().isMapVoteEnabled()
-                ? ballot(plugin.getGameManager().getGameMaps()) : plugin.getGameManager().getGameMaps();
-        if (slot < 0 || slot >= maps.size()) return;
+        if (slot == template.button("close").slot()) {
+            player.closeInventory();
+            return;
+        }
+        List<GameMap> maps = plugin.getGameManager().getGameMaps();
+        if (slot == template.button("previous").slot()) {
+            openMapMenu(player, maps, openMenu.voteMode, openMenu.page - 1);
+            return;
+        }
+        if (slot == template.button("next").slot()) {
+            openMapMenu(player, maps, openMenu.voteMode, openMenu.page + 1);
+            return;
+        }
+        int localIndex = template.dynamicRegion("maps").slots().indexOf(slot);
+        int mapIndex = openMenu.page * template.dynamicRegion("maps").slots().size() + localIndex;
+        if (localIndex < 0 || mapIndex >= maps.size()) return;
 
-        GameMap clicked = maps.get(slot);
+        GameMap clicked = maps.get(mapIndex);
 
-        if (plugin.getGameSettingsMenu().isMapVoteEnabled()) {
+        if (openMenu.voteMode && plugin.getGameSettingsMenu().isMapVoteEnabled()) {
             votes.put(uuid, clicked);
             voteWeights.put(uuid, player.hasPermission("sheepwars.mapvote.weight.2") ? 2 : 1);
+            plugin.getScoreboardManager().updateAll();
             player.sendMessage(LangHelper.component(player, "sw.map-vote-cast", clicked.getName()));
             player.closeInventory();
-        } else if (uuid.equals(plugin.getGameManager().getHostUuid())) {
+            refreshOpenMenus();
+        } else if (!openMenu.voteMode && uuid.equals(plugin.getGameManager().getHostUuid())) {
             plugin.getGameManager().setSelectedMap(clicked);
             // Waiting sidebars are event-driven, so publish the host choice immediately.
             plugin.getScoreboardManager().updateAll();
@@ -200,10 +230,10 @@ public class MapSelectionMenu implements Listener {
      * votes are decided randomly. The votes are then erased.
      */
     public GameMap resolveWinnerAndReset() {
-        List<GameMap> maps = ballot(plugin.getGameManager().getGameMaps());
+        List<GameMap> maps = plugin.getGameManager().getGameMaps();
         if (maps.isEmpty()) return null;
 
-        Map<GameMap, Integer> counts = countVotes(maps);
+        Map<GameMap, Integer> counts = MapVoteTally.counts(maps, votes, voteWeights);
         int max = counts.values().stream().mapToInt(Integer::intValue).max().orElse(0);
 
         List<GameMap> winners = counts.entrySet().stream()
@@ -213,38 +243,35 @@ public class MapSelectionMenu implements Listener {
 
         votes.clear();
         voteWeights.clear();
-        ballot = List.of();
         return winners.get(ThreadLocalRandom.current().nextInt(winners.size()));
     }
 
     public void reset() {
         votes.clear();
         voteWeights.clear();
-        ballot = List.of();
     }
 
     public void removeVote(UUID uuid) {
-        votes.remove(uuid);
+        GameMap removed = votes.remove(uuid);
         voteWeights.remove(uuid);
+        if (removed != null) refreshOpenMenus();
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────
 
-    private Map<GameMap, Integer> countVotes(List<GameMap> maps) {
-        Map<GameMap, Integer> counts = new LinkedHashMap<>();
-        for (GameMap map : maps) counts.put(map, 0);
-        for (Map.Entry<UUID, GameMap> vote : votes.entrySet()) {
-            if (counts.containsKey(vote.getValue())) counts.computeIfPresent(vote.getValue(),
-                    (_, count) -> count + voteWeights.getOrDefault(vote.getKey(), 1));
-        }
-        return counts;
+    public MapVoteTally.Standing currentStanding() {
+        return MapVoteTally.standing(plugin.getGameManager().getGameMaps(), votes, voteWeights);
     }
 
-    private List<GameMap> ballot(List<GameMap> maps) {
-        if (!ballot.isEmpty()) return ballot;
-        List<GameMap> shuffled = new ArrayList<>(maps);
-        Collections.shuffle(shuffled);
-        ballot = List.copyOf(shuffled.subList(0, Math.min(3, shuffled.size())));
-        return ballot;
+    private void refreshOpenMenus() {
+        List<GameMap> maps = plugin.getGameManager().getGameMaps();
+        for (Map.Entry<UUID, OpenMenu> entry : List.copyOf(openMenus.entrySet())) {
+            Player viewer = Bukkit.getPlayer(entry.getKey());
+            if (viewer != null && viewer.isOnline()) {
+                openMapMenu(viewer, maps, entry.getValue().voteMode, entry.getValue().page);
+            }
+        }
     }
+
+    private record OpenMenu(boolean voteMode, int page) { }
 }

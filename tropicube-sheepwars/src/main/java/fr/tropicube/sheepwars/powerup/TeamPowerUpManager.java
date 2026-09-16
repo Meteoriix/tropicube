@@ -10,17 +10,20 @@ import fr.tropicube.sheepwars.util.LangHelper;
 import fr.tropicube.sheepwars.util.PlayerDisplayName;
 import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.AbstractArrow;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
@@ -39,6 +42,7 @@ public final class TeamPowerUpManager {
     private final GameManager gameManager;
     private final TeamPowerUpSettings settings;
     private final TeamPowerUpPicker picker;
+    private final NamespacedKey poisonArrowKey;
     private final TeamPowerUpSpawnPicker spawnPicker = new TeamPowerUpSpawnPicker();
     private final List<Location> spawnCandidates = new ArrayList<>();
     private final Map<UUID, Location> previousArrowLocations = new HashMap<>();
@@ -53,6 +57,7 @@ public final class TeamPowerUpManager {
         this.gameManager = gameManager;
         this.settings = settings;
         this.picker = new TeamPowerUpPicker(settings.weights());
+        this.poisonArrowKey = new NamespacedKey(plugin, "bonus_poison_arrow");
     }
 
     /** Selects one configured target location and begins collision checks for the selected map. */
@@ -189,8 +194,27 @@ public final class TeamPowerUpManager {
         meta.addCustomEffect(new PotionEffect(PotionEffectType.POISON, settings.poisonDurationTicks(),
                 settings.poisonAmplifier()), true);
         meta.customName(LangHelper.component(player, "sw.powerup-poison-arrow-item"));
+        meta.getPersistentDataContainer().set(poisonArrowKey, PersistentDataType.BYTE, (byte) 1);
         arrows.setItemMeta(meta);
         return arrows;
+    }
+
+    /** Transfers the bonus marker to the projectile and removes vanilla's shortened poison effect. */
+    public void markPoisonProjectile(ItemStack consumable, AbstractArrow projectile) {
+        if (consumable == null || !consumable.hasItemMeta()
+                || !consumable.getItemMeta().getPersistentDataContainer()
+                .has(poisonArrowKey, PersistentDataType.BYTE)) return;
+        projectile.getPersistentDataContainer().set(poisonArrowKey, PersistentDataType.BYTE, (byte) 1);
+        if (projectile instanceof Arrow potionArrow) potionArrow.clearCustomEffects();
+    }
+
+    public boolean isPoisonProjectile(AbstractArrow projectile) {
+        return projectile.getPersistentDataContainer().has(poisonArrowKey, PersistentDataType.BYTE);
+    }
+
+    public PotionEffect poisonArrowEffect() {
+        return new PotionEffect(PotionEffectType.POISON, settings.poisonDurationTicks(),
+                settings.poisonAmplifier(), false, true, true);
     }
 
     private static final class Target {

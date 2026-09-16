@@ -24,6 +24,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -54,6 +55,7 @@ public class PlayerListener implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         event.joinMessage(null);
+        plugin.getCorePlugin().getNetworkProgressionService().suppressDisplay(player);
 
         plugin.getPlayerDataManager().loadPlayer(player)
                 .thenCompose(ignored -> plugin.getProgressionService().loadMasteries(player.getUniqueId())).thenRun(() ->
@@ -90,7 +92,16 @@ public class PlayerListener implements Listener {
         }
         plugin.getScoreboardManager().clear(player);
         plugin.getPlayerDataManager().unloadPlayer(player.getUniqueId());
+        plugin.getCorePlugin().getNetworkProgressionService().releaseDisplay(player.getUniqueId());
         event.quitMessage(null);
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onShootBow(EntityShootBowEvent event) {
+        if (!(event.getEntity() instanceof Player player)
+                || !(event.getProjectile() instanceof AbstractArrow arrow)
+                || plugin.getGameManager().getPlayer(player) == null) return;
+        plugin.getGameManager().getTeamPowerUpManager().markPoisonProjectile(event.getConsumable(), arrow);
     }
 
     @EventHandler
@@ -285,6 +296,21 @@ public class PlayerListener implements Listener {
         }
     }
 
+    /** Applies the configured duration because vanilla divides tipped-arrow durations on impact. */
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onBonusPoisonArrowHit(EntityDamageByEntityEvent event) {
+        if (!(event.getEntity() instanceof Player target)
+                || !(event.getDamager() instanceof AbstractArrow arrow)
+                || !(arrow.getShooter() instanceof Player shooter)
+                || !plugin.getGameManager().getTeamPowerUpManager().isPoisonProjectile(arrow)) return;
+        GamePlayer shooterPlayer = plugin.getGameManager().getPlayer(shooter);
+        GamePlayer targetPlayer = plugin.getGameManager().getPlayer(target);
+        if (plugin.getGameManager().getState() != GameState.PLAYING
+                || shooterPlayer == null || targetPlayer == null || !targetPlayer.isAlive()
+                || shooterPlayer.getTeam() == targetPlayer.getTeam()) return;
+        target.addPotionEffect(plugin.getGameManager().getTeamPowerUpManager().poisonArrowEffect(), true);
+    }
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onDeath(PlayerDeathEvent event) {
         Player player = event.getPlayer();
@@ -358,6 +384,7 @@ public class PlayerListener implements Listener {
             GamePlayer gp = plugin.getGameManager().getPlayer(event.getPlayer());
             var map = plugin.getGameManager().getSelectedMap();
             if (gp != null && gp.isAlive() && map != null
+                    && map.getHazards().voidKillEnabled()
                     && event.getTo().getY() < map.getVoidLimit()) {
                 plugin.getGameManager().onPlayerDeath(event.getPlayer(), null);
             }

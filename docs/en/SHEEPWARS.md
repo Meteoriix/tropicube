@@ -47,7 +47,7 @@ A host may disable classes or kits. Random-kit mode ignores personal selection a
 | Darkness | Slows and blinds nearby enemies |
 | Fire | Ignites enemies around impact |
 | Poison | Creates a persistent poison area |
-| Swap | Exchanges the thrower with a nearby target, or dashes without one |
+| Swap | Exchanges the thrower with a nearby target; without one, the impact ends without moving the thrower |
 | Meteor | Calls down a meteor shower |
 | Searching | Pursues the nearest enemy |
 | Healing | Heals the thrower and nearby allies |
@@ -67,13 +67,15 @@ Each map may define as many candidate centers as needed under `locations.<map>.p
 
 Collision checks cover the arrow's full path between ticks, preventing fast projectiles from skipping the target. The shooter must be a living participant. The arrow and display are consumed, every connected living teammate receives the effect, and one target respawns after 45 seconds by default with a newly weighted type and a different location when several candidates exist. Match completion and plugin shutdown cancel the task and remove the display.
 
-Defaults provide 6 HP of healing, three Poison I arrows lasting 5 seconds per teammate, or Speed I for 8 seconds. Weights, strengths, durations, respawn time, and hit radius are startup-validated under `team-powerups`.
+Defaults provide 6 HP of healing, three Poison I arrows that actually last 5 seconds per teammate, or Speed I for 8 seconds. Bonus arrows are identified when fired and apply the configured duration directly, bypassing vanilla's tipped-arrow duration reduction. Weights, strengths, durations, respawn time, and hit radius are startup-validated under `team-powerups`.
 
 ## Maps and teams
 
 A map defines a world, waiting lobby, void limit, and up to eight red plus eight blue spawns. Spawn lists are shuffled per match. A map cannot start when required locations are missing.
 
-When `map-vote-enabled` is `true`, players vote and a map is randomly selected among the tied winners. Otherwise, the host chooses the map directly, and that choice immediately appears in every player's waiting sidebar.
+When `map-vote-enabled` is `true`, every enabled map is available in the vote in every mode, including Ranked, with pagination when required. A map is randomly selected among the tied winners. The waiting scoreboard displays the current leader and weighted vote count, or `Tie (n)` when several maps share the lead. Otherwise, the host chooses the map directly, and that choice immediately appears in every player's waiting sidebar.
+
+Each map declares its environmental hazards. Galions disables elimination below the vertical limit because its lower area is water and refreshes Poison I for one second while a survivor remains in water. Other maps retain their `void_limit` elimination.
 
 Blocks destroyed during a match do not create collectible drops. This also covers all four rail variants detached by block physics when their supporting block disappears.
 
@@ -109,7 +111,7 @@ The private-game host manages access through a zero-cost anvil accepting a valid
 
 ## Interface and languages
 
-All game actions use hotbar items and inventory menus. Waiting slots 0, 1, and 2 open team, class/kit, and map vote; hosts keep settings in slot 4 and private whitelist management in slot 6. The shared Tropicube player center occupies slot 7 and the leave bed slot 8. Every waiting item is removed before combat equipment is granted. Under the tropical `🐑 SHEEPWARS` title, short separators keep the sidebar sections airy. While waiting, it shows current and maximum players, the required minimum, map, team, and class. During play, it shows time, map, survivor counts, personal team or spectator mode, class, eliminations, and sheep thrown. The tab list uses two-line `🐑 SHEEPWARS` and `🌴 TROPICUBE` branding and adapts its footer to waiting, starting, playing, and ending states.
+All game actions use hotbar items and inventory menus. Waiting slots 0, 1, and 2 open team, class/kit, and map vote; hosts keep settings in slot 4 and private whitelist management in slot 6. The shared Tropicube player center occupies slot 7 and the leave bed slot 8. The network XP display is hidden on backend entry and released on departure. At match start, every open inventory is closed and every waiting item is removed before combat equipment is granted. Under the tropical `🐑 SHEEPWARS` title, short separators and visible blank lines keep the sidebar sections airy. While waiting, it shows current and maximum players, the required minimum, the current map-vote leader and vote count, team, and class. During play, it shows time, map, survivor counts, personal team or spectator mode, class, eliminations, and sheep thrown. The tab list uses two-line `🐑 SHEEPWARS` and `🌴 TROPICUBE` branding and adapts its footer to waiting, starting, playing, and ending states.
 
 Player-facing messages come from TropicubeCore and exist in French, English, German, and Spanish.
 

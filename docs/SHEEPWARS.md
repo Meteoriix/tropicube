@@ -21,7 +21,7 @@ Sources historiques : [présentation d'Epicube et origine du nom](https://www.mi
 | Réutilisable tel quel | Les profils, niveaux réseau, missions, guildes, parties Redis, instances Docker et préférences de langue restent fournis par Core, Docker API et Velocity. |
 | À généraliser | Le mode fonctionnel d'une instance est un contrat partagé ; aucune règle de cote ou de kit SheepWars n'est déplacée dans Core. |
 | Propre aux jeux existants | Les moutons, cartes, équipes, classes, kits et la machine à états demeurent strictement dans `tropicube-sheepwars`. Fallen Kingdoms conserve son propre domaine et n'est pas une dépendance. |
-| Nouveau | Quick Play, files classées 4v4/8v8, cote et incertitude, saisons, sanctions d'abandon, maîtrise des kits, scrutin court et résumés de partie. |
+| Nouveau | Quick Play, files classées 4v4/8v8, cote et incertitude, saisons, sanctions d'abandon, maîtrise des kits, vote exhaustif des cartes et résumés de partie. |
 
 ## Boucle de jeu
 
@@ -68,7 +68,7 @@ En Quick Play, chaque kit reçoit sa propre expérience. `/sheepwars mastery` pr
 | Ténébreux | Inflige Lenteur II, Cécité I et Fatigue I pendant 4 secondes dans un rayon de 5 blocs |
 | Feu | Inflige jusqu'à 4 PV dans un rayon de 5 blocs et enflamme pendant 4 secondes |
 | Poison | Crée pendant 4 secondes une zone de Poison II et de faibles dégâts directs |
-| Échange | Échange le lanceur avec la cible proche, ou effectue un dash sans cible |
+| Échange | Échange le lanceur avec la cible proche ; sans cible, l'impact se termine sans déplacer le lanceur |
 | Météore | Produit un impact modéré puis quatre projectiles contrôlés |
 | Tête chercheuse | Cherche à 12 blocs pendant 6 secondes puis poursuit sa cible pendant 6 secondes |
 | Soin | Rend jusqu'à 10 PV en 6 secondes dans un rayon de cinq blocs |
@@ -102,7 +102,7 @@ Chaque carte peut définir autant de centres candidats que nécessaire sous `loc
 
 Le trajet complet d'une flèche entre deux ticks est testé contre la cible afin qu'un projectile rapide ne puisse pas la traverser sans l'activer. Le tireur doit être un survivant de la partie ; la flèche et la cible sont alors supprimées, le bonus est appliqué à tous ses coéquipiers survivants connectés, puis une cible unique réapparaît après 45 secondes par défaut avec un nouveau type et un autre emplacement lorsque plusieurs candidats existent. La fin de partie et l'arrêt du plugin annulent la tâche et retirent toute entité d'affichage.
 
-Les effets livrés par défaut sont un soin de 6 PV, trois flèches de Poison I pendant 5 secondes par équipier, ou Vitesse I pendant 8 secondes. Les poids, amplitudes, durées, délai de réapparition et rayon de collision sont configurables sous `team-powerups` et validés au démarrage.
+Les effets livrés par défaut sont un soin de 6 PV, trois flèches de Poison I qui durent réellement 5 secondes par équipier, ou Vitesse I pendant 8 secondes. Les flèches bonus sont identifiées au tir et appliquent directement la durée configurée afin d'éviter la réduction native des potions de flèche. Les poids, amplitudes, durées, délai de réapparition et rayon de collision sont configurables sous `team-powerups` et validés au démarrage.
 
 ## Modes publics et compétition
 
@@ -125,7 +125,9 @@ Une carte jouable contient un monde, une limite de vide et jusqu'à huit spawns 
 
 Les blocs peuvent être détruits pendant la manche sans produire d'objets récupérables. Cette règle couvre aussi les quatre variantes de rails qui se détachent par mise à jour physique lorsque leur bloc de support disparaît.
 
-Lorsque `map-vote-enabled` vaut `true`, trois cartes au maximum sont tirées pour un scrutin court. Chaque joueur vote et une carte est tirée au hasard parmi celles arrivées en tête. La permission `sheepwars.mapvote.weight.2` donne un poids de deux, sans permettre de voter plusieurs fois. Sinon, l'hôte choisit directement la carte ; son choix est aussitôt affiché dans le scoreboard d'attente de tous les joueurs. Une partie ne démarre pas si la carte sélectionnée est incomplète ou désactivée.
+Lorsque `map-vote-enabled` vaut `true`, toutes les cartes activées sont disponibles dans le vote, y compris en Ranked ; le menu est paginé si leur nombre dépasse une page. Chaque joueur vote et une carte est tirée au hasard parmi celles arrivées en tête. La permission `sheepwars.mapvote.weight.2` donne un poids de deux, sans permettre de voter plusieurs fois. Le scoreboard d'attente affiche le leader et son total, ou `Égalité (n)` lorsque plusieurs cartes partagent le meilleur score. Sinon, l'hôte choisit directement la carte ; son choix est aussitôt affiché dans le scoreboard de tous les joueurs. Une partie ne démarre pas si la carte sélectionnée est incomplète ou désactivée.
+
+Chaque carte configure ses dangers environnementaux. Galions désactive la mort sous la limite verticale, car son fond est composé d'eau, et rafraîchit Poison I pendant une seconde tant qu'un survivant se trouve dans l'eau. Les autres cartes conservent leur élimination sous `void_limit`.
 
 Les joueurs peuvent demander une équipe dans le menu d'attente. Le gestionnaire conserve des équipes équilibrées et attribue automatiquement une équipe lorsque nécessaire. Une sélection acceptée actualise immédiatement la tablist de tous les joueurs, y compris les pseudonymes `/nick`, afin que la couleur corresponde à la nouvelle équipe. Les coéquipiers bénéficient d'un contour coloré visible uniquement par leur équipe. Les équipes scoreboard utilisent le nom de profil réellement envoyé au client pour préserver le contour avec `/nick`. La tablist SheepWars masque toujours le grade réseau ou fictif : elle affiche uniquement le pseudonyme dans la couleur de l'équipe, ou en gris pour un spectateur, sans icône devant le nom. Ce rendu est réappliqué après chaque événement de nick ou de grade afin que Core ne puisse pas le remplacer par le format du lobby. Le chat utilise le même nom d'affichage synchronisé afin que `/nick off` restaure immédiatement le pseudonyme réel.
 
@@ -149,9 +151,9 @@ Le lobby permet d'arrêter le serveur tant que la manche n'a pas commencé. Apr�
 
 ## Interface, langues et commandes
 
-Les actions de partie passent par les objets de hotbar et les inventaires. En attente, les slots 0, 1 et 2 ouvrent respectivement équipe, classe/kit et vote de carte ; l'hôte conserve les réglages au slot 4 et la whitelist privée au slot 6. Le centre Tropicube commun au lobby est placé au slot 7 et le lit de sortie au slot 8. Au lancement, toute la barre d'attente est supprimée avant de remettre l'équipement de combat. La commande `/sheepwars` est limitée au profil compétitif, au choix réversible de branche et à la visibilité `public|team|private` des détails de résumé.
+Les actions de partie passent par les objets de hotbar et les inventaires. En attente, les slots 0, 1 et 2 ouvrent respectivement équipe, classe/kit et vote de carte ; l'hôte conserve les réglages au slot 4 et la whitelist privée au slot 6. Le centre Tropicube commun au lobby est placé au slot 7 et le lit de sortie au slot 8. Le niveau d'XP réseau est masqué dès l'arrivée sur le backend puis libéré au départ. Au lancement, tous les inventaires ouverts sont fermés et toute la barre d'attente est supprimée avant de remettre l'équipement de combat. La commande `/sheepwars` est limitée au profil compétitif, au choix réversible de branche et à la visibilité `public|team|private` des détails de résumé.
 
-Le scoreboard affiche sous le titre tropical `🐑 SHEEPWARS` des sections aérées par de courts séparateurs. Pendant l'attente, il indique l'effectif actuel et maximal, le minimum requis, la carte, l'équipe et la classe du joueur. En partie, il présente le temps restant, la carte, les survivants par équipe, l'équipe ou le statut spectateur, la classe, les éliminations et les moutons lancés. La tablist reprend les identités `🐑 SHEEPWARS` et `🌴 TROPICUBE` sur deux lignes, puis adapte son pied à l'attente, au lancement, au jeu ou à la fin de partie. Les textes proviennent de TropicubeCore et sont disponibles en français, anglais, espagnol et allemand.
+Le scoreboard affiche sous le titre tropical `🐑 SHEEPWARS` des sections aérées par de courts séparateurs et des lignes vides réellement rendues. Pendant l'attente, il indique l'effectif actuel et maximal, le minimum requis, le résultat courant du vote de carte avec son nombre de voix, l'équipe et la classe du joueur. En partie, il présente le temps restant, la carte, les survivants par équipe, l'équipe ou le statut spectateur, la classe, les éliminations et les moutons lancés. La tablist reprend les identités `🐑 SHEEPWARS` et `🌴 TROPICUBE` sur deux lignes, puis adapte son pied à l'attente, au lancement, au jeu ou à la fin de partie. Les textes proviennent de TropicubeCore et sont disponibles en français, anglais, espagnol et allemand.
 
 Les annonces système autonomes utilisent l'identité `SHEEPWARS >` sans crochets. Les arrivées et départs de joueurs restent narratifs, sans préfixe, et indiquent qu'un joueur « a rejoint la partie ». Les menus, titles, scoreboards et tablists restent sans préfixe afin de préserver leur lisibilité.
 

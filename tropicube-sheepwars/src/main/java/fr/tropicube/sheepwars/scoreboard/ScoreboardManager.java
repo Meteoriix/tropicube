@@ -5,6 +5,7 @@ import fr.tropicube.sheepwars.game.GameState;
 import fr.tropicube.sheepwars.game.GameTeam;
 import fr.tropicube.sheepwars.player.GamePlayer;
 import fr.tropicube.sheepwars.player.PlayerClass;
+import fr.tropicube.sheepwars.menu.MapVoteTally;
 import fr.tropicube.sheepwars.util.LangHelper;
 import fr.tropicube.sheepwars.util.PlayerDisplayName;
 import fr.tropicube.core.ui.ScoreboardTemplate;
@@ -64,9 +65,7 @@ public class ScoreboardManager implements UiReloadParticipant {
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         GameState state = plugin.getGameManager().getState();
-        String mapName = plugin.getGameManager().getSelectedMap() == null
-                ? LangHelper.get(player, "sw.sb-map-unknown")
-                : plugin.getGameManager().getSelectedMap().getName();
+        Component mapDisplay = mapDisplay(player, state);
         boolean spectator = gp.getTeam() == null || !gp.isAlive();
         int red = plugin.getGameManager().getAliveTeamPlayers(GameTeam.RED).size();
         int blue = plugin.getGameManager().getAliveTeamPlayers(GameTeam.BLUE).size();
@@ -74,7 +73,7 @@ public class ScoreboardManager implements UiReloadParticipant {
                 .put("current_players", plugin.getGameManager().getPlayers().size())
                 .put("max_players", plugin.getGameManager().getMaxPlayers())
                 .put("min_players", plugin.getGameManager().getMinPlayers())
-                .put("map", mapName)
+                .putComponent("map", mapDisplay)
                 .put("countdown", plugin.getGameManager().getCountdown())
                 .put("time", formatTime(plugin.getGameManager().getGameTime()))
                 .put("red_players", red)
@@ -95,7 +94,7 @@ public class ScoreboardManager implements UiReloadParticipant {
         PlaceholderValues values = placeholders.build();
         int line = 15;
         for (ScoreboardTemplate.Line definition : template.lines(phase + (spectator ? "_spectator" : "_alive"))) {
-            Component display = definition.blank() ? Component.empty()
+            Component display = definition.blank() ? blankLine()
                     : LangHelper.component(player, definition.key(), values);
             setLine(objective, line--, display);
         }
@@ -252,6 +251,24 @@ public class ScoreboardManager implements UiReloadParticipant {
         Score score = objective.getScore("sw_" + lineNum);
         score.setScore(lineNum);
         score.customName(display);
+    }
+
+    private Component mapDisplay(Player player, GameState state) {
+        if ((state == GameState.WAITING || state == GameState.STARTING)
+                && plugin.getGameSettingsMenu().isMapVoteEnabled()) {
+            MapVoteTally.Standing standing = plugin.getMapVoteMenu().currentStanding();
+            if (standing.status() == MapVoteTally.Status.LEADER && standing.leader() != null) {
+                return Component.text(standing.leader().getName() + " (" + standing.votes() + ")");
+            }
+            return LangHelper.component(player, "sw.sb-map-vote-tie", standing.votes());
+        }
+        return Component.text(plugin.getGameManager().getSelectedMap() == null
+                ? LangHelper.get(player, "sw.sb-map-unknown")
+                : plugin.getGameManager().getSelectedMap().getName());
+    }
+
+    static Component blankLine() {
+        return Component.text(" ");
     }
 
     private String formatTime(int seconds) {

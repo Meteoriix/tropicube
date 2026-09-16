@@ -34,6 +34,7 @@ import java.util.logging.Level;
 
 /** Initializes a Paper SheepWars instance and coordinates its game cycle. */
 public final class TropicubeSheepwars extends JavaPlugin {
+    private TropicubeCore corePlugin;
     private RedisManager redisManager;
 
     private GameManager gameManager;
@@ -62,6 +63,7 @@ public final class TropicubeSheepwars extends JavaPlugin {
     public void onEnable() {
         TropicubeCore corePlugin = (TropicubeCore) getServer().getPluginManager().getPlugin("TropicubeCore");
         if (corePlugin == null) { getServer().getPluginManager().disablePlugin(this); return; }
+        this.corePlugin = corePlugin;
         saveDefaultConfig();
         String host = getConfig().getString("redis.host", "localhost");
         int port = getConfig().getInt("redis.port", 6379);
@@ -179,17 +181,18 @@ public final class TropicubeSheepwars extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        if (getServer().getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore corePlugin) corePlugin.backendStopped();
         getServer().getScheduler().cancelTasks(this);
         getServer().getAsyncScheduler().cancelTasks(this);
         shuttingDown = true;
         if (scoreboardManager != null) scoreboardManager.clearAll();
         if (gameManager != null) gameManager.shutdown();
         if (playerDataManager != null) playerDataManager.close();
+        if (corePlugin != null) corePlugin.backendStopped();
         if (redisManager != null) Thread.ofPlatform().daemon(false).name("tropicube-backend-close").start(redisManager::close);
     }
 
     public RedisManager getRedisManager() { return redisManager; }
+    public TropicubeCore getCorePlugin() { return corePlugin; }
     public GameManager getGameManager() { return gameManager; }
     public PlayerDataManager getPlayerDataManager() { return playerDataManager; }
     public SheepManager getSheepManager() { return sheepManager; }

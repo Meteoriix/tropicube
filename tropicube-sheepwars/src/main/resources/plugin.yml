@@ -18,5 +18,5 @@ commands:
 
 permissions:
   sheepwars.mapvote.weight.2:
-    description: "Double le poids du vote de carte dans le scrutin court"
+    description: "Double le poids du vote de carte"
     default: false

@@ -29,10 +29,7 @@ public class SwapSheep extends AbstractSheep {
                 .min(Comparator.comparingDouble(p -> p.getLocation().distanceSquared(impact)))
                 .orElse(null);
 
-        if (target == null) {
-            thrower.setVelocity(thrower.getLocation().getDirection().normalize().multiply(1.8));
-            return true;
-        }
+        if (target == null) return true;
 
         Location throwerLoc = thrower.getLocation().clone();
         Location targetLoc = target.getLocation().clone();

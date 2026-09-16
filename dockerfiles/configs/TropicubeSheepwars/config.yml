@@ -639,6 +639,12 @@ locations:
     name: Galions
     enabled: true
     void_limit: 144
+    hazards:
+      void-kill-enabled: false
+      water-poison:
+        enabled: true
+        duration-ticks: 20
+        amplifier: 0
     powerups:
       target1: { x: 88.5, y: 165.5, z: 392.0 }
       target2: { x: 88.5, y: 165.5, z: 398.0 }

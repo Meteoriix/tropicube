@@ -11,6 +11,7 @@ import java.util.Map;
 public class GameMap {
     private String name;
     private int voidLimit;
+    private MapHazards hazards = MapHazards.defaults();
     private final Map<GameTeam, List<Location>> teamSpawns = new EnumMap<>(GameTeam.class);
     private List<Location> powerUpSpawns = List.of();
 
@@ -38,6 +39,10 @@ public class GameMap {
     public int getVoidLimit() { return voidLimit; }
 
     public void setVoidLimit(int voidLimit) { this.voidLimit = voidLimit; }
+
+    public MapHazards getHazards() { return hazards; }
+
+    public void setHazards(MapHazards hazards) { this.hazards = hazards; }
 
     public boolean isNotReady() {
         List<Location> red = teamSpawns.get(GameTeam.RED);

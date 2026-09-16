@@ -1,6 +1,7 @@
 package fr.tropicube.sheepwars.util;
 
 import fr.tropicube.sheepwars.game.GameMap;
+import fr.tropicube.sheepwars.game.MapHazards;
 import fr.tropicube.sheepwars.game.GameTeam;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -28,6 +29,7 @@ public class MapsUtil {
             GameMap gameMap = new GameMap();
             gameMap.setName(mapSection.getString("name"));
             gameMap.setVoidLimit(mapSection.getInt("void_limit"));
+            gameMap.setHazards(loadHazards(mapSection));
             gameMap.addTeamSpawns(GameTeam.RED,  loadSpawns(mapSection, world, "spawns.red"));
             gameMap.addTeamSpawns(GameTeam.BLUE,  loadSpawns(mapSection, world, "spawns.blue"));
             gameMap.setPowerUpSpawns(loadPowerUpSpawns(mapSection, world));
@@ -37,6 +39,21 @@ public class MapsUtil {
         }
 
         return maps;
+    }
+
+    /** Loads optional per-map hazards while preserving safe legacy defaults. */
+    public static MapHazards loadHazards(ConfigurationSection mapSection) {
+        boolean voidKillEnabled = mapSection.getBoolean("hazards.void-kill-enabled", true);
+        boolean waterPoisonEnabled = mapSection.getBoolean("hazards.water-poison.enabled", false);
+        int durationTicks = mapSection.getInt("hazards.water-poison.duration-ticks", 20);
+        int amplifier = mapSection.getInt("hazards.water-poison.amplifier", 0);
+        if (durationTicks < 1 || durationTicks > 200) {
+            throw new IllegalArgumentException("hazards.water-poison.duration-ticks doit valoir entre 1 et 200");
+        }
+        if (amplifier < 0 || amplifier > 4) {
+            throw new IllegalArgumentException("hazards.water-poison.amplifier doit valoir entre 0 et 4");
+        }
+        return new MapHazards(voidKillEnabled, waterPoisonEnabled, durationTicks, amplifier);
     }
 
     public static Location loadLocation(ConfigurationSection section, World world, String path) {
