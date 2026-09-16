@@ -20,7 +20,7 @@ public record FallenKingdomsSettings(int countdownSeconds, int resultDisplaySeco
         int min = config.getInt("game.min-players-per-kingdom");
         int max = config.getInt("game.max-players-per-kingdom");
         int kingdoms = config.getInt("game.max-kingdoms");
-        if (min != 4 || max < min || max > 6 || kingdoms < 2 || kingdoms > 5) throw new IllegalArgumentException("game: capacité de royaume invalide (public: 4 à 6, 2 à 5 royaumes).");
+        if (min != 3 || max < min || max > 6 || kingdoms < 2 || kingdoms > 5) throw new IllegalArgumentException("game: capacité de royaume invalide (Quick Play: 3 à 6, 2 à 5 royaumes).");
         double heart = config.getDouble("hearts.max-health");
         double border = config.getDouble("sudden-death.final-border-size");
         if (heart <= 0 || border != 50.0) throw new IllegalArgumentException("hearts.max-health doit être positif et sudden-death.final-border-size doit valoir 50.");
@@ -42,11 +42,12 @@ public record FallenKingdomsSettings(int countdownSeconds, int resultDisplaySeco
                 ||!config.getBoolean("protections.block-fluid-crossing",false))
             throw new IllegalArgumentException("Les protections techniques obligatoires ne peuvent pas être désactivées");
         CombatProfile profile;
-        try { profile = CombatProfile.valueOf(environment("FK_COMBAT_PROFILE", config.getString("combat.default-profile", "PAPER_26_2"))); }
+        try { profile = CombatProfile.valueOf(environment("FK_COMBAT_PROFILE", config.getString("combat.default-profile", "LEGACY_1_8"))); }
         catch (IllegalArgumentException failure) { throw new IllegalArgumentException("combat.default-profile: profil inconnu", failure); }
         if (!config.getStringList("combat.allowed-custom-profiles").contains(profile.name()))
             throw new IllegalArgumentException("combat.default-profile: profil non autorisé " + profile);
-        int effectiveMin=integerOverride("FK_MIN_PLAYERS_PER_KINGDOM",min);
+        boolean host=Boolean.parseBoolean(System.getenv().getOrDefault("IS_HOST","false"));
+        int effectiveMin=integerOverride("FK_MIN_PLAYERS_PER_KINGDOM", defaultMinimumPlayersPerKingdom(min, host));
         int effectiveMax=integerOverride("FK_MAX_PLAYERS_PER_KINGDOM",max),effectiveKingdoms=integerOverride("FK_MAX_KINGDOMS",kingdoms);
         if(effectiveMin<1||effectiveMax<effectiveMin||effectiveMax>6||effectiveKingdoms<2||effectiveKingdoms>5)throw new IllegalArgumentException("Surcharges de capacité FK invalides");
         int effectiveCountdown=integerOverride("FK_COUNTDOWN_SECONDS", countdown);
@@ -58,7 +59,6 @@ public record FallenKingdomsSettings(int countdownSeconds, int resultDisplaySeco
         if(effectiveCountdown<=0||effectiveRespawn<0||effectiveHeart<=0||effectiveRuinWaves<1||effectiveRuinWaves>10
                 ||effectiveRuinRadius<=0||effectiveRuinRadius>32||effectiveRuinRatio<=0||effectiveRuinRatio>1)
             throw new IllegalArgumentException("Surcharges de délais, cœur ou ruine FK invalides");
-        boolean host=Boolean.parseBoolean(System.getenv().getOrDefault("IS_HOST","false"));
         return new FallenKingdomsSettings(effectiveCountdown, display, effectiveMin,
                 effectiveMax, effectiveKingdoms,
                 new PhaseTimeline(integerOverride("FK_PVP_AT_SECONDS",config.getInt("phases.pvp-at-seconds")),integerOverride("FK_ASSAULT_AT_SECONDS",config.getInt("phases.assault-at-seconds")),
@@ -68,6 +68,9 @@ public record FallenKingdomsSettings(int countdownSeconds, int resultDisplaySeco
                 effectiveRuinRadius, effectiveRuinRatio, config.getBoolean("ruins.preserve-containers", true), profile,
                 config.getBoolean("protections.tnt-breaches-enabled", true),
                 config.getBoolean("respawn.drop-inventory", true), config.getBoolean("respawn.disconnect-counts-as-death", true));
+    }
+    static int defaultMinimumPlayersPerKingdom(int configuredMinimum, boolean host) {
+        return host ? 4 : configuredMinimum;
     }
     private static String environment(String name, String fallback) {
         String value = System.getenv(name); return value == null || value.isBlank() ? fallback : value.trim().toUpperCase(java.util.Locale.ROOT);

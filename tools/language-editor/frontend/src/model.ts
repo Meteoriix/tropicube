@@ -146,6 +146,7 @@ export const PLACEHOLDER_DESCRIPTIONS: Record<string, string> = {
     grade_count: 'Nombre de grades chargés dans le catalogue.',
     groups: 'Nombre de groupes actuellement présents dans la file classée.',
     guild: 'Nom visible de la guilde du joueur.',
+    heart_max_health: 'Nombre maximal de points de vie du cœur du royaume du joueur.',
     host: 'Adresse réseau de l’hôte de l’instance.',
     hours: 'Nombre d’heures d’une durée formatée.',
     image: 'Nom de l’image Docker utilisée par le template.',

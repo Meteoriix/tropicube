@@ -6,7 +6,7 @@ This document preserves the historical design references used by the Tropicube a
 
 ## Planned Tropicube adaptation
 
-Tropicube keeps the defining loop: several teams build, gather resources, defend a heart, and organize sieges. The approved target has two to five balanced teams, four to six players per team, the Miner, Farmer, Scout, Enchanter, and Alchemist kits, and preparation, PvP, siege, sudden-death, and result phases. Every player also receives 32 steaks at match start.
+Tropicube keeps the defining loop: several teams build, gather resources, defend a heart, and organize sieges. The approved target has two to five balanced teams, three to six players per team in Quick Play, the Miner, Farmer, Scout, Enchanter, and Alchemist kits, and preparation, PvP, siege, sudden-death, and result phases. Every player also receives 32 steaks at match start.
 
 Players will choose Fallen Kingdoms from **Games**, join a public `QUICK_PLAY` instance, or create a public/private custom match when their access level permits it. Team, kit, and map choices belong to localized in-instance menus; players arriving after the roster is locked spectate. At the result, Velocity returns players to a lobby and destroys the disposable game instance.
 

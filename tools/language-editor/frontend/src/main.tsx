@@ -577,7 +577,7 @@ function placeholderSample(name: string): string {
     player:'Nathan', profile:'[VIP] Nathan', balance:'12 450', amount:'500', price:'2 500',
     online_players:'128', visible_games:'7', instance_name:'Lobby-7f42a1b3', instance_id:'91d6…e04b',
     instance_number:'3', server:'SheepWars-7f42a1b3', server_type:'SheepWars', queue:'Ranked 4v4',
-    reserved_players:'6', current_players:'12', max_players:'16', min_players:'8', position:'4',
+    reserved_players:'6', current_players:'12', max_players:'16', min_players:'8', position:'4', heart_max_health:'500',
     map:'Archipel', countdown:'10', time:'08:42', red_players:'5', blue_players:'6', team:'Rouge',
     player_class:'Support', kit:'Archer', kills:'3', sheep_thrown:'14', grade:'Champion', player_grade:'VIP',
     game_mode:'Ranked 4v4', language:'Français', nickname:'TropiNathan', reason:'Comportement inapproprié',

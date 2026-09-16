@@ -1,5 +1,6 @@
 package fr.tropicube.fallenkingdoms.config;
 
+import fr.tropicube.fallenkingdoms.game.CombatProfile;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 import java.io.InputStreamReader;
@@ -12,6 +13,8 @@ class FallenKingdomsSettingsTest {
             var config=YamlConfiguration.loadConfiguration(new InputStreamReader(input,StandardCharsets.UTF_8));
             var settings=FallenKingdomsSettings.load(config);
             assertEquals(500.0,settings.heartHealth());assertFalse(config.getBoolean("combat.friendly-fire"));
+            assertEquals(3, settings.minPlayersPerKingdom());
+            assertEquals(CombatProfile.LEGACY_1_8, settings.combatProfile());
             assertEquals(300, settings.timeline().pvpAt());
             assertEquals(900, settings.timeline().assaultAt());
             assertEquals(2700, settings.timeline().suddenDeathAt());
@@ -28,5 +31,10 @@ class FallenKingdomsSettingsTest {
             config.set("phases.assault-at-seconds",300);
             assertThrows(IllegalArgumentException.class,()->FallenKingdomsSettings.load(config));
         }
+    }
+
+    @Test void customGamesKeepTheHistoricalMinimumTeamSize() {
+        assertEquals(3, FallenKingdomsSettings.defaultMinimumPlayersPerKingdom(3, false));
+        assertEquals(4, FallenKingdomsSettings.defaultMinimumPlayersPerKingdom(3, true));
     }
 }

@@ -1276,3 +1276,4 @@ fk:
   tab-footer-active: "<br><aqua>play.tropicube.fr</aqua>"
   tab-footer-ending: "<br><aqua>play.tropicube.fr</aqua>"
   bossbar-enemy-heart: "<red>❤ {team} heart: <white>{heart_health} HP"
+  actionbar-own-heart: "<red>❤ Your heart: <white>{heart_health}/{heart_max_health} HP"

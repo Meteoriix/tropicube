@@ -161,7 +161,7 @@ public final class FallenKingdomsCustomGameGUI {
         FORCE_END("FK_FORCE_END_AT_SECONDS", Material.BARRIER, "lobby.fk-custom-end", new String[]{"2700", "3600", "4500"}, null),
         HEART("FK_HEART_HEALTH", Material.END_CRYSTAL, "lobby.fk-custom-heart", new String[]{"250", "500", "1000"}, null),
         RESPAWN("FK_RESPAWN_DELAY_SECONDS", Material.TOTEM_OF_UNDYING, "lobby.fk-custom-respawn", new String[]{"5", "10", "15"}, null),
-        COMBAT("FK_COMBAT_PROFILE", Material.DIAMOND_SWORD, "lobby.fk-custom-combat", new String[]{"PAPER_26_2", "LEGACY_1_8"}, null),
+        COMBAT("FK_COMBAT_PROFILE", Material.DIAMOND_SWORD, "lobby.fk-custom-combat", new String[]{"LEGACY_1_8", "PAPER_26_2"}, null),
         RUINS(null, Material.CRACKED_STONE_BRICKS, "lobby.fk-custom-ruins", new String[]{"3:8:0.2", "3:8:0.35", "5:12:0.5"}, null),
         MINER(null, Material.IRON_PICKAXE, "fk.kit-miner", new String[]{"true", "false"}, "miner"),
         FARMER(null, Material.WHEAT, "fk.kit-farmer", new String[]{"true", "false"}, "farmer"),

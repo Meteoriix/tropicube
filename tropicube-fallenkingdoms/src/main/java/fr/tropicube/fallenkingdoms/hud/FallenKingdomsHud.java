@@ -27,10 +27,11 @@ import java.util.Locale;
 import java.util.Set;
 import org.bukkit.scheduler.BukkitTask;
 
-/** Localized scoreboard, tablist and heart bossbar for every FK viewer. */
+/** Localized scoreboard, tablist, actionbar and heart bossbar for every FK viewer. */
 public final class FallenKingdomsHud implements UiReloadParticipant {
     private final TropicubeFallenKingdoms plugin; private final GameSession session;
     private final Map<UUID, Scoreboard> boards=new HashMap<>(); private final Map<UUID, HeartBar> bars=new HashMap<>();
+    private final Map<UUID, ActionBarAlert> actionBarAlerts=new HashMap<>();
     private volatile ScoreboardTemplate scoreboard; private volatile TablistTemplate tablist;
     public FallenKingdomsHud(TropicubeFallenKingdoms plugin,GameSession session){this.plugin=plugin;this.session=session;prepareReload().run();Bukkit.getServicesManager().register(UiReloadParticipant.class,this,plugin,ServicePriority.Normal);}
     public void updateAll(int elapsed){for(Player player:Bukkit.getOnlinePlayers()){applyPlayerListName(player);update(player,elapsed);}}
@@ -48,6 +49,7 @@ public final class FallenKingdomsHud implements UiReloadParticipant {
         }
         player.setScoreboard(board);var tabVariant=tablist.variant(variant);player.sendPlayerListHeaderAndFooter(language.getComponent(player.getUniqueId(),tabVariant.headerKey(),values),language.getComponent(player.getUniqueId(),tabVariant.footerKey(),values));
         applyPlayerListName(player);
+        updateActionBar(player, language, team);
     }
     private PlaceholderValues values(Player player,int elapsed,fr.tropicube.core.managers.LanguageManager language,KingdomId team){
         Map<KingdomId,Integer> survivors=session.survivorCounts();
@@ -66,9 +68,29 @@ public final class FallenKingdomsHud implements UiReloadParticipant {
         BukkitTask task=Bukkit.getScheduler().runTaskLater(plugin,()->{HeartBar current=bars.get(player.getUniqueId());if(current!=null&&current.bar()==bar)removeBar(player);},100L);
         bars.put(player.getUniqueId(),new HeartBar(bar,task));player.showBossBar(bar);
     }
-    public void remove(Player player){removeBar(player);boards.remove(player.getUniqueId());player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());player.sendPlayerListHeaderAndFooter(Component.empty(),Component.empty());}
+    /** Temporarily replaces the allied-heart actionbar without losing its localized baseline. */
+    public void showActionBarAlert(Player player,String key,PlaceholderValues values,long durationTicks){
+        ActionBarAlert alert=new ActionBarAlert(key,values,System.currentTimeMillis()+durationTicks*50L);
+        actionBarAlerts.put(player.getUniqueId(),alert);
+        TropicubeCore core=(TropicubeCore)Bukkit.getPluginManager().getPlugin("TropicubeCore");
+        if(core!=null)player.sendActionBar(core.getLanguageManager().getComponent(player.getUniqueId(),key,values));
+    }
+    public void remove(Player player){removeBar(player);actionBarAlerts.remove(player.getUniqueId());boards.remove(player.getUniqueId());player.sendActionBar(Component.empty());player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());player.sendPlayerListHeaderAndFooter(Component.empty(),Component.empty());}
     public void clear(){Bukkit.getServicesManager().unregister(UiReloadParticipant.class,this);for(Player player:Bukkit.getOnlinePlayers()){remove(player);player.playerListName(Component.text(visibleName(player)));}boards.clear();}
     private void removeBar(Player player){HeartBar previous=bars.remove(player.getUniqueId());if(previous!=null){previous.task().cancel();player.hideBossBar(previous.bar());}}
+    private void updateActionBar(Player player,fr.tropicube.core.managers.LanguageManager language,KingdomId team){
+        ActionBarAlert alert=actionBarAlerts.get(player.getUniqueId());
+        if(alert!=null&&alert.expiresAtMillis()>System.currentTimeMillis()){
+            player.sendActionBar(language.getComponent(player.getUniqueId(),alert.key(),alert.values()));
+            return;
+        }
+        if(alert!=null)actionBarAlerts.remove(player.getUniqueId());
+        Heart heart=team==null?null:session.heart(team);
+        if(!showsOwnHeart(session.state(),team,heart)){player.sendActionBar(Component.empty());return;}
+        PlaceholderValues values=PlaceholderValues.builder().put("heart_health",(int)Math.ceil(heart.health())).put("heart_max_health",(int)Math.ceil(heart.maximumHealth())).build();
+        player.sendActionBar(language.getComponent(player.getUniqueId(),"fk.actionbar-own-heart",values));
+    }
+    static boolean showsOwnHeart(GameState state,KingdomId team,Heart heart){return state.active()&&team!=null&&heart!=null;}
     private void applyPlayerListName(Player player){KingdomId team=session.state()==GameState.WAITING||session.state()==GameState.COUNTDOWN?session.preferredKingdom(player.getUniqueId()):session.kingdomOf(player);player.playerListName(Component.text(visibleName(player),color(team)));}
     private static String visibleName(Player player){String value=PlainTextComponentSerializer.plainText().serialize(player.displayName());return value.isBlank()?player.getName():value;}
     private static NamedTextColor color(KingdomId team){if(team==null)return NamedTextColor.GRAY;return switch(team){case BLUE->NamedTextColor.BLUE;case RED->NamedTextColor.RED;case GREEN->NamedTextColor.GREEN;case YELLOW->NamedTextColor.YELLOW;case ORANGE->NamedTextColor.GOLD;};}
@@ -76,4 +98,5 @@ public final class FallenKingdomsHud implements UiReloadParticipant {
     @Override public Runnable prepareReload(){ScoreboardTemplate next=ScoreboardTemplate.load(plugin,"scoreboards.yml","fallenkingdoms");TablistTemplate nextTab=TablistTemplate.load(plugin,"tablists.yml","fallenkingdoms");return()->{scoreboard=next;tablist=nextTab;};}
     @Override public void refreshViewers(){updateAll(session.elapsedSeconds());}
     private record HeartBar(BossBar bar,BukkitTask task){}
+    private record ActionBarAlert(String key,PlaceholderValues values,long expiresAtMillis){}
 }

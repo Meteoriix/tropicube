@@ -8,7 +8,7 @@ La [spécification technique](FALLEN_KINGDOMS_TECHNICAL_SPEC.md) fixe les règle
 
 ## Adaptation Tropicube prévue
 
-Tropicube conserve le cœur du mode : plusieurs équipes bâtissent, exploitent les ressources, défendent un cœur et organisent des sièges. La cible approuvée prévoit deux à cinq équipes équilibrées, quatre à six joueurs par équipe, les kits Mineur, Fermier, Éclaireur, Enchanteur et Alchimiste, ainsi que les phases de préparation, JcJ, assaut, mort subite et résultat. Chaque joueur reçoit également 32 steaks au lancement.
+Tropicube conserve le cœur du mode : plusieurs équipes bâtissent, exploitent les ressources, défendent un cœur et organisent des sièges. La cible approuvée prévoit deux à cinq équipes équilibrées, trois à six joueurs par équipe en Quick Play, les kits Mineur, Fermier, Éclaireur, Enchanteur et Alchimiste, ainsi que les phases de préparation, JcJ, assaut, mort subite et résultat. Chaque joueur reçoit également 32 steaks au lancement.
 
 Le parcours réseau cible suit les conventions actuelles : le joueur choisit Fallen Kingdoms depuis **Jeux**, rejoint une instance publique `QUICK_PLAY` ou crée une partie personnalisée publique ou privée s'il possède le niveau requis. Les choix d'équipe, de kit et de carte s'effectuent dans l'instance au moyen de menus localisés ; une arrivée après le verrouillage du roster est spectatrice. À la fin, Velocity transfère les joueurs vers un lobby puis détruit l'instance éphémère.
 

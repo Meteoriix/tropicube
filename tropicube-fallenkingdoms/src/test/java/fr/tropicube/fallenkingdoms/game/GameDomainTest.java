@@ -6,8 +6,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class GameDomainTest {
     @Test void publicKingdomCountsRespectContract() {
-        assertThrows(IllegalArgumentException.class, () -> KingdomAllocator.kingdomCount(7));
-        assertEquals(2, KingdomAllocator.kingdomCount(8));
+        assertThrows(IllegalArgumentException.class, () -> KingdomAllocator.kingdomCount(5));
+        assertEquals(2, KingdomAllocator.kingdomCount(6));
+        assertEquals(2, KingdomAllocator.kingdomCount(7));
         assertEquals(3, KingdomAllocator.kingdomCount(13));
         assertEquals(4, KingdomAllocator.kingdomCount(19));
         assertEquals(5, KingdomAllocator.kingdomCount(25));
@@ -22,6 +23,19 @@ class GameDomainTest {
         assertEquals(2, KingdomAllocator.kingdomCount(4, 2, 6, 5));
         assertEquals(5, KingdomAllocator.kingdomCount(25, 2, 6, 5));
     }
+    @Test void everyQuickPlayRosterBetweenSixAndThirtyHasBalancedKingdoms() {
+        for (int players = 0; players <= 31; players++) {
+            final int rosterSize = players;
+            if (players < 6 || players > 30) {
+                assertThrows(IllegalArgumentException.class, () -> KingdomAllocator.kingdomCount(rosterSize));
+                continue;
+            }
+            int kingdoms = KingdomAllocator.kingdomCount(players);
+            assertTrue(kingdoms >= 2 && kingdoms <= 5);
+            assertTrue(players / kingdoms >= 3);
+            assertTrue((players + kingdoms - 1) / kingdoms <= 6);
+        }
+    }
     @Test void allocationIsBalancedAndDeterministic() {
         List<KingdomAllocator.PlayerPreference> players = new ArrayList<>();
         for (int i = 0; i < 13; i++) players.add(new KingdomAllocator.PlayerPreference(new UUID(0, i), KingdomId.BLUE));
@@ -34,7 +48,7 @@ class GameDomainTest {
     }
     @Test void allocationUsesTheSelectedMapLayout() {
         List<KingdomAllocator.PlayerPreference> players = new ArrayList<>();
-        for (int index = 0; index < 8; index++) players.add(new KingdomAllocator.PlayerPreference(new UUID(0, index), null));
+        for (int index = 0; index < 6; index++) players.add(new KingdomAllocator.PlayerPreference(new UUID(0, index), null));
         Map<UUID, KingdomId> result = new KingdomAllocator().allocate(players, List.of(KingdomId.GREEN, KingdomId.ORANGE));
         assertEquals(Set.of(KingdomId.GREEN, KingdomId.ORANGE), Set.copyOf(result.values()));
         assertThrows(IllegalArgumentException.class,

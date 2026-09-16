@@ -127,7 +127,7 @@ class YamlResourcesTest {
             while (matcher.find()) placeholders.add(matcher.group(1));
         }
 
-        assertEquals(157, placeholders.size(),
+        assertEquals(158, placeholders.size(),
                 "Le catalogue canonique doit évoluer explicitement avec les descriptions de l’éditeur");
         assertTrue(Set.of(
                 "friend_accepted",

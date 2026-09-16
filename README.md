@@ -32,7 +32,7 @@ Le Profil donne accès aux missions, notifications, à la progression et au guid
 | `tropicube-core` | Paper | Joueurs, économie, grades cosmétiques, niveaux VIP/modération, langues, amis et parties |
 | `tropicube-lobby` | Paper | Accueil immersif, hotbar Jeux/Social/Profil/Boutique, gestion des guildes dans Social, Quick Play/Ranked, navigateur d'instances et menus harmonisés |
 | `tropicube-sheepwars` | Paper | SheepWars Quick/classé 4v4-8v8, saisons, cote, progression de kits, cartes, équipes et moutons spéciaux |
-| `tropicube-fallenkingdoms` | Paper dynamique | Fallen Kingdoms public ou personnalisé de 2 à 5 royaumes, vote de carte, protections par phase, cœurs, kits, réapparitions, HUD et mort subite |
+| `tropicube-fallenkingdoms` | Paper dynamique | Fallen Kingdoms Quick Play de 6 à 30 joueurs ou personnalisé, 2 à 5 royaumes, combat 1.8, cœurs, kits, réapparitions, HUD et mort subite |
 
 ## Démarrage rapide
 

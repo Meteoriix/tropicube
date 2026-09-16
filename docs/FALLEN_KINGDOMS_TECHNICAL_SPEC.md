@@ -34,11 +34,11 @@ Ne font pas partie de la V1 : une monnaie ou des récompenses économiques, un �
 
 ### Effectif et royaumes
 
-- Une partie publique exige au moins deux royaumes et quatre joueurs par royaume, soit huit joueurs.
+- Une partie Quick Play exige au moins deux royaumes et trois joueurs par royaume, soit six joueurs.
 - Un royaume accueille au maximum six joueurs en partie publique.
 - Le nombre cible de royaumes est `max(2, ceil(effectif / 6))`, plafonné à cinq.
-- Les seuils publics naturels sont donc : 8 à 12 joueurs pour deux royaumes, 13 à 18 pour trois, 19 à 24 pour quatre et 25 à 30 pour cinq.
-- La répartition finale garantit au moins quatre joueurs par royaume et un écart d'effectif maximal de un.
+- Les seuils Quick Play naturels sont donc : 6 à 12 joueurs pour deux royaumes, 13 à 18 pour trois, 19 à 24 pour quatre et 25 à 30 pour cinq.
+- La répartition finale garantit au moins trois joueurs par royaume et un écart d'effectif maximal de un.
 - Chaque carte activée doit définir un agencement valide pour chacun des nombres de royaumes qu'elle accepte.
 - Le joueur choisit une couleur préférée. L'algorithme respecte le plus de préférences possible sans enfreindre l'équilibrage ; une préférence n'est jamais une garantie.
 
@@ -58,8 +58,8 @@ La partie se termine avant 60 minutes dès qu'une seule équipe possède encore 
 
 ### Combat
 
-- Le profil public est le combat natif Paper 26.2.
-- Une partie personnalisée peut choisir le profil `LEGACY_1_8` : absence de délai d'attaque, dégâts et recul émulés, boucliers et seconde main désactivés.
+- Le profil public est `LEGACY_1_8` : absence de délai d'attaque et de balayage, dégâts et recul émulés, boucliers et seconde main désactivés.
+- Une partie personnalisée peut choisir explicitement le combat natif `PAPER_26_2`.
 - L'émulation 1.8 est volontairement limitée à ces mécanismes essentiels.
 - Les dégâts directs et indirects entre membres d'un même royaume sont annulés.
 
@@ -98,7 +98,7 @@ Les valeurs de gameplay sont validées au chargement et regroupées dans `config
 | Règle | Défaut public | Surcharge personnalisée |
 |---|---:|---|
 | Compte à rebours | 30 s | oui |
-| Joueurs minimum par royaume | 4 | non |
+| Joueurs minimum par royaume | 3 en Quick Play, 4 en partie personnalisée | non |
 | Joueurs maximum par royaume | 6 | oui, dans la capacité de la carte |
 | Royaumes maximum | 5 | oui, de 2 à 5 |
 | Début du JcJ | 5 min | oui |
@@ -108,12 +108,12 @@ Les valeurs de gameplay sont validées au chargement et regroupées dans `config
 | Points de vie du cœur | 500 | oui |
 | Délai de réapparition | 10 s | oui |
 | Taille finale de bordure | 50 blocs | non |
-| Profil de combat | `PAPER_26_2` | oui |
+| Profil de combat | `LEGACY_1_8` | oui |
 | Kits activés | cinq kits | oui |
 | Carte | vote | choix de l'hôte |
 | Rayon et proportion de ruine | selon configuration | oui |
 
-Les validations imposent `pvp-at < assault-at < sudden-death-at < force-end-at`, au moins deux royaumes, quatre joueurs minimum par royaume, une taille finale de bordure de 50, un cœur strictement positif et au moins un kit actif. Les protections techniques, l'absence de dégâts alliés, la préservation des conteneurs et l'absence d'accès réseau bloquant ne sont jamais surchargeables.
+Les validations imposent `pvp-at < assault-at < sudden-death-at < force-end-at`, au moins deux royaumes, trois joueurs minimum par royaume en Quick Play, une taille finale de bordure de 50, un cœur strictement positif et au moins un kit actif. Les parties personnalisées conservent leur minimum historique de quatre joueurs par royaume. Les protections techniques, l'absence de dégâts alliés, la préservation des conteneurs et l'absence d'accès réseau bloquant ne sont jamais surchargeables.
 
 ## Hypothèses temporaires
 
@@ -162,7 +162,7 @@ PREPARATION ──05:00──> PVP ──15:00──> ASSAULT ──45:00──>
 
 | Origine | Destination | Déclencheur | Effets atomiques |
 |---|---|---|---|
-| `WAITING` | `COUNTDOWN` | démarrage automatique ou administrateur, effectif ≥ 8 et carte/agencement valides | démarre le minuteur et publie l'état |
+| `WAITING` | `COUNTDOWN` | démarrage automatique ou administrateur, effectif ≥ 6 en Quick Play et carte/agencement valides | démarre le minuteur et publie l'état |
 | `COUNTDOWN` | `WAITING` | effectif insuffisant, carte/agencement invalide ou annulation | annule le minuteur et déverrouille les sélections |
 | `COUNTDOWN` | `PREPARATION` | minuteur à zéro et préconditions toujours valides | verrouille le roster, résout le vote, calcule les royaumes, assigne joueurs/kits, crée les cœurs et téléporte |
 | `PREPARATION` | `PVP` | horloge à 05:00 | active le JcJ dans la zone commune |
@@ -257,7 +257,7 @@ Fallen Kingdoms suit le modèle SheepWars : toutes les cartes sont déclarées d
 game:
   countdown-seconds: 30
   result-display-seconds: 10
-  min-players-per-kingdom: 4
+  min-players-per-kingdom: 3
   max-players-per-kingdom: 6
   max-kingdoms: 5
 
@@ -268,7 +268,7 @@ phases:
   force-end-at-seconds: 3600
 
 combat:
-  default-profile: PAPER_26_2
+  default-profile: LEGACY_1_8
   allowed-custom-profiles:
     - PAPER_26_2
     - LEGACY_1_8
@@ -404,7 +404,7 @@ L'exemple est un schéma cible, pas une carte prête à jouer. `enabled: false` 
 
 La sélection de carte, équipe et kit reste graphique. La hotbar d'attente reprend le parcours SheepWars : équipe, kit et carte aux emplacements 0 à 2, lancement ou annulation pour l'hôte en 4, Profil en 7 et retour au lobby en 8. Les objets affichent le choix courant et le clic attendu. Les inventaires partagent le cadrage réseau, placent le retour à gauche et la fermeture à droite, distinguent le choix actif et présentent les demandes par équipe, la description des kits et le nombre de votes. Une commande refusée ne modifie jamais partiellement la session. Les textes sont fournis en `fr`, `en`, `de` et `es` via Adventure/MiniMessage.
 
-Le scoreboard actif affiche la phase actuelle, le nom et le délai de la prochaine phase, l'équipe du joueur et uniquement les équipes affectées, sans PV de cœur. La tablist porte la carte et colore les pseudonymes selon la préférence en attente puis l'affectation réelle. L'actionbar est réservée aux alertes contextuelles. Un coup valide sur un cœur ennemi affiche à l'attaquant une bossbar pendant cinq secondes depuis le dernier coup ; le cœur allié n'est jamais affiché.
+Le scoreboard actif affiche la phase actuelle, le nom et le délai de la prochaine phase, l'équipe du joueur et uniquement les équipes affectées, sans PV de cœur. La tablist porte la carte et colore les pseudonymes selon la préférence en attente puis l'affectation réelle. L'actionbar affiche en continu les PV actuels et maximaux du cœur allié pendant les phases actives ; les alertes contextuelles de réapparition ou de territoire la remplacent temporairement et sont rerendues dans la langue courante. Un coup valide sur un cœur ennemi affiche à l'attaquant une bossbar pendant cinq secondes depuis le dernier coup.
 
 ## Protections par phase
 
@@ -534,7 +534,7 @@ La phase classée ajoutera une ou plusieurs files **à format fixe** propres à 
 
 ### Tests unitaires sans serveur
 
-- Pour chaque effectif de 0 à 31, le calcul des royaumes accepte uniquement 8 à 30, produit 2 à 5 royaumes et respecte les tailles 4 à 6 avec un écart maximal de un.
+- Pour chaque effectif de 0 à 31, le calcul Quick Play accepte uniquement 6 à 30, produit 2 à 5 royaumes et respecte les tailles 3 à 6 avec un écart maximal de un ; les surcharges bêta 1v1 et 2v2 restent inchangées.
 - L'affectation est déterministe à graine identique, respecte les capacités et maximise les préférences après le critère d'équilibrage.
 - La machine refuse toute transition non déclarée et rend chaque transition répétée sans effet supplémentaire.
 - Les bornes 299/300, 899/900, 2699/2700 et 3599/3600 secondes déclenchent exactement les phases attendues.
@@ -558,7 +558,7 @@ La phase classée ajoutera une ou plusieurs files **à format fixe** propres à 
 
 ### Scénarios sur serveur Paper/Docker
 
-- Une partie à 8, 13, 19 et 25 joueurs crée respectivement 2, 3, 4 et 5 royaumes équilibrés.
+- Une partie à 6, 13, 19 et 25 joueurs crée respectivement 2, 3, 4 et 5 royaumes équilibrés.
 - Le JcJ, l'entrée des bases, les cœurs et la construction suivent le tableau de protections à chaque transition.
 - Une mort avec cœur vivant réapparaît nue après dix secondes ; sa destruction pendant le décompte rend le joueur spectateur.
 - Une base n'explose pas à la destruction du cœur, mais se ruine une seule fois à l'élimination du dernier survivant en conservant les coffres.

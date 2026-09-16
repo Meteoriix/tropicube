@@ -50,6 +50,7 @@ import java.time.Duration;
 
 /** Paper adapter for one session on any validated map definition. */
 public final class GameSession {
+    private static final double LEGACY_ATTACK_SPEED = 1024.0;
     private final UUID sessionId = UUID.randomUUID();
     private final TropicubeFallenKingdoms plugin;
     private final GameStateMachine state;
@@ -62,6 +63,7 @@ public final class GameSession {
     private final KitCatalog kits;
     private final RuinService ruins;
     private final Map<UUID, PlayerSession> players = new HashMap<>();
+    private final Map<UUID, Double> originalAttackSpeeds = new HashMap<>();
     private final Map<UUID, KingdomId> kingdomPreferences = new HashMap<>();
     private final Map<UUID, String> kitPreferences = new HashMap<>();
     private final Map<KingdomId, Heart> hearts = new EnumMap<>(KingdomId.class);
@@ -191,8 +193,7 @@ public final class GameSession {
                 "player max health attribute").getValue());
         player.setFoodLevel(20);
         player.setGameMode(GameMode.SURVIVAL);
-        var attackSpeed=player.getAttribute(Attribute.ATTACK_SPEED);
-        if(attackSpeed!=null&&settings.combatProfile()==CombatProfile.LEGACY_1_8)attackSpeed.setBaseValue(1024.0);
+        applyCombatAttributes(player);
         kits.give(player, players.get(player.getUniqueId()).kitId());
         player.getInventory().addItem(new ItemStack(Material.COOKED_BEEF, 32));
         player.teleport(base(kingdom).spawn().in(world()));
@@ -307,7 +308,7 @@ public final class GameSession {
             PlayerSession current=players.get(playerId);Player online=Bukkit.getPlayer(playerId);
             if(current==null||current.state()!=PlayerLifeState.RESPAWNING||!state.state().active()){cancel();respawnTasks.remove(playerId);return;}
             if(remaining[0]<=0){cancel();respawnTasks.remove(playerId);completeRespawn(playerId);return;}
-            if(online!=null&&Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core)online.sendActionBar(core.getLanguageManager().getComponent(playerId,"fk.respawn-countdown",PlaceholderValues.of("seconds",remaining[0])));
+            if(online!=null)hud.showActionBarAlert(online,"fk.respawn-countdown",PlaceholderValues.of("seconds",remaining[0]),25L);
             remaining[0]--;
         }};
         BukkitTask task=tasks.register(countdown.runTaskTimer(plugin,0L,20L));respawnTasks.put(playerId,task);
@@ -324,6 +325,7 @@ public final class GameSession {
             return;
         }
         runtime.state(PlayerLifeState.ACTIVE);
+        applyCombatAttributes(player);
         Bukkit.getPluginManager().callEvent(new FallenKingdomsPlayerRespawnEvent(sessionId, player, runtime.kingdom()));
         player.getInventory().clear();
         player.setGameMode(GameMode.SURVIVAL);
@@ -348,7 +350,9 @@ public final class GameSession {
         if (runtime == null || runtime.state() == PlayerLifeState.ELIMINATED) {
             player.setGameMode(GameMode.SPECTATOR);
             player.teleport(map.spectator().in(world()));
-        } else if (runtime.state() == PlayerLifeState.OFFLINE) {
+        } else {
+            applyCombatAttributes(player);
+            if (runtime.state() != PlayerLifeState.OFFLINE) return;
             if(!settings.disconnectCountsAsDeath()){runtime.state(PlayerLifeState.ACTIVE);return;}
             runtime.state(PlayerLifeState.RESPAWNING);
             respawn(player);
@@ -357,6 +361,7 @@ public final class GameSession {
 
     public void quit(Player player) {
         core().getNetworkProgressionService().releaseDisplay(player.getUniqueId());
+        restoreCombatAttributes(player);
         hud.remove(player);
         baseEntryWarnings.remove(player.getUniqueId());
         if (state.state() == GameState.COUNTDOWN) Bukkit.getScheduler().runTask(plugin, this::reevaluateCountdown);
@@ -382,7 +387,8 @@ public final class GameSession {
     public boolean sameKingdom(Player leftPlayer,Player rightPlayer){PlayerSession left=players.get(leftPlayer.getUniqueId()),right=players.get(rightPlayer.getUniqueId());return left!=null&&right!=null&&left.kingdom()==right.kingdom();}
     public boolean legacyCombat(){return settings.combatProfile()==CombatProfile.LEGACY_1_8;}
     public void applyCombatProfile(EntityDamageByEntityEvent event,Player attacker,Player victim){
-        if(!legacyCombat())return;event.setDamage(LegacyCombatRules.attackDamage(attacker.getInventory().getItemInMainHand().getType(),event.getDamage()));
+        if(!legacyCombat() || !(event.getDamager() instanceof Player))return;
+        event.setDamage(LegacyCombatRules.attackDamage(attacker.getInventory().getItemInMainHand().getType(),event.getDamage()));
         Vector direction=victim.getLocation().toVector().subtract(attacker.getLocation().toVector());
         Vector previous=victim.getVelocity();var knockback=LegacyCombatRules.knockback(previous.getX(),previous.getY(),previous.getZ(),direction.getX(),direction.getZ(),attacker.isSprinting());
         Bukkit.getScheduler().runTask(plugin,()->{if(state.state().active()&&victim.isOnline())victim.setVelocity(new Vector(knockback.x(),knockback.y(),knockback.z()));});
@@ -454,7 +460,7 @@ public final class GameSession {
         long now = System.currentTimeMillis();
         if (now - baseEntryWarnings.getOrDefault(player.getUniqueId(), 0L) < 2_000L) return;
         baseEntryWarnings.put(player.getUniqueId(), now);
-        player.sendActionBar(core().getLanguageManager().getComponent(player.getUniqueId(), "fk.enemy-base-locked"));
+        hud.showActionBarAlert(player, "fk.enemy-base-locked", PlaceholderValues.empty(), 40L);
     }
 
     public boolean mayExplosionChange(Block block) {
@@ -503,6 +509,7 @@ public final class GameSession {
         Bukkit.getPluginManager().callEvent(new FallenKingdomsGameEndEvent(result));
         plugin.updateInstanceStatus(ServerInstance.Status.GAME_ENDING);
         announceResult(result);
+        Bukkit.getOnlinePlayers().forEach(this::restoreCombatAttributes);
         crystals.values().forEach(EnderCrystal::remove);
         tasks.register(Bukkit.getScheduler().runTaskLater(plugin, () -> {
             tasks.cancelAll();
@@ -514,7 +521,10 @@ public final class GameSession {
     public void shutdown() {
         tasks.cancelAll();
         crystals.values().forEach(EnderCrystal::remove);
-        for (Player player : Bukkit.getOnlinePlayers()) core().getNetworkProgressionService().releaseDisplay(player.getUniqueId());
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            restoreCombatAttributes(player);
+            core().getNetworkProgressionService().releaseDisplay(player.getUniqueId());
+        }
         hud.clear();
     }
     public GameState state() { return state.state(); }
@@ -540,7 +550,7 @@ public final class GameSession {
         MapDefinition candidate;
         try { candidate = maps.select(mapId); } catch (IllegalArgumentException ignored) { return false; }
         int count = Bukkit.getOnlinePlayers().size();
-        if (count >= 8) {
+        if (count >= settings.minPlayersPerKingdom() * 2) {
             try { if (!candidate.layouts().containsKey(configuredKingdomCount(count))) return false; }
             catch (IllegalArgumentException invalidRoster) { return false; }
         }
@@ -593,6 +603,21 @@ public final class GameSession {
 
     private void updateHud(int elapsedSeconds) {
         hud.updateAll(elapsedSeconds);
+    }
+
+    private void applyCombatAttributes(Player player) {
+        if (!legacyCombat()) return;
+        var attackSpeed = player.getAttribute(Attribute.ATTACK_SPEED);
+        if (attackSpeed == null) return;
+        originalAttackSpeeds.putIfAbsent(player.getUniqueId(), attackSpeed.getBaseValue());
+        attackSpeed.setBaseValue(LEGACY_ATTACK_SPEED);
+    }
+
+    private void restoreCombatAttributes(Player player) {
+        Double originalAttackSpeed = originalAttackSpeeds.remove(player.getUniqueId());
+        if (originalAttackSpeed == null) return;
+        var attackSpeed = player.getAttribute(Attribute.ATTACK_SPEED);
+        if (attackSpeed != null) attackSpeed.setBaseValue(originalAttackSpeed);
     }
 
     private void announceResult(GameResult result) {

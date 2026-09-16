@@ -5,11 +5,11 @@ import java.util.*;
 /** Balances public rosters while honoring as many preferred kingdoms as possible. */
 public final class KingdomAllocator {
     public static int kingdomCount(int players) {
-        if (players < 8 || players > 30) throw new IllegalArgumentException("Une partie publique accepte de 8 à 30 joueurs.");
+        if (players < 6 || players > 30) throw new IllegalArgumentException("Une partie Quick Play accepte de 6 à 30 joueurs.");
         return Math.min(5, Math.max(2, (players + 5) / 6));
     }
     public static int kingdomCount(int players, int maximumPlayersPerKingdom, int maximumKingdoms) {
-        return kingdomCount(players, 4, maximumPlayersPerKingdom, maximumKingdoms);
+        return kingdomCount(players, 3, maximumPlayersPerKingdom, maximumKingdoms);
     }
     public static int kingdomCount(int players, int minimumPlayersPerKingdom,
                                    int maximumPlayersPerKingdom, int maximumKingdoms) {
@@ -28,7 +28,7 @@ public final class KingdomAllocator {
     }
     /** Allocates against the exact kingdom layout declared by the selected map. */
     public Map<UUID, KingdomId> allocate(Collection<PlayerPreference> preferences, List<KingdomId> ids) {
-        return allocate(preferences, ids, 4, 6);
+        return allocate(preferences, ids, 3, 6);
     }
     public Map<UUID, KingdomId> allocate(Collection<PlayerPreference> preferences, List<KingdomId> ids,
                                          int minimumPlayersPerKingdom, int maximumPlayersPerKingdom) {

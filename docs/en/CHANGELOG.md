@@ -6,6 +6,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-16
 
+- Enables 1.8 combat by default in Fallen Kingdoms, shows allied-heart health in the actionbar, and lowers Quick Play startup to six players without changing beta thresholds.
 - Simplified and aligned the Lobby, SheepWars, and Fallen Kingdoms tablists around the Tropicube brand and server address, and streamlined the Lobby scoreboard.
 - Fixed and adjusted Fallen Kingdoms with usable containers, coherent territorial building and gates, PvP at 5 minutes, assault at 15 minutes, sudden death at 45 minutes, forced resolution at 60 minutes, the Alchemist kit, 32 steaks, and removal of the network XP display on entry.
 - Reworked the Fallen Kingdoms HUD with active teams and no heart health in the scoreboard, a named next phase, team-colored waiting-room tablist, contextual actionbar, and a temporary bossbar for the enemy heart being hit.

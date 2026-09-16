@@ -29,6 +29,10 @@ public final class GameListener implements Listener {
     @EventHandler public void respawn(PlayerRespawnEvent event) { session.respawn(event.getPlayer()); }
     @EventHandler public void playerDamage(EntityDamageByEntityEvent event) {
         if (!(event.getEntity() instanceof Player victim)) return;
+        if (session.legacyCombat() && event.getCause() == org.bukkit.event.entity.EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK) {
+            event.setCancelled(true);
+            return;
+        }
         Player attacker = attacker(event);
         if (attacker == null) return;
         if (!session.allowsPvp(attacker, victim)) event.setCancelled(true);

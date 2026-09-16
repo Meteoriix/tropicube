@@ -12,6 +12,7 @@ class FallenKingdomsCustomGameGUITest {
         assertTrue(defaults.contains("FK_ASSAULT_AT_SECONDS=900"));
         assertTrue(defaults.contains("FK_SUDDEN_DEATH_AT_SECONDS=2700"));
         assertTrue(defaults.contains("FK_FORCE_END_AT_SECONDS=3600"));
+        assertTrue(defaults.contains("FK_COMBAT_PROFILE=LEGACY_1_8"));
         assertTrue(defaults.contains("FK_ENABLED_KITS=miner,farmer,scout,enchanter,alchemist"));
 
         holder.cycle(28, false);

@@ -3,7 +3,7 @@ game:
   default-map: cactus
   countdown-seconds: 30
   result-display-seconds: 10
-  min-players-per-kingdom: 4
+  min-players-per-kingdom: 3
   max-players-per-kingdom: 6
   max-kingdoms: 5
 phases:
@@ -28,7 +28,7 @@ ruins:
   destruction-ratio: 0.35
   preserve-containers: true
 combat:
-  default-profile: PAPER_26_2
+  default-profile: LEGACY_1_8
   allowed-custom-profiles: [PAPER_26_2, LEGACY_1_8]
   friendly-fire: false
 protections:
