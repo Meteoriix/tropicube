@@ -8,9 +8,9 @@ game:
   max-kingdoms: 5
 phases:
   pvp-at-seconds: 300
-  assault-at-seconds: 1500
-  sudden-death-at-seconds: 1800
-  force-end-at-seconds: 2700
+  assault-at-seconds: 900
+  sudden-death-at-seconds: 2700
+  force-end-at-seconds: 3600
 hearts:
   max-health: 500.0
   tnt-direct-damage: false

@@ -19,6 +19,8 @@ L'éditeur local utilise `LIBRETRANSLATE_URL` (défaut `http://127.0.0.1:5000`),
 
 Les fichiers `menus.yml`, `scoreboards.yml` et `tablists.yml` utilisent le schéma versionné `version: 1`. Les menus déclarent titre, nombre de lignes, cadrage, boutons statiques et régions dynamiques ; les scoreboards déclarent un titre et des variantes de 1 à 15 lignes ; les tablists déclarent, pour chaque état, une clé d'en-tête et une clé de pied. Les ressources embarquées et leurs miroirs Docker sont synchronisés au build.
 
+Les tablists du Lobby, de SheepWars et de Fallen Kingdoms partagent un en-tête Tropicube, le nom du contexte courant et `play.tropicube.fr` en pied. Les informations de jeu détaillées restent dans les scoreboards afin d'éviter leur répétition dans la liste des joueurs.
+
 Pour un menu, `frame` vaut `network`, `neutral` ou `none`. Chaque région dynamique déclare des cases uniques et valides pour la taille de l'inventaire ; les boutons fixes peuvent volontairement servir d'état de chargement ou vide à une région. Le registre rejette toute autre valeur de cadre ou toute disposition invalide au démarrage.
 
 ### Grades et niveaux d'accès
@@ -250,7 +252,7 @@ Le fichier `dockerfiles/configs/TropicubeFallenKingdoms/config.yml` déclare la 
 
 `game.default-map` choisit la carte locale et la variable d'instance `MAP_ID` la remplace en production. Chaque entrée activée sous `locations.maps` fournit sa propre traduction, région jouable, bordure, agencements et bases : ajouter Apocalypse ou Yeti ne demande donc aucun changement Java. Le démarrage est refusé si l'agencement correspondant à l'effectif manque, si deux bases se chevauchent ou si une position sort des régions déclarées.
 
-`game.auto-start`, les quatre échéances de phase, la vie des cœurs, le délai de réapparition, les matériaux interdits, la bordure finale, les paramètres de ruine et tous les objets de kits sont validés au chargement. Le profil public ouvre le JcJ à 5 minutes, l'assaut à 25 minutes, la mort subite à 30 minutes et force le résultat à 45 minutes. `protections.forbidden-placement-materials` réserve les blocs techniques ; les blocs ordinaires sont autorisés en zone commune et en base alliée, tandis que seule la TNT est posable en base ennemie pendant l'assaut. Les kits se trouvent sous `kits.definitions`; `kits.default` doit référencer un kit activé et le kit `alchemist` fournit l'atelier de brassage approuvé.
+`game.auto-start`, les quatre échéances de phase, la vie des cœurs, le délai de réapparition, les matériaux interdits, la bordure finale, les paramètres de ruine et tous les objets de kits sont validés au chargement. Le profil public ouvre le JcJ à 5 minutes, l'assaut à 15 minutes, la mort subite à 45 minutes et force le résultat à 60 minutes. `protections.forbidden-placement-materials` réserve les blocs techniques ; les blocs ordinaires sont autorisés en zone commune et en base alliée, tandis que seule la TNT est posable en base ennemie pendant l'assaut. Les kits se trouvent sous `kits.definitions`; `kits.default` doit référencer un kit activé et le kit `alchemist` fournit l'atelier de brassage approuvé.
 
 Les variables internes `FK_MIN_PLAYERS_PER_KINGDOM`, `FK_MAX_PLAYERS_PER_KINGDOM` et `FK_MAX_KINGDOMS` permettent aux templates bêta d'abaisser de manière contrôlée la taille des royaumes. Sans surcharge, le profil public historique reste fixé à 4–6 joueurs par royaume et 2–5 royaumes.
 

@@ -9,8 +9,9 @@ class FallenKingdomsCustomGameGUITest {
         var holder = new FallenKingdomsCustomGameGUI.Holder("fallenkingdoms", true);
         String defaults = holder.encodedOptions();
         assertTrue(defaults.contains("FK_PVP_AT_SECONDS=300"));
-        assertTrue(defaults.contains("FK_SUDDEN_DEATH_AT_SECONDS=1800"));
-        assertTrue(defaults.contains("FK_FORCE_END_AT_SECONDS=2700"));
+        assertTrue(defaults.contains("FK_ASSAULT_AT_SECONDS=900"));
+        assertTrue(defaults.contains("FK_SUDDEN_DEATH_AT_SECONDS=2700"));
+        assertTrue(defaults.contains("FK_FORCE_END_AT_SECONDS=3600"));
         assertTrue(defaults.contains("FK_ENABLED_KITS=miner,farmer,scout,enchanter,alchemist"));
 
         holder.cycle(28, false);
@@ -25,7 +26,7 @@ class FallenKingdomsCustomGameGUITest {
         var holder = new FallenKingdomsCustomGameGUI.Holder("fallenkingdoms", false);
         holder.cycle(15, false);
         String encoded = holder.encodedOptions();
-        assertTrue(encoded.contains("FK_SUDDEN_DEATH_AT_SECONDS=2700"));
-        assertTrue(encoded.contains("FK_FORCE_END_AT_SECONDS=3600"));
+        assertTrue(encoded.contains("FK_SUDDEN_DEATH_AT_SECONDS=3600"));
+        assertTrue(encoded.contains("FK_FORCE_END_AT_SECONDS=4500"));
     }
 }

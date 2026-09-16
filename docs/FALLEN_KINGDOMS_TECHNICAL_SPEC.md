@@ -50,11 +50,11 @@ Toutes les échéances sont mesurées depuis l'entrée en `PREPARATION` :
 |---:|---|
 | 00:00 | Début de la préparation, remise du kit et téléportation aux bases |
 | 05:00 | Activation du JcJ dans la zone commune |
-| 25:00 | Ouverture des bases ennemies et vulnérabilité des cœurs |
-| 30:00 | Destruction forcée de tous les cœurs restants et mort subite |
-| 45:00 | Résolution forcée selon le nombre de survivants |
+| 15:00 | Ouverture des bases ennemies et vulnérabilité des cœurs |
+| 45:00 | Destruction forcée de tous les cœurs restants et mort subite |
+| 60:00 | Résolution forcée selon le nombre de survivants |
 
-La partie se termine avant 45 minutes dès qu'une seule équipe possède encore au moins un joueur vivant.
+La partie se termine avant 60 minutes dès qu'une seule équipe possède encore au moins un joueur vivant.
 
 ### Combat
 
@@ -83,12 +83,12 @@ La partie se termine avant 45 minutes dès qu'une seule équipe possède encore 
 - À son retour, le joueur ne peut reprendre que si sa session appartenait déjà à la partie et si son cœur est encore vivant ; sinon il reste spectateur.
 - Toute arrivée sans session verrouillée après le début de la préparation est placée en spectateur.
 
-### Mort subite et résultat à 45 minutes
+### Mort subite et résultat à 60 minutes
 
-- À 30 minutes, tous les cœurs encore vivants sont détruits avec la cause `FORCED_SUDDEN_DEATH` et aucune réapparition supplémentaire n'est possible.
-- La bordure se resserre autour du centre configuré pour atteindre exactement 50 × 50 blocs à 45 minutes.
+- À 45 minutes, tous les cœurs encore vivants sont détruits avec la cause `FORCED_SUDDEN_DEATH` et aucune réapparition supplémentaire n'est possible.
+- La bordure se resserre autour du centre configuré pour atteindre exactement 50 × 50 blocs à 60 minutes.
 - Si un seul royaume conserve des survivants avant cette échéance, il gagne immédiatement.
-- À 45 minutes, gagne la ou les équipes ayant le plus grand nombre de survivants.
+- À 60 minutes, gagne la ou les équipes ayant le plus grand nombre de survivants.
 - En cas d'égalité au maximum, le résultat est un match nul et chaque royaume ex æquo reçoit à la fois une victoire et un match nul dans ses statistiques.
 
 ## Règles configurables
@@ -102,9 +102,9 @@ Les valeurs de gameplay sont validées au chargement et regroupées dans `config
 | Joueurs maximum par royaume | 6 | oui, dans la capacité de la carte |
 | Royaumes maximum | 5 | oui, de 2 à 5 |
 | Début du JcJ | 5 min | oui |
-| Début de l'assaut | 25 min | oui |
-| Mort subite | 30 min | oui |
-| Fin forcée | 45 min | oui |
+| Début de l'assaut | 15 min | oui |
+| Mort subite | 45 min | oui |
+| Fin forcée | 60 min | oui |
 | Points de vie du cœur | 500 | oui |
 | Délai de réapparition | 10 s | oui |
 | Taille finale de bordure | 50 blocs | non |
@@ -134,7 +134,7 @@ WAITING ──effectif et carte valides──> COUNTDOWN
    └──effectif/carte invalides────────────┘
                                           │ compte à rebours terminé
                                           v
-PREPARATION ──05:00──> PVP ──25:00──> ASSAULT ──30:00──> SUDDEN_DEATH
+PREPARATION ──05:00──> PVP ──15:00──> ASSAULT ──45:00──> SUDDEN_DEATH
      │                    │               │                    │
      └──────────── abandon administrateur / condition de victoire ───────┐
                                                                          v
@@ -166,11 +166,11 @@ PREPARATION ──05:00──> PVP ──25:00──> ASSAULT ──30:00──>
 | `COUNTDOWN` | `WAITING` | effectif insuffisant, carte/agencement invalide ou annulation | annule le minuteur et déverrouille les sélections |
 | `COUNTDOWN` | `PREPARATION` | minuteur à zéro et préconditions toujours valides | verrouille le roster, résout le vote, calcule les royaumes, assigne joueurs/kits, crée les cœurs et téléporte |
 | `PREPARATION` | `PVP` | horloge à 05:00 | active le JcJ dans la zone commune |
-| `PVP` | `ASSAULT` | horloge à 25:00 | ouvre les bases et rend les cœurs vulnérables |
-| `ASSAULT` | `SUDDEN_DEATH` | horloge à 30:00 | détruit les cœurs restants, annule les réapparitions et démarre la bordure |
+| `PVP` | `ASSAULT` | horloge à 15:00 | ouvre les bases et rend les cœurs vulnérables |
+| `ASSAULT` | `SUDDEN_DEATH` | horloge à 45:00 | détruit les cœurs restants, annule les réapparitions et démarre la bordure |
 | `ASSAULT` | `ENDING` | un seul royaume vivant | fige le vainqueur |
 | `SUDDEN_DEATH` | `ENDING` | un seul royaume vivant | fige le vainqueur |
-| `SUDDEN_DEATH` | `ENDING` | horloge à 45:00 | compte les survivants et applique l'égalité multi-vainqueur |
+| `SUDDEN_DEATH` | `ENDING` | horloge à 60:00 | compte les survivants et applique l'égalité multi-vainqueur |
 | état actif | `ENDING` | arrêt/abandon administrateur ou désactivation du plugin | résultat `ADMIN_ABORT`, aucune statistique compétitive |
 | `ENDING` | `ENDED` | persistance terminée ou expirée, affichage terminé, joueurs transférés | annule tâches et abonnements, ferme les ressources et demande l'arrêt d'instance |
 
@@ -202,7 +202,7 @@ Chaque transition est idempotente et exécutée sur le thread serveur pour les m
 | `KitService` | Charge le catalogue, mémorise le choix et remet une seule fois le contenu configuré. |
 | `RespawnService` | Programme les dix secondes, annule à la destruction du cœur et réapparaît sans kit. |
 | `RuinService` | Exécute les vagues visuelles et la destruction filtrée, puis neutralise la région. |
-| `BorderService` | Initialise la bordure et garantit son interpolation vers 50 × 50 entre la mort subite à 30 minutes et la fin forcée à 45 minutes. |
+| `BorderService` | Initialise la bordure et garantit son interpolation vers 50 × 50 entre la mort subite à 45 minutes et la fin forcée à 60 minutes. |
 | `HudService` | Produit scoreboard, bossbars, titres, hotbar et rafraîchissement après changement de langue à partir des manifestes FK. |
 | `TaskRegistry` | Enregistre toutes les tâches Paper et les annule de façon idempotente à la fin. |
 | `StatisticsService` | Construit un résultat immuable, orchestre l'écriture durable et la mise à jour du cache. |
@@ -263,9 +263,9 @@ game:
 
 phases:
   pvp-at-seconds: 300
-  assault-at-seconds: 1500
-  sudden-death-at-seconds: 1800
-  force-end-at-seconds: 2700
+  assault-at-seconds: 900
+  sudden-death-at-seconds: 2700
+  force-end-at-seconds: 3600
 
 combat:
   default-profile: PAPER_26_2
@@ -512,15 +512,15 @@ La phase classée ajoutera une ou plusieurs files **à format fixe** propres à 
 
 - Départ d'un joueur pendant le compte à rebours : recalculer les préconditions et revenir à `WAITING` si nécessaire.
 - Vote gagnant pour une carte sans agencement compatible : l'exclure avant le vote ; refuser le départ si aucune carte ne convient.
-- Événements exactement à 05:00, 25:00, 30:00 ou 45:00 : une seule transition, dans cet ordre, sans tick ambigu.
+- Événements exactement à 05:00, 15:00, 45:00 ou 60:00 : une seule transition, dans cet ordre, sans tick ambigu.
 - Destruction d'un cœur pendant une réapparition : annuler la tâche et éliminer le joueur.
 - Plusieurs dégâts de cœur dans le même tick : une seule destruction et une seule publication.
 - Éliminations simultanées : calculer tous les effets du tick avant de figer le résultat ; le résultat peut être nul.
 - Déconnexion du dernier survivant : appliquer le décès et l'élimination immédiatement.
 - Reconnexion après destruction du cœur : spectateur, jamais de vie recréée.
 - Arrivée tardive : spectateur sans affectation compétitive ni kit.
-- Égalité à 45 minutes : toutes les équipes au maximum reçoivent victoire et nul.
-- Aucun survivant à 45 minutes : toutes les équipes à zéro sont ex æquo ; le résultat nul les inclut uniquement si leur élimination était simultanée au traitement terminal, sinon seules les équipes encore admissibles au début du tick terminal.
+- Égalité à 60 minutes : toutes les équipes au maximum reçoivent victoire et nul.
+- Aucun survivant à 60 minutes : toutes les équipes à zéro sont ex æquo ; le résultat nul les inclut uniquement si leur élimination était simultanée au traitement terminal, sinon seules les équipes encore admissibles au début du tick terminal.
 - Bordure : atteindre exactement 50 × 50, même après retard scheduler, sans descendre sous cette taille.
 - TNT à cheval sur plusieurs régions : ne modifier que les blocs autorisés, sans dégâts directs au cœur.
 - Pistons, fluides, portails, perles et chorus : aucun franchissement interdit.
@@ -537,7 +537,7 @@ La phase classée ajoutera une ou plusieurs files **à format fixe** propres à 
 - Pour chaque effectif de 0 à 31, le calcul des royaumes accepte uniquement 8 à 30, produit 2 à 5 royaumes et respecte les tailles 4 à 6 avec un écart maximal de un.
 - L'affectation est déterministe à graine identique, respecte les capacités et maximise les préférences après le critère d'équilibrage.
 - La machine refuse toute transition non déclarée et rend chaque transition répétée sans effet supplémentaire.
-- Les bornes 299/300, 1499/1500, 1799/1800 et 2699/2700 secondes déclenchent exactement les phases attendues.
+- Les bornes 299/300, 899/900, 2699/2700 et 3599/3600 secondes déclenchent exactement les phases attendues.
 - Les règles de victoire couvrent un survivant unique, plusieurs équipes, égalité au maximum, zéro survivant simultané et arrêt administrateur.
 - Les validations YAML couvrent clés manquantes, types, ordre des durées, régions, positions, matériaux, layouts et capacités.
 - La décision de protection couvre chaque phase, territoire, type d'action, projectile, explosion et mécanisme indirect.
@@ -562,8 +562,8 @@ La phase classée ajoutera une ou plusieurs files **à format fixe** propres à 
 - Le JcJ, l'entrée des bases, les cœurs et la construction suivent le tableau de protections à chaque transition.
 - Une mort avec cœur vivant réapparaît nue après dix secondes ; sa destruction pendant le décompte rend le joueur spectateur.
 - Une base n'explose pas à la destruction du cœur, mais se ruine une seule fois à l'élimination du dernier survivant en conservant les coffres.
-- À 75 minutes, les cœurs restants disparaissent, les réapparitions cessent et la bordure commence sa réduction.
-- À 45 minutes, la bordure mesure 50 × 50 et le résultat correspond au compte des survivants, y compris une égalité multi-vainqueur.
+- À 45 minutes, les cœurs restants disparaissent, les réapparitions cessent et la bordure commence sa réduction.
+- À 60 minutes, la bordure mesure 50 × 50 et le résultat correspond au compte des survivants, y compris une égalité multi-vainqueur.
 - Un spectateur tardif ne peut interagir, sortir des limites ni redevenir participant.
 - `/lang` rafraîchit immédiatement les surfaces en cache.
 - Après résultat ou arrêt administrateur, tous les joueurs sont transférés, toutes les tâches sont annulées et l'instance devient arrêtable.

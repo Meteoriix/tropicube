@@ -13,8 +13,9 @@ class FallenKingdomsSettingsTest {
             var settings=FallenKingdomsSettings.load(config);
             assertEquals(500.0,settings.heartHealth());assertFalse(config.getBoolean("combat.friendly-fire"));
             assertEquals(300, settings.timeline().pvpAt());
-            assertEquals(1800, settings.timeline().suddenDeathAt());
-            assertEquals(2700, settings.timeline().forceEndAt());
+            assertEquals(900, settings.timeline().assaultAt());
+            assertEquals(2700, settings.timeline().suddenDeathAt());
+            assertEquals(3600, settings.timeline().forceEndAt());
             assertNotNull(config.getConfigurationSection("kits.definitions.alchemist"));
             config.set("protections.block-portal-bypass",false);
             assertThrows(IllegalArgumentException.class,()->FallenKingdomsSettings.load(config));

@@ -74,11 +74,11 @@ class GameDomainTest {
         }
     }
     @Test void timelineAndStateMachineHaveExactBoundaries() {
-        PhaseTimeline timeline = new PhaseTimeline(300, 1500, 1800, 2700);
+        PhaseTimeline timeline = new PhaseTimeline(300, 900, 2700, 3600);
         assertEquals(GameState.PREPARATION, timeline.targetAt(299)); assertEquals(GameState.PVP, timeline.targetAt(300));
-        assertEquals(GameState.PVP, timeline.targetAt(1499)); assertEquals(GameState.ASSAULT, timeline.targetAt(1500));
-        assertEquals(GameState.ASSAULT, timeline.targetAt(1799)); assertEquals(GameState.SUDDEN_DEATH, timeline.targetAt(1800));
-        assertEquals(GameState.SUDDEN_DEATH, timeline.targetAt(2699)); assertEquals(GameState.ENDING, timeline.targetAt(2700));
+        assertEquals(GameState.PVP, timeline.targetAt(899)); assertEquals(GameState.ASSAULT, timeline.targetAt(900));
+        assertEquals(GameState.ASSAULT, timeline.targetAt(2699)); assertEquals(GameState.SUDDEN_DEATH, timeline.targetAt(2700));
+        assertEquals(GameState.SUDDEN_DEATH, timeline.targetAt(3599)); assertEquals(GameState.ENDING, timeline.targetAt(3600));
         GameStateMachine machine = new GameStateMachine();
         assertFalse(machine.transitionTo(GameState.ASSAULT)); assertTrue(machine.transitionTo(GameState.COUNTDOWN));
         assertTrue(machine.transitionTo(GameState.PREPARATION)); assertTrue(machine.transitionTo(GameState.PREPARATION));

@@ -8,6 +8,8 @@ The local language editor uses `LIBRETRANSLATE_URL` (default `http://127.0.0.1:5
 
 `menus.yml`, `scoreboards.yml`, and `tablists.yml` use the versioned `version: 1` schema. Menus declare their title, rows, frame, static buttons, and dynamic regions; scoreboards declare a title and variants containing 1–15 lines; tablists declare one header key and one footer key for every state. Builds synchronize embedded resources with Docker mirrors.
 
+The Lobby, SheepWars, and Fallen Kingdoms tablists share a Tropicube header, the current context name, and `play.tropicube.fr` in the footer. Detailed game information remains in scoreboards to avoid repeating it in the player list.
+
 For a menu, `frame` is `network`, `neutral`, or `none`. Each dynamic region declares unique slots valid for the inventory size; static buttons may deliberately serve as a loading or empty state for a region. The registry rejects any other frame or invalid layout at startup.
 
 | Variable | Purpose |
@@ -122,7 +124,7 @@ Operations need Python 3.11+, Restic and SSH. Configure `RESTIC_REPOSITORY` as a
 
 The same configuration is embedded in the module. Update both files until FK resource synchronization is added.
 
-`game.default-map` selects the local map and the instance `MAP_ID` environment variable overrides it in production. Every enabled `locations.maps` entry owns its playable region, border, layouts, and bases, so another map requires configuration rather than Java changes. Startup validates positions, overlaps, layouts, phase times, protections, ruin settings, and the item list under `kits.definitions`. Public defaults open PvP at 5 minutes, assault at 25 minutes, sudden death at 30 minutes, and force the result at 45 minutes. `protections.forbidden-placement-materials` reserves technical blocks; ordinary blocks are allowed in common ground and allied bases, while only TNT may be placed in an enemy base during assault. The configurable `alchemist` kit supplies the approved brewing workshop.
+`game.default-map` selects the local map and the instance `MAP_ID` environment variable overrides it in production. Every enabled `locations.maps` entry owns its playable region, border, layouts, and bases, so another map requires configuration rather than Java changes. Startup validates positions, overlaps, layouts, phase times, protections, ruin settings, and the item list under `kits.definitions`. Public defaults open PvP at 5 minutes, assault at 15 minutes, sudden death at 45 minutes, and force the result at 60 minutes. `protections.forbidden-placement-materials` reserves technical blocks; ordinary blocks are allowed in common ground and allied bases, while only TNT may be placed in an enemy base during assault. The configurable `alchemist` kit supplies the approved brewing workshop.
 
 The internal `FK_MIN_PLAYERS_PER_KINGDOM`, `FK_MAX_PLAYERS_PER_KINGDOM`, and `FK_MAX_KINGDOMS` variables let beta templates lower kingdom sizes under validation. Without overrides, the historical public profile remains 4–6 players per kingdom across 2–5 kingdoms.
 

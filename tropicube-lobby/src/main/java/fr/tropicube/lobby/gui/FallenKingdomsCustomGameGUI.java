@@ -44,9 +44,9 @@ public final class FallenKingdomsCustomGameGUI {
             indexes.put(Option.MAX_TEAM, 2);
             indexes.put(Option.MAX_KINGDOMS, 3);
             indexes.put(Option.PVP, 0);
-            indexes.put(Option.ASSAULT, 2);
-            indexes.put(Option.SUDDEN_DEATH, 0);
-            indexes.put(Option.FORCE_END, 0);
+            indexes.put(Option.ASSAULT, 0);
+            indexes.put(Option.SUDDEN_DEATH, 1);
+            indexes.put(Option.FORCE_END, 1);
             indexes.put(Option.HEART, 1);
             indexes.put(Option.RESPAWN, 1);
             indexes.put(Option.RUINS, 1);

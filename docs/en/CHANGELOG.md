@@ -6,7 +6,8 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-16
 
-- Fixed and accelerated Fallen Kingdoms with usable containers, coherent territorial building and gates, PvP at 5 minutes, sudden death at 30 minutes, forced resolution at 45 minutes, the Alchemist kit, 32 steaks, and removal of the network XP display on entry.
+- Simplified and aligned the Lobby, SheepWars, and Fallen Kingdoms tablists around the Tropicube brand and server address, and streamlined the Lobby scoreboard.
+- Fixed and adjusted Fallen Kingdoms with usable containers, coherent territorial building and gates, PvP at 5 minutes, assault at 15 minutes, sudden death at 45 minutes, forced resolution at 60 minutes, the Alchemist kit, 32 steaks, and removal of the network XP display on entry.
 - Reworked the Fallen Kingdoms HUD with active teams and no heart health in the scoreboard, a named next phase, team-colored waiting-room tablist, contextual actionbar, and a temporary bossbar for the enemy heart being hit.
 - Abbreviated billion-scale balances with the `B` suffix and capped every TropiCoin balance at 100 billion, including transfers, missions, and season rewards.
 - Preserved the beta queue name's MiniMessage formatting in the join message and removed visible tags from its cancellation description.

@@ -12,7 +12,7 @@ Tropicube conserve le cœur du mode : plusieurs équipes bâtissent, exploitent 
 
 Le parcours réseau cible suit les conventions actuelles : le joueur choisit Fallen Kingdoms depuis **Jeux**, rejoint une instance publique `QUICK_PLAY` ou crée une partie personnalisée publique ou privée s'il possède le niveau requis. Les choix d'équipe, de kit et de carte s'effectuent dans l'instance au moyen de menus localisés ; une arrivée après le verrouillage du roster est spectatrice. À la fin, Velocity transfère les joueurs vers un lobby puis détruit l'instance éphémère.
 
-La chronologie cible ouvre le JcJ à 5 minutes, l'assaut à 25 minutes, la mort subite à 30 minutes et départage les survivants à 45 minutes. Les joueurs construisent librement dans la zone commune et leur base ; seule la TNT peut être posée dans une base ennemie, à partir de l'assaut.
+La chronologie cible ouvre le JcJ à 5 minutes, l'assaut à 15 minutes, la mort subite à 45 minutes et départage les survivants à 60 minutes. Les joueurs construisent librement dans la zone commune et leur base ; seule la TNT peut être posée dans une base ennemie, à partir de l'assaut.
 
 Toutes les surfaces joueur doivent respecter les conventions Tropicube : Adventure/MiniMessage, les quatre langues `fr`, `en`, `de` et `es`, actions de clic explicites, cadrage `NetworkMenuStyle`, retour à gauche et fermeture à droite. Menus, hotbar, scoreboard et tablist se rafraîchissent après `/lang` sans reconnexion. Les clients Bedrock via Geyser/Floodgate participent au même flux et reçoivent les alternatives visuelles nécessaires lorsque le rendu Java n'est pas fiable.
 

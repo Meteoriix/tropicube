@@ -10,7 +10,7 @@ Tropicube keeps the defining loop: several teams build, gather resources, defend
 
 Players will choose Fallen Kingdoms from **Games**, join a public `QUICK_PLAY` instance, or create a public/private custom match when their access level permits it. Team, kit, and map choices belong to localized in-instance menus; players arriving after the roster is locked spectate. At the result, Velocity returns players to a lobby and destroys the disposable game instance.
 
-The target timeline opens PvP at 5 minutes, assault at 25 minutes, sudden death at 30 minutes, and resolves remaining survivors at 45 minutes. Players may build freely in common ground and their own base; only TNT may be placed inside an enemy base, starting with assault.
+The target timeline opens PvP at 5 minutes, assault at 15 minutes, sudden death at 45 minutes, and resolves remaining survivors at 60 minutes. Players may build freely in common ground and their own base; only TNT may be placed inside an enemy base, starting with assault.
 
 All player UI follows the current Tropicube rules: Adventure/MiniMessage, `fr`, `en`, `de`, and `es` resources, explicit click outcomes, `NetworkMenuStyle` framing, and live refresh after `/lang`. Bedrock players connected through Geyser/Floodgate use the same flow with compatible visual fallbacks.
 
