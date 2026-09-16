@@ -672,8 +672,8 @@ lobby:
   sb-queue-label-quick-play: "Quick Play"
   sb-queue-label-beta-fk-1v1: "Fallen Kingdoms 1v1 beta"
   sb-queue-label-beta-fk-2v2: "Fallen Kingdoms 2v2 beta"
-  tab-header: "<br><gold><bold>🌴 TROPICUBE</bold></gold><br><br><green><bold>🏠 LOBBY</bold></green><br>"
-  tab-footer: "<br><aqua>play.tropicube.fr</aqua><br>"
+  tab-header: "<br><gold><bold>🌴 TROPICUBE</bold></gold><br><br><green><bold>Lobby</bold></green><br>"
+  tab-footer: "<br><dark_purple>play.tropicube.fr</dark_purple><br>"
   sb-network: <dark_purple><bold>🛜 Red
 help:
   header: "<tc><aqua><bold>Ayuda de Tropicube</bold></aqua> <dark_gray>• <gray>/help <white>general|games|social|profile|staff"

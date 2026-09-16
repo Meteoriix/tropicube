@@ -9,7 +9,7 @@ scoreboards:
           - key: sw.sb-waiting
           - key: sw.sb-players
           - key: sw.sb-map
-          - key: sw.sb-separator
+          - blank: true
           - key: sw.sb-your-team
           - key: sw.sb-class
           - key: sw.sb-separator
