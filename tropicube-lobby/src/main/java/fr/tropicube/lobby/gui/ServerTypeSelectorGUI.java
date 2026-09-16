@@ -27,7 +27,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServerTypeSelectorGUI {
 
     private static final int SIZE = 36;
-    private static final int CUSTOM_GAME_SLOT = 31;
+    static final int BETA_SLOT = 30;
+    static final int CUSTOM_GAME_SLOT = 32;
     private static final int CLOSE_SLOT = 35;
 
     /** Centered positions for one to nine types; the following types are not displayed. */
@@ -68,14 +69,7 @@ public class ServerTypeSelectorGUI {
 
     public static Inventory build(TropicubeLobby plugin, Player player) {
         Set<String> types = plugin.getLobbyServerManager().getAvailableTemplateTypes();
-        List<String> sortedTypes = new ArrayList<>(types);
-        Collections.sort(sortedTypes);
-        int n = Math.min(sortedTypes.size(), LAYOUTS.length - 1);
-        sortedTypes = sortedTypes.subList(0, n);
-
-        int[] slots = LAYOUTS[n];
-        Map<Integer, String> slotToType = new LinkedHashMap<>();
-        for (int i = 0; i < n; i++) slotToType.put(slots[i], sortedTypes.get(i));
+        Map<Integer, String> slotToType = layoutTypes(types);
 
         boolean customGameAllowed = customGameAllowed(player);
         Holder holder = new Holder(slotToType, customGameAllowed);
@@ -100,6 +94,25 @@ public class ServerTypeSelectorGUI {
 
         inv.setItem(CLOSE_SLOT, ItemBuilder.closeButton(player));
         return inv;
+    }
+
+    /** Keeps Beta in the footer and centers the regular game categories independently. */
+    static Map<Integer, String> layoutTypes(Collection<String> availableTypes) {
+        String betaType = availableTypes.stream()
+                .filter(BetaQueueSelectorGUI.TYPE::equalsIgnoreCase)
+                .findFirst()
+                .orElse(null);
+        List<String> sortedTypes = availableTypes.stream()
+                .filter(type -> !BetaQueueSelectorGUI.TYPE.equalsIgnoreCase(type))
+                .sorted()
+                .limit(LAYOUTS.length - 1L)
+                .toList();
+
+        int[] slots = LAYOUTS[sortedTypes.size()];
+        Map<Integer, String> slotToType = new LinkedHashMap<>();
+        for (int i = 0; i < sortedTypes.size(); i++) slotToType.put(slots[i], sortedTypes.get(i));
+        if (betaType != null) slotToType.put(BETA_SLOT, betaType);
+        return slotToType;
     }
 
     /** Refreshes all type-icon items in an already-open inventory (in-place, no flicker). */

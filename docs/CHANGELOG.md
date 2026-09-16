@@ -6,6 +6,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-16
 
+- Déplace Bêta dans le pied du sélecteur de jeux, à gauche d'une case centrale vide, et décale Parties personnalisées à droite.
 - Corrige SheepWars : toutes les maps sont proposées au vote dans tous les modes, le leader apparaît dans le scoreboard, l'XP réseau et les menus d'attente sont nettoyés, Galions empoisonne dans l'eau sans limite basse, les flèches bonus durent cinq secondes, le mouton Échange ne dash plus sans cible et les lignes vides du scoreboard sont rendues.
 - Supprime le démarrage automatique des serveurs SheepWars et Fallen Kingdoms en fixant leur plancher d'instances à zéro ; seul le Lobby reste préchauffé.
 - Active le combat 1.8 par défaut dans Fallen Kingdoms, affiche les PV du cœur allié dans l'actionbar et abaisse le départ Quick Play à six joueurs sans modifier les seuils bêta.

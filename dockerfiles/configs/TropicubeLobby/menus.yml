@@ -364,8 +364,14 @@ menus:
     rows: 4
     frame: network
     buttons:
+      beta:
+        slot: 30
+        material: RECOVERY_COMPASS
+        name-key: lobby.game-type-beta
+        lore-key: lobby.beta-category-lore
+        action: open_beta
       custom:
-        slot: 31
+        slot: 32
         material: COMMAND_BLOCK
         name-key: lobby.selector-custom-name
         lore-key: lobby.selector-custom-lore

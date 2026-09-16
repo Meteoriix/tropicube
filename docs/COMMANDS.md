@@ -105,7 +105,7 @@ Permissions fonctionnelles du lobby :
 
 Les niveaux appliqués par défaut avec les grades accordent les capacités adaptées : `vipLevel 1` obtient un saut, `vipLevel 2` deux et `vipLevel 3` des sauts illimités. Les niveaux propres au joueur restent indépendants de son grade cosmétique.
 
-La hotbar du lobby conserve une disposition stable : jeux au slot 0, social au slot 2, profil au slot 4 et boutique au slot 8. Les parties personnalisées et les paramètres restent accessibles depuis le sélecteur de jeux et Profil.
+La hotbar du lobby conserve une disposition stable : jeux au slot 0, social au slot 2, profil au slot 4 et boutique au slot 8. Dans le pied du sélecteur de jeux, Bêta occupe le slot 30 et Parties personnalisées le slot 32, avec le slot central 31 laissé vide. Les paramètres restent accessibles depuis Profil.
 
 Après la saisie de `/`, le client reçoit toutes les commandes et tous les alias Tropicube réellement enregistrés par Velocity, Core, Lobby et le mini-jeu courant. Les permissions continuent de masquer les commandes staff non accessibles. Les commandes externes et leurs espaces de noms restent masqués ; `/?`, les espaces de noms `bukkit:` et `minecraft:` ainsi que les commandes vanilla sont refusés sur l'ensemble du réseau.
 

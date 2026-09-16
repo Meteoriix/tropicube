@@ -1,6 +1,7 @@
 package fr.tropicube.lobby.gui;
 
 import org.junit.jupiter.api.Test;
+import java.util.Map;
 import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,5 +20,19 @@ class MenuNavigationTest {
         assertNotEquals(VipShopGUI.HOME_GRADES_SLOT, VipShopGUI.HOME_COSMETICS_SLOT);
         assertEquals(53, VipShopGUI.GRADES_CLOSE_SLOT);
         assertEquals(45, VipShopGUI.GRADES_BACK_SLOT);
+    }
+
+    @Test void gameSelectorKeepsBetaAndCustomGamesSeparatedInTheFooter() {
+        Map<Integer, String> layout = ServerTypeSelectorGUI.layoutTypes(
+                Set.of("SHEEPWARS", "BETA", "FALLENKINGDOMS"));
+
+        assertEquals("BETA", layout.get(ServerTypeSelectorGUI.BETA_SLOT));
+        assertEquals(30, ServerTypeSelectorGUI.BETA_SLOT);
+        assertEquals(Set.of(11, 15, 30), layout.keySet());
+        assertFalse(layout.containsKey(31));
+        assertEquals(32, ServerTypeSelectorGUI.CUSTOM_GAME_SLOT);
+        assertEquals(1, layout.entrySet().stream()
+                .filter(entry -> "BETA".equalsIgnoreCase(entry.getValue()))
+                .count());
     }
 }

@@ -6,6 +6,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-16
 
+- Moved Beta into the game selector footer, to the left of an empty central slot, and shifted Custom games to the right.
 - Fixed SheepWars so every map is voteable in every mode, the vote leader appears in the scoreboard, network XP and waiting menus are cleared, Galions poisons players in water without a lower kill limit, bonus poison arrows last five seconds, Swap Sheep no longer dashes without a target, and blank scoreboard lines render.
 - Stopped automatically starting SheepWars and Fallen Kingdoms servers by setting their minimum instance floor to zero; only Lobby remains warm.
 - Enables 1.8 combat by default in Fallen Kingdoms, shows allied-heart health in the actionbar, and lowers Quick Play startup to six players without changing beta thresholds.
