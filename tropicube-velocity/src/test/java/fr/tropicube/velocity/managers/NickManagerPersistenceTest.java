@@ -72,6 +72,23 @@ class NickManagerPersistenceTest {
         }
     }
 
+    @Test
+    void keepsTheAuthenticatedNameIndependentFromTheNickedSessionProfile() {
+        UUID uuid = UUID.randomUUID();
+        InMemoryRedisManager redis = new InMemoryRedisManager();
+        try {
+            NickManager manager = new NickManager(redis, LoggerFactory.getLogger(getClass()), List.of(), null);
+
+            manager.rememberRealName(uuid, "RealWolf");
+
+            assertEquals("RealWolf", manager.realName(uuid, "MaskedWolf"));
+            manager.forgetRealName(uuid);
+            assertEquals("MaskedWolf", manager.realName(uuid, "MaskedWolf"));
+        } finally {
+            redis.close();
+        }
+    }
+
     private static final class InMemoryRedisManager extends RedisManager {
         private final Map<String, String> values = new HashMap<>();
         private final Map<String, Integer> ttls = new HashMap<>();

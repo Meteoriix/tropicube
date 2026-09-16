@@ -19,6 +19,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
@@ -54,6 +55,7 @@ public class NickManager {
     private final List<String> skinUuids;
     private final AccessProfileCache accessProfiles;
     private final Gson         gson = new Gson();
+    private final Map<UUID, String> realNames = new ConcurrentHashMap<>();
 
     public NickManager(RedisManager redis, Logger logger,
                        List<String> configuredSkinUuids, AccessProfileCache accessProfiles) {
@@ -190,6 +192,24 @@ public class NickManager {
         obj.addProperty("v", textures.getValue());
         if (textures.getSignature() != null) obj.addProperty("s", textures.getSignature());
         redis.set(KEY_ORIGINAL + uuid, gson.toJson(obj), NickIdentity.TTL_SECONDS);
+    }
+
+    /** Keeps the authenticated name available after Velocity's session profile is nicked. */
+    public void rememberRealName(UUID uuid, String realName) {
+        Objects.requireNonNull(uuid, "uuid");
+        if (realName == null || realName.isBlank()) return;
+        realNames.put(uuid, realName);
+    }
+
+    /** Returns the authenticated name without performing a Redis call. */
+    public String realName(UUID uuid, String fallback) {
+        String realName = realNames.get(uuid);
+        return realName == null || realName.isBlank() ? fallback : realName;
+    }
+
+    /** Releases the connection-scoped authenticated name after disconnect. */
+    public void forgetRealName(UUID uuid) {
+        realNames.remove(uuid);
     }
 
     public Optional<OriginalProfile> getOriginalProfile(UUID uuid) {

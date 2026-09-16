@@ -13,6 +13,7 @@ import fr.tropicube.sheepwars.competitive.KitMasteryCatalog;
 import fr.tropicube.sheepwars.competitive.SeasonRewardCatalog;
 import fr.tropicube.sheepwars.command.SheepWarsCommand;
 import fr.tropicube.sheepwars.listener.PlayerListener;
+import fr.tropicube.sheepwars.listener.PlayerIdentityListener;
 import fr.tropicube.sheepwars.listener.ProtectionListener;
 import fr.tropicube.sheepwars.listener.SheepListener;
 import fr.tropicube.sheepwars.menu.ClassKitSelectionMenu;
@@ -165,6 +166,7 @@ public final class TropicubeSheepwars extends JavaPlugin {
         redisManager.subscribeToCommands(whitelistMenu::handleProxyCommand);
 
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerIdentityListener(this), this);
         getServer().getPluginManager().registerEvents(new SheepListener(this), this);
         getServer().getPluginManager().registerEvents(new ProtectionListener(this), this);
         getServer().getPluginManager().registerEvents(mapSelectionMenu, this);
@@ -182,8 +184,7 @@ public final class TropicubeSheepwars extends JavaPlugin {
     public MenuTemplateRegistry getMenuTemplates() { return menuTemplates; }
 
     private void handlePlayerIdentityEvent(String message) {
-        if (!message.startsWith("NICK_APPLY:") && !message.startsWith("NICK_RESET:")
-                && !message.startsWith("NICK_CLEAR:") && !message.startsWith("GRADE_LOADED:")
+        if (!message.startsWith("GRADE_LOADED:")
                 && !message.startsWith("GRADE_CHANGED:")) return;
 
         String payload = message.substring(message.indexOf(':') + 1);

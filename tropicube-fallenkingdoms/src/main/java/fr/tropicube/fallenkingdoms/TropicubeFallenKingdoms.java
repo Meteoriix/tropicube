@@ -7,6 +7,7 @@ import fr.tropicube.fallenkingdoms.game.GameSession;
 import fr.tropicube.fallenkingdoms.listener.GameListener;
 import fr.tropicube.fallenkingdoms.listener.ProtectionListener;
 import fr.tropicube.fallenkingdoms.listener.LobbyMenuListener;
+import fr.tropicube.fallenkingdoms.listener.PlayerIdentityListener;
 import fr.tropicube.fallenkingdoms.map.MapCatalog;
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.language.PlaceholderValues;
@@ -21,6 +22,7 @@ import fr.tropicube.fallenkingdoms.game.GameResult;
 import fr.tropicube.fallenkingdoms.game.PlayerSession;
 import fr.tropicube.fallenkingdoms.game.EndCause;
 import java.util.Collection;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.nio.file.Path;
 import java.nio.file.Files;
@@ -61,7 +63,10 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
             blockInteractionPolicy = (player, block) -> session != null && session.mayUseProtectedBlock(player, block);
             getServer().getServicesManager().register(ProtectedBlockInteractionPolicy.class,
                     blockInteractionPolicy, this, ServicePriority.Normal);
-            loadSession(); subscribeLanguageChanges(); updateInstanceStatus(ServerInstance.Status.GAME_WAITING);
+            loadSession();
+            getServer().getPluginManager().registerEvents(new PlayerIdentityListener(this), this);
+            subscribeLanguageChanges();
+            updateInstanceStatus(ServerInstance.Status.GAME_WAITING);
         }
         catch (IllegalArgumentException exception) { getLogger().severe("Configuration Fallen Kingdoms invalide: " + exception.getMessage()); getServer().getPluginManager().disablePlugin(this); }
     }
@@ -89,8 +94,7 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
     private void subscribeLanguageChanges(){
         TropicubeCore core=(TropicubeCore)getServer().getPluginManager().getPlugin("TropicubeCore");
         if(core!=null){languageChangeHandler=message->{
-            if(!message.startsWith("LANG_CHANGED:") && !message.startsWith("NICK_APPLY:")
-                    && !message.startsWith("NICK_RESET:") && !message.startsWith("NICK_CLEAR:")
+            if(!message.startsWith("LANG_CHANGED:")
                     && !message.startsWith("GRADE_LOADED:") && !message.startsWith("GRADE_CHANGED:"))return;
             if(!isEnabled())return;
             String[] parts=message.split(":",3);if(parts.length<2)return;
@@ -140,6 +144,13 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
     }
     public void refreshWaitingRoomViewers() {
         if (lobbyMenuListener != null) lobbyMenuListener.refreshViewers();
+    }
+    /** Reapplies game-owned UI after Core has finished changing a player identity. */
+    public void refreshPlayerIdentity(UUID playerId) {
+        Player player = getServer().getPlayer(playerId);
+        if (player == null || session == null) return;
+        session.refreshHud(player);
+        if (lobbyMenuListener != null) lobbyMenuListener.refresh(player);
     }
     public FallenKingdomsSettings settings() { return settings; }
     public GameStateMachine stateMachine() { return stateMachine; }

@@ -138,13 +138,15 @@ La configuration de partie, la sélection de carte, d'équipe, de classe et de k
 | `/nick off` | — | aucune | Restaure l'identité originale, même après une perte de grade |
 | `/find <joueur>` | — | `tropicube.admin.find` | Localise un joueur connecté |
 | `/send <joueur|*> <serveur>` | — | `tropicube.admin.send` | Transfère un joueur ou tous les joueurs |
-| `/pull <joueur>` | — | `tropicube.admin.pull` | Fait venir un joueur sur le serveur actuel, si celui-ci est joignable |
+| `/pull <joueur>` | — | `tropicube.admin.pull` | Fait venir un joueur sur le serveur actuel avec son pseudo réel, même si `/nick` est actif |
 | `/tropicube ...` | `/tropi`, `/cm` | `tropicube.admin` | Administration des instances |
 | `/maintenance <network\|type> <on\|off\|status> [minutes] [motif]` | — | `tropicube.admin.maintenance` | Active un drain réseau ou par type avec l'échéance configurée par défaut |
 | `/announce <network\|type\|instance> <clé.langue>` | — | `tropicube.admin.announce` | Diffuse une annonce localisée configurée |
 | `/networkdiag` | `/netdiag` | `tropicube.admin.diagnostic` | Affiche l'état Redis, les instances et la protection des connexions |
 
 `vipLevel ≥ 3` autorise l'activation de `/nick`. `/nick off` reste toujours accessible et le grade d'affichage factice ne modifie jamais les niveaux réels.
+
+L'autocomplétion et la résolution de `/pull` utilisent exclusivement les pseudonymes authentifiés. Un pseudonyme `/nick` n'est pas proposé à l'équipe de modération.
 
 `/whitelist` est validée par Velocity : l'émetteur doit posséder une partie personnalisée active et privée. Un pseudo Java ou un pseudo Floodgate préfixé par `.` est résolu parmi les joueurs actuellement ou précédemment vus par le proxy ; un UUID est aussi accepté. L'item de whitelist remis à l'hôte dans la hotbar SheepWars utilise le même flux proxy.
 

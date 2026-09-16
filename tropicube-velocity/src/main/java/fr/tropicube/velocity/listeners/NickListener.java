@@ -27,6 +27,7 @@ public class NickListener {
     public void onGameProfile(GameProfileRequestEvent event) {
         GameProfile original = event.getOriginalProfile();
         UUID        uuid     = original.getId();
+        nickManager.rememberRealName(uuid, original.getName());
 
         // Retains the actual Mojang profile to enable seamless recovery.
         for (GameProfile.Property p : original.getProperties()) {
@@ -66,5 +67,6 @@ public class NickListener {
             nickManager.clearNick(uuid);
             nickManager.clearOriginalProfile(uuid);
         }
+        nickManager.forgetRealName(uuid);
     }
 }

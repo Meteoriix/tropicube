@@ -296,7 +296,7 @@ public class TropicubeVelocity {
         );
         server.getCommandManager().register(
                 server.getCommandManager().metaBuilder("pull").build(),
-                new PullCommand(server, tropiServerManager, languageManager)
+                new PullCommand(server, tropiServerManager, languageManager, nickManager)
         );
         server.getCommandManager().register(
                 server.getCommandManager().metaBuilder("find").build(),

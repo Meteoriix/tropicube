@@ -13,13 +13,15 @@
 | `/nick off` | — | none | Restores the original identity, even after losing the required grade |
 | `/find <player>` | — | `tropicube.admin.find` | Locates a connected player |
 | `/send <player|*> <server>` | — | `tropicube.admin.send` | Transfers one or all players |
-| `/pull <player>` | — | `tropicube.admin.pull` | Brings a player to the sender's joinable server |
+| `/pull <player>` | — | `tropicube.admin.pull` | Brings a player to the sender's joinable server by real name, even while `/nick` is active |
 | `/tropicube ...` | `/tropi`, `/cm` | `tropicube.admin` | Administers dynamic instances |
 | `/maintenance <network\|type> <on\|off\|status> [minutes] [reason]` | — | `tropicube.admin.maintenance` | Starts a network or game-type drain with the configured default deadline |
 | `/announce <network\|type\|instance> <language.key>` | — | `tropicube.admin.announce` | Broadcasts a configured localized announcement |
 | `/networkdiag` | `/netdiag` | `tropicube.admin.diagnostic` | Displays Redis, instance, and connection-protection health |
 
 `vipLevel ≥ 3` controls who may enable a nick. Disabling is always allowed, cancels an outstanding skin request, and can be retried while a backend has not restored the profile. The visual grade remains independent from access levels.
+
+`/pull` completion and argument resolution exclusively use authenticated player names. Staff are never offered an active `/nick` display name.
 
 Velocity validates `/whitelist`: the sender must own an active private custom game. Java names and dot-prefixed Floodgate names resolve among players currently or previously seen by the proxy, and UUIDs are accepted directly. The SheepWars host hotbar item uses the same proxy-owned mutation path.
 

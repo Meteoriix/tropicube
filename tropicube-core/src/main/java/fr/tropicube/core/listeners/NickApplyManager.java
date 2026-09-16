@@ -6,6 +6,7 @@ import com.destroystokyo.paper.profile.ProfileProperty;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import fr.tropicube.core.TropicubeCore;
+import fr.tropicube.core.identity.PlayerDisplayIdentityChangedEvent;
 import fr.tropicube.docker.model.NickIdentity;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -63,7 +64,8 @@ public class NickApplyManager {
         if (target == null) return;
         plugin.getPermissionManager().setDisplayIdentityOverride(
                 uuid, identity.name(), identity.displayGrade());
-        swapSkin(target, identity.name(), identity.skinValue(), identity.skinSignature());
+        swapSkin(target, identity.name(), identity.skinValue(), identity.skinSignature(),
+                PlayerDisplayIdentityChangedEvent.Change.NICK_APPLIED);
     }
 
     // /nick off: restores the skin then purges the Redis state of the identity.
@@ -71,14 +73,16 @@ public class NickApplyManager {
     private void handleClear(String uuidStr) {
         try {
             UUID uuid = UUID.fromString(uuidStr);
+            String originalProfile = plugin.getRedisManager().get("nick:original:" + uuid);
             plugin.getServer().getScheduler().runTask(plugin, () -> {
                 // All backends receive the event. Only the one who
                 // owns the player can restore his profile and purge Redis.
                 if (plugin.getServer().getPlayer(uuid) == null) return;
-                String originalProfile = plugin.getRedisManager().get("nick:original:" + uuid);
                 if (resetNick(uuid, originalProfile)) {
-                    plugin.getRedisManager().delete("nick:" + uuid);
-                    plugin.getRedisManager().delete("nick:original:" + uuid);
+                    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                        plugin.getRedisManager().delete("nick:" + uuid);
+                        plugin.getRedisManager().delete("nick:original:" + uuid);
+                    });
                 }
             });
         } catch (IllegalArgumentException ignored) {}
@@ -101,7 +105,8 @@ public class NickApplyManager {
             String     skinVal  = obj.get("v").getAsString();
             String     skinSig  = obj.has("s") ? obj.get("s").getAsString() : "";
 
-            swapSkin(target, origName, skinVal, skinSig);
+            swapSkin(target, origName, skinVal, skinSig,
+                    PlayerDisplayIdentityChangedEvent.Change.NICK_REMOVED);
             return true;
         } catch (Exception e) {
             plugin.getLogger().warning(MessageStyle.log("tc", "NICK", "<yellow>Échec de la restauration du nick pour " + uuid + " : " + e.getMessage()));
@@ -111,7 +116,8 @@ public class NickApplyManager {
 
     // ── Shared skin-swap helper ──────────────────────────────────
 
-    private void swapSkin(Player target, String displayName, String skinValue, String skinSig) {
+    private void swapSkin(Player target, String displayName, String skinValue, String skinSig,
+                          PlayerDisplayIdentityChangedEvent.Change change) {
         PlayerProfile profile = target.getServer().createProfile(target.getUniqueId(), displayName);
         profile.setProperty(new ProfileProperty("textures", skinValue, skinSig));
         target.setPlayerProfile(profile);
@@ -131,5 +137,7 @@ public class NickApplyManager {
                 observer.showPlayer(plugin, target);
             }
         }
+        plugin.getServer().getPluginManager().callEvent(
+                new PlayerDisplayIdentityChangedEvent(target.getUniqueId(), change));
     }
 }
