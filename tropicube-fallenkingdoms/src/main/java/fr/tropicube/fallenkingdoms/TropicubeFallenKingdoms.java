@@ -31,6 +31,7 @@ import java.io.File;
 import java.util.function.Consumer;
 import fr.tropicube.core.ui.MenuTemplateRegistry;
 import fr.tropicube.core.ui.UiReloadParticipant;
+import fr.tropicube.core.protection.ProtectedBlockInteractionPolicy;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.ServicePriority;
 
@@ -44,6 +45,7 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
     private LobbyMenuListener lobbyMenuListener;
     private MenuTemplateRegistry menuTemplates;
     private Consumer<String> languageChangeHandler;
+    private ProtectedBlockInteractionPolicy blockInteractionPolicy;
     @Override public void onEnable() {
         saveDefaultConfig();
         TropicubeCore core = (TropicubeCore) getServer().getPluginManager().getPlugin("TropicubeCore");
@@ -56,6 +58,9 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
             menuTemplates = new MenuTemplateRegistry(this);
             getServer().getServicesManager().register(UiReloadParticipant.class, menuTemplates, this,
                     ServicePriority.Normal);
+            blockInteractionPolicy = (player, block) -> session != null && session.mayUseProtectedBlock(player, block);
+            getServer().getServicesManager().register(ProtectedBlockInteractionPolicy.class,
+                    blockInteractionPolicy, this, ServicePriority.Normal);
             loadSession(); subscribeLanguageChanges(); updateInstanceStatus(ServerInstance.Status.GAME_WAITING);
         }
         catch (IllegalArgumentException exception) { getLogger().severe("Configuration Fallen Kingdoms invalide: " + exception.getMessage()); getServer().getPluginManager().disablePlugin(this); }
@@ -84,7 +89,9 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
     private void subscribeLanguageChanges(){
         TropicubeCore core=(TropicubeCore)getServer().getPluginManager().getPlugin("TropicubeCore");
         if(core!=null){languageChangeHandler=message->{
-            if(!message.startsWith("LANG_CHANGED:"))return;
+            if(!message.startsWith("LANG_CHANGED:") && !message.startsWith("NICK_APPLY:")
+                    && !message.startsWith("NICK_RESET:") && !message.startsWith("NICK_CLEAR:")
+                    && !message.startsWith("GRADE_LOADED:") && !message.startsWith("GRADE_CHANGED:"))return;
             if(!isEnabled())return;
             String[] parts=message.split(":",3);if(parts.length<2)return;
             try{java.util.UUID playerId=java.util.UUID.fromString(parts[1]);getServer().getScheduler().runTask(this,()->{var player=getServer().getPlayer(playerId);if(player!=null){session.refreshHud(player);lobbyMenuListener.refresh(player);}});}catch(IllegalArgumentException ignored){}
@@ -93,6 +100,8 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
     @Override public void onDisable() {
         if (lobbyMenuListener != null) lobbyMenuListener.unregister();
         if (menuTemplates != null) getServer().getServicesManager().unregister(UiReloadParticipant.class, menuTemplates);
+        if (blockInteractionPolicy != null) getServer().getServicesManager().unregister(
+                ProtectedBlockInteractionPolicy.class, blockInteractionPolicy);
         if (session != null) session.abortForShutdown();
         if (session != null) session.shutdown();
         if (getServer().getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core) {

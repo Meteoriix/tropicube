@@ -34,5 +34,6 @@ class WaitingRoomContractTest {
             assertEquals(18, menu.getInt("buttons.back.slot"));
             assertEquals(26, menu.getInt("buttons.close.slot"));
         }
+        assertEquals(5, yaml.getInt("menus.waiting-kit.dynamic-regions.kits.preview-count"));
     }
 }

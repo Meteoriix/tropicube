@@ -9,13 +9,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** Persistent network experience with a monotonic, configurable-independent level curve. */
 public final class NetworkProgressionService {
     public record Progression(long experience, int level) {}
     private final TropicubeCore plugin;
     private final DatabaseManager database;
+    private final Set<UUID> suppressedDisplays = ConcurrentHashMap.newKeySet();
 
     public NetworkProgressionService(TropicubeCore plugin, DatabaseManager database) {
         this.plugin = plugin;
@@ -55,10 +58,34 @@ public final class NetworkProgressionService {
         get(playerId).thenAccept(progression -> display(playerId, progression));
     }
 
+    /**
+     * Gives a game ownership of the vanilla experience display without changing
+     * the persistent network progression.
+     */
+    public void suppressDisplay(Player player) {
+        suppressDisplay(player.getUniqueId());
+        player.setLevel(0);
+        player.setExp(0.0F);
+        player.setTotalExperience(0);
+    }
+
+    /** Releases the local display ownership when the player leaves this backend. */
+    public void releaseDisplay(UUID playerId) {
+        suppressedDisplays.remove(playerId);
+    }
+
+    void suppressDisplay(UUID playerId) {
+        suppressedDisplays.add(playerId);
+    }
+
+    boolean isDisplaySuppressed(UUID playerId) {
+        return suppressedDisplays.contains(playerId);
+    }
+
     private void display(UUID playerId, Progression progression) {
         plugin.getServer().getScheduler().runTask(plugin, () -> {
             Player player = plugin.getServer().getPlayer(playerId);
-            if (player == null || !player.isOnline()) return;
+            if (player == null || !player.isOnline() || isDisplaySuppressed(playerId)) return;
             player.setLevel(progression.level());
             player.setExp(progressWithinLevel(progression.experience()));
         });

@@ -74,13 +74,24 @@ class GameDomainTest {
         }
     }
     @Test void timelineAndStateMachineHaveExactBoundaries() {
-        PhaseTimeline timeline = new PhaseTimeline(900, 1500, 4500, 5400);
-        assertEquals(GameState.PREPARATION, timeline.targetAt(899)); assertEquals(GameState.PVP, timeline.targetAt(900));
-        assertEquals(GameState.ASSAULT, timeline.targetAt(1500)); assertEquals(GameState.SUDDEN_DEATH, timeline.targetAt(4500));
-        assertEquals(GameState.ENDING, timeline.targetAt(5400));
+        PhaseTimeline timeline = new PhaseTimeline(300, 1500, 1800, 2700);
+        assertEquals(GameState.PREPARATION, timeline.targetAt(299)); assertEquals(GameState.PVP, timeline.targetAt(300));
+        assertEquals(GameState.PVP, timeline.targetAt(1499)); assertEquals(GameState.ASSAULT, timeline.targetAt(1500));
+        assertEquals(GameState.ASSAULT, timeline.targetAt(1799)); assertEquals(GameState.SUDDEN_DEATH, timeline.targetAt(1800));
+        assertEquals(GameState.SUDDEN_DEATH, timeline.targetAt(2699)); assertEquals(GameState.ENDING, timeline.targetAt(2700));
         GameStateMachine machine = new GameStateMachine();
         assertFalse(machine.transitionTo(GameState.ASSAULT)); assertTrue(machine.transitionTo(GameState.COUNTDOWN));
         assertTrue(machine.transitionTo(GameState.PREPARATION)); assertTrue(machine.transitionTo(GameState.PREPARATION));
+    }
+    @Test void placementRulesAllowConstructionAndReserveEnemyBasesForAssaultTnt() {
+        ProtectionRules rules = new ProtectionRules();
+        assertTrue(rules.allowsPlacement(GameState.PREPARATION, ProtectionRules.Territory.COMMON, false, false));
+        assertTrue(rules.allowsPlacement(GameState.PVP, ProtectionRules.Territory.OWN_BASE, false, false));
+        assertFalse(rules.allowsPlacement(GameState.ASSAULT, ProtectionRules.Territory.COMMON, false, true));
+        assertFalse(rules.allowsPlacement(GameState.PVP, ProtectionRules.Territory.ENEMY_BASE, true, false));
+        assertFalse(rules.allowsPlacement(GameState.ASSAULT, ProtectionRules.Territory.ENEMY_BASE, false, false));
+        assertTrue(rules.allowsPlacement(GameState.ASSAULT, ProtectionRules.Territory.ENEMY_BASE, true, false));
+        assertTrue(rules.allowsPlacement(GameState.SUDDEN_DEATH, ProtectionRules.Territory.ENEMY_BASE, true, false));
     }
     @Test void heartCannotBeDamagedBeforeAssaultOrByTnt() {
         Heart heart = new Heart(KingdomId.BLUE, 500);

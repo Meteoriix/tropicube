@@ -6,9 +6,11 @@ This document preserves the historical design references used by the Tropicube a
 
 ## Planned Tropicube adaptation
 
-Tropicube keeps the defining loop: several kingdoms build, gather resources, defend a heart, and organize sieges. The approved V1 target has two to five balanced kingdoms, four to six players per kingdom, the Miner, Farmer, Scout, and Enchanter kits, and preparation, PvP, siege, sudden-death, and result phases.
+Tropicube keeps the defining loop: several teams build, gather resources, defend a heart, and organize sieges. The approved target has two to five balanced teams, four to six players per team, the Miner, Farmer, Scout, Enchanter, and Alchemist kits, and preparation, PvP, siege, sudden-death, and result phases. Every player also receives 32 steaks at match start.
 
-Players will choose Fallen Kingdoms from **Games**, join a public `QUICK_PLAY` instance, or create a public/private custom match when their access level permits it. Kingdom, kit, and map choices belong to localized in-instance menus; players arriving after the roster is locked spectate. At the result, Velocity returns players to a lobby and destroys the disposable game instance.
+Players will choose Fallen Kingdoms from **Games**, join a public `QUICK_PLAY` instance, or create a public/private custom match when their access level permits it. Team, kit, and map choices belong to localized in-instance menus; players arriving after the roster is locked spectate. At the result, Velocity returns players to a lobby and destroys the disposable game instance.
+
+The target timeline opens PvP at 5 minutes, assault at 25 minutes, sudden death at 30 minutes, and resolves remaining survivors at 45 minutes. Players may build freely in common ground and their own base; only TNT may be placed inside an enemy base, starting with assault.
 
 All player UI follows the current Tropicube rules: Adventure/MiniMessage, `fr`, `en`, `de`, and `es` resources, explicit click outcomes, `NetworkMenuStyle` framing, and live refresh after `/lang`. Bedrock players connected through Geyser/Floodgate use the same flow with compatible visual fallbacks.
 

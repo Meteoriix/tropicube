@@ -7,10 +7,10 @@ game:
   max-players-per-kingdom: 6
   max-kingdoms: 5
 phases:
-  pvp-at-seconds: 900
+  pvp-at-seconds: 300
   assault-at-seconds: 1500
-  sudden-death-at-seconds: 4500
-  force-end-at-seconds: 5400
+  sudden-death-at-seconds: 1800
+  force-end-at-seconds: 2700
 hearts:
   max-health: 500.0
   tnt-direct-damage: false
@@ -32,8 +32,7 @@ combat:
   allowed-custom-profiles: [PAPER_26_2, LEGACY_1_8]
   friendly-fire: false
 protections:
-  forbidden-base-materials: [OBSIDIAN, BEDROCK]
-  common-placement-whitelist: [COBBLESTONE, OAK_PLANKS, LADDER, TORCH]
+  forbidden-placement-materials: [BEDROCK, BARRIER, END_PORTAL_FRAME]
   tnt-breaches-enabled: true
   block-portal-bypass: true
   block-teleport-bypass: true
@@ -76,6 +75,16 @@ kits:
         - { material: ENCHANTED_BOOK, amount: 1, slot: 6, enchantments: { protection: 2 } }
         - { material: ENCHANTED_BOOK, amount: 1, slot: 7, enchantments: { thorns: 1 } }
         - { material: ENCHANTED_BOOK, amount: 1, slot: 8, enchantments: { knockback: 2 } }
+    alchemist:
+      enabled: true
+      icon: BREWING_STAND
+      items:
+        - { material: BREWING_STAND, amount: 1, slot: 0 }
+        - { material: BLAZE_POWDER, amount: 4, slot: 1 }
+        - { material: NETHER_WART, amount: 8, slot: 2 }
+        - { material: GLASS_BOTTLE, amount: 6, slot: 3 }
+        - { material: SUGAR, amount: 4, slot: 4 }
+        - { material: SPIDER_EYE, amount: 4, slot: 5 }
 # Shared map schema. Add future maps under locations.maps without changing Java code.
 locations:
   world: world

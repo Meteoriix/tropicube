@@ -6,6 +6,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-16
 
+- Corrige et accélère Fallen Kingdoms : conteneurs utilisables, construction territoriale et portillons cohérents, JcJ à 5 minutes, mort subite à 30 minutes, fin à 45 minutes, Alchimiste, 32 steaks et suppression de l'XP réseau à l'arrivée.
+- Réorganise le HUD Fallen Kingdoms : équipes actives sans PV de cœur dans le scoreboard, prochaine phase nommée, tablist colorée dès l'attente, actionbar contextuelle et bossbar temporaire du cœur ennemi frappé.
 - Abrège les soldes en milliards avec le suffixe `B` et plafonne chaque solde TropiCoins à 100 milliards, y compris pour les transferts, missions et récompenses de saison.
 - Préserve le format MiniMessage du nom de file bêta dans le message de connexion et retire les balises visibles de sa description d'annulation.
 - Libère dans le profil Docker de développement la capacité nécessaire aux files Fallen Kingdoms bêta en lançant aussi le template classique à la demande.

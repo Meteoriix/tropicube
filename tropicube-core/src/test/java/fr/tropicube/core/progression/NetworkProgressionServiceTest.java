@@ -1,6 +1,7 @@
 package fr.tropicube.core.progression;
 
 import org.junit.jupiter.api.Test;
+import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 class NetworkProgressionServiceTest {
@@ -26,5 +27,14 @@ class NetworkProgressionServiceTest {
         assertEquals(0.0f, NetworkProgressionService.progressWithinLevel(100), 0.0001f);
         assertEquals(0.5f, NetworkProgressionService.progressWithinLevel(250), 0.0001f);
         assertTrue(NetworkProgressionService.progressWithinLevel(399) < 1.0f);
+    }
+
+    @Test void gameDisplayOwnershipDoesNotChangePersistentProgression() {
+        NetworkProgressionService service = new NetworkProgressionService(null, null);
+        UUID playerId = UUID.randomUUID();
+        service.suppressDisplay(playerId);
+        assertTrue(service.isDisplaySuppressed(playerId));
+        service.releaseDisplay(playerId);
+        assertFalse(service.isDisplaySuppressed(playerId));
     }
 }

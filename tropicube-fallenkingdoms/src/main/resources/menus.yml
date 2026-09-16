@@ -23,7 +23,7 @@ menus:
       kits:
         slots: [10, 12, 14, 16, 22]
         template-action: select_kit
-        preview-count: 4
+        preview-count: 5
   waiting-map:
     title-key: fk.menu-map-title
     rows: 3

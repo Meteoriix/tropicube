@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 public record FallenKingdomsSettings(int countdownSeconds, int resultDisplaySeconds, int minPlayersPerKingdom,
                                      int maxPlayersPerKingdom, int maxKingdoms, PhaseTimeline timeline,
                                      double heartHealth, int respawnDelaySeconds, double finalBorderSize,
-                                     Set<Material> forbiddenBaseMaterials, Set<Material> commonPlacementMaterials,
+                                     Set<Material> forbiddenPlacementMaterials,
                                       boolean autoStart, int ruinWaves, int ruinTicksBetweenWaves,
                                       double ruinRadius, double ruinDestructionRatio, boolean preserveContainers,
                                       CombatProfile combatProfile, boolean tntBreachesEnabled,
@@ -26,8 +26,9 @@ public record FallenKingdomsSettings(int countdownSeconds, int resultDisplaySeco
         if (heart <= 0 || border != 50.0) throw new IllegalArgumentException("hearts.max-health doit être positif et sudden-death.final-border-size doit valoir 50.");
         int countdown = config.getInt("game.countdown-seconds"), display = config.getInt("game.result-display-seconds"), respawn = config.getInt("respawn.delay-seconds");
         if (countdown <= 0 || display <= 0 || respawn < 0) throw new IllegalArgumentException("Les délais doivent être valides.");
-        Set<Material> forbidden = materials(config, "protections.forbidden-base-materials");
-        Set<Material> common = materials(config, "protections.common-placement-whitelist");
+        Set<Material> forbidden = config.contains("protections.forbidden-placement-materials")
+                ? materials(config, "protections.forbidden-placement-materials")
+                : Set.of(Material.BEDROCK, Material.BARRIER, Material.END_PORTAL_FRAME);
         int ruinWaves = config.getInt("ruins.waves");
         int ruinTicks = config.getInt("ruins.ticks-between-waves");
         double ruinRadius = config.getDouble("ruins.radius");
@@ -63,7 +64,7 @@ public record FallenKingdomsSettings(int countdownSeconds, int resultDisplaySeco
                 new PhaseTimeline(integerOverride("FK_PVP_AT_SECONDS",config.getInt("phases.pvp-at-seconds")),integerOverride("FK_ASSAULT_AT_SECONDS",config.getInt("phases.assault-at-seconds")),
                         integerOverride("FK_SUDDEN_DEATH_AT_SECONDS",config.getInt("phases.sudden-death-at-seconds")),integerOverride("FK_FORCE_END_AT_SECONDS",config.getInt("phases.force-end-at-seconds"))),
                 effectiveHeart, effectiveRespawn, border,
-                forbidden, common, booleanOverride("FK_AUTO_START",host?false:config.getBoolean("game.auto-start", true)), effectiveRuinWaves, ruinTicks,
+                forbidden, booleanOverride("FK_AUTO_START",host?false:config.getBoolean("game.auto-start", true)), effectiveRuinWaves, ruinTicks,
                 effectiveRuinRadius, effectiveRuinRatio, config.getBoolean("ruins.preserve-containers", true), profile,
                 config.getBoolean("protections.tnt-breaches-enabled", true),
                 config.getBoolean("respawn.drop-inventory", true), config.getBoolean("respawn.disconnect-counts-as-death", true));

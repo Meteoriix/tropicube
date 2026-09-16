@@ -7,7 +7,14 @@ scoreboards:
         lines:
           - key: fk.sb-separator
           - key: fk.sb-waiting
-          - key: fk.sb-map
+          - key: fk.sb-players
+          - key: fk.sb-team
+          - key: fk.sb-kit
+          - key: fk.sb-separator
+      countdown:
+        lines:
+          - key: fk.sb-separator
+          - key: fk.sb-countdown
           - key: fk.sb-players
           - key: fk.sb-team
           - key: fk.sb-kit
@@ -16,7 +23,7 @@ scoreboards:
         lines:
           - key: fk.sb-separator
           - key: fk.sb-phase
-          - key: fk.sb-time
+          - key: fk.sb-next-phase
           - key: fk.sb-team
           - blank: true
           - key: fk.sb-blue

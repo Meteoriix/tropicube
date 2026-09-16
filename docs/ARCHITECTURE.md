@@ -266,6 +266,8 @@ Les grades déclarés dans la configuration Core sont resynchronisés au démarr
 
 ## Sécurité réseau
 
+Core bloque par défaut les interfaces sensibles des backends Paper. Un mini-jeu de confiance peut enregistrer un `ProtectedBlockInteractionPolicy` synchrone auprès du gestionnaire de services Bukkit pour autoriser un conteneur dans son propre contexte ; sans décision positive, le blocage réseau demeure. `NetworkProgressionService` permet aussi à un serveur de jeu de masquer localement la barre d'XP réseau sans modifier la progression MySQL, afin que l'expérience vanilla puisse servir au gameplay.
+
 - Velocity authentifie les comptes (`online-mode = true`).
 - Geyser écoute uniquement le port public UDP configuré ; Floodgate chiffre ses données avec la clé privée persistée dans `floodgate-data`.
 - Les backends Paper sont hors ligne car ils font confiance au forwarding moderne de Velocity.

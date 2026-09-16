@@ -17,6 +17,8 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.block.Action;
 
 /** Enforces map-independent territorial rules at Paper event boundaries. */
 public final class ProtectionListener implements Listener {
@@ -36,16 +38,24 @@ public final class ProtectionListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void move(PlayerMoveEvent event) {
         Location destination = event.getTo();
-        if (destination != null && changedBlock(event.getFrom(), destination) && !session.mayEnter(event.getPlayer(), destination))
+        if (destination != null && changedBlock(event.getFrom(), destination) && !session.mayEnter(event.getPlayer(), destination)) {
+            session.warnEnemyBaseEntry(event.getPlayer(), destination);
             event.setTo(event.getFrom());
+        }
     }
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void teleport(PlayerTeleportEvent event) {
-        if (event.getTo() != null && !session.mayEnter(event.getPlayer(), event.getTo())) event.setCancelled(true);
+        if (event.getTo() != null && !session.mayEnter(event.getPlayer(), event.getTo())) {
+            session.warnEnemyBaseEntry(event.getPlayer(), event.getTo());
+            event.setCancelled(true);
+        }
     }
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void portal(PlayerPortalEvent event) {
-        if (event.getTo() == null || !session.mayEnter(event.getPlayer(), event.getTo())) event.setCancelled(true);
+        if (event.getTo() == null || !session.mayEnter(event.getPlayer(), event.getTo())) {
+            if (event.getTo() != null) session.warnEnemyBaseEntry(event.getPlayer(), event.getTo());
+            event.setCancelled(true);
+        }
     }
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void pistonExtend(BlockPistonExtendEvent event) {
@@ -75,7 +85,16 @@ public final class ProtectionListener implements Listener {
     public void vehicleMove(VehicleMoveEvent event) {
         Player passenger = event.getVehicle().getPassengers().stream().filter(Player.class::isInstance)
                 .map(Player.class::cast).findFirst().orElse(null);
-        if (passenger != null && !session.mayEnter(passenger, event.getTo())) event.getVehicle().teleport(event.getFrom());
+        if (passenger != null && !session.mayEnter(passenger, event.getTo())) {
+            session.warnEnemyBaseEntry(passenger, event.getTo());
+            event.getVehicle().teleport(event.getFrom());
+        }
+    }
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void gate(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null
+                || !event.getClickedBlock().getType().name().endsWith("_FENCE_GATE")) return;
+        if (!session.mayToggleGate(event.getPlayer(), event.getClickedBlock().getLocation())) event.setCancelled(true);
     }
     private boolean sameTerritory(Location from, Location to) {
         return session.sameProtectionRegion(from,to);

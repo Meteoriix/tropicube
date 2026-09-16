@@ -26,7 +26,7 @@ public final class FallenKingdomsCustomGameGUI {
             Map.entry(20, Option.RESPAWN), Map.entry(21, Option.COMBAT),
             Map.entry(22, Option.RUINS), Map.entry(28, Option.MINER),
             Map.entry(29, Option.FARMER), Map.entry(30, Option.SCOUT),
-            Map.entry(31, Option.ENCHANTER));
+            Map.entry(31, Option.ENCHANTER), Map.entry(32, Option.ALCHEMIST));
 
     private FallenKingdomsCustomGameGUI() { }
 
@@ -43,10 +43,10 @@ public final class FallenKingdomsCustomGameGUI {
             indexes.put(Option.COUNTDOWN, 1);
             indexes.put(Option.MAX_TEAM, 2);
             indexes.put(Option.MAX_KINGDOMS, 3);
-            indexes.put(Option.PVP, 2);
+            indexes.put(Option.PVP, 0);
             indexes.put(Option.ASSAULT, 2);
-            indexes.put(Option.SUDDEN_DEATH, 2);
-            indexes.put(Option.FORCE_END, 2);
+            indexes.put(Option.SUDDEN_DEATH, 0);
+            indexes.put(Option.FORCE_END, 0);
             indexes.put(Option.HEART, 1);
             indexes.put(Option.RESPAWN, 1);
             indexes.put(Option.RUINS, 1);
@@ -69,7 +69,7 @@ public final class FallenKingdomsCustomGameGUI {
             for (Option option : Option.values()) {
                 if (option.environment != null) values.put(option.environment, current(option));
             }
-            String kits = java.util.stream.Stream.of(Option.MINER, Option.FARMER, Option.SCOUT, Option.ENCHANTER)
+            String kits = kitOptions()
                     .filter(option -> current(option).equals("true"))
                     .map(option -> option.kitId)
                     .collect(java.util.stream.Collectors.joining(","));
@@ -87,14 +87,19 @@ public final class FallenKingdomsCustomGameGUI {
         private String current(Option option) { return option.values[indexes.get(option)]; }
         private int number(Option option) { return Integer.parseInt(current(option)); }
         private long enabledKitCount() {
-            return java.util.stream.Stream.of(Option.MINER, Option.FARMER, Option.SCOUT, Option.ENCHANTER)
+            return kitOptions()
                     .filter(option -> current(option).equals("true")).count();
+        }
+
+        private java.util.stream.Stream<Option> kitOptions() {
+            return java.util.stream.Stream.of(
+                    Option.MINER, Option.FARMER, Option.SCOUT, Option.ENCHANTER, Option.ALCHEMIST);
         }
 
         private void normalizeTimeline() {
             int pvp = number(Option.PVP);
             int assault = Math.max(number(Option.ASSAULT), pvp + 300);
-            int suddenDeath = Math.max(number(Option.SUDDEN_DEATH), assault + 600);
+            int suddenDeath = Math.max(number(Option.SUDDEN_DEATH), assault + 300);
             int forceEnd = Math.max(number(Option.FORCE_END), suddenDeath + 600);
             selectAtLeast(Option.ASSAULT, assault);
             selectAtLeast(Option.SUDDEN_DEATH, suddenDeath);
@@ -152,8 +157,8 @@ public final class FallenKingdomsCustomGameGUI {
         MAX_KINGDOMS("FK_MAX_KINGDOMS", Material.WHITE_BANNER, "lobby.fk-custom-max-kingdoms", new String[]{"2", "3", "4", "5"}, null),
         PVP("FK_PVP_AT_SECONDS", Material.IRON_SWORD, "lobby.fk-custom-pvp", new String[]{"300", "600", "900"}, null),
         ASSAULT("FK_ASSAULT_AT_SECONDS", Material.TNT, "lobby.fk-custom-assault", new String[]{"900", "1200", "1500"}, null),
-        SUDDEN_DEATH("FK_SUDDEN_DEATH_AT_SECONDS", Material.ENDER_EYE, "lobby.fk-custom-sudden", new String[]{"2700", "3600", "4500"}, null),
-        FORCE_END("FK_FORCE_END_AT_SECONDS", Material.BARRIER, "lobby.fk-custom-end", new String[]{"3600", "4500", "5400"}, null),
+        SUDDEN_DEATH("FK_SUDDEN_DEATH_AT_SECONDS", Material.ENDER_EYE, "lobby.fk-custom-sudden", new String[]{"1800", "2700", "3600"}, null),
+        FORCE_END("FK_FORCE_END_AT_SECONDS", Material.BARRIER, "lobby.fk-custom-end", new String[]{"2700", "3600", "4500"}, null),
         HEART("FK_HEART_HEALTH", Material.END_CRYSTAL, "lobby.fk-custom-heart", new String[]{"250", "500", "1000"}, null),
         RESPAWN("FK_RESPAWN_DELAY_SECONDS", Material.TOTEM_OF_UNDYING, "lobby.fk-custom-respawn", new String[]{"5", "10", "15"}, null),
         COMBAT("FK_COMBAT_PROFILE", Material.DIAMOND_SWORD, "lobby.fk-custom-combat", new String[]{"PAPER_26_2", "LEGACY_1_8"}, null),
@@ -161,7 +166,8 @@ public final class FallenKingdomsCustomGameGUI {
         MINER(null, Material.IRON_PICKAXE, "fk.kit-miner", new String[]{"true", "false"}, "miner"),
         FARMER(null, Material.WHEAT, "fk.kit-farmer", new String[]{"true", "false"}, "farmer"),
         SCOUT(null, Material.FEATHER, "fk.kit-scout", new String[]{"true", "false"}, "scout"),
-        ENCHANTER(null, Material.ENCHANTING_TABLE, "fk.kit-enchanter", new String[]{"true", "false"}, "enchanter");
+        ENCHANTER(null, Material.ENCHANTING_TABLE, "fk.kit-enchanter", new String[]{"true", "false"}, "enchanter"),
+        ALCHEMIST(null, Material.BREWING_STAND, "fk.kit-alchemist", new String[]{"true", "false"}, "alchemist");
 
         private final String environment;
         private final Material material;

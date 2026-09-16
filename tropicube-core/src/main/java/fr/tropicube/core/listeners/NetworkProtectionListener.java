@@ -1,5 +1,7 @@
 package fr.tropicube.core.listeners;
 
+import fr.tropicube.core.TropicubeCore;
+import fr.tropicube.core.protection.ProtectedBlockInteractionPolicy;
 import org.bukkit.Material;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.event.EventHandler;
@@ -15,9 +17,14 @@ import java.util.Set;
 
 /** Applies the network-wide restrictions that must be identical on every Paper backend. */
 public final class NetworkProtectionListener implements Listener {
+    private final TropicubeCore plugin;
     private static final Set<Material> BLOCKED_CONTAINERS = Set.of(
             Material.CHEST, Material.TRAPPED_CHEST, Material.ENDER_CHEST, Material.BARREL,
             Material.FURNACE, Material.BLAST_FURNACE, Material.SMOKER, Material.CRAFTING_TABLE);
+
+    public NetworkProtectionListener(TropicubeCore plugin) {
+        this.plugin = plugin;
+    }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onCommand(PlayerCommandPreprocessEvent event) {
@@ -49,12 +56,29 @@ public final class NetworkProtectionListener implements Listener {
     public void onProtectedBlockInteraction(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null) return;
         Material material = event.getClickedBlock().getType();
-        String name = material.name();
-        if (BLOCKED_CONTAINERS.contains(material) || name.endsWith("_SIGN")
-                || name.endsWith("_WALL_SIGN") || name.endsWith("_HANGING_SIGN")
-                || name.endsWith("_WALL_HANGING_SIGN")) {
-            event.setCancelled(true);
+        boolean container = BLOCKED_CONTAINERS.contains(material);
+        boolean authorized = container && isAllowedByGame(event);
+        if (shouldCancel(material, authorized)) event.setCancelled(true);
+    }
+
+    private boolean isAllowedByGame(PlayerInteractEvent event) {
+        for (var registration : plugin.getServer().getServicesManager()
+                .getRegistrations(ProtectedBlockInteractionPolicy.class)) {
+            try {
+                if (registration.getProvider().allows(event.getPlayer(), event.getClickedBlock())) return true;
+            } catch (RuntimeException failure) {
+                plugin.getLogger().warning("Politique d'interaction protégée en erreur pour "
+                        + registration.getPlugin().getName() + ": " + failure.getMessage());
+            }
         }
+        return false;
+    }
+
+    static boolean shouldCancel(Material material, boolean authorizedContainer) {
+        String name = material.name();
+        boolean sign = name.endsWith("_SIGN") || name.endsWith("_WALL_SIGN")
+                || name.endsWith("_HANGING_SIGN") || name.endsWith("_WALL_HANGING_SIGN");
+        return sign || BLOCKED_CONTAINERS.contains(material) && !authorizedContainer;
     }
 
 }

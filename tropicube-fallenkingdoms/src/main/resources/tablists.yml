@@ -3,5 +3,6 @@ tablists:
   fallenkingdoms:
     variants:
       waiting: { header-key: fk.tab-header, footer-key: fk.tab-footer-waiting }
+      countdown: { header-key: fk.tab-header, footer-key: fk.tab-footer-waiting }
       active: { header-key: fk.tab-header, footer-key: fk.tab-footer-active }
       ending: { header-key: fk.tab-header, footer-key: fk.tab-footer-ending }

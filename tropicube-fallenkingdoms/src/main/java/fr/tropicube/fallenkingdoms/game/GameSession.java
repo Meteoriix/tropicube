@@ -30,6 +30,7 @@ import fr.tropicube.language.PlaceholderValues;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
+import org.bukkit.inventory.ItemStack;
 
 import java.time.Instant;
 import java.util.EnumMap;
@@ -69,6 +70,7 @@ public final class GameSession {
     private final Set<KingdomId> eliminatedKingdoms = new HashSet<>();
     private final Set<KingdomId> ruinedKingdoms = new HashSet<>();
     private final Map<UUID,BukkitTask> respawnTasks=new HashMap<>();
+    private final Map<UUID,Long> baseEntryWarnings=new HashMap<>();
     private final MapVote mapVote = new MapVote();
     private final FallenKingdomsPreferenceService preferences;
     private final FallenKingdomsHud hud;
@@ -192,6 +194,7 @@ public final class GameSession {
         var attackSpeed=player.getAttribute(Attribute.ATTACK_SPEED);
         if(attackSpeed!=null&&settings.combatProfile()==CombatProfile.LEGACY_1_8)attackSpeed.setBaseValue(1024.0);
         kits.give(player, players.get(player.getUniqueId()).kitId());
+        player.getInventory().addItem(new ItemStack(Material.COOKED_BEEF, 32));
         player.teleport(base(kingdom).spawn().in(world()));
     }
 
@@ -259,7 +262,8 @@ public final class GameSession {
         KingdomHeartDamageEvent damage = new KingdomHeartDamageEvent(sessionId, heart.owner(), attacker, requestedDamage);
         Bukkit.getPluginManager().callEvent(damage);
         if (damage.isCancelled()) return;
-        heart.damage(attackingPlayer.kingdom(), damage.damage(), false);
+        double applied = heart.damage(attackingPlayer.kingdom(), damage.damage(), false);
+        if (applied > 0) hud.showEnemyHeart(attacker, heart);
         if (before != HeartState.DESTROYED && heart.state() == HeartState.DESTROYED) {
             attackingPlayer.recordObjective();
             crystal.remove();
@@ -327,6 +331,7 @@ public final class GameSession {
     }
 
     public void join(Player player) {
+        core().getNetworkProgressionService().suppressDisplay(player);
         if (state.state() == GameState.WAITING || state.state() == GameState.COUNTDOWN) {
             player.setGameMode(GameMode.ADVENTURE);
             player.teleport(map.lobby().in(world()));
@@ -351,6 +356,9 @@ public final class GameSession {
     }
 
     public void quit(Player player) {
+        core().getNetworkProgressionService().releaseDisplay(player.getUniqueId());
+        hud.remove(player);
+        baseEntryWarnings.remove(player.getUniqueId());
         if (state.state() == GameState.COUNTDOWN) Bukkit.getScheduler().runTask(plugin, this::reevaluateCountdown);
         PlayerSession runtime = players.get(player.getUniqueId());
         if (!state.state().active() || runtime == null || !runtime.surviving()) return;
@@ -407,12 +415,27 @@ public final class GameSession {
         PlayerSession runtime = players.get(player.getUniqueId());
         if (!state.state().active() || runtime == null || !runtime.surviving()) return false;
         ProtectionRules.Territory territory = territoryAt(location, runtime.kingdom());
-        if (!protections.allowsManualBuild(territory, territory == ProtectionRules.Territory.OWN_BASE)) return false;
         if (!placing) return territory == ProtectionRules.Territory.OWN_BASE || territory == ProtectionRules.Territory.COMMON;
-        if (territory == ProtectionRules.Territory.OWN_BASE)
-            return material != null && !settings.forbiddenBaseMaterials().contains(material);
-        return territory == ProtectionRules.Territory.COMMON && material != null
-                && settings.commonPlacementMaterials().contains(material);
+        return material != null && protections.allowsPlacement(state.state(), territory,
+                material == Material.TNT, settings.forbiddenPlacementMaterials().contains(material));
+    }
+
+    public boolean mayUseProtectedBlock(Player player, Block block) {
+        PlayerSession runtime = players.get(player.getUniqueId());
+        if (!state.state().active() || runtime == null || !runtime.surviving()) return false;
+        ProtectionRules.Territory territory = territoryAt(block.getLocation(), runtime.kingdom());
+        return territory == ProtectionRules.Territory.OWN_BASE
+                || territory == ProtectionRules.Territory.COMMON
+                || territory == ProtectionRules.Territory.ENEMY_BASE
+                && protections.allowsEnemyBaseEntry(state.state());
+    }
+
+    public boolean mayToggleGate(Player player, Location location) {
+        if (!state.state().active()) return true;
+        PlayerSession runtime = players.get(player.getUniqueId());
+        if (runtime == null || !runtime.surviving()) return false;
+        KingdomId owner = baseOwnerAt(location);
+        return owner == null || owner == runtime.kingdom();
     }
 
     public boolean mayEnter(Player player, Location destination) {
@@ -422,6 +445,16 @@ public final class GameSession {
             return true;
         ProtectionRules.Territory territory = territoryAt(destination, runtime.kingdom());
         return territory != ProtectionRules.Territory.ENEMY_BASE || protections.allowsEnemyBaseEntry(state.state());
+    }
+
+    public void warnEnemyBaseEntry(Player player, Location destination) {
+        PlayerSession runtime = players.get(player.getUniqueId());
+        if (runtime == null || territoryAt(destination, runtime.kingdom()) != ProtectionRules.Territory.ENEMY_BASE
+                || protections.allowsEnemyBaseEntry(state.state())) return;
+        long now = System.currentTimeMillis();
+        if (now - baseEntryWarnings.getOrDefault(player.getUniqueId(), 0L) < 2_000L) return;
+        baseEntryWarnings.put(player.getUniqueId(), now);
+        player.sendActionBar(core().getLanguageManager().getComponent(player.getUniqueId(), "fk.enemy-base-locked"));
     }
 
     public boolean mayExplosionChange(Block block) {
@@ -478,7 +511,12 @@ public final class GameSession {
         }, settings.resultDisplaySeconds() * 20L));
     }
 
-    public void shutdown() { tasks.cancelAll(); crystals.values().forEach(EnderCrystal::remove); hud.clear(); }
+    public void shutdown() {
+        tasks.cancelAll();
+        crystals.values().forEach(EnderCrystal::remove);
+        for (Player player : Bukkit.getOnlinePlayers()) core().getNetworkProgressionService().releaseDisplay(player.getUniqueId());
+        hud.clear();
+    }
     public GameState state() { return state.state(); }
     public String mapId() { return map.id(); }
     public String mapDisplayNameKey() { return map.displayNameKey(); }
@@ -527,11 +565,22 @@ public final class GameSession {
     public void refreshHud(Player player){hud.update(player,elapsedSeconds());}
     public Heart heart(KingdomId kingdom) { return hearts.get(kingdom); }
     public Map<KingdomId, Integer> survivorCounts() { return Map.copyOf(survivors()); }
+    public Set<KingdomId> activeKingdoms() { return Set.copyOf(hearts.keySet()); }
     public int elapsedSeconds() { return startedAt == 0 ? 0 : (int)((System.currentTimeMillis()-startedAt)/1000L); }
     public String remainingTime(int elapsed) {
         if(state.state()==GameState.COUNTDOWN)return formatDuration(Math.max(0,countdownRemaining));
         int next=switch(state.state()){case PREPARATION->timeline.pvpAt();case PVP->timeline.assaultAt();case ASSAULT->timeline.suddenDeathAt();case SUDDEN_DEATH->timeline.forceEndAt();default->elapsed;};
         return formatDuration(Math.max(0,next-elapsed));
+    }
+    public GameState nextPhase() {
+        return switch (state.state()) {
+            case WAITING, COUNTDOWN -> GameState.PREPARATION;
+            case PREPARATION -> GameState.PVP;
+            case PVP -> GameState.ASSAULT;
+            case ASSAULT -> GameState.SUDDEN_DEATH;
+            case SUDDEN_DEATH, ENDING -> GameState.ENDED;
+            case ENDED -> GameState.ENDED;
+        };
     }
 
     private Map<KingdomId, Integer> survivors() {
@@ -544,19 +593,6 @@ public final class GameSession {
 
     private void updateHud(int elapsedSeconds) {
         hud.updateAll(elapsedSeconds);
-        if (!(Bukkit.getPluginManager().getPlugin("TropicubeCore") instanceof TropicubeCore core)) return;
-        String remaining = remainingTime(elapsedSeconds);
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            PlayerSession runtime = players.get(player.getUniqueId());
-            String teamKey = runtime == null ? "fk.team-spectator" : "fk.team-" + runtime.kingdom().name().toLowerCase(java.util.Locale.ROOT);
-            var language = core.getLanguageManager();
-            PlaceholderValues values = PlaceholderValues.builder()
-                    .putComponent("phase", language.getComponent(player.getUniqueId(), "fk.phase-" + state.state().name().toLowerCase(java.util.Locale.ROOT)))
-                    .putComponent("team", language.getComponent(player.getUniqueId(), teamKey))
-                    .put("time", remaining)
-                    .build();
-            player.sendActionBar(language.getComponent(player.getUniqueId(), "fk.hud", values));
-        }
     }
 
     private void announceResult(GameResult result) {
@@ -587,6 +623,10 @@ public final class GameSession {
         World world = Bukkit.getWorld(map.world());
         if (world == null) throw new IllegalStateException("Monde introuvable: " + map.world());
         return world;
+    }
+    private TropicubeCore core() {
+        return Objects.requireNonNull((TropicubeCore) Bukkit.getPluginManager().getPlugin("TropicubeCore"),
+                "TropicubeCore");
     }
     private boolean transition(GameState target) {
         GameState previous = state.state();
