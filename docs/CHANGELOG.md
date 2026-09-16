@@ -4,6 +4,11 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-09-16
+
+- Préserve le format MiniMessage du nom de file bêta dans le message de connexion et retire les balises visibles de sa description d'annulation.
+- Libère dans le profil Docker de développement la capacité nécessaire aux files Fallen Kingdoms bêta en lançant aussi le template classique à la demande.
+
 ### 2026-09-15
 
 - Ajoute une catégorie Bêta au sélecteur de jeux avec deux files Fallen Kingdoms créées à la demande : seuil d'un ou deux joueurs par royaume, sur deux à cinq royaumes.

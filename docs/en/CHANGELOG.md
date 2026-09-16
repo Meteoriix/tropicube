@@ -4,6 +4,11 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+### 2026-09-16
+
+- Preserved the beta queue name's MiniMessage formatting in the join message and removed visible tags from its cancellation description.
+- Freed the Docker development capacity required by Fallen Kingdoms beta queues by starting the regular template on demand as well.
+
 ### 2026-09-15
 
 - Added a Beta category to the game selector with two on-demand Fallen Kingdoms queues: a minimum of one or two players per kingdom across two to five kingdoms.

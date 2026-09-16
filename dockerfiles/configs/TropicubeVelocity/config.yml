@@ -280,13 +280,13 @@ templates:
     port-max: 25669
     max-players: 30
     spectator-slots: 10
-    # Development profile: leaves room for Lobby, SheepWars and FK inside the 8192 MiB node budget.
+    # Development profile: FK starts on demand so one regular or beta instance fits beside Lobby and SheepWars.
     ram-min: 1024
     ram-max: 2048
-    auto-start: true
+    auto-start: false
     auto-stop: true
     auto-stop-delay: 300
-    min-instances: 1
+    min-instances: 0
     max-instances: 2
     environment:
       GAME_MODE: "QUICK_PLAY"

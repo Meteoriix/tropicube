@@ -5,6 +5,8 @@ import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -43,6 +45,20 @@ class VelocityConfigurationTest {
         ConfigurationNode config = loadBundledConfig();
         assertBetaQueue(config, "fallenkingdoms-beta-1v1", 2, 1, 25670, 25679);
         assertBetaQueue(config, "fallenkingdoms-beta-2v2", 4, 2, 25680, 25689);
+    }
+
+    @Test
+    void developmentProfileLeavesCapacityForAnOnDemandFallenKingdomsQueue() throws IOException {
+        ConfigurationNode config = loadRepositoryConfig("dockerfiles/configs/TropicubeVelocity/config.yml");
+        ConfigurationNode regular = config.node("templates", "fallenkingdoms");
+
+        assertFalse(regular.node("auto-start").getBoolean());
+        assertEquals(0, regular.node("min-instances").getInt());
+
+        long prewarmedMemory = reservedMemory(config.node("templates", "lobby"))
+                + reservedMemory(config.node("templates", "sheepwars"));
+        long betaMemory = reservedMemory(config.node("templates", "fallenkingdoms-beta-1v1"));
+        assertTrue(prewarmedMemory + betaMemory <= config.node("docker", "memory-budget-mib").getLong());
     }
 
     @Test
@@ -105,6 +121,22 @@ class VelocityConfigurationTest {
         var resource = getClass().getResource("/config.yml");
         assertNotNull(resource);
         return YamlConfigurationLoader.builder().url(resource).build().load();
+    }
+
+    private ConfigurationNode loadRepositoryConfig(String relativePath) throws IOException {
+        Path directory = Path.of("").toAbsolutePath();
+        while (directory != null && !Files.isRegularFile(directory.resolve(relativePath))) {
+            directory = directory.getParent();
+        }
+        assertNotNull(directory, "Racine du dépôt introuvable depuis le répertoire de test");
+        return YamlConfigurationLoader.builder().path(directory.resolve(relativePath)).build().load();
+    }
+
+    private static long reservedMemory(ConfigurationNode template) {
+        long maximumHeap = template.node("ram-max").getLong();
+        long configuredOverhead = template.node("memory-overhead-mib").getLong();
+        long overhead = configuredOverhead == 0 ? Math.max(512, (maximumHeap + 3) / 4) : configuredOverhead;
+        return maximumHeap + overhead;
     }
 
     private static void assertBetaQueue(ConfigurationNode config, String templateId, int minimumPlayers,

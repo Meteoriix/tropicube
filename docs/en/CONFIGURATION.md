@@ -113,6 +113,8 @@ Core SQL defaults: `database.pool.max-size=10`, `pool.min-idle=2`, `connection-t
 
 Velocity `docker.memory-budget-mib=16384` covers dynamic container limits only. Reserve memory separately for the OS and static services. Template `memory-overhead-mib=0` computes `max(512, ceil(ram-max/4))` MiB beyond Java heap; positive values override the margin. Memory environment variables are derived from these settings. Existing configurations receive compatibility defaults on restart.
 
+The Docker development profile uses an 8192 MiB dynamic-container budget. Lobby and SheepWars each reserve 2560 MiB including native overhead, leaving 2560 MiB for one regular or beta Fallen Kingdoms instance. The deployed regular Fallen Kingdoms template therefore starts on demand with `auto-start: false` and `min-instances: 0`; the embedded 16 GiB profile keeps its warm instance.
+
 Operations need Python 3.11+, Restic and SSH. Configure `RESTIC_REPOSITORY` as an off-host `sftp:` repository, `RESTIC_PASSWORD_FILE`, and optionally `TROPICUBE_OPS_STATE` (default `.runtime/ops`; systemd uses `/var/lib/tropicube-ops`). Keep recovery credentials outside Git and outside this host. Static and dynamic containers use Docker local logging with five 20 MiB files.
 ## Fallen Kingdoms
 

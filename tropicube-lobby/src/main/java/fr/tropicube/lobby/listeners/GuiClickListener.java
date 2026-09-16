@@ -394,7 +394,8 @@ public class GuiClickListener implements Listener {
         if (template == null) return;
         player.closeInventory();
         player.sendMessage(LangHelper.component(player, "lobby.beta-joining",
-                BetaQueueSelectorGUI.displayName(plugin, player, template)));
+                BetaQueueSelectorGUI.displayNamePlaceholder(
+                        BetaQueueSelectorGUI.displayNameComponent(plugin, player, template))));
         plugin.getLobbyServerManager().requestStartTemplate(player, template);
     }
 

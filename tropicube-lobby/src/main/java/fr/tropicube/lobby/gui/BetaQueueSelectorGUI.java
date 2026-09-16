@@ -1,10 +1,13 @@
 package fr.tropicube.lobby.gui;
 
 import fr.tropicube.core.menu.NetworkMenuStyle;
+import fr.tropicube.language.PlaceholderValues;
 import fr.tropicube.lobby.TropicubeLobby;
 import fr.tropicube.lobby.managers.LobbyServerManager;
 import fr.tropicube.lobby.utils.ItemBuilder;
 import fr.tropicube.lobby.utils.LangHelper;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -68,17 +71,33 @@ public final class BetaQueueSelectorGUI {
             holder.inventory.setItem(CANCEL_SLOT, new ItemBuilder(Material.RED_DYE)
                     .name(LangHelper.get(player, "lobby.beta-cancel-name"))
                     .lore(LangHelper.get(player, "lobby.beta-cancel-lore",
-                            displayName(plugin, player, active)))
+                            plainDisplayName(plugin, player, active)))
                     .build());
         }
         holder.inventory.setItem(BACK_SLOT, ItemBuilder.backButton(player));
         holder.inventory.setItem(CLOSE_SLOT, ItemBuilder.closeButton(player));
     }
 
-    public static String displayName(TropicubeLobby plugin, Player player, String templateId) {
+    /** Resolves the trusted localized queue label while preserving its MiniMessage style. */
+    public static Component displayNameComponent(TropicubeLobby plugin, Player player, String templateId) {
         QueueDefinition definition = QUEUES.get(templateId);
-        return definition == null ? plugin.getLobbyServerManager().getTemplateDisplayName(templateId)
-                : LangHelper.get(player, definition.nameKey());
+        return definition == null
+                ? Component.text(plugin.getLobbyServerManager().getTemplateDisplayName(templateId))
+                : LangHelper.component(player, definition.nameKey());
+    }
+
+    /** Resolves the queue label without formatting for insertion into an inventory lore string. */
+    public static String plainDisplayName(TropicubeLobby plugin, Player player, String templateId) {
+        return plainText(displayNameComponent(plugin, player, templateId));
+    }
+
+    /** Supplies a queue label as a rich placeholder instead of escaping it as plain text. */
+    public static PlaceholderValues displayNamePlaceholder(Component displayName) {
+        return PlaceholderValues.builder().putComponent("queue", displayName).build();
+    }
+
+    static String plainText(Component displayName) {
+        return PlainTextComponentSerializer.plainText().serialize(displayName);
     }
 
     private record QueueDefinition(int slot, int minimumPlayers, Material material,
