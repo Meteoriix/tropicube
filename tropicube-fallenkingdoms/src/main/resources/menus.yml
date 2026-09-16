@@ -5,11 +5,28 @@ menus:
     rows: 3
     frame: network
     buttons:
-      back: { slot: 18, material: ARROW, name-key: fk.menu-back, lore-key: fk.menu-back-lore, action: back, required: true }
-      close: { slot: 26, material: BARRIER, name-key: fk.menu-close, lore-key: fk.menu-close-lore, action: close, required: true }
+      back:
+        slot: 18
+        material: ARROW
+        name-key: fk.menu-back
+        lore-key: fk.menu-back-lore
+        action: back
+        required: true
+      close:
+        slot: 26
+        material: BARRIER
+        name-key: fk.menu-close
+        lore-key: fk.menu-close-lore
+        action: close
+        required: true
     dynamic-regions:
       kingdoms:
-        slots: [10, 12, 14, 16, 22]
+        slots:
+          - 10
+          - 12
+          - 14
+          - 16
+          - 22
         template-action: select_kingdom
         preview-count: 5
   waiting-kit:
@@ -17,11 +34,28 @@ menus:
     rows: 3
     frame: network
     buttons:
-      back: { slot: 18, material: ARROW, name-key: fk.menu-back, lore-key: fk.menu-back-lore, action: back, required: true }
-      close: { slot: 26, material: BARRIER, name-key: fk.menu-close, lore-key: fk.menu-close-lore, action: close, required: true }
+      back:
+        slot: 18
+        material: ARROW
+        name-key: fk.menu-back
+        lore-key: fk.menu-back-lore
+        action: back
+        required: true
+      close:
+        slot: 26
+        material: BARRIER
+        name-key: fk.menu-close
+        lore-key: fk.menu-close-lore
+        action: close
+        required: true
     dynamic-regions:
       kits:
-        slots: [10, 12, 14, 16, 22]
+        slots:
+          - 10
+          - 12
+          - 14
+          - 16
+          - 22
         template-action: select_kit
         preview-count: 5
   waiting-map:
@@ -29,10 +63,27 @@ menus:
     rows: 3
     frame: network
     buttons:
-      back: { slot: 18, material: ARROW, name-key: fk.menu-back, lore-key: fk.menu-back-lore, action: back, required: true }
-      close: { slot: 26, material: BARRIER, name-key: fk.menu-close, lore-key: fk.menu-close-lore, action: close, required: true }
+      back:
+        slot: 18
+        material: ARROW
+        name-key: fk.menu-back
+        lore-key: fk.menu-back-lore
+        action: back
+        required: true
+      close:
+        slot: 26
+        material: BARRIER
+        name-key: fk.menu-close
+        lore-key: fk.menu-close-lore
+        action: close
+        required: true
     dynamic-regions:
       maps:
-        slots: [10, 12, 14, 16, 22]
+        slots:
+          - 10
+          - 12
+          - 14
+          - 16
+          - 22
         template-action: vote_map
         preview-count: 5

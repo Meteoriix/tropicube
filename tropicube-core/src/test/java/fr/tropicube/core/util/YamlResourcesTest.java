@@ -127,7 +127,7 @@ class YamlResourcesTest {
             while (matcher.find()) placeholders.add(matcher.group(1));
         }
 
-        assertEquals(156, placeholders.size(),
+        assertEquals(157, placeholders.size(),
                 "Le catalogue canonique doit évoluer explicitement avec les descriptions de l’éditeur");
         assertTrue(Set.of(
                 "friend_accepted",
@@ -522,7 +522,9 @@ class YamlResourcesTest {
             assertNotNull(values.get("sw.sb-map"));
             assertNotNull(values.get("sw.sb-class"));
             assertTrue(String.valueOf(values.get("lobby.tab-header")).contains("🌴 TROPICUBE"));
-            assertTrue(String.valueOf(values.get("sw.tab-header")).contains("🐑 SHEEPWARS"));
+            assertTrue(String.valueOf(values.get("sw.tab-header")).contains("🌴 TROPICUBE"));
+            assertTrue(String.valueOf(values.get("sw.tab-header")).contains("SheepWars"));
+            assertTrue(String.valueOf(values.get("fk.tab-header")).contains("🏰 FALLEN KINGDOMS"));
         }
     }
 

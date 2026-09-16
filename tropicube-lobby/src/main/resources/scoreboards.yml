@@ -23,12 +23,10 @@ scoreboards:
           - key: lobby.sb-separator
           - key: lobby.sb-profile
           - key: lobby.sb-profile-value
-          - blank: true
           - key: lobby.sb-balance
-          - key: lobby.sb-network-online
-          - key: lobby.sb-games
           - key: lobby.sb-queue
           - key: lobby.sb-queue-state
+          - key: lobby.sb-network-online
           - blank: true
           - key: lobby.sb-server-label
           - key: lobby.sb-server-value
