@@ -20,23 +20,15 @@ class VelocityConfigurationTest {
     void bundledTemplatesAllowSeveralConcurrentInstances() throws IOException {
         ConfigurationNode config = loadBundledConfig();
 
-        for (String templateId : new String[]{"lobby", "sheepwars"}) {
-            ConfigurationNode template = config.node("templates", templateId);
-            assertEquals(1, template.node("min-instances").getInt());
-            assertEquals(5, template.node("max-instances").getInt());
-            assertTrue(template.node("max-instances").getInt()
-                    > template.node("min-instances").getInt());
-        }
-    }
-
-    @Test
-    void bundledQuickPlayTemplatesStartWithTheProxy() throws IOException {
-        ConfigurationNode config = loadBundledConfig();
+        ConfigurationNode lobby = config.node("templates", "lobby");
+        assertEquals(1, lobby.node("min-instances").getInt());
+        assertEquals(5, lobby.node("max-instances").getInt());
 
         for (String templateId : new String[]{"sheepwars", "fallenkingdoms"}) {
             ConfigurationNode template = config.node("templates", templateId);
-            assertTrue(template.node("auto-start").getBoolean());
-            assertEquals(1, template.node("min-instances").getInt());
+            assertEquals(0, template.node("min-instances").getInt());
+            assertTrue(template.node("max-instances").getInt()
+                    > template.node("min-instances").getInt());
         }
     }
 
@@ -48,15 +40,14 @@ class VelocityConfigurationTest {
     }
 
     @Test
-    void developmentProfileLeavesCapacityForAnOnDemandFallenKingdomsQueue() throws IOException {
+    void developmentProfileStartsGameTemplatesOnDemand() throws IOException {
         ConfigurationNode config = loadRepositoryConfig("dockerfiles/configs/TropicubeVelocity/config.yml");
-        ConfigurationNode regular = config.node("templates", "fallenkingdoms");
 
-        assertFalse(regular.node("auto-start").getBoolean());
-        assertEquals(0, regular.node("min-instances").getInt());
+        for (String templateId : new String[]{"sheepwars", "fallenkingdoms"}) {
+            assertEquals(0, config.node("templates", templateId, "min-instances").getInt());
+        }
 
-        long prewarmedMemory = reservedMemory(config.node("templates", "lobby"))
-                + reservedMemory(config.node("templates", "sheepwars"));
+        long prewarmedMemory = reservedMemory(config.node("templates", "lobby"));
         long betaMemory = reservedMemory(config.node("templates", "fallenkingdoms-beta-1v1"));
         assertTrue(prewarmedMemory + betaMemory <= config.node("docker", "memory-budget-mib").getLong());
     }

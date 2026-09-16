@@ -172,7 +172,7 @@ templates:
     # Empty instances automatically stop after auto-stop-delay seconds.
     auto-stop: true
     auto-stop-delay: 300
-    min-instances: 1
+    min-instances: 0
     max-instances: 5
     environment:
       GAME_MODE: "QUICK_PLAY"
@@ -267,7 +267,7 @@ templates:
     auto-start: true
     auto-stop: true
     auto-stop-delay: 300
-    min-instances: 1
+    min-instances: 0
     max-instances: 2
     environment:
       GAME_MODE: "QUICK_PLAY"

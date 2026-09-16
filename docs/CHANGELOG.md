@@ -6,6 +6,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-16
 
+- Supprime le démarrage automatique des serveurs SheepWars et Fallen Kingdoms en fixant leur plancher d'instances à zéro ; seul le Lobby reste préchauffé.
 - Active le combat 1.8 par défaut dans Fallen Kingdoms, affiche les PV du cœur allié dans l'actionbar et abaisse le départ Quick Play à six joueurs sans modifier les seuils bêta.
 - Simplifie et harmonise les tablists Lobby, SheepWars et Fallen Kingdoms autour de la marque Tropicube et de l'adresse du serveur, puis allège le scoreboard du Lobby.
 - Corrige et ajuste Fallen Kingdoms : conteneurs utilisables, construction territoriale et portillons cohérents, JcJ à 5 minutes, assaut à 15 minutes, mort subite à 45 minutes, fin à 60 minutes, Alchimiste, 32 steaks et suppression de l'XP réseau à l'arrivée.
