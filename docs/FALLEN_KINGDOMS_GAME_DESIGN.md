@@ -14,6 +14,10 @@ Le parcours réseau cible suit les conventions actuelles : le joueur choisit Fal
 
 La chronologie cible ouvre le JcJ à 5 minutes, l'assaut à 15 minutes, la mort subite à 45 minutes et départage les survivants à 60 minutes. Les joueurs construisent librement dans la zone commune et leur base ; seule la TNT peut être posée dans une base ennemie, à partir de l'assaut.
 
+Le monde alterne cinq minutes de jour et cinq minutes de nuit à partir du lancement. La nuit conserve la moitié des apparitions naturelles de monstres. Le silex possède 25 % de chance de base et la poudre à canon des Creepers est doublée afin que la préparation des sièges reste viable. Avant l'assaut, les limites des bases ennemies sont matérialisées par une paroi de particules proche d'une world border et restent physiquement infranchissables.
+
+La constitution des royaumes maximise les choix exprimés par les joueurs. Les couleurs actives sont sélectionnées dans le pool autorisé par la carte, sans priorité Bleu/Rouge ; seules les préférences incompatibles avec l'équilibre sont réaffectées, avec un tirage équitable entre joueurs à égalité.
+
 Toutes les surfaces joueur doivent respecter les conventions Tropicube : Adventure/MiniMessage, les quatre langues `fr`, `en`, `de` et `es`, actions de clic explicites, cadrage `NetworkMenuStyle`, retour à gauche et fermeture à droite. Menus, hotbar, scoreboard et tablist se rafraîchissent après `/lang` sans reconnexion. Les clients Bedrock via Geyser/Floodgate participent au même flux et reçoivent les alternatives visuelles nécessaires lorsque le rendu Java n'est pas fiable.
 
 Le classement Fallen Kingdoms est prévu **après le socle V1**. Ses files seront des formats fixes propres au jeu et sa cote Elo est indépendante de celle de SheepWars : un joueur dispose d'une cote par jeu, non d'une cote réseau commune. Les règles de composition des files et la politique de variation de cote multi-royaumes seront définies lors de cette phase classée ; elles ne réutiliseront pas par défaut les formats 4v4/8v8 de SheepWars.

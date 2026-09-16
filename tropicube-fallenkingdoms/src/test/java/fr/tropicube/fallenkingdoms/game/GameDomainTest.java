@@ -54,6 +54,34 @@ class GameDomainTest {
         assertThrows(IllegalArgumentException.class,
                 () -> new KingdomAllocator().allocate(players, List.of(KingdomId.BLUE, KingdomId.BLUE)));
     }
+    @Test void allocationSelectsRequestedKingdomsWithoutBlueRedPriority() {
+        List<KingdomAllocator.PlayerPreference> players = new ArrayList<>();
+        for (int index = 0; index < 3; index++) {
+            players.add(new KingdomAllocator.PlayerPreference(new UUID(0, index), KingdomId.GREEN));
+            players.add(new KingdomAllocator.PlayerPreference(new UUID(0, index + 10), KingdomId.ORANGE));
+        }
+        Map<UUID, KingdomId> result = new KingdomAllocator().allocate(players,
+                List.of(KingdomId.BLUE, KingdomId.RED, KingdomId.GREEN, KingdomId.YELLOW, KingdomId.ORANGE),
+                2, 3, 6, new Random(7));
+        assertEquals(Set.of(KingdomId.GREEN, KingdomId.ORANGE), Set.copyOf(result.values()));
+        assertTrue(players.stream().allMatch(player -> result.get(player.player()) == player.preferred()));
+    }
+    @Test void allocationMaximizesPreferencesAndBalancesOversubscribedKingdoms() {
+        List<KingdomAllocator.PlayerPreference> players = new ArrayList<>();
+        for (int index = 0; index < 5; index++)
+            players.add(new KingdomAllocator.PlayerPreference(new UUID(0, index), KingdomId.YELLOW));
+        players.add(new KingdomAllocator.PlayerPreference(new UUID(0, 20), KingdomId.GREEN));
+        players.add(new KingdomAllocator.PlayerPreference(new UUID(0, 21), KingdomId.ORANGE));
+        Map<UUID, KingdomId> result = new KingdomAllocator().allocate(players,
+                List.of(KingdomId.BLUE, KingdomId.RED, KingdomId.GREEN, KingdomId.YELLOW, KingdomId.ORANGE),
+                2, 3, 6, new Random(11));
+        Map<KingdomId, Long> sizes = result.values().stream().collect(java.util.stream.Collectors.groupingBy(
+                value -> value, java.util.stream.Collectors.counting()));
+        assertEquals(List.of(3L, 4L), sizes.values().stream().sorted().toList());
+        assertTrue(result.values().stream().filter(KingdomId.YELLOW::equals).count() >= 3);
+        assertFalse(Set.copyOf(result.values()).contains(KingdomId.BLUE));
+        assertFalse(Set.copyOf(result.values()).contains(KingdomId.RED));
+    }
     @Test void allocationSupportsExactBetaTeamSizes() {
         List<KingdomAllocator.PlayerPreference> duel = List.of(
                 new KingdomAllocator.PlayerPreference(new UUID(0, 1), KingdomId.BLUE),

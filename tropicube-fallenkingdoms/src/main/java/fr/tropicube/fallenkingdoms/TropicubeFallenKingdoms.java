@@ -8,6 +8,7 @@ import fr.tropicube.fallenkingdoms.listener.GameListener;
 import fr.tropicube.fallenkingdoms.listener.ProtectionListener;
 import fr.tropicube.fallenkingdoms.listener.LobbyMenuListener;
 import fr.tropicube.fallenkingdoms.listener.PlayerIdentityListener;
+import fr.tropicube.fallenkingdoms.listener.WorldBalanceListener;
 import fr.tropicube.fallenkingdoms.map.MapCatalog;
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.language.PlaceholderValues;
@@ -45,6 +46,7 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
     private GameListener gameListener;
     private ProtectionListener protectionListener;
     private LobbyMenuListener lobbyMenuListener;
+    private WorldBalanceListener worldBalanceListener;
     private MenuTemplateRegistry menuTemplates;
     private Consumer<String> languageChangeHandler;
     private ProtectedBlockInteractionPolicy blockInteractionPolicy;
@@ -80,15 +82,18 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
         if (gameListener != null) HandlerList.unregisterAll(gameListener);
         if (protectionListener != null) HandlerList.unregisterAll(protectionListener);
         if (lobbyMenuListener != null) { HandlerList.unregisterAll(lobbyMenuListener); lobbyMenuListener.unregister(); }
+        if (worldBalanceListener != null) HandlerList.unregisterAll(worldBalanceListener);
         if (session != null) session.shutdown();
         settings = loadedSettings;
         session = loadedSession;
         gameListener = new GameListener(session);
         protectionListener = new ProtectionListener(session);
         lobbyMenuListener = new LobbyMenuListener(this, session);
+        worldBalanceListener = new WorldBalanceListener(session, settings.spawns(), settings.drops());
         getServer().getPluginManager().registerEvents(gameListener, this);
         getServer().getPluginManager().registerEvents(protectionListener, this);
         getServer().getPluginManager().registerEvents(lobbyMenuListener, this);
+        getServer().getPluginManager().registerEvents(worldBalanceListener, this);
         lobbyMenuListener.refreshViewers();
     }
     private void subscribeLanguageChanges(){

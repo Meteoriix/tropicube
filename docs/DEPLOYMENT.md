@@ -189,6 +189,8 @@ Le redéploiement quotidien de développement interrompt volontairement les part
 
 Le build distribue aussi le plugin `tropicube-fallenkingdoms` et construit son image. La carte immuable est copiée depuis `dockerfiles/worlds/fallenkingdoms/`; les données `players/`, fichiers `session.lock`, sauvegardes `level.dat_old*` et données temporaires du mod Hole Filler sont exclus du contexte Docker et du suivi Git. Le template Velocity `fallenkingdoms` est actif sur la plage privée 25660–25669 et injecte `MAP_ID=cactus`. Le template classique et les files bêta 1v1 et 2v2, sur 25670–25679 et 25680–25689, démarrent à la demande sans instance préchauffée. Pour livrer une autre carte, ajouter son monde à l'image, déclarer une entrée activée sous `locations.maps`, puis changer `MAP_ID`. Le profil embarqué réserve 2 à 4 Gio par instance. La configuration Docker de développement limite chaque instance FK à 1–2 Gio afin qu'elle puisse tenir avec Lobby et les autres parties créées dans le budget local de 8 Gio.
 
+Les trois templates Fallen Kingdoms imposent `VIEW_DISTANCE=12` et `SIMULATION_DISTANCE=5`. La recette de déploiement doit donc contrôler le débit réseau, la mémoire de chunks et le temps de tick avec le nombre maximal de joueurs, en plus du coût des barrières de particules proches des bases.
+
 Le fichier runtime `plugins/TropicubeFallenKingdoms/active-session.lock` apparaît au verrouillage du roster. Il doit disparaître avec le volume éphémère lors du nettoyage Velocity. Sa présence au démarrage fait échouer explicitement le plugin afin d'empêcher une seconde partie sur un monde déjà modifié. Le résultat MySQL est tenté trois fois, avec cinq secondes maximum par tentative, avant le transfert de secours.
 
 ## Contrôles après déploiement

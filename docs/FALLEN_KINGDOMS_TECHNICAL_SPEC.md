@@ -39,7 +39,7 @@ Ne font pas partie de la V1 : une monnaie ou des récompenses économiques, un �
 - Le nombre cible de royaumes est `max(2, ceil(effectif / 6))`, plafonné à cinq.
 - Les seuils Quick Play naturels sont donc : 6 à 12 joueurs pour deux royaumes, 13 à 18 pour trois, 19 à 24 pour quatre et 25 à 30 pour cinq.
 - La répartition finale garantit au moins trois joueurs par royaume et un écart d'effectif maximal de un.
-- Chaque carte activée doit définir un agencement valide pour chacun des nombres de royaumes qu'elle accepte.
+- Chaque carte activée doit définir, pour chaque nombre de royaumes accepté, un pool d'au moins autant de couleurs distinctes. La combinaison active maximise les préférences satisfaites et les égalités sont tirées avec l'aléa propre à la session.
 - Le joueur choisit une couleur préférée. L'algorithme respecte le plus de préférences possible sans enfreindre l'équilibrage ; une préférence n'est jamais une garantie.
 
 ### Chronologie
@@ -168,6 +168,8 @@ PREPARATION ──05:00──> PVP ──15:00──> ASSAULT ──45:00──>
 | `PREPARATION` | `PVP` | horloge à 05:00 | active le JcJ dans la zone commune |
 | `PVP` | `ASSAULT` | horloge à 15:00 | ouvre les bases et rend les cœurs vulnérables |
 | `ASSAULT` | `SUDDEN_DEATH` | horloge à 45:00 | détruit les cœurs restants, annule les réapparitions et démarre la bordure |
+
+En `WAITING` et `COUNTDOWN`, Paper annule dégâts, faim, pose, casse, destructions physiques et drops. Le monde reste en journée claire. Au passage en `PREPARATION`, l'horloge repart au lever du soleil et suit un cycle réel de cinq minutes par demi-journée. Jusqu'à `ASSAULT`, chaque participant reçoit uniquement les particules proches des limites de ses bases ennemies ; les contrôles de déplacement restent l'autorité physique.
 | `ASSAULT` | `ENDING` | un seul royaume vivant | fige le vainqueur |
 | `SUDDEN_DEATH` | `ENDING` | un seul royaume vivant | fige le vainqueur |
 | `SUDDEN_DEATH` | `ENDING` | horloge à 60:00 | compte les survivants et applique l'égalité multi-vainqueur |

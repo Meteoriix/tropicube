@@ -11,6 +11,14 @@ phases:
   assault-at-seconds: 900
   sudden-death-at-seconds: 2700
   force-end-at-seconds: 3600
+world-cycle:
+  day-duration-seconds: 300
+  night-duration-seconds: 300
+spawns:
+  natural-hostile-night-retention: 0.50
+drops:
+  flint-base-chance: 0.25
+  creeper-gunpowder-multiplier: 2.0
 hearts:
   max-health: 500.0
   tnt-direct-damage: false
@@ -38,6 +46,11 @@ protections:
   block-teleport-bypass: true
   block-piston-crossing: true
   block-fluid-crossing: true
+  enemy-base-barrier:
+    render-interval-ticks: 5
+    view-distance-blocks: 32
+    particle-spacing-blocks: 2.0
+    vertical-radius-blocks: 8
 kits:
   default: miner
   definitions:
@@ -88,7 +101,7 @@ kits:
 # Shared map schema. Add future maps under locations.maps without changing Java code.
 locations:
   world: world
-  lobby: { x: -702.0, y: 94.0, z: -653.0, yaw: -90.0, pitch: 0.0 }
+  lobby: { x: -712.0, y: 59.0, z: -653.0, yaw: -90.0, pitch: 0.0 }
   spectator: { x: -702.0, y: 94.0, z: -653.0, yaw: -90.0, pitch: 0.0 }
   maps:
     cactus:
@@ -101,9 +114,9 @@ locations:
         center: { x: -702.0, z: -653.0 }
         initial-size: 490.0
       layouts:
-        "2": [BLUE, RED]
-        "3": [BLUE, RED, GREEN]
-        "4": [BLUE, RED, GREEN, YELLOW]
+        "2": [BLUE, RED, GREEN, YELLOW, ORANGE]
+        "3": [BLUE, RED, GREEN, YELLOW, ORANGE]
+        "4": [BLUE, RED, GREEN, YELLOW, ORANGE]
         "5": [BLUE, RED, GREEN, YELLOW, ORANGE]
       kingdoms:
         blue:

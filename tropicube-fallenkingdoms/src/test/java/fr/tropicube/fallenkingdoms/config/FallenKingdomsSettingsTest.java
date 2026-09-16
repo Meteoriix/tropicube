@@ -19,8 +19,25 @@ class FallenKingdomsSettingsTest {
             assertEquals(900, settings.timeline().assaultAt());
             assertEquals(2700, settings.timeline().suddenDeathAt());
             assertEquals(3600, settings.timeline().forceEndAt());
+            assertEquals(300, settings.worldCycle().dayDurationSeconds());
+            assertEquals(300, settings.worldCycle().nightDurationSeconds());
+            assertEquals(0.50, settings.spawns().naturalHostileNightRetention());
+            assertEquals(0.25, settings.drops().flintBaseChance());
+            assertEquals(2.0, settings.drops().creeperGunpowderMultiplier());
+            assertEquals(32, settings.enemyBaseBarrier().viewDistanceBlocks());
             assertNotNull(config.getConfigurationSection("kits.definitions.alchemist"));
             config.set("protections.block-portal-bypass",false);
+            assertThrows(IllegalArgumentException.class,()->FallenKingdomsSettings.load(config));
+        }
+    }
+
+    @Test void worldBalanceValuesAreValidated() throws Exception {
+        try(var input=getClass().getResourceAsStream("/config.yml")){
+            var config=YamlConfiguration.loadConfiguration(new InputStreamReader(input,StandardCharsets.UTF_8));
+            config.set("spawns.natural-hostile-night-retention",1.1);
+            assertThrows(IllegalArgumentException.class,()->FallenKingdomsSettings.load(config));
+            config.set("spawns.natural-hostile-night-retention",0.5);
+            config.set("protections.enemy-base-barrier.render-interval-ticks",0);
             assertThrows(IllegalArgumentException.class,()->FallenKingdomsSettings.load(config));
         }
     }

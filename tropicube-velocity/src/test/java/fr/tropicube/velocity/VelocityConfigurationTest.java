@@ -40,6 +40,19 @@ class VelocityConfigurationTest {
     }
 
     @Test
+    void fallenKingdomsTemplatesRenderTwelveChunksAndSimulateFive() throws IOException {
+        for (ConfigurationNode config : new ConfigurationNode[]{loadBundledConfig(),
+                loadRepositoryConfig("dockerfiles/configs/TropicubeVelocity/config.yml")}) {
+            for (String templateId : new String[]{"fallenkingdoms", "fallenkingdoms-beta-1v1",
+                    "fallenkingdoms-beta-2v2"}) {
+                ConfigurationNode environment = config.node("templates", templateId, "environment");
+                assertEquals("12", environment.node("VIEW_DISTANCE").getString());
+                assertEquals("5", environment.node("SIMULATION_DISTANCE").getString());
+            }
+        }
+    }
+
+    @Test
     void developmentProfileStartsGameTemplatesOnDemand() throws IOException {
         ConfigurationNode config = loadRepositoryConfig("dockerfiles/configs/TropicubeVelocity/config.yml");
 

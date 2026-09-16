@@ -12,6 +12,10 @@ Players will choose Fallen Kingdoms from **Games**, join a public `QUICK_PLAY` i
 
 The target timeline opens PvP at 5 minutes, assault at 15 minutes, sudden death at 45 minutes, and resolves remaining survivors at 60 minutes. Players may build freely in common ground and their own base; only TNT may be placed inside an enemy base, starting with assault.
 
+The world alternates five minutes of daylight and five minutes of night from match start. Night keeps half of natural hostile spawns. Flint has a 25% base chance and Creeper gunpowder is doubled so siege preparation remains viable. Before assault, enemy base limits appear as a world-border-like particle wall and remain physically impassable.
+
+Kingdom allocation maximizes player choices. Active colors are selected from the map's eligible pool without a Blue/Red priority; only preferences incompatible with balance are reassigned, with fair random selection between tied players.
+
 All player UI follows the current Tropicube rules: Adventure/MiniMessage, `fr`, `en`, `de`, and `es` resources, explicit click outcomes, `NetworkMenuStyle` framing, and live refresh after `/lang`. Bedrock players connected through Geyser/Floodgate use the same flow with compatible visual fallbacks.
 
 Fallen Kingdoms ranked play is planned **after the V1 foundation**. It will use fixed formats designed for FK, and every player will have a Fallen Kingdoms Elo independent from their SheepWars Elo. Multi-kingdom rating and queue composition rules will be approved with that later ranked phase; SheepWars 4v4/8v8 rules are not defaults for FK.

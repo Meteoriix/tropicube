@@ -107,6 +107,8 @@ The proxy's normal shutdown may preserve or remove dynamic instances according t
 
 The enabled `fallenkingdoms` template uses private ports 25660–25669 and injects `MAP_ID=cactus`. The regular template and the 1v1 and 2v2 beta queues on 25670–25679 and 25680–25689 start on demand without keeping warm instances. Its image copies the immutable world from `dockerfiles/worlds/fallenkingdoms/`; player data, locks, and old level backups stay outside Git and the image context. Add another enabled `locations.maps` definition and change `MAP_ID` to deploy another map without changing game code. The embedded profile reserves 2–4 GiB per instance. The development Docker configuration caps FK instances at 1–2 GiB so they can share the local 8 GiB budget with Lobby and other games created on demand.
 
+All three Fallen Kingdoms templates set `VIEW_DISTANCE=12` and `SIMULATION_DISTANCE=5`. Deployment acceptance must therefore measure network throughput, chunk memory, tick time at maximum roster size, and the nearby enemy-base particle walls.
+
 The runtime file `plugins/TropicubeFallenKingdoms/active-session.lock` is created when the roster locks. Velocity cleanup must remove it with the ephemeral volume. If it exists at startup, the plugin fails explicitly to prevent a second match on an already modified world. MySQL result persistence is attempted three times with a five-second limit per attempt before the fallback transfer.
 
 ## Operational checks

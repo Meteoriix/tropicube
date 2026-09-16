@@ -9,6 +9,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import fr.tropicube.fallenkingdoms.game.GameState;
 
 class WaitingRoomContractTest {
     @Test
@@ -35,5 +38,15 @@ class WaitingRoomContractTest {
             assertEquals(26, menu.getInt("buttons.close.slot"));
         }
         assertEquals(5, yaml.getInt("menus.waiting-kit.dynamic-regions.kits.preview-count"));
+    }
+
+    @Test
+    void waitingAndTerminalStatesKeepPlayersProtected() {
+        assertTrue(ProtectionListener.protectsWaitingRoom(GameState.WAITING));
+        assertTrue(ProtectionListener.protectsWaitingRoom(GameState.COUNTDOWN));
+        assertTrue(ProtectionListener.protectsWaitingRoom(GameState.ENDING));
+        assertTrue(ProtectionListener.protectsWaitingRoom(GameState.ENDED));
+        assertFalse(ProtectionListener.protectsWaitingRoom(GameState.PREPARATION));
+        assertFalse(ProtectionListener.protectsWaitingRoom(GameState.PVP));
     }
 }

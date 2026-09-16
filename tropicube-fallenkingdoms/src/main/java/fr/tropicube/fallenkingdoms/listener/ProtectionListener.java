@@ -1,11 +1,13 @@
 package fr.tropicube.fallenkingdoms.listener;
 
 import fr.tropicube.fallenkingdoms.game.GameSession;
+import fr.tropicube.fallenkingdoms.game.GameState;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import com.destroystokyo.paper.event.block.BlockDestroyEvent;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
@@ -14,11 +16,15 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.weather.WeatherChangeEvent;
 
 /** Enforces map-independent territorial rules at Paper event boundaries. */
 public final class ProtectionListener implements Listener {
@@ -34,6 +40,29 @@ public final class ProtectionListener implements Listener {
     public void breakBlock(BlockBreakEvent event) {
         if (!session.mayChangeBlock(event.getPlayer(), event.getBlock().getLocation(), event.getBlock().getType(), false))
             event.setCancelled(true);
+    }
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void destroy(BlockDestroyEvent event) {
+        if (protectsWaitingRoom(session.state())) event.setCancelled(true);
+    }
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void damage(EntityDamageEvent event) {
+        if (event.getEntity() instanceof Player && protectsWaitingRoom(session.state())) event.setCancelled(true);
+    }
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void food(FoodLevelChangeEvent event) {
+        if (!(event.getEntity() instanceof Player player) || !protectsWaitingRoom(session.state())) return;
+        event.setCancelled(true);
+        player.setFoodLevel(20);
+        player.setSaturation(20F);
+    }
+    @EventHandler(priority = EventPriority.HIGH)
+    public void drop(PlayerDropItemEvent event) {
+        if (protectsWaitingRoom(session.state())) event.setCancelled(true);
+    }
+    @EventHandler(priority = EventPriority.HIGH)
+    public void weather(WeatherChangeEvent event) {
+        if (event.toWeatherState()) event.setCancelled(true);
     }
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void move(PlayerMoveEvent event) {
@@ -101,5 +130,8 @@ public final class ProtectionListener implements Listener {
     }
     private static boolean changedBlock(Location from, Location to) {
         return from.getBlockX() != to.getBlockX() || from.getBlockY() != to.getBlockY() || from.getBlockZ() != to.getBlockZ();
+    }
+    static boolean protectsWaitingRoom(GameState state) {
+        return !state.active();
     }
 }

@@ -14,6 +14,9 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
+import org.bukkit.GameRules;
+import org.bukkit.Color;
+import org.bukkit.Particle;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.util.Vector;
 import org.bukkit.entity.EnderCrystal;
@@ -41,6 +44,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.Random;
 import java.nio.file.Files;
 import java.io.IOException;
 import net.kyori.adventure.text.Component;
@@ -52,6 +56,7 @@ import java.time.Duration;
 public final class GameSession {
     private static final double LEGACY_ATTACK_SPEED = 1024.0;
     private final UUID sessionId = UUID.randomUUID();
+    private final Random allocationRandom = new Random(sessionId.getMostSignificantBits() ^ sessionId.getLeastSignificantBits());
     private final TropicubeFallenKingdoms plugin;
     private final GameStateMachine state;
     private final PhaseTimeline timeline;
@@ -95,6 +100,7 @@ public final class GameSession {
         TropicubeCore core = (TropicubeCore) Bukkit.getPluginManager().getPlugin("TropicubeCore");
         this.preferences = new FallenKingdomsPreferenceService(Objects.requireNonNull(core).getDatabaseManager());
         this.hud = new FallenKingdomsHud(plugin, this);
+        prepareWaitingWorld();
     }
 
     public boolean startCountdown() {
@@ -163,8 +169,8 @@ public final class GameSession {
             plugin.updateInstanceStatus(ServerInstance.Status.GAME_WAITING);
             return;
         }
-        Map<UUID, KingdomId> allocations = new KingdomAllocator().allocate(roster, layout,
-                settings.minPlayersPerKingdom(), settings.maxPlayersPerKingdom());
+        Map<UUID, KingdomId> allocations = new KingdomAllocator().allocate(roster, layout, kingdomCount,
+                settings.minPlayersPerKingdom(), settings.maxPlayersPerKingdom(), allocationRandom);
         try { Files.writeString(plugin.sessionMarker(),sessionId.toString()); }
         catch(IOException failure){plugin.getLogger().log(java.util.logging.Level.SEVERE,"Impossible de verrouiller le monde FK",failure);abort();return;}
         allocations.forEach((id, kingdom) -> {
@@ -185,6 +191,9 @@ public final class GameSession {
         startedAt = System.currentTimeMillis();
         plugin.updateInstanceStatus(ServerInstance.Status.GAME_PLAYING);
         tasks.register(Bukkit.getScheduler().runTaskTimer(plugin, this::tick, 20L, 20L));
+        tasks.register(Bukkit.getScheduler().runTaskTimer(plugin, this::updateWorldTime, 0L, 1L));
+        tasks.register(Bukkit.getScheduler().runTaskTimer(plugin, this::renderEnemyBaseBarriers, 0L,
+                settings.enemyBaseBarrier().renderIntervalTicks()));
     }
 
     private void prepareParticipant(Player player, KingdomId kingdom) {
@@ -335,7 +344,7 @@ public final class GameSession {
     public void join(Player player) {
         core().getNetworkProgressionService().suppressDisplay(player);
         if (state.state() == GameState.WAITING || state.state() == GameState.COUNTDOWN) {
-            player.setGameMode(GameMode.ADVENTURE);
+            prepareWaitingPlayer(player);
             player.teleport(map.lobby().in(world()));
             if (state.state() == GameState.WAITING && settings.autoStart() && validRosterSize()) startCountdown();
             preferences.load(player.getUniqueId()).whenComplete((loaded, failure) -> Bukkit.getScheduler().runTask(plugin, () -> {
@@ -528,6 +537,9 @@ public final class GameSession {
         hud.clear();
     }
     public GameState state() { return state.state(); }
+    public boolean isNight() {
+        return state.state().active() && settings.worldCycle().isNight(Math.max(0L, System.currentTimeMillis() - startedAt));
+    }
     public String mapId() { return map.id(); }
     public String mapDisplayNameKey() { return map.displayNameKey(); }
     public int participantCount() { return state.state() == GameState.WAITING || state.state() == GameState.COUNTDOWN
@@ -648,6 +660,46 @@ public final class GameSession {
         World world = Bukkit.getWorld(map.world());
         if (world == null) throw new IllegalStateException("Monde introuvable: " + map.world());
         return world;
+    }
+    private void prepareWaitingWorld() {
+        World current = world();
+        current.setGameRule(GameRules.ADVANCE_TIME, false);
+        current.setTime(1_000L);
+        current.setStorm(false);
+        current.setThundering(false);
+    }
+    private void prepareWaitingPlayer(Player player) {
+        player.setGameMode(GameMode.ADVENTURE);
+        player.setHealth(Objects.requireNonNull(player.getAttribute(Attribute.MAX_HEALTH),
+                "player max health attribute").getValue());
+        player.setFoodLevel(20);
+        player.setSaturation(20F);
+        player.setFireTicks(0);
+        player.setFallDistance(0F);
+    }
+    private void updateWorldTime() {
+        if (!state.state().active()) return;
+        world().setTime(settings.worldCycle().timeAt(Math.max(0L, System.currentTimeMillis() - startedAt)));
+    }
+    private void renderEnemyBaseBarriers() {
+        if (state.state() != GameState.PREPARATION && state.state() != GameState.PVP) return;
+        var rendering = settings.enemyBaseBarrier();
+        Particle.DustOptions dust = new Particle.DustOptions(
+                Bukkit.getCurrentTick() / rendering.renderIntervalTicks() % 2 == 0
+                        ? Color.fromRGB(70, 190, 255) : Color.fromRGB(80, 110, 255), 1.1F);
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            PlayerSession runtime = players.get(player.getUniqueId());
+            if (runtime == null || !runtime.surviving() || player.getGameMode() == GameMode.SPECTATOR) continue;
+            Location viewer = player.getLocation();
+            for (KingdomId kingdom : hearts.keySet()) {
+                if (kingdom == runtime.kingdom()) continue;
+                for (BarrierGeometry.Point point : BarrierGeometry.nearbyWall(base(kingdom).region(),
+                        viewer.getX(), viewer.getY(), viewer.getZ(), rendering.viewDistanceBlocks(),
+                        rendering.particleSpacingBlocks(), rendering.verticalRadiusBlocks())) {
+                    player.spawnParticle(Particle.DUST, point.x(), point.y(), point.z(), 1, dust);
+                }
+            }
+        }
     }
     private TropicubeCore core() {
         return Objects.requireNonNull((TropicubeCore) Bukkit.getPluginManager().getPlugin("TropicubeCore"),

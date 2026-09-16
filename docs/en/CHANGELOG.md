@@ -6,6 +6,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-16
 
+- Fixed and balanced Fallen Kingdoms with preference-aware kingdoms and no Blue/Red priority, protected waiting states, a 5/5-minute day/night cycle, fewer night monsters, increased flint and gunpowder, visible enemy limits, a new waiting spawn, and 12-chunk rendering.
 - Fixed SheepWars so every player has one map vote, blank scoreboard lines survive client rendering, and the localized selected kit appears and refreshes immediately in every state.
 - Streamlined the Lobby tablist with an icon-free label and purple server address, and added whitespace after the map in the SheepWars waiting scoreboard.
 - Immediately restores the real name after `/nick off` in SheepWars and Fallen Kingdoms by refreshing their HUDs after Core completes the profile mutation; `/pull` now suggests and resolves nicked players by authenticated name.

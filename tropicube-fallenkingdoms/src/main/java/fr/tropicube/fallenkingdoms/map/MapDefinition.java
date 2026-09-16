@@ -23,8 +23,8 @@ public record MapDefinition(String id, String displayNameKey, String world, Posi
                 || borderZ - half > playableRegion.minZ() || borderZ + half < playableRegion.maxZ())
             throw new IllegalArgumentException("La bordure initiale ne couvre pas la région jouable");
         for (var entry : layouts.entrySet()) {
-            if (entry.getKey() < 2 || entry.getKey() > 5 || entry.getValue().size() != entry.getKey()
-                    || entry.getValue().stream().distinct().count() != entry.getKey()) throw new IllegalArgumentException("Layout invalide: " + entry.getKey());
+            if (entry.getKey() < 2 || entry.getKey() > 5 || entry.getValue().size() < entry.getKey()
+                    || entry.getValue().stream().distinct().count() != entry.getValue().size()) throw new IllegalArgumentException("Layout invalide: " + entry.getKey());
             if (!bases.keySet().containsAll(entry.getValue())) throw new IllegalArgumentException("Layout référençant une base absente: " + entry.getKey());
         }
         var values = bases.values().stream().toList();
