@@ -36,6 +36,8 @@ Source: `tropicube-velocity/src/main/resources/config.yml`; deployment copy: `do
 - `nick.skin-uuids` extends the Mojang skin pool;
 - `templates` define Docker image, server type, capacity, scaling, auto-stop, volumes, and environment variables. `max-players` is the participant limit; `spectator-slots` adds backend capacity only for an ongoing game (`8` for SheepWars).
 
+The `BETA` category publishes `fallenkingdoms-beta-1v1` on ports 25670–25679 and `fallenkingdoms-beta-2v2` on ports 25680–25689. Both templates start on demand and share the Fallen Kingdoms image and Cactus map. The first requires at least one player in each of at least two kingdoms and can therefore start with 2 players; the second requires at least two players per kingdom and starts with 4. Both retain the public capacity of six players per kingdom and may use two to five kingdoms, up to 30 participants. They keep no warm instance floor.
+
 Core publishes persistent, revisioned `player:access:<uuid>` values. Velocity keeps a local fail-closed cache for proxy authorization, `/nick`, and queue priority. `admin-uuids`, `nick.allowed-grades`, and Docker `OPS` are no longer authority sources.
 
 Velocity also accepts the following operational settings:
@@ -119,6 +121,8 @@ Operations need Python 3.11+, Restic and SSH. Configure `RESTIC_REPOSITORY` as a
 The same configuration is embedded in the module. Update both files until FK resource synchronization is added.
 
 `game.default-map` selects the local map and the instance `MAP_ID` environment variable overrides it in production. Every enabled `locations.maps` entry owns its playable region, border, layouts, and bases, so another map requires configuration rather than Java changes. Startup validates positions, overlaps, layouts, phase times, protections, ruin settings, and the item list under `kits.definitions`.
+
+The internal `FK_MIN_PLAYERS_PER_KINGDOM`, `FK_MAX_PLAYERS_PER_KINGDOM`, and `FK_MAX_KINGDOMS` variables let beta templates lower kingdom sizes under validation. Without overrides, the historical public profile remains 4–6 players per kingdom across 2–5 kingdoms.
 
 Custom matches use the FK setup screen in the Lobby. Velocity only accepts `FK_AUTO_START`, `FK_COMBAT_PROFILE`, `FK_COUNTDOWN_SECONDS`, `FK_MAX_PLAYERS_PER_KINGDOM`, `FK_MAX_KINGDOMS`, `FK_PVP_AT_SECONDS`, `FK_ASSAULT_AT_SECONDS`, `FK_SUDDEN_DEATH_AT_SECONDS`, `FK_FORCE_END_AT_SECONDS`, `FK_HEART_HEALTH`, `FK_RESPAWN_DELAY_SECONDS`, `FK_ENABLED_KITS`, `FK_RUIN_WAVES`, `FK_RUIN_RADIUS`, and `FK_RUIN_DESTRUCTION_RATIO`. The proxy rejects every other key and command-like value; Paper then validates ranges, phase ordering, kits, and mandatory protections. Host instances disable automatic start by default and their owner may use `status`, `start`, and `cancel`.
 

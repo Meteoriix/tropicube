@@ -45,8 +45,9 @@ public record FallenKingdomsSettings(int countdownSeconds, int resultDisplaySeco
         catch (IllegalArgumentException failure) { throw new IllegalArgumentException("combat.default-profile: profil inconnu", failure); }
         if (!config.getStringList("combat.allowed-custom-profiles").contains(profile.name()))
             throw new IllegalArgumentException("combat.default-profile: profil non autorisé " + profile);
+        int effectiveMin=integerOverride("FK_MIN_PLAYERS_PER_KINGDOM",min);
         int effectiveMax=integerOverride("FK_MAX_PLAYERS_PER_KINGDOM",max),effectiveKingdoms=integerOverride("FK_MAX_KINGDOMS",kingdoms);
-        if(effectiveMax<min||effectiveMax>6||effectiveKingdoms<2||effectiveKingdoms>5)throw new IllegalArgumentException("Surcharges de capacité FK invalides");
+        if(effectiveMin<1||effectiveMax<effectiveMin||effectiveMax>6||effectiveKingdoms<2||effectiveKingdoms>5)throw new IllegalArgumentException("Surcharges de capacité FK invalides");
         int effectiveCountdown=integerOverride("FK_COUNTDOWN_SECONDS", countdown);
         int effectiveRespawn=integerOverride("FK_RESPAWN_DELAY_SECONDS", respawn);
         double effectiveHeart=doubleOverride("FK_HEART_HEALTH", heart);
@@ -57,7 +58,7 @@ public record FallenKingdomsSettings(int countdownSeconds, int resultDisplaySeco
                 ||effectiveRuinRadius<=0||effectiveRuinRadius>32||effectiveRuinRatio<=0||effectiveRuinRatio>1)
             throw new IllegalArgumentException("Surcharges de délais, cœur ou ruine FK invalides");
         boolean host=Boolean.parseBoolean(System.getenv().getOrDefault("IS_HOST","false"));
-        return new FallenKingdomsSettings(effectiveCountdown, display, min,
+        return new FallenKingdomsSettings(effectiveCountdown, display, effectiveMin,
                 effectiveMax, effectiveKingdoms,
                 new PhaseTimeline(integerOverride("FK_PVP_AT_SECONDS",config.getInt("phases.pvp-at-seconds")),integerOverride("FK_ASSAULT_AT_SECONDS",config.getInt("phases.assault-at-seconds")),
                         integerOverride("FK_SUDDEN_DEATH_AT_SECONDS",config.getInt("phases.sudden-death-at-seconds")),integerOverride("FK_FORCE_END_AT_SECONDS",config.getInt("phases.force-end-at-seconds"))),

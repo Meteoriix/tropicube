@@ -222,6 +222,38 @@ menus:
           - 43
         template-action: invitation
         preview-count: 3
+  beta-selector:
+    title-key: lobby.beta-title
+    rows: 3
+    frame: network
+    buttons:
+      cancel:
+        slot: 22
+        material: RED_DYE
+        name-key: lobby.beta-cancel-name
+        lore-key: lobby.beta-cancel-lore
+        action: cancel_queue
+      back:
+        slot: 18
+        material: ARROW
+        name-key: lobby.back-button
+        lore-key: lobby.back-button-lore
+        action: back
+        required: true
+      close:
+        slot: 26
+        material: BARRIER
+        name-key: lobby.close-button
+        lore-key: lobby.close-button-lore
+        action: close
+        required: true
+    dynamic-regions:
+      queues:
+        slots:
+          - 11
+          - 15
+        template-action: join_beta
+        preview-count: 2
   ranked-selector:
     title-key: lobby.ranked-title
     rows: 3

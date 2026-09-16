@@ -6,6 +6,8 @@
 
 Tropicube is a modular Minecraft 26.2 network available to Java Edition and Bedrock Edition players through Geyser/Floodgate. It is built around Velocity, dynamically created Paper servers, Redis, MySQL, and Docker Compose. The reference development environment is Java 25 with Maven 3.9.11.
 
+The Lobby game selector includes a Beta category for experimental queues, currently Fallen Kingdoms 1v1 and 2v2.
+
 ## Modules
 
 | Module | Responsibility |

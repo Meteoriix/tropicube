@@ -43,6 +43,8 @@ server-types:
     head-id: "79740"
   fallenkingdoms:
     material: END_CRYSTAL
+  beta:
+    material: RECOVERY_COMPASS
 
 # ──────────────────────────────────────────────────────────────────────────────
 # VIP Shop — entries displayed in the /vip menu.

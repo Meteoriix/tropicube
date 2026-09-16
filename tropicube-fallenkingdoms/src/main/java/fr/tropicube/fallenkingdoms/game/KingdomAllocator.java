@@ -9,10 +9,15 @@ public final class KingdomAllocator {
         return Math.min(5, Math.max(2, (players + 5) / 6));
     }
     public static int kingdomCount(int players, int maximumPlayersPerKingdom, int maximumKingdoms) {
-        if (maximumPlayersPerKingdom < 4 || maximumPlayersPerKingdom > 6 || maximumKingdoms < 2 || maximumKingdoms > 5)
+        return kingdomCount(players, 4, maximumPlayersPerKingdom, maximumKingdoms);
+    }
+    public static int kingdomCount(int players, int minimumPlayersPerKingdom,
+                                   int maximumPlayersPerKingdom, int maximumKingdoms) {
+        if (minimumPlayersPerKingdom < 1 || maximumPlayersPerKingdom < minimumPlayersPerKingdom
+                || maximumPlayersPerKingdom > 6 || maximumKingdoms < 2 || maximumKingdoms > 5)
             throw new IllegalArgumentException("Les limites de royaumes doivent respecter le profil Fallen Kingdoms.");
         int kingdoms = Math.max(2, (players + maximumPlayersPerKingdom - 1) / maximumPlayersPerKingdom);
-        if (players < kingdoms * 4 || kingdoms > maximumKingdoms)
+        if (players < kingdoms * minimumPlayersPerKingdom || kingdoms > maximumKingdoms)
             throw new IllegalArgumentException("L'effectif ne peut pas être réparti avec ces limites.");
         return kingdoms;
     }
@@ -23,11 +28,17 @@ public final class KingdomAllocator {
     }
     /** Allocates against the exact kingdom layout declared by the selected map. */
     public Map<UUID, KingdomId> allocate(Collection<PlayerPreference> preferences, List<KingdomId> ids) {
+        return allocate(preferences, ids, 4, 6);
+    }
+    public Map<UUID, KingdomId> allocate(Collection<PlayerPreference> preferences, List<KingdomId> ids,
+                                         int minimumPlayersPerKingdom, int maximumPlayersPerKingdom) {
         List<PlayerPreference> players = preferences.stream().sorted(Comparator.comparing(p -> p.player().toString())).toList();
         int kingdoms = ids.size();
         if (kingdoms < 2 || kingdoms > KingdomId.values().length
-                || players.size() < kingdoms * 4 || players.size() > kingdoms * 6)
-            throw new IllegalArgumentException("L'agencement ne permet pas quatre à six joueurs par royaume.");
+                || minimumPlayersPerKingdom < 1 || maximumPlayersPerKingdom < minimumPlayersPerKingdom
+                || maximumPlayersPerKingdom > 6 || players.size() < kingdoms * minimumPlayersPerKingdom
+                || players.size() > kingdoms * maximumPlayersPerKingdom)
+            throw new IllegalArgumentException("L'agencement ne respecte pas la capacité configurée des royaumes.");
         if (ids.size() != kingdoms || ids.stream().distinct().count() != kingdoms)
             throw new IllegalArgumentException("L'agencement doit contenir exactement " + kingdoms + " royaumes distincts.");
         int base = players.size() / kingdoms, extra = players.size() % kingdoms;

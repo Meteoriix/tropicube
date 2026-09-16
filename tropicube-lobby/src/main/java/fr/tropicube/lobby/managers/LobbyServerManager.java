@@ -114,8 +114,8 @@ public class LobbyServerManager {
     /** Returns distinct types published by Velocity templates (excluding lobby). */
     public Set<String> getAvailableTemplateTypes() {
         Set<String> types = new TreeSet<>();
-        for (TemplateInfo t : getCustomGameTemplates()) {
-            if (!"LOBBY".equalsIgnoreCase(t.type())) {
+        for (TemplateInfo t : templateCacheRef.get()) {
+            if (!"LOBBY".equalsIgnoreCase(t.type()) && !t.mode().isRanked()) {
                 types.add(t.type());
             }
         }
@@ -163,6 +163,15 @@ public class LobbyServerManager {
                 .filter(template -> type.equalsIgnoreCase(template.type()))
                 .filter(template -> template.mode().isRanked())
                 .sorted(Comparator.comparing(TemplateInfo::mode))
+                .toList();
+    }
+
+    /** Returns the enabled queue templates published for one player-facing category. */
+    public List<TemplateInfo> getTemplatesForType(String type) {
+        return templateCacheRef.get().stream()
+                .filter(template -> type.equalsIgnoreCase(template.type()))
+                .filter(template -> !template.mode().isRanked())
+                .sorted(Comparator.comparing(TemplateInfo::id))
                 .toList();
     }
 
@@ -251,6 +260,7 @@ public class LobbyServerManager {
     public List<TemplateInfo> getCustomGameTemplates() {
         return templateCacheRef.get().stream()
                 .filter(template -> !template.mode().isRanked())
+                .filter(template -> !"BETA".equalsIgnoreCase(template.type()))
                 .toList();
     }
 

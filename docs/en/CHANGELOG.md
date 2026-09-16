@@ -6,6 +6,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-15
 
+- Added a Beta category to the game selector with two on-demand Fallen Kingdoms queues: a minimum of one or two players per kingdom across two to five kingdoms.
 - Aligned the Fallen Kingdoms waiting room with SheepWars: complete hotbar, explicit current choices, manifest-driven menus, kit descriptions, preference counts, visible voting, host control, Profile, and lobby return.
 - Fixed the Fallen Kingdoms selector opening on the first connection tick while the player's grade is still loading asynchronously.
 - Completed the Fallen Kingdoms V1 contract with map voting, persistent preferences, complete historical kits, limited 1.8 combat, friendly indirect-damage protection, Paper events, respawn countdowns, neutral ruins, manifest-driven HUD, atomic ending, and stale-instance protection.

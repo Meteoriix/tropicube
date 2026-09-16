@@ -43,7 +43,8 @@ public class GuiManager {
         SOCIAL,
         FRIEND_REQUESTS,
         PARTY_INVITES,
-        RANKED_SELECTOR
+        RANKED_SELECTOR,
+        BETA_SELECTOR
     }
 
     // ── Opening menus ───────────────────────── ─────────────────────────
@@ -76,6 +77,25 @@ public class GuiManager {
                     if (!player.isOnline() || player.getOpenInventory().getTopInventory() != loading) return;
                     openGuis.put(playerId, GuiType.RANKED_SELECTOR);
                     player.openInventory(RankedSelectorGUI.build(plugin, player, type));
+                });
+            } catch (RuntimeException error) {
+                if (plugin.isEnabled()) Bukkit.getScheduler().runTask(plugin,
+                        () -> plugin.getDiscoveryMenus().loadFailed(player, loading, error));
+            }
+        });
+    }
+
+    public void openBetaSelector(Player player) {
+        UUID playerId = player.getUniqueId();
+        Inventory loading = plugin.getDiscoveryMenus().loading(player, () -> openBetaSelector(player),
+                () -> openServerTypeSelector(player));
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                plugin.getLobbyServerManager().refreshPlayerMatchmaking(playerId);
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (!player.isOnline() || player.getOpenInventory().getTopInventory() != loading) return;
+                    openGuis.put(playerId, GuiType.BETA_SELECTOR);
+                    player.openInventory(BetaQueueSelectorGUI.build(plugin, player));
                 });
             } catch (RuntimeException error) {
                 if (plugin.isEnabled()) Bukkit.getScheduler().runTask(plugin,
@@ -357,6 +377,7 @@ public class GuiManager {
         if (holder instanceof VipShopGUI.Holder shop) openVipShop(player, shop.view() != VipShopGUI.View.HOME);
         else if (holder instanceof SettingsGUI.Holder) openSettings(player);
         else if (holder instanceof RankedSelectorGUI.Holder ranked) openRankedSelector(player, ranked.type());
+        else if (holder instanceof BetaQueueSelectorGUI.Holder) openBetaSelector(player);
         else if (holder instanceof ServerTypeSelectorGUI.Holder) openServerTypeSelector(player);
         else if (holder instanceof ServerSelectorGUI.Holder servers) openServerSelector(player, servers.getType(), servers.getPage(), servers.getFilter());
         else if(holder instanceof FallenKingdomsCustomGameGUI.Holder fk)openFallenKingdomsCustomGame(player,fk);

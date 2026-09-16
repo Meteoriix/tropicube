@@ -14,6 +14,13 @@ class GameDomainTest {
         assertThrows(IllegalArgumentException.class, () -> KingdomAllocator.kingdomCount(31));
         assertEquals(4, KingdomAllocator.kingdomCount(16, 4, 5));
         assertThrows(IllegalArgumentException.class, () -> KingdomAllocator.kingdomCount(17, 4, 4));
+        assertEquals(2, KingdomAllocator.kingdomCount(2, 1, 1, 2));
+        assertEquals(2, KingdomAllocator.kingdomCount(4, 2, 2, 2));
+        assertThrows(IllegalArgumentException.class, () -> KingdomAllocator.kingdomCount(3, 2, 2, 2));
+        assertEquals(2, KingdomAllocator.kingdomCount(2, 1, 6, 5));
+        assertEquals(3, KingdomAllocator.kingdomCount(13, 1, 6, 5));
+        assertEquals(2, KingdomAllocator.kingdomCount(4, 2, 6, 5));
+        assertEquals(5, KingdomAllocator.kingdomCount(25, 2, 6, 5));
     }
     @Test void allocationIsBalancedAndDeterministic() {
         List<KingdomAllocator.PlayerPreference> players = new ArrayList<>();
@@ -32,6 +39,39 @@ class GameDomainTest {
         assertEquals(Set.of(KingdomId.GREEN, KingdomId.ORANGE), Set.copyOf(result.values()));
         assertThrows(IllegalArgumentException.class,
                 () -> new KingdomAllocator().allocate(players, List.of(KingdomId.BLUE, KingdomId.BLUE)));
+    }
+    @Test void allocationSupportsExactBetaTeamSizes() {
+        List<KingdomAllocator.PlayerPreference> duel = List.of(
+                new KingdomAllocator.PlayerPreference(new UUID(0, 1), KingdomId.BLUE),
+                new KingdomAllocator.PlayerPreference(new UUID(0, 2), KingdomId.RED));
+        Map<UUID, KingdomId> oneVersusOne = new KingdomAllocator().allocate(
+                duel, List.of(KingdomId.BLUE, KingdomId.RED), 1, 1);
+        assertEquals(Set.of(KingdomId.BLUE, KingdomId.RED), Set.copyOf(oneVersusOne.values()));
+
+        List<KingdomAllocator.PlayerPreference> doubles = new ArrayList<>(duel);
+        doubles.add(new KingdomAllocator.PlayerPreference(new UUID(0, 3), KingdomId.BLUE));
+        doubles.add(new KingdomAllocator.PlayerPreference(new UUID(0, 4), KingdomId.RED));
+        Map<UUID, KingdomId> twoVersusTwo = new KingdomAllocator().allocate(
+                doubles, List.of(KingdomId.BLUE, KingdomId.RED), 2, 2);
+        assertEquals(2, Collections.frequency(new ArrayList<>(twoVersusTwo.values()), KingdomId.BLUE));
+        assertEquals(2, Collections.frequency(new ArrayList<>(twoVersusTwo.values()), KingdomId.RED));
+    }
+    @Test void allocationSupportsBetaMinimumsOnMoreThanTwoKingdoms() {
+        List<KingdomAllocator.PlayerPreference> soloPlayers = new ArrayList<>();
+        for (int index = 1; index <= 13; index++) {
+            soloPlayers.add(new KingdomAllocator.PlayerPreference(new UUID(0, index), null));
+        }
+        Map<UUID, KingdomId> solo = new KingdomAllocator().allocate(soloPlayers,
+                List.of(KingdomId.BLUE, KingdomId.RED, KingdomId.GREEN), 1, 6);
+        assertEquals(3, Set.copyOf(solo.values()).size());
+
+        List<KingdomAllocator.PlayerPreference> duoPlayers = soloPlayers.subList(0, 6);
+        Map<UUID, KingdomId> duo = new KingdomAllocator().allocate(duoPlayers,
+                List.of(KingdomId.BLUE, KingdomId.RED, KingdomId.GREEN), 2, 6);
+        assertEquals(3, Set.copyOf(duo.values()).size());
+        for (KingdomId kingdom : Set.copyOf(duo.values())) {
+            assertEquals(2, Collections.frequency(new ArrayList<>(duo.values()), kingdom));
+        }
     }
     @Test void timelineAndStateMachineHaveExactBoundaries() {
         PhaseTimeline timeline = new PhaseTimeline(900, 1500, 4500, 5400);

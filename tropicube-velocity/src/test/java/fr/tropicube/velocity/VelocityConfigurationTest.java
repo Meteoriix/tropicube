@@ -39,6 +39,13 @@ class VelocityConfigurationTest {
     }
 
     @Test
+    void bundledBetaQueuesUseMinimumFallenKingdomsTeamSizesAcrossSeveralKingdoms() throws IOException {
+        ConfigurationNode config = loadBundledConfig();
+        assertBetaQueue(config, "fallenkingdoms-beta-1v1", 2, 1, 25670, 25679);
+        assertBetaQueue(config, "fallenkingdoms-beta-2v2", 4, 2, 25680, 25689);
+    }
+
+    @Test
     void bundledPaperTemplatesPinThePrewarmedRuntime() throws IOException {
         ConfigurationNode config = loadBundledConfig();
 
@@ -98,5 +105,26 @@ class VelocityConfigurationTest {
         var resource = getClass().getResource("/config.yml");
         assertNotNull(resource);
         return YamlConfigurationLoader.builder().url(resource).build().load();
+    }
+
+    private static void assertBetaQueue(ConfigurationNode config, String templateId, int minimumPlayers,
+                                        int minimumPlayersPerKingdom, int minimumPort, int maximumPort) {
+        ConfigurationNode template = config.node("templates", templateId);
+        assertTrue(template.node("enabled").getBoolean());
+        assertEquals("BETA", template.node("type").getString());
+        assertEquals(30, template.node("max-players").getInt());
+        assertEquals(10, template.node("spectator-slots").getInt());
+        assertEquals(minimumPort, template.node("port-min").getInt());
+        assertEquals(maximumPort, template.node("port-max").getInt());
+        assertFalse(template.node("auto-start").getBoolean());
+        assertEquals(0, template.node("min-instances").getInt());
+        ConfigurationNode environment = template.node("environment");
+        assertEquals("QUICK_PLAY", environment.node("GAME_MODE").getString());
+        assertEquals(Integer.toString(minimumPlayersPerKingdom),
+                environment.node("FK_MIN_PLAYERS_PER_KINGDOM").getString());
+        assertEquals("6",
+                environment.node("FK_MAX_PLAYERS_PER_KINGDOM").getString());
+        assertEquals("5", environment.node("FK_MAX_KINGDOMS").getString());
+        assertEquals(minimumPlayers, minimumPlayersPerKingdom * 2);
     }
 }

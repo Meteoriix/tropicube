@@ -114,7 +114,19 @@ public class ServerTypeSelectorGUI {
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private static ItemStack buildTypeItem(TropicubeLobby plugin, Player player, String type) {
-            List<LobbyServerManager.ServerInfo> servers = plugin.getLobbyServerManager()
+        if (BetaQueueSelectorGUI.TYPE.equalsIgnoreCase(type)) {
+            return new ItemBuilder(getTypeIcon(type))
+                    .name(LangHelper.get(player, "lobby.game-type-beta"))
+                    .lore(
+                            LangHelper.get(player, "lobby.beta-category-lore"),
+                            LangHelper.get(player, "lobby.beta-category-queues",
+                                    plugin.getLobbyServerManager().getTemplatesForType(type).size()),
+                            "",
+                            LangHelper.get(player, "lobby.beta-category-click"))
+                    .glow(player)
+                    .build();
+        }
+        List<LobbyServerManager.ServerInfo> servers = plugin.getLobbyServerManager()
                     .getServersByType(type, player.getUniqueId()).stream()
                 .filter(LobbyServerManager.ServerInfo::isListed)
                 .toList();
@@ -176,6 +188,7 @@ public class ServerTypeSelectorGUI {
     static String displayType(Player player, String type) {
         if ("SHEEPWARS".equalsIgnoreCase(type)) return LangHelper.get(player, "lobby.game-type-sheepwars");
         if ("FALLENKINGDOMS".equalsIgnoreCase(type)) return LangHelper.get(player, "lobby.game-type-fallenkingdoms");
+        if (BetaQueueSelectorGUI.TYPE.equalsIgnoreCase(type)) return LangHelper.get(player, "lobby.game-type-beta");
         if (type == null || type.isBlank()) return LangHelper.get(player, "lobby.game-type-unknown");
         String value = type.toLowerCase(Locale.ROOT).replace('_', ' ').replace('-', ' ');
         return Character.toUpperCase(value.charAt(0)) + value.substring(1);

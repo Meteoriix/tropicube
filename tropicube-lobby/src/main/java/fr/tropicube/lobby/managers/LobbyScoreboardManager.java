@@ -198,6 +198,8 @@ public class LobbyScoreboardManager implements UiReloadParticipant {
         String normalized = templateId.toLowerCase(java.util.Locale.ROOT);
         if (normalized.contains("4v4")) return "lobby.sb-queue-label-ranked-4v4";
         if (normalized.contains("8v8")) return "lobby.sb-queue-label-ranked-8v8";
+        if (normalized.equals("fallenkingdoms-beta-1v1")) return "lobby.sb-queue-label-beta-fk-1v1";
+        if (normalized.equals("fallenkingdoms-beta-2v2")) return "lobby.sb-queue-label-beta-fk-2v2";
         return "lobby.sb-queue-label-quick-play";
     }
 

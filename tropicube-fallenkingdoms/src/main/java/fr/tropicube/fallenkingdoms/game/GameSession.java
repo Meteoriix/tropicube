@@ -131,7 +131,8 @@ public final class GameSession {
     }
 
     private int configuredKingdomCount(int players) {
-        return KingdomAllocator.kingdomCount(players, settings.maxPlayersPerKingdom(), settings.maxKingdoms());
+        return KingdomAllocator.kingdomCount(players, settings.minPlayersPerKingdom(),
+                settings.maxPlayersPerKingdom(), settings.maxKingdoms());
     }
 
     private void start() {
@@ -158,7 +159,8 @@ public final class GameSession {
             plugin.updateInstanceStatus(ServerInstance.Status.GAME_WAITING);
             return;
         }
-        Map<UUID, KingdomId> allocations = new KingdomAllocator().allocate(roster, layout);
+        Map<UUID, KingdomId> allocations = new KingdomAllocator().allocate(roster, layout,
+                settings.minPlayersPerKingdom(), settings.maxPlayersPerKingdom());
         try { Files.writeString(plugin.sessionMarker(),sessionId.toString()); }
         catch(IOException failure){plugin.getLogger().log(java.util.logging.Level.SEVERE,"Impossible de verrouiller le monde FK",failure);abort();return;}
         allocations.forEach((id, kingdom) -> {

@@ -6,6 +6,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-15
 
+- Ajoute une catégorie Bêta au sélecteur de jeux avec deux files Fallen Kingdoms créées à la demande : seuil d'un ou deux joueurs par royaume, sur deux à cinq royaumes.
 - Aligne la salle d'attente Fallen Kingdoms sur SheepWars : hotbar complète, choix courants explicites, menus manifestes, descriptions de kits, effectifs de préférences, vote visible, contrôle hôte, Profil et retour au lobby.
 - Corrige l'ouverture du sélecteur Fallen Kingdoms au premier tick de connexion lorsque le grade joueur est encore en cours de chargement asynchrone.
 - Termine le contrat Fallen Kingdoms V1 : vote de carte, préférences persistantes, kits historiques complets, combat 1.8 limité, dégâts indirects alliés neutralisés, événements Paper, décompte de réapparition, ruines neutralisées, HUD manifeste, fin atomique et reprise d'instance protégée.

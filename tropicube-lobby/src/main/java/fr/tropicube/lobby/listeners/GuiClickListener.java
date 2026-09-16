@@ -64,6 +64,7 @@ public class GuiClickListener implements Listener {
             case ServerTypeSelectorGUI.Holder typeHolder -> handleTypeSelector(player, slot, typeHolder, e.getClick());
             case ServerSelectorGUI.Holder serverHolder -> handleServerSelector(player, slot, serverHolder);
             case RankedSelectorGUI.Holder rankedHolder -> handleRankedSelector(player, slot, rankedHolder);
+            case BetaQueueSelectorGUI.Holder betaHolder -> handleBetaSelector(player, slot, betaHolder);
             case LanguageSelectorGUI.Holder _ -> handleLanguageSelector(player, slot);
             case SettingsGUI.Holder _ -> handleSettings(player, slot);
             case VipShopGUI.Holder shopHolder -> handleVipShop(player, slot, shopHolder);
@@ -116,7 +117,8 @@ public class GuiClickListener implements Listener {
             || holder instanceof SocialGUI.Holder
             || holder instanceof FriendRequestsGUI.Holder
             || holder instanceof PartyInvitesGUI.Holder
-            || holder instanceof RankedSelectorGUI.Holder;
+            || holder instanceof RankedSelectorGUI.Holder
+            || holder instanceof BetaQueueSelectorGUI.Holder;
     }
 
     // ── Handlers ────────────────────────────────────────────────────────────
@@ -136,6 +138,11 @@ public class GuiClickListener implements Listener {
 
         String type = typeHolder.getTypeForSlot(slot);
         if (type == null) return;
+
+        if (BetaQueueSelectorGUI.TYPE.equalsIgnoreCase(type)) {
+            if (typeSelectorAction(click) != TypeSelectorAction.NONE) plugin.getGuiManager().openBetaSelector(player);
+            return;
+        }
 
         switch (typeSelectorAction(click)) {
             case QUICK_PLAY -> {
@@ -366,6 +373,29 @@ public class GuiClickListener implements Listener {
             return;
         }
         plugin.getGuiManager().openVipGradeConfirmation(player, gradeKey, price);
+    }
+
+    private void handleBetaSelector(Player player, int slot, BetaQueueSelectorGUI.Holder holder) {
+        if (slot == BetaQueueSelectorGUI.CLOSE_SLOT) {
+            player.closeInventory();
+            return;
+        }
+        if (slot == BetaQueueSelectorGUI.BACK_SLOT) {
+            plugin.getGuiManager().openServerTypeSelector(player);
+            return;
+        }
+        if (slot == BetaQueueSelectorGUI.CANCEL_SLOT) {
+            plugin.getLobbyServerManager().cancelMatchmaking(player);
+            player.sendMessage(LangHelper.component(player, "lobby.beta-cancelled"));
+            plugin.getGuiManager().openBetaSelector(player);
+            return;
+        }
+        String template = holder.templateAt(slot);
+        if (template == null) return;
+        player.closeInventory();
+        player.sendMessage(LangHelper.component(player, "lobby.beta-joining",
+                BetaQueueSelectorGUI.displayName(plugin, player, template)));
+        plugin.getLobbyServerManager().requestStartTemplate(player, template);
     }
 
     private void purchaseVipGrade(Player player, String gradeKey) {
