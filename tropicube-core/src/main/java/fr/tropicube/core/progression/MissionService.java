@@ -2,6 +2,7 @@ package fr.tropicube.core.progression;
 
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.core.managers.DatabaseManager;
+import fr.tropicube.core.managers.EconomyAmount;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -96,27 +97,53 @@ public final class MissionService {
                 }
                 if (changed != 1) { connection.rollback(); return ClaimResult.ALREADY_CLAIMED; }
                 long now = System.currentTimeMillis();
-                try (PreparedStatement economy = connection.prepareStatement("""
-                        INSERT INTO tropicube_economy(uuid, balance, total_earned, total_spent, last_updated)
-                        VALUES (?, ?, ?, 0, ?)
-                        ON DUPLICATE KEY UPDATE balance = balance + VALUES(balance),
-                            total_earned = total_earned + VALUES(total_earned), last_updated = VALUES(last_updated)
-                        """)) {
-                    economy.setString(1, playerId.toString());
-                    economy.setDouble(2, assignment.mission().currency());
-                    economy.setDouble(3, assignment.mission().currency());
-                    economy.setLong(4, now);
-                    economy.executeUpdate();
+                var requestedCurrency = EconomyAmount.money(assignment.mission().currency());
+                var currentBalance = java.math.BigDecimal.ZERO.setScale(2);
+                boolean economyAccountExists;
+                try (PreparedStatement select = connection.prepareStatement(
+                        "SELECT balance FROM tropicube_economy WHERE uuid = ? FOR UPDATE")) {
+                    select.setString(1, playerId.toString());
+                    try (ResultSet result = select.executeQuery()) {
+                        economyAccountExists = result.next();
+                        if (economyAccountExists) currentBalance = result.getBigDecimal(1);
+                    }
                 }
-                try (PreparedStatement transaction = connection.prepareStatement("""
-                        INSERT INTO tropicube_transactions(from_uuid, to_uuid, amount, reason, transaction_type, timestamp)
-                        VALUES (NULL, ?, ?, ?, 'REWARD', ?)
-                        """)) {
-                    transaction.setString(1, playerId.toString());
-                    transaction.setDouble(2, assignment.mission().currency());
-                    transaction.setString(3, "Mission " + assignment.mission().id());
-                    transaction.setLong(4, now);
-                    transaction.executeUpdate();
+                var creditedCurrency = EconomyAmount.creditWithinLimit(currentBalance, requestedCurrency);
+                if (economyAccountExists) {
+                    try (PreparedStatement economy = connection.prepareStatement("""
+                            UPDATE tropicube_economy
+                            SET balance = balance + ?, total_earned = total_earned + ?, last_updated = ?
+                            WHERE uuid = ?
+                            """)) {
+                        economy.setBigDecimal(1, creditedCurrency);
+                        economy.setBigDecimal(2, creditedCurrency);
+                        economy.setLong(3, now);
+                        economy.setString(4, playerId.toString());
+                        economy.executeUpdate();
+                    }
+                } else {
+                    try (PreparedStatement economy = connection.prepareStatement("""
+                            INSERT INTO tropicube_economy(uuid, balance, total_earned, total_spent, last_updated)
+                            VALUES (?, ?, ?, 0, ?)
+                            """)) {
+                        economy.setString(1, playerId.toString());
+                        economy.setBigDecimal(2, creditedCurrency);
+                        economy.setBigDecimal(3, creditedCurrency);
+                        economy.setLong(4, now);
+                        economy.executeUpdate();
+                    }
+                }
+                if (creditedCurrency.signum() > 0) {
+                    try (PreparedStatement transaction = connection.prepareStatement("""
+                            INSERT INTO tropicube_transactions(from_uuid, to_uuid, amount, reason, transaction_type, timestamp)
+                            VALUES (NULL, ?, ?, ?, 'REWARD', ?)
+                            """)) {
+                        transaction.setString(1, playerId.toString());
+                        transaction.setBigDecimal(2, creditedCurrency);
+                        transaction.setString(3, "Mission " + assignment.mission().id());
+                        transaction.setLong(4, now);
+                        transaction.executeUpdate();
+                    }
                 }
                 long currentExperience = 0;
                 try (PreparedStatement select = connection.prepareStatement(

@@ -5,7 +5,6 @@ import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.docker.client.RedisManager;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -52,8 +51,10 @@ public class EconomyManager {
         String newCurrencyName = plugin.getConfig().getString("economy.currency-name", "Coins");
         String newCurrencySymbol = plugin.getConfig().getString("economy.currency-symbol", "⚙");
         double newStartingBalance = plugin.getConfig().getDouble("economy.starting-balance", 100.0);
-        if (!Double.isFinite(newStartingBalance) || newStartingBalance < 0) {
-            throw new IllegalArgumentException("economy.starting-balance doit être un nombre positif fini");
+        if (!Double.isFinite(newStartingBalance) || newStartingBalance < 0
+                || EconomyAmount.money(newStartingBalance).compareTo(EconomyAmount.MAXIMUM_BALANCE) > 0) {
+            throw new IllegalArgumentException(
+                    "economy.starting-balance doit être compris entre 0 et 100 milliards");
         }
         currencyName = newCurrencyName;
         currencySymbol = newCurrencySymbol;
@@ -77,7 +78,8 @@ public class EconomyManager {
         if (cached != null) {
             try {
                 double val = Double.parseDouble(cached);
-                if (Double.isFinite(val) && val >= 0) {
+                if (Double.isFinite(val) && val >= 0
+                        && val <= EconomyAmount.MAXIMUM_BALANCE.doubleValue()) {
                     balanceCache.put(uuid, val);
                     return val;
                 }
@@ -118,13 +120,16 @@ public class EconomyManager {
 
     public boolean deposit(UUID uuid, double amount, String reason) {
         if (!isValidPositiveAmount(amount)) return false;
-        BigDecimal delta = money(amount);
+        BigDecimal delta = EconomyAmount.money(amount);
         try (Connection conn = db.getConnection()) {
             conn.setAutoCommit(false);
             try {
                 BigDecimal current = lockBalance(conn, uuid);
                 if (current == null) return rollbackAndReturn(conn, false);
                 BigDecimal updated = current.add(delta);
+                if (updated.compareTo(EconomyAmount.MAXIMUM_BALANCE) > 0) {
+                    return rollbackAndReturn(conn, false);
+                }
                 updateBalance(conn, uuid, updated, delta, BigDecimal.ZERO);
                 insertTransaction(conn, null, uuid, delta, reason, TransactionType.ADMIN_ADD);
                 conn.commit();
@@ -141,7 +146,7 @@ public class EconomyManager {
 
     public boolean withdraw(UUID uuid, double amount, String reason) {
         if (!isValidPositiveAmount(amount)) return false;
-        BigDecimal delta = money(amount);
+        BigDecimal delta = EconomyAmount.money(amount);
         try (Connection conn = db.getConnection()) {
             conn.setAutoCommit(false);
             try {
@@ -171,7 +176,7 @@ public class EconomyManager {
 
         if (amount < minTransfer) return TransferResult.TOO_LOW;
         if (amount > maxTransfer) return TransferResult.TOO_HIGH;
-        BigDecimal delta = money(amount);
+        BigDecimal delta = EconomyAmount.money(amount);
         UUID first = from.toString().compareTo(to.toString()) < 0 ? from : to;
         UUID second = first.equals(from) ? to : from;
         try (Connection conn = db.getConnection()) {
@@ -183,6 +188,9 @@ public class EconomyManager {
                 BigDecimal fromBalance = first.equals(from) ? firstBalance : secondBalance;
                 BigDecimal toBalance = first.equals(to) ? firstBalance : secondBalance;
                 if (fromBalance.compareTo(delta) < 0) return rollbackAndReturn(conn, TransferResult.INSUFFICIENT_FUNDS);
+                if (toBalance.add(delta).compareTo(EconomyAmount.MAXIMUM_BALANCE) > 0) {
+                    return rollbackAndReturn(conn, TransferResult.RECIPIENT_BALANCE_LIMIT);
+                }
 
                 BigDecimal updatedFrom = fromBalance.subtract(delta);
                 BigDecimal updatedTo = toBalance.add(delta);
@@ -206,7 +214,7 @@ public class EconomyManager {
         if (!Double.isFinite(amount)) {
             throw new IllegalArgumentException("Le solde doit être un nombre fini");
         }
-        double newBalance = money(Math.max(0, amount)).doubleValue();
+        double newBalance = EconomyAmount.clampBalance(EconomyAmount.money(amount)).doubleValue();
         db.executeUpdate(
                 "INSERT INTO tropicube_economy (uuid, balance, last_updated) VALUES (?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE balance = ?, last_updated = ?",
@@ -219,7 +227,7 @@ public class EconomyManager {
     public void createAccount(UUID uuid) {
         int inserted = db.executeUpdate(
                 "INSERT IGNORE INTO tropicube_economy (uuid, balance, last_updated) VALUES (?, ?, ?)",
-                uuid.toString(), money(startingBalance), System.currentTimeMillis());
+                uuid.toString(), EconomyAmount.clampBalance(EconomyAmount.money(startingBalance)), System.currentTimeMillis());
         invalidateCache(uuid);
         if (inserted > 0) {
             plugin.getLogger().info(MessageStyle.log("tc", "ECONOMY", "<gray>Compte créé pour " + uuid + " avec " + startingBalance + " " + currencyName));
@@ -245,10 +253,6 @@ public class EconomyManager {
     }
 
     private boolean isValidPositiveAmount(double amount) { return Double.isFinite(amount) && amount > 0; }
-
-    private BigDecimal money(double amount) {
-        return BigDecimal.valueOf(amount).setScale(2, RoundingMode.HALF_UP);
-    }
 
     private BigDecimal lockBalance(Connection conn, UUID uuid) throws SQLException {
         try (PreparedStatement stmt = conn.prepareStatement(
@@ -334,18 +338,18 @@ public class EconomyManager {
     // ===== Formatage =====
 
     public String format(double amount) {
-        if (amount >= 1_000_000) return String.format("%.1fM %s", amount / 1_000_000, currencySymbol);
-        if (amount >= 1_000) return String.format("%.1fK %s", amount / 1_000, currencySymbol);
-        return String.format("%.2f %s", amount, currencySymbol);
+        return EconomyAmount.format(amount, currencySymbol);
     }
 
     public enum TransferResult {
-        SUCCESS, INSUFFICIENT_FUNDS, SAME_PLAYER, INVALID_AMOUNT, TOO_LOW, TOO_HIGH, ACCOUNT_NOT_FOUND;
+        SUCCESS, INSUFFICIENT_FUNDS, RECIPIENT_BALANCE_LIMIT, SAME_PLAYER, INVALID_AMOUNT, TOO_LOW, TOO_HIGH,
+        ACCOUNT_NOT_FOUND;
 
         public String getMessage() {
             return switch (this) {
                 case SUCCESS -> "<green>Transfert effectué avec succès.";
                 case INSUFFICIENT_FUNDS -> "<red>Fonds insuffisants.";
+                case RECIPIENT_BALANCE_LIMIT -> "<red>Le destinataire a atteint la limite de solde.";
                 case SAME_PLAYER -> "<red>Vous ne pouvez pas vous envoyer de l'argent.";
                 case INVALID_AMOUNT -> "<red>Montant invalide (doit être positif).";
                 case TOO_LOW -> "<red>Montant trop faible.";

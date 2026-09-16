@@ -23,6 +23,7 @@ join:
 # Economy
 economy:
   insufficient-funds: "<tc><red>Solde insuffisant."
+  balance-limit: "<tc><red>Le solde ne peut pas dépasser <gold>{balance}<red>."
   balance: "<tc><gray>Tes <gold>⬡<gray> : <gold>{balance} 💰"
   balance-other: "<tc><gray>Solde de <white>{player}<gray> : <gold>{balance}"
   pay-success: "<tc><green>Tu as envoyé <gold>{amount} <green>à <white>{player}<green> ! 💸"

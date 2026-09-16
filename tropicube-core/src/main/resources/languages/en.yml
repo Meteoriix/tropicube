@@ -20,6 +20,7 @@ join:
 
 economy:
   insufficient-funds: "<tc><red>Insufficient balance."
+  balance-limit: "<tc><red>The balance cannot exceed <gold>{balance}<red>."
   balance: "<tc><gray>Your coins: <gold>{balance} 💰"
   balance-other: "<tc><gray>Balance of <white>{player}<gray>: <gold>{balance}"
   pay-success: "<tc><green>You sent <gold>{amount} <green>to <white>{player}<green>! 💸"

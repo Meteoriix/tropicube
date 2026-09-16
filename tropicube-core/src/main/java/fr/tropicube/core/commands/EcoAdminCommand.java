@@ -1,6 +1,7 @@
 package fr.tropicube.core.commands;
 
 import fr.tropicube.core.TropicubeCore;
+import fr.tropicube.core.managers.EconomyAmount;
 import fr.tropicube.core.util.CommandAsync;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -59,6 +60,11 @@ public class EcoAdminCommand implements CommandExecutor {
             sender.sendMessage(lm.getComponentForLang(lang(sender), "general.invalid-amount"));
             return true;
         }
+        if (EconomyAmount.money(amount).compareTo(EconomyAmount.MAXIMUM_BALANCE) > 0) {
+            sender.sendMessage(lm.getComponentForLang(lang(sender), "economy.balance-limit",
+                    eco.format(EconomyAmount.MAXIMUM_BALANCE.doubleValue())));
+            return true;
+        }
 
         String targetName = args[1];
         String action = args[0].toLowerCase();
@@ -77,7 +83,8 @@ public class EcoAdminCommand implements CommandExecutor {
             if (uuid == null) return Result.NOT_FOUND;
             return switch (action) {
                 case "set" -> { eco.setBalance(uuid, amount); yield Result.SUCCESS; }
-                case "add" -> { eco.deposit(uuid, amount, "Admin add by " + staffName); yield Result.SUCCESS; }
+                case "add" -> eco.deposit(uuid, amount, "Admin add by " + staffName)
+                        ? Result.SUCCESS : Result.BALANCE_LIMIT;
                 case "remove" -> eco.withdraw(uuid, amount, "Admin remove by " + staffName)
                         ? Result.SUCCESS : Result.INSUFFICIENT_FUNDS;
                 default -> Result.INVALID;
@@ -88,6 +95,8 @@ public class EcoAdminCommand implements CommandExecutor {
                         "general.player-not-found", targetName));
                 case INSUFFICIENT_FUNDS -> sender.sendMessage(lm.getComponentForLang(language,
                         "economy.insufficient-funds"));
+                case BALANCE_LIMIT -> sender.sendMessage(lm.getComponentForLang(language,
+                        "economy.balance-limit", eco.format(EconomyAmount.MAXIMUM_BALANCE.doubleValue())));
                 case SUCCESS -> sender.sendMessage(lm.getComponentForLang(language,
                         "economy.admin-" + action, action.equals("set") ? targetName : eco.format(amount),
                         action.equals("set") ? eco.format(amount) : targetName));
@@ -102,5 +111,5 @@ public class EcoAdminCommand implements CommandExecutor {
                 ? plugin.getLanguageManager().getPlayerLanguage(p.getUniqueId()) : "fr";
     }
 
-    private enum Result { SUCCESS, NOT_FOUND, INSUFFICIENT_FUNDS, INVALID }
+    private enum Result { SUCCESS, NOT_FOUND, INSUFFICIENT_FUNDS, BALANCE_LIMIT, INVALID }
 }

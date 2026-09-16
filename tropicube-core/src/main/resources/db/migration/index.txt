@@ -9,3 +9,4 @@ V008__access_levels.sql
 V009__cosmetics.sql
 V010__game_statistics.sql
 V011__fallenkingdoms_preferences.sql
+V012__cap_economy_balances.sql

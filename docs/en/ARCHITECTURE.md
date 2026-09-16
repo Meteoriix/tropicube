@@ -122,6 +122,8 @@ Guilds persist independently from matches. Owner, officer, and member roles gate
 
 Profiles aggregate identity, level, balance, social state, guild, and SheepWars statistics while enforcing summary/friends/private visibility. Lobby resolves preferences away from the Paper thread, hides only entities according to everyone/friends/party/nobody, and reapplies the filter after joins or changes. Smart selection favors a started countdown and then the fullest instance with enough capacity.
 
+The economy keeps two decimal places and caps every balance at 100 billion TropiCoins. Deposits and transfers that would exceed the cap are rejected atomically under row locks; mission and season rewards credit only the remaining capacity in their existing transaction. Migration `V012` reduces older balances above the cap to that value.
+
 MySQL stores durable profiles, friendships, cosmetic grades, access levels and their audit, balances, moderation history, and SheepWars preferences. Individual permission rows no longer exist. Redis accelerates reads and coordinates ephemeral network state.
 
 Core applies the ordered resources in `db/migration/index.txt` and records successful versions in `tropicube_schema_migrations`. The MySQL advisory lock `tropicube:core:schema` serializes the complete schema preparation across concurrently starting Paper backends. Conditional column changes query `information_schema.columns`; tests reject the unsupported MySQL variants `ADD/DROP COLUMN IF [NOT] EXISTS`.

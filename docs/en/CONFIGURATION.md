@@ -61,7 +61,7 @@ Custom content and Geyser's integrated pack are enabled and required. The pack i
 
 Source: `tropicube-core/src/main/resources/config.yml`; deployment copy: `dockerfiles/configs/TropicubeCore/config.yml`.
 
-Core configuration covers Redis, MySQL, the default language, economy cache rules, and the complete cosmetic grade catalog. Each grade defines validated `default-vip-level` (0–3) and `default-mod-level` (0–4); applying a grade always replaces both current levels. `access.audit-retention-days` defaults to 365 and drives the daily SQL audit purge.
+Core configuration covers Redis, MySQL, the default language, economy cache rules, and the complete cosmetic grade catalog. A player's balance is capped at 100 billion TropiCoins, and displays use the `K`, `M`, and `B` suffixes. Each grade defines validated `default-vip-level` (0–3) and `default-mod-level` (0–4); applying a grade always replaces both current levels. `access.audit-retention-days` defaults to 365 and drives the daily SQL audit purge.
 
 Guild limits are `guilds.max-members` (`50`), `guilds.max-officers` (`5`), and `guilds.weekly-contribution-cap` (`5000` XP per member). Match and mission XP automatically feeds the capped guild contribution.
 

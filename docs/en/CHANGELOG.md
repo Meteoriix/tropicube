@@ -6,6 +6,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-16
 
+- Abbreviated billion-scale balances with the `B` suffix and capped every TropiCoin balance at 100 billion, including transfers, missions, and season rewards.
 - Preserved the beta queue name's MiniMessage formatting in the join message and removed visible tags from its cancellation description.
 - Freed the Docker development capacity required by Fallen Kingdoms beta queues by starting the regular template on demand as well.
 

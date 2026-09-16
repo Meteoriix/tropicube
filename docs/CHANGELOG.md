@@ -6,6 +6,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-16
 
+- Abrège les soldes en milliards avec le suffixe `B` et plafonne chaque solde TropiCoins à 100 milliards, y compris pour les transferts, missions et récompenses de saison.
 - Préserve le format MiniMessage du nom de file bêta dans le message de connexion et retire les balises visibles de sa description d'annulation.
 - Libère dans le profil Docker de développement la capacité nécessaire aux files Fallen Kingdoms bêta en lançant aussi le template classique à la demande.
 

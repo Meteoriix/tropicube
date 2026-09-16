@@ -243,6 +243,8 @@ Les guildes sont persistantes et indépendantes des parties. `OWNER`, `OFFICER` 
 
 Le profil agrège identité, niveau, solde, relations, guilde et statistiques SheepWars. Un tiers reçoit soit le résumé public, soit les détails réservés aux amis, soit aucun contenu selon la préférence persistante. Le lobby charge ces préférences hors thread Paper, masque seulement les entités selon `EVERYONE`, `FRIENDS`, `PARTY` ou `NOBODY`, puis réapplique le filtre après une arrivée ou un changement. Son sélecteur intelligent privilégie une partie dont le compte à rebours est lancé puis remplit la partie la plus avancée disposant d'assez de places.
 
+L'économie conserve deux décimales et plafonne tout solde à 100 milliards de TropiCoins. Les dépôts et transferts qui dépasseraient ce plafond sont refusés atomiquement sous verrou de ligne ; les récompenses de mission et de saison créditent uniquement la capacité restante dans leur transaction existante. La migration `V012` ramène les anciens soldes supérieurs au plafond à cette valeur.
+
 `DatabaseManager` crée et fait évoluer les tables suivantes au démarrage :
 
 - `tropicube_players` : identité, langue et métadonnées du joueur ;

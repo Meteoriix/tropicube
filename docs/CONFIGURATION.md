@@ -184,7 +184,7 @@ Les valeurs suivantes peuvent être surchargées sans modifier YAML :
 
 Sections métier :
 
-- `economy` : nom, symbole, solde initial et bornes de transfert ;
+- `economy` : nom, symbole, solde initial et bornes de transfert. Le solde d'un joueur est plafonné à 100 milliards de TropiCoins ; les affichages utilisent les suffixes `K`, `M` et `B` ;
 - `social.friends.max-count` : nombre maximal d'amis par joueur (`100`) ;
 - `social.friends.request-expiry-days` : expiration des demandes en attente (`30`) ;
 - `social.party.max-size` : taille maximale d'une party (`8`) ;

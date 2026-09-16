@@ -2,6 +2,7 @@ package fr.tropicube.sheepwars.competitive;
 
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.core.managers.DatabaseManager;
+import fr.tropicube.core.managers.EconomyAmount;
 import fr.tropicube.sheepwars.player.PlayerKit;
 
 import java.sql.Connection;
@@ -346,21 +347,45 @@ public final class SheepWarsProgressionService {
         }
         if (inserted != 1) return;
         long now = System.currentTimeMillis();
-        try (PreparedStatement economy = connection.prepareStatement("""
-                INSERT INTO tropicube_economy(uuid, balance, total_earned, total_spent, last_updated)
-                VALUES (?, ?, ?, 0, ?) ON DUPLICATE KEY UPDATE balance=balance+VALUES(balance),
-                    total_earned=total_earned+VALUES(total_earned), last_updated=VALUES(last_updated)
-                """)) {
-            economy.setString(1, playerId); economy.setDouble(2, reward.currency());
-            economy.setDouble(3, reward.currency()); economy.setLong(4, now); economy.executeUpdate();
+        var currentBalance = java.math.BigDecimal.ZERO.setScale(2);
+        boolean economyAccountExists;
+        try (PreparedStatement select = connection.prepareStatement(
+                "SELECT balance FROM tropicube_economy WHERE uuid = ? FOR UPDATE")) {
+            select.setString(1, playerId);
+            try (ResultSet result = select.executeQuery()) {
+                economyAccountExists = result.next();
+                if (economyAccountExists) currentBalance = result.getBigDecimal(1);
+            }
         }
-        try (PreparedStatement transaction = connection.prepareStatement("""
-                INSERT INTO tropicube_transactions(from_uuid, to_uuid, amount, reason, transaction_type, timestamp)
-                VALUES (NULL, ?, ?, ?, 'REWARD', ?)
-                """)) {
-            transaction.setString(1, playerId); transaction.setDouble(2, reward.currency());
-            transaction.setString(3, "SheepWars season " + season.key() + " " + tier.name());
-            transaction.setLong(4, now); transaction.executeUpdate();
+        var creditedCurrency = EconomyAmount.creditWithinLimit(
+                currentBalance, EconomyAmount.money(reward.currency()));
+        if (economyAccountExists) {
+            try (PreparedStatement economy = connection.prepareStatement("""
+                    UPDATE tropicube_economy
+                    SET balance = balance + ?, total_earned = total_earned + ?, last_updated = ?
+                    WHERE uuid = ?
+                    """)) {
+                economy.setBigDecimal(1, creditedCurrency); economy.setBigDecimal(2, creditedCurrency);
+                economy.setLong(3, now); economy.setString(4, playerId); economy.executeUpdate();
+            }
+        } else {
+            try (PreparedStatement economy = connection.prepareStatement("""
+                    INSERT INTO tropicube_economy(uuid, balance, total_earned, total_spent, last_updated)
+                    VALUES (?, ?, ?, 0, ?)
+                    """)) {
+                economy.setString(1, playerId); economy.setBigDecimal(2, creditedCurrency);
+                economy.setBigDecimal(3, creditedCurrency); economy.setLong(4, now); economy.executeUpdate();
+            }
+        }
+        if (creditedCurrency.signum() > 0) {
+            try (PreparedStatement transaction = connection.prepareStatement("""
+                    INSERT INTO tropicube_transactions(from_uuid, to_uuid, amount, reason, transaction_type, timestamp)
+                    VALUES (NULL, ?, ?, ?, 'REWARD', ?)
+                    """)) {
+                transaction.setString(1, playerId); transaction.setBigDecimal(2, creditedCurrency);
+                transaction.setString(3, "SheepWars season " + season.key() + " " + tier.name());
+                transaction.setLong(4, now); transaction.executeUpdate();
+            }
         }
         String suffix = season.key().toLowerCase(java.util.Locale.ROOT) + "-" + tier.name().toLowerCase(java.util.Locale.ROOT);
         if (reward.title()) insertProfileReward(connection, "tropicube_profile_titles", "title_id",
