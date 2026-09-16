@@ -7,6 +7,7 @@ import fr.tropicube.core.util.ConfigUpdater;
 import fr.tropicube.docker.client.RedisManager;
 import fr.tropicube.sheepwars.game.GameManager;
 import fr.tropicube.sheepwars.config.GameplayBalance;
+import fr.tropicube.sheepwars.config.SheepWarsMenuConfigMigration;
 import fr.tropicube.sheepwars.competitive.SheepWarsProgressionService;
 import fr.tropicube.sheepwars.competitive.KitMasteryCatalog;
 import fr.tropicube.sheepwars.competitive.SeasonRewardCatalog;
@@ -29,6 +30,7 @@ import fr.tropicube.core.ui.UiReloadParticipant;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -132,6 +134,21 @@ public final class TropicubeSheepwars extends JavaPlugin {
         this.sheepManager = new SheepManager(this);
 
         this.scoreboardManager = new ScoreboardManager(this);
+        File menusFile = new File(getDataFolder(), "menus.yml");
+        if (menusFile.exists()) {
+            try (InputStream defaults = getResource("menus.yml")) {
+                if (defaults == null) throw new IllegalStateException("Ressource menus.yml introuvable");
+                if (SheepWarsMenuConfigMigration.migrate(menusFile, defaults)) {
+                    getLogger().info(MessageStyle.log("sw", "CONFIG",
+                            "<gray>Ancienne disposition des menus de cartes mise à niveau."));
+                }
+            } catch (Exception exception) {
+                getLogger().log(Level.SEVERE, MessageStyle.log("sw", "CONFIG",
+                        "<red>Migration de menus.yml impossible : " + exception.getMessage()), exception);
+                getServer().getPluginManager().disablePlugin(this);
+                return;
+            }
+        }
         this.menuTemplates = new MenuTemplateRegistry(this);
         getServer().getServicesManager().register(UiReloadParticipant.class, menuTemplates, this,
                 org.bukkit.plugin.ServicePriority.Normal);

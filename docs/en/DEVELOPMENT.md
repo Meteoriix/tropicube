@@ -88,6 +88,8 @@ Assertions cover expired invitations, concurrent acceptance at capacity, permiss
 
 `YamlResourcesTest` complements this audit with key-tree, placeholder and MiniMessage style parity, duplicate YAML detection and Docker copy synchronization. These static checks do not replace linguistic review or in-game checks of computed text and language changes.
 
+`ConfigUpdater` preserves existing values and comments when it adds keys from an embedded resource. When an older configuration represents an empty section as `{}`, it expands that notation before inserting child keys so the resulting YAML remains valid. Related menu-geometry changes (`rows`, frame, buttons, and dynamic regions) use a module-specific migration because preserving only part of the former layout can produce a valid but unusable manifest. Every structural change must include a test starting from the form that was actually deployed before the migration.
+
 ## Reliability validation
 
 Run `python -m unittest discover -s tools/ops -p test_ops.py -v`, `python tools/ops/integration_tests.py` and the full Maven reactor. Integration credentials apply only to the disposable test project. SQL base statements are shared between runtime startup and integration tests through DatabaseSchema. Inspect private Spark/diagnostic evidence before changing refresh rates or query strategies.

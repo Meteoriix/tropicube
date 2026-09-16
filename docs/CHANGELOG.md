@@ -6,6 +6,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-16
 
+- Corrige le démarrage de SheepWars après la pagination du vote de carte : les sections YAML vides écrites sous la forme `{}` sont développées avant l'insertion de sous-clés et les anciennes géométries des menus de carte sont migrées ensemble.
 - Déplace Bêta dans le pied du sélecteur de jeux, à gauche d'une case centrale vide, et décale Parties personnalisées à droite.
 - Corrige SheepWars : toutes les maps sont proposées au vote dans tous les modes, le leader apparaît dans le scoreboard, l'XP réseau et les menus d'attente sont nettoyés, Galions empoisonne dans l'eau sans limite basse, les flèches bonus durent cinq secondes, le mouton Échange ne dash plus sans cible et les lignes vides du scoreboard sont rendues.
 - Supprime le démarrage automatique des serveurs SheepWars et Fallen Kingdoms en fixant leur plancher d'instances à zéro ; seul le Lobby reste préchauffé.

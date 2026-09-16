@@ -140,6 +140,8 @@ Les assertions couvrent invitations expirées, acceptations simultanées face à
 
 `YamlResourcesTest` complète cet audit avec la parité des arborescences, des placeholders et des styles MiniMessage, les doublons YAML et la synchronisation des copies Docker. Ces contrôles statiques ne remplacent pas la relecture linguistique ni les essais en jeu des textes calculés et des changements de langue.
 
+`ConfigUpdater` préserve les valeurs et commentaires existants lorsqu'il ajoute les clés d'une ressource embarquée. Si une ancienne configuration représente une section vide par `{}`, il développe cette écriture avant d'y insérer de nouvelles sous-clés afin de conserver un YAML valide. Les changements coordonnés de géométrie d'un menu (`rows`, cadre, boutons et régions dynamiques) utilisent une migration propre au module, car conserver seulement une partie de l'ancien agencement peut produire un manifeste valide mais inutilisable. Toute évolution de structure doit être couverte par un test partant de la forme réellement déployée avant la migration.
+
 `RuntimeUiBundleTest` restaure une ancienne génération sur des catalogues déjà à jour et vérifie toutes les clés des quatre langues, la préservation des personnalisations, les appels répétés et le nettoyage des fichiers temporaires. Pour diagnostiquer un serveur actif, comparer également ses fichiers de langue aux ressources embarquées : une validation du dépôt seule ne prouve pas que la génération Redis restaurée est complète. Vérifier en jeu Social (amis, groupes, guildes), les autres inventaires, le HUD et leur rafraîchissement après `/lang` sans reconnexion.
 
 ## Contrôles avant ouverture

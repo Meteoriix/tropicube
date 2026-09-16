@@ -1,23 +1,22 @@
 package fr.tropicube.core.util;
 
-import fr.tropicube.core.util.MessageStyle;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 
 /**
  * Merges the new keys of an embedded resource with the file on disk,
- * without changing existing values or removing user comments.
+ * without changing configured scalar values or removing user comments.
  * <p>
  * {@code YamlConfiguration} detects missing paths, then inserts
- * text returns them to their section while retaining the formatting.
+ * text returns them to their section while retaining the formatting. An inline
+ * empty mapping is expanded when the defaults add children below that path.
  */
 public final class ConfigUpdater {
 
@@ -25,7 +24,9 @@ public final class ConfigUpdater {
 
     /**
      * Adds resource keys missing from {@code diskFile}.
-     * Existing content is never modified.
+     * Existing configured values are preserved. An inline empty mapping such as
+     * {@code buttons: {}} may be expanded to {@code buttons:} before children are
+     * inserted, because keeping both forms would produce invalid YAML.
      *
      * @param plugin resource owner plugin
      * @param resourcePath path inside the JAR, for example {@code languages/fr.yml}
@@ -111,6 +112,7 @@ public final class ConfigUpdater {
                         if (parentPath.isEmpty() || !insertedDeepPaths.add(blockPath)) continue;
                         String keyText = extractPathBlock(defLines, blockPath);
                         if (!keyText.isEmpty()) {
+                            expandInlineEmptyMapping(lines, parentPath);
                             int deepInsertAt = findPathInsertPoint(lines, parentPath);
                             insertIndices.add(new int[]{deepInsertAt, insertBlocks.size()});
                             insertBlocks.add(new ArrayList<>(Arrays.asList(keyText.split("\n", -1))));
@@ -313,6 +315,32 @@ public final class ConfigUpdater {
             lastContent = i;
         }
         return lastContent + 1;
+    }
+
+    /**
+     * Converts an inline empty mapping into a block mapping header before adding
+     * descendants. Bukkit exposes {@code key: {}} as a configuration section, but
+     * inserting indented children below the unchanged line would make invalid YAML.
+     */
+    private static void expandInlineEmptyMapping(List<String> lines, String path) {
+        int start = findPathStart(lines, path);
+        if (start < 0) return;
+
+        String line = lines.get(start);
+        int colon = line.indexOf(':');
+        if (colon < 0) return;
+
+        String suffix = line.substring(colon + 1);
+        int commentStart = suffix.indexOf('#');
+        String rawValue = commentStart < 0 ? suffix : suffix.substring(0, commentStart);
+        String value = rawValue.trim();
+        if (value.length() < 2 || value.charAt(0) != '{' || value.charAt(value.length() - 1) != '}'
+                || !value.substring(1, value.length() - 1).isBlank()) {
+            return;
+        }
+
+        String comment = commentStart < 0 ? "" : " " + suffix.substring(commentStart).stripLeading();
+        lines.set(start, line.substring(0, colon + 1) + comment);
     }
 
     private static String extractPathBlock(List<String> lines, String path) {

@@ -704,6 +704,51 @@ class YamlResourcesTest {
         assertEquals("Public", updated.getString("custom.privacy.public"));
     }
 
+    @Test
+    void configUpdaterExpandsInlineEmptyMappingBeforeAddingChildren() throws Exception {
+        String defaults = """
+                menus:
+                  map-vote:
+                    rows: 6
+                    buttons:
+                      previous:
+                        slot: 45
+                        action: previous_page
+                    dynamic-regions:
+                      maps:
+                        preview-count: 5
+                """;
+        Path disk = temporaryDirectory.resolve("menus.yml");
+        Files.writeString(disk, """
+                menus:
+                  map-vote:
+                    rows: 1
+                    buttons: {} # No buttons in the former one-row menu.
+                    dynamic-regions:
+                      maps:
+                        preview-count: 3
+                """);
+
+        Plugin plugin = (Plugin) Proxy.newProxyInstance(Plugin.class.getClassLoader(),
+                new Class<?>[]{Plugin.class}, (proxy, method, args) -> switch (method.getName()) {
+                    case "getResource" -> new ByteArrayInputStream(defaults.getBytes(StandardCharsets.UTF_8));
+                    case "getLogger" -> Logger.getAnonymousLogger();
+                    default -> null;
+                });
+
+        ConfigUpdater.update(plugin, "menus.yml", disk.toFile());
+
+        YamlConfiguration updated = new YamlConfiguration();
+        assertDoesNotThrow(() -> updated.load(disk.toFile()));
+        assertEquals(1, updated.getInt("menus.map-vote.rows"));
+        assertEquals(45, updated.getInt("menus.map-vote.buttons.previous.slot"));
+        assertEquals("previous_page", updated.getString("menus.map-vote.buttons.previous.action"));
+        assertEquals(3, updated.getInt("menus.map-vote.dynamic-regions.maps.preview-count"));
+        String updatedText = Files.readString(disk);
+        assertFalse(updatedText.contains("buttons: {}"));
+        assertTrue(updatedText.contains("# No buttons in the former one-row menu."));
+    }
+
     private static Set<String> leafKeys(Path file) {
         YamlConfiguration config = YamlConfiguration.loadConfiguration(file.toFile());
         Set<String> result = new HashSet<>();
