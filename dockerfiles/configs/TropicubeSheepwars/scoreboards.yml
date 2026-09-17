@@ -21,7 +21,7 @@ scoreboards:
           - key: sw.sb-players
           - key: sw.sb-min-players
           - key: sw.sb-map
-          - key: sw.sb-separator
+          - blank: true
           - key: sw.sb-spectator
           - key: sw.sb-class
           - key: sw.sb-kit
@@ -32,7 +32,7 @@ scoreboards:
           - key: sw.sb-starting
           - key: sw.sb-players
           - key: sw.sb-map
-          - key: sw.sb-separator
+          - blank: true
           - key: sw.sb-your-team
           - key: sw.sb-class
           - key: sw.sb-kit
@@ -43,7 +43,7 @@ scoreboards:
           - key: sw.sb-starting
           - key: sw.sb-players
           - key: sw.sb-map
-          - key: sw.sb-separator
+          - blank: true
           - key: sw.sb-spectator
           - key: sw.sb-class
           - key: sw.sb-kit

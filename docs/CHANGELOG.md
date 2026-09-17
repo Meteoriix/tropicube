@@ -6,6 +6,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-17
 
+- Corrige définitivement l'espacement du scoreboard SheepWars en déclarant la ligne vide après la carte dans tous les états, y compris sans équipe et pendant le compte à rebours.
 - Préconvertit la carte modèle Fallen Kingdoms au format Paper 26.2 afin de supprimer la migration du dossier monde et son attente de 30 secondes à chaque nouvelle instance.
 
 ### 2026-09-16

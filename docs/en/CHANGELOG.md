@@ -6,6 +6,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-17
 
+- Fixed SheepWars scoreboard spacing by declaring the blank line after the map in every state, including players without a team and the starting countdown.
 - Pre-converted the Fallen Kingdoms world template to Paper 26.2 storage so new instances no longer run the world-folder migration or wait 30 seconds.
 
 ### 2026-09-16

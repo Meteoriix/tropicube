@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -52,6 +53,33 @@ class SheepWarsLanguageKeysTest {
                     .count();
             assertEquals(1, kitLines, () -> variant + " doit afficher exactement une ligne de kit");
         }
+    }
+
+    @Test
+    void everyScoreboardVariantDisplaysABlankLineAfterTheMap() {
+        YamlConfiguration resource = YamlConfiguration.loadConfiguration(
+                Path.of("src/main/resources/scoreboards.yml").toFile());
+        var variants = resource.getConfigurationSection("scoreboards.sheepwars.variants");
+        assertTrue(variants != null);
+
+        for (String variant : variants.getKeys(false)) {
+            List<Map<?, ?>> lines = variants.getMapList(variant + ".lines");
+            int mapLine = indexOfLine(lines, "key", "sw.sb-map");
+            int blankLine = indexOfLine(lines, "blank", true);
+
+            assertTrue(mapLine >= 0, () -> variant + " doit afficher la carte");
+            assertEquals(mapLine + 1, blankLine,
+                    () -> variant + " doit afficher exactement une ligne vide après la carte");
+            assertEquals(1, lines.stream().filter(line -> Boolean.TRUE.equals(line.get("blank"))).count(),
+                    () -> variant + " doit contenir exactement une ligne vide");
+        }
+    }
+
+    private static int indexOfLine(List<Map<?, ?>> lines, String property, Object value) {
+        for (int index = 0; index < lines.size(); index++) {
+            if (value.equals(lines.get(index).get(property))) return index;
+        }
+        return -1;
     }
 
     private static Set<String> referencedLiteralKeys() throws IOException {
