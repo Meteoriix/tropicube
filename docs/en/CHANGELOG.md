@@ -4,6 +4,10 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+### 2026-09-17
+
+- Pre-converted the Fallen Kingdoms world template to Paper 26.2 storage so new instances no longer run the world-folder migration or wait 30 seconds.
+
 ### 2026-09-16
 
 - Fixed and balanced Fallen Kingdoms with preference-aware kingdoms and no Blue/Red priority, protected waiting states, a 5/5-minute day/night cycle, fewer night monsters, increased flint and gunpowder, visible enemy limits, a new waiting spawn, and 12-chunk rendering.

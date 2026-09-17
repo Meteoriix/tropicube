@@ -28,14 +28,24 @@ class BundledMapCatalogTest {
         }
     }
 
+    @Test void dockerWorldContainsCurrentPaperMetadata() throws Exception {
+        Path world = repositoryRoot().resolve(Path.of("dockerfiles", "worlds", "fallenkingdoms"));
+        for (Path relative : java.util.List.of(
+                Path.of("dimensions", "minecraft", "overworld", "data", "minecraft", "world_gen_settings.dat"),
+                Path.of("dimensions", "minecraft", "overworld", "data", "paper", "metadata.dat"),
+                Path.of("dimensions", "minecraft", "overworld", "data", "paper", "level_overrides.dat"))) {
+            Path metadata = world.resolve(relative);
+            assertTrue(Files.isRegularFile(metadata) && Files.size(metadata) > 0,
+                    "Métadonnée Paper 26.2 absente: " + relative);
+        }
+    }
+
     @Test void dockerMapAndBalanceConfigurationMatchesTheEmbeddedResource() throws Exception {
         var resource = getClass().getResourceAsStream("/config.yml");
         assertNotNull(resource);
         var embedded = YamlConfiguration.loadConfiguration(new InputStreamReader(resource, StandardCharsets.UTF_8));
-        Path directory = Path.of("").toAbsolutePath();
+        Path directory = repositoryRoot();
         Path relative = Path.of("dockerfiles", "configs", "TropicubeFallenKingdoms", "config.yml");
-        while (directory != null && !Files.isRegularFile(directory.resolve(relative))) directory = directory.getParent();
-        assertNotNull(directory, "Racine du dépôt introuvable");
         var deployed = YamlConfiguration.loadConfiguration(directory.resolve(relative).toFile());
         for (String path : java.util.List.of("world-cycle.day-duration-seconds",
                 "world-cycle.night-duration-seconds", "spawns.natural-hostile-night-retention",
@@ -46,5 +56,13 @@ class BundledMapCatalogTest {
         }
         assertEquals(embedded.getStringList("locations.maps.cactus.layouts.2"),
                 deployed.getStringList("locations.maps.cactus.layouts.2"));
+    }
+
+    private static Path repositoryRoot() {
+        Path directory = Path.of("").toAbsolutePath();
+        Path marker = Path.of("dockerfiles", "Dockerfile.fallenkingdoms");
+        while (directory != null && !Files.isRegularFile(directory.resolve(marker))) directory = directory.getParent();
+        assertNotNull(directory, "Racine du dépôt introuvable");
+        return directory;
     }
 }

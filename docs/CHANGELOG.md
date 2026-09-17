@@ -4,6 +4,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-09-17
+
+- Préconvertit la carte modèle Fallen Kingdoms au format Paper 26.2 afin de supprimer la migration du dossier monde et son attente de 30 secondes à chaque nouvelle instance.
+
 ### 2026-09-16
 
 - Corrige et équilibre Fallen Kingdoms : préférences de royaumes respectées sans priorité Bleu/Rouge, attente protégée, cycle jour/nuit 5/5, monstres nocturnes réduits, silex et poudre à canon augmentés, limites ennemies visibles, nouveau spawn d'attente et rendu à 12 chunks.
