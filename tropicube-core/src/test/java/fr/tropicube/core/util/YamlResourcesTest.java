@@ -476,8 +476,8 @@ class YamlResourcesTest {
         assertEquals(3, floodgate.getInt("config-version"));
 
         String dockerfile = Files.readString(Path.of("../dockerfiles/Dockerfile.velocity"));
-        assertTrue(dockerfile.contains("versions/2.11.2/builds/1234/downloads/velocity"));
-        assertTrue(dockerfile.contains("sha256:28d796e67b466fd9832eb12d0b4a1b72a5046caae1fb6c67099f2a5d14423571"));
+        assertTrue(dockerfile.contains("versions/2.11.3/builds/1245/downloads/velocity"));
+        assertTrue(dockerfile.contains("sha256:306abe38291d24e874c7286e1c04b537ac3ab5e3901b710f56bd242500bedfbf"));
         assertTrue(dockerfile.contains("versions/2.2.5/builds/140/downloads/velocity"));
         assertTrue(dockerfile.contains("sha256:f5867ad79b90d38abcc72755a685428fbcf423b52c9830a39ffed5203de6936a"));
 

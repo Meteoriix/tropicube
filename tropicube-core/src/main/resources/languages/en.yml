@@ -459,7 +459,7 @@ lobby:
   fk-custom-create-lore: "<gray>Left click: create the instance with these settings"
   fk-custom-enabled: "Enabled"
   fk-custom-disabled: "Disabled"
-  fk-custom-paper: "Paper 26.2 combat"
+  fk-custom-paper: "Paper 26.3 combat"
   fk-custom-legacy: "Legacy 1.8 combat"
   fk-custom-ruins-light: "Light ruins"
   fk-custom-ruins-standard: "Standard ruins"

@@ -1,7 +1,7 @@
 # Load the private configuration for this checkout, also used by scheduled tasks.
 param(
     [Parameter(Mandatory)]
-    [ValidateSet('backup', 'diagnose', 'activate', 'deploy', 'environment')]
+    [ValidateSet('backup', 'diagnose', 'activate', 'rollback', 'deploy', 'environment')]
     [string]$Command,
     [string]$Tag,
     [switch]$Scheduled
@@ -29,7 +29,7 @@ if ($Command -eq 'deploy') {
     & (Join-Path $repositoryRoot 'deploy.ps1')
 } else {
     $arguments = @((Join-Path $PSScriptRoot 'tropicube_ops.py'), $Command)
-    if ($Command -eq 'activate') {
+    if ($Command -in @('activate', 'rollback')) {
         if ($Tag -notmatch '^\d{8}-\d{6}$') { throw 'Tag must be YYYYMMDD-HHMMSS.' }
         $arguments += $Tag
     }

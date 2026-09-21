@@ -27,14 +27,14 @@
 <a class="nav-link" href="language-editor.html"><span class="nav-icon">文</span><span>Language editor</span></a>
 <a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
 <a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changes</span></a></nav>
-    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.3</strong><small>Paper · Velocity · Docker</small></span></div>
   </aside>
   <main id="content" class="main">
     <section class="hero"><div class="eyebrow">Official documentation</div><h1>Development</h1><p>Environment, tests, and contributions</p></section>
     <div class="content-grid">
       <article class="documentation"><h2 id="reference-environment">Reference environment<a class="heading-anchor" href="#reference-environment" aria-label="Link to this section">#</a></h2>
-<ul><li>Java 25;</li><li>Maven 3.9.11 through the repository wrapper;</li><li>Minecraft 26.2 with the Paper and Velocity versions declared in the parent POM;</li><li>UTF-8 and four-space Java indentation;</li><li>Windows and Linux compatibility.</li></ul>
-<p>Do not replace Minecraft 26.2 with a 1.21.x example version and do not introduce a <code>paper-mojangapi</code> dependency.</p>
+<ul><li>Java 25;</li><li>Maven 3.9.11 through the repository wrapper;</li><li>Minecraft 26.3 with the Paper and Velocity versions declared in the parent POM;</li><li>UTF-8 and four-space Java indentation;</li><li>Windows and Linux compatibility.</li></ul>
+<p>Do not replace Minecraft 26.3 with a 1.21.x example version and do not introduce a <code>paper-mojangapi</code> dependency. Keep Paper 26.3 pinned to a qualified build while its branch remains on the alpha channel.</p>
 <h2 id="module-boundaries">Module boundaries<a class="heading-anchor" href="#module-boundaries" aria-label="Link to this section">#</a></h2>
 <p>Shared network contracts belong in Docker API or Core only when they are genuinely used across modules. Game rules, teams, kits, abilities, match state, and game data remain inside their game module. A new game must never depend on SheepWars business classes.</p>
 <h2 id="code-design">Code design<a class="heading-anchor" href="#code-design" aria-label="Link to this section">#</a></h2>

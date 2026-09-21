@@ -15,7 +15,7 @@ Les variables d'environnement ont priorité sur certaines valeurs Core. Dans les
 
 Les builds Maven et les scripts de déploiement synchronisent les quatre ressources de langue Core et Velocity vers leurs copies sous `dockerfiles/configs`. Les `config.yml` de déploiement restent distincts, car ils contiennent les marqueurs de secrets et l'adresse du proxy Docker.
 
-L'éditeur local utilise `LIBRETRANSLATE_URL` (défaut `http://127.0.0.1:5000`), `LIBRETRANSLATE_API_KEY` facultative, `TROPICUBE_LANGUAGE_EDITOR_PORT` (défaut `8765`), `TROPICUBE_DOCKER_COMMAND` (défaut `docker`) et éventuellement `TROPICUBE_MINECRAFT_CLIENT_JAR` pour les textures Minecraft 26.2. La clé API reste exclusivement dans l'environnement local.
+L'éditeur local utilise `LIBRETRANSLATE_URL` (défaut `http://127.0.0.1:5000`), `LIBRETRANSLATE_API_KEY` facultative, `TROPICUBE_LANGUAGE_EDITOR_PORT` (défaut `8765`), `TROPICUBE_DOCKER_COMMAND` (défaut `docker`) et éventuellement `TROPICUBE_MINECRAFT_CLIENT_JAR` pour les textures Minecraft 26.3. La clé API reste exclusivement dans l'environnement local.
 
 Les fichiers `menus.yml`, `scoreboards.yml` et `tablists.yml` utilisent le schéma versionné `version: 1`. Les menus déclarent titre, nombre de lignes, cadrage, boutons statiques et régions dynamiques ; les scoreboards déclarent un titre et des variantes de 1 à 15 lignes ; les tablists déclarent, pour chaque état, une clé d'en-tête et une clé de pied. Les ressources embarquées et leurs miroirs Docker sont synchronisés au build.
 
@@ -111,7 +111,7 @@ Chaque entrée de `templates` décrit :
 - `auto-stop`, `auto-stop-delay` ;
 - variables d'environnement passées à l'image Paper.
 
-Les templates Paper fournis fixent `VERSION: "26.2"` et `PAPER_BUILD: "97"`. Ce build explicite garantit que le runtime sélectionné au démarrage correspond aux artefacts préchauffés dans `Dockerfile.lobby` et `Dockerfile.sheepwars`. Toute mise à jour doit modifier ensemble ces valeurs, les arguments par défaut des deux Dockerfiles et la dépendance Paper du POM parent, puis reconstruire les images.
+Les templates Paper fournis fixent `VERSION: "26.3"` et `PAPER_BUILD: "8"`. Ce build alpha explicitement qualifié garantit que le runtime sélectionné au démarrage correspond aux artefacts préchauffés dans les trois Dockerfiles Paper. Toute mise à jour doit modifier ensemble ces valeurs, les arguments par défaut des Dockerfiles et la dépendance Paper du POM parent, puis reconstruire et requalifier les quatre images du lot.
 
 SheepWars utilise trois recettes : `sheepwars` (`GAME_MODE=QUICK_PLAY`, ports 25625–25639), `sheepwars-ranked-4v4` (25640–25649) et `sheepwars-ranked-8v8` (25650–25659). Les deux templates classés sont créés seulement lorsqu'un groupe compatible atteint respectivement 8 ou 16 joueurs. `matchmaking.ranked.initial-rating-range`, `growth-per-step`, `step-seconds` et `maximum-rating-range` règlent l'élargissement progressif de leur fenêtre de cote.
 
@@ -166,7 +166,7 @@ Le fichier `forwarding.secret` contient le marqueur `${CFG_FORWARDING_SECRET}`, 
 
 ## Geyser et Floodgate
 
-Les deux plugins sont installés uniquement sur Velocity. `Dockerfile.velocity` télécharge les artefacts officiels Geyser-Velocity `2.11.2-b1234` et Floodgate-Velocity `2.2.5-b140`, avec URL de build et SHA-256 épinglés. Aucun JAR tiers n'est versionné. Avant une mise à jour, vérifier la prise en charge de Java `26.2` et des versions Bedrock courantes, puis modifier ensemble URL, empreinte, commentaires de configuration, tests et documentation.
+Les deux plugins sont installés uniquement sur Velocity. `Dockerfile.velocity` télécharge les artefacts officiels Geyser-Velocity `2.11.3-b1245` et Floodgate-Velocity `2.2.5-b140`, avec URL de build et SHA-256 épinglés. Aucun JAR tiers n'est versionné. Avant une mise à jour, vérifier la prise en charge de Java `26.3` et des versions Bedrock courantes, puis modifier ensemble URL, empreinte, commentaires de configuration, tests et documentation.
 
 `dockerfiles/configs/Geyser-Velocity/config.yml`, au schéma Geyser `config-version: 7`, écoute sur `0.0.0.0:${CFG_BEDROCK_PORT}`, annonce le même port et impose `auth-type: floodgate`. La connexion directe est conservée pour éviter un second trajet TCP. Les suggestions de commandes sont désactivées côté Geyser et l'échafaudage propre à Bedrock est bloqué pour préserver l'équité SheepWars.
 
@@ -283,7 +283,7 @@ Dans `TropicubeLobby/config.yml`, `guilds.input-timeout-seconds` définit le dé
 
 ## Fiabilité avant ouverture
 
-Les versions Minecraft 26.2, Java 25 et Maven 3.9.11 restent inchangées. Les nouvelles options sont lues au démarrage ; un changement nécessite la recréation du backend ou du proxy concerné.
+Les versions Minecraft 26.3, Java 25 et Maven 3.9.11 constituent l'environnement de référence. Les nouvelles options sont lues au démarrage ; un changement nécessite la recréation du backend ou du proxy concerné.
 
 | Option | Défaut | Validation / effet |
 |---|---|---|
@@ -305,6 +305,8 @@ Les clients Redis propres au Lobby et à SheepWars conservent les limites compat
 L'outillage `tools/ops/tropicube_ops.py` requiert Python 3.11 minimum. `TROPICUBE_OPS_STATE` désigne le répertoire privé d'état (défaut `.runtime/ops` du projet, `/var/lib/tropicube-ops` dans les unités systemd). `RESTIC_REPOSITORY` doit être une adresse `sftp:` hors serveur ; `RESTIC_PASSWORD_FILE` désigne le fichier du mot de passe de chiffrement. Copier le modèle `tools/ops/ops.env.example` vers `/etc/tropicube/ops.env` avec des droits 0600. Le compte exécutant le timer doit posséder la clé SSH et une empreinte d'hôte vérifiée ; le mot de passe Restic et la clé de récupération restent également dans un coffre extérieur.
 
 Les services statiques et dynamiques utilisent le pilote Docker `local`, cinq fichiers de 20 Mio au maximum chacun. Ces paramètres n'affectent que les conteneurs recréés. Redis reçoit aussi `REDIS_PASSWORD` dans son environnement afin que l'outil de sauvegarde puisse s'authentifier sans inscrire le mot de passe dans la ligne de commande du client.
+
+Le lot d'infrastructure épingle Redis `8.10.1-alpine`, MySQL `9.7.2`, Adminer `5.5.1`, LibreTranslate `1.9.6` et docker-socket-proxy `0.3` avec leurs digests. Redis Commander utilise désormais l'image maintenue `ghcr.io/joeferner/redis-commander`, également épinglée par digest. Les tags ne sont jamais suffisants seuls : une mise à jour d'image doit actualiser le digest, Compose, la pile d'intégration lorsqu'elle emploie le même service, puis passer sauvegarde, restauration et healthchecks.
 
 ### Poste de développement Windows
 

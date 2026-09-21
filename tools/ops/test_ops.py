@@ -96,6 +96,41 @@ class OperationsTest(unittest.TestCase):
             with self.assertRaises(RuntimeError): ops.activate("20260906-120000", True)
         self.assertFalse(any(call[0] == "tag" for call in calls))
 
+    def test_release_lot_covers_every_runtime_image(self):
+        self.assertEqual(("lobby", "sheepwars", "fallenkingdoms", "velocity"), ops.IMAGES)
+        self.assertEqual(("mysql", "redis", "docker-proxy"), ops.STATIC_SERVICES)
+
+    def test_rollback_requires_a_complete_previous_image_set(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.object(ops, "state_dir", return_value=Path(temporary)):
+            releases = Path(temporary) / "releases"
+            releases.mkdir()
+            ops.write_json(releases / "20260917-120000.json", {"previous": {}, "static_previous": {}})
+            with self.assertRaises(ValueError):
+                ops.rollback("20260917-120000")
+
+    def test_rollback_refuses_to_retag_while_dynamic_backends_remain(self):
+        calls = []
+        responses = iter(("velocity", "dynamic-backend"))
+
+        def docker(*args, **kwargs):
+            calls.append(args)
+            if args[0] == "ps":
+                return next(responses)
+            return ""
+
+        with tempfile.TemporaryDirectory() as temporary, patch.object(ops, "state_dir", return_value=Path(temporary)), \
+                patch.object(ops, "docker", side_effect=docker), patch.object(ops.time, "sleep"):
+            releases = Path(temporary) / "releases"
+            releases.mkdir()
+            manifest = {
+                "previous": {name: "sha256:" + name for name in ops.IMAGES},
+                "static_previous": {name: "sha256:" + name for name in ops.STATIC_SERVICES},
+            }
+            ops.write_json(releases / "20260917-120000.json", manifest)
+            with self.assertRaises(RuntimeError):
+                ops.rollback("20260917-120000")
+        self.assertFalse(any(call[0] == "tag" for call in calls))
+
     def test_failed_backup_never_replaces_last_success(self):
         with tempfile.TemporaryDirectory() as temporary, patch.object(ops, "state_dir", return_value=Path(temporary)), \
                 patch.dict(ops.os.environ, {"RESTIC_REPOSITORY": "sftp:test:/backup", "RESTIC_PASSWORD_FILE": "/test"}), \

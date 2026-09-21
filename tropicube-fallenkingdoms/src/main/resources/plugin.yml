@@ -1,7 +1,7 @@
 name: TropicubeFallenKingdoms
 version: 1.0.0
 main: fr.tropicube.fallenkingdoms.TropicubeFallenKingdoms
-api-version: '26.2'
+api-version: '26.3'
 description: "Tropicube - mini-jeu Fallen Kingdoms"
 authors: [Tropicube-Team]
 depend: [TropicubeCore]

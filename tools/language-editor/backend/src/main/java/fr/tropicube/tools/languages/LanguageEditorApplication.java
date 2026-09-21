@@ -221,7 +221,7 @@ public final class LanguageEditorApplication {
         }
         Path jar = minecraftClientJar();
         if (jar == null) {
-            text(exchange, 404, "Assets Minecraft 26.2 indisponibles", "text/plain; charset=utf-8");
+            text(exchange, 404, "Assets Minecraft 26.3 indisponibles", "text/plain; charset=utf-8");
             return;
         }
         byte[] cached = itemTextureCache.get(material);
@@ -255,7 +255,7 @@ public final class LanguageEditorApplication {
         String appData = System.getenv("APPDATA");
         Path root = appData == null ? Path.of(System.getProperty("user.home"), ".minecraft")
                 : Path.of(appData, ".minecraft");
-        Path direct = root.resolve(Path.of("versions", "26.2", "26.2.jar"));
+        Path direct = root.resolve(Path.of("versions", "26.3", "26.3.jar"));
         return Files.isRegularFile(direct) ? direct : null;
     }
 

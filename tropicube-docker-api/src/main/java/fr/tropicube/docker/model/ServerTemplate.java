@@ -30,7 +30,7 @@ public class ServerTemplate {
     private String name;
 
     /**
-     * Docker image used to create the containers (e.g. "tropicube/paper:1.21").
+     * Docker image used to create the containers (e.g. "tropicube/paper:26.3").
      */
     private String dockerImage;
 
@@ -361,7 +361,7 @@ public class ServerTemplate {
 
     /**
      * Concise textual representation of the template, useful for logs.
-     * Example: {@code ServerTemplate{id='lobby', name='Lobby', type='LOBBY', image='tropicube/paper:1.21'}}
+     * Example: {@code ServerTemplate{id='lobby', name='Lobby', type='LOBBY', image='tropicube/paper:26.3'}}
      */
     @Override
     public String toString() {

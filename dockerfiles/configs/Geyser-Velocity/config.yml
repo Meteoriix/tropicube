@@ -1,4 +1,4 @@
-# Geyser-Velocity 2.11.2 configuration for Tropicube.
+# Geyser-Velocity 2.11.3 configuration for Tropicube.
 # ${CFG_BEDROCK_PORT} is replaced by the itzg proxy entrypoint at startup.
 bedrock:
   address: 0.0.0.0

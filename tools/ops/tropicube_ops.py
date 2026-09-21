@@ -15,7 +15,8 @@ import tempfile
 import time
 
 ROOT = Path(__file__).resolve().parents[2]
-IMAGES = ("lobby", "sheepwars", "velocity")
+IMAGES = ("lobby", "sheepwars", "fallenkingdoms", "velocity")
+STATIC_SERVICES = ("mysql", "redis", "docker-proxy")
 MYSQL_CONTAINER = "tropicube-mysql"
 REDIS_CONTAINER = "tropicube-redis"
 # A windowless task has no console to inherit. Explicitly suppress console creation
@@ -260,7 +261,19 @@ def activate(tag, restart):
     for name in IMAGES:
         try: previous[name] = docker("image", "inspect", f"tropicube-{name}:latest", "--format", "{{.Id}}")
         except RuntimeError: pass
-    manifest = {"lot": tag, "images": target, "previous": previous, "state": "prepared", "created_at": time.time()}
+    compose = json.loads(docker("compose", "config", "--format", "json"))
+    static_references = {name: compose["services"][name]["image"] for name in STATIC_SERVICES}
+    for reference in static_references.values():
+        docker("pull", reference, timeout=900)
+    static_target = {name: docker("image", "inspect", reference, "--format", "{{.Id}}")
+                     for name, reference in static_references.items()}
+    static_previous = {}
+    for name in STATIC_SERVICES:
+        try: static_previous[name] = docker("inspect", "tropicube-" + name, "--format", "{{.Image}}")
+        except RuntimeError: pass
+    manifest = {"lot": tag, "images": target, "previous": previous,
+                "static_images": static_target, "static_previous": static_previous,
+                "state": "prepared", "created_at": time.time()}
     path = state_dir() / "releases" / (tag + ".json")
     if path.exists(): raise ValueError("Release manifest already exists")
     write_json(path, manifest)
@@ -282,6 +295,9 @@ def activate(tag, restart):
         for name, image_id in target.items():
             docker("tag", image_id, f"tropicube-{name}:latest")
         if restart:
+            for service in STATIC_SERVICES:
+                docker("compose", "up", "-d", "--no-deps", "--force-recreate", "--wait",
+                       "--wait-timeout", "180", service, timeout=240)
             docker("compose", "up", "-d", "--no-build", "--wait", "--wait-timeout", "180", "velocity", timeout=240)
             deadline = time.monotonic() + 180
             while time.monotonic() < deadline:
@@ -304,6 +320,39 @@ def activate(tag, restart):
         raise RuntimeError("Activation failed. Network must remain closed; inspect release manifest and schema before rollback") from None
 
 
+def rollback(tag):
+    if not re.fullmatch(r"[0-9]{8}-[0-9]{6}", tag): raise ValueError("Expected UTC image lot YYYYMMDD-HHMMSS")
+    path = state_dir() / "releases" / (tag + ".json")
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    previous = manifest.get("previous", {})
+    static_previous = manifest.get("static_previous", {})
+    if set(previous) != set(IMAGES) or set(static_previous) != set(STATIC_SERVICES):
+        raise ValueError("Release manifest has no complete rollback image set")
+    running = docker("ps", "--filter", "name=^/tropicube-velocity$", "--format", "{{.ID}}")
+    if running:
+        docker("exec", "tropicube-velocity", "rcon-cli", "maintenance network on 1 Infrastructure rollback")
+        for _ in range(13): time.sleep(5)
+        docker("compose", "stop", "velocity", timeout=180)
+        remaining = docker("ps", "--filter", "label=fr.tropicube.dynamic=true", "--format", "{{.ID}}")
+        if remaining: raise RuntimeError("Dynamic backends are still running; stop them before rollback")
+    for name, image_id in previous.items():
+        docker("tag", image_id, f"tropicube-{name}:latest")
+    override = {"services": {name: {"image": image_id} for name, image_id in static_previous.items()}}
+    override["services"]["velocity"] = {"image": previous["velocity"]}
+    override_path = state_dir() / "releases" / (tag + "-rollback.json")
+    write_json(override_path, override)
+    compose_files = ("-f", str(ROOT / "docker-compose.yml"), "-f", str(override_path))
+    for service in STATIC_SERVICES:
+        docker("compose", *compose_files, "up", "-d", "--no-deps", "--force-recreate", "--wait",
+               "--wait-timeout", "180", service, timeout=240)
+    docker("compose", *compose_files, "up", "-d", "--no-build", "--wait", "--wait-timeout", "180",
+           "velocity", timeout=240)
+    manifest["state"] = "rolled_back"
+    manifest["rolled_back_at"] = time.time()
+    write_json(path, manifest)
+    print("Rollback images restored; maintenance remains enabled pending data and gameplay validation")
+
+
 def main(arguments=None):
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -311,6 +360,7 @@ def main(arguments=None):
     sub.add_parser("diagnose")
     verify = sub.add_parser("verify-backup"); verify.add_argument("directory")
     release = sub.add_parser("activate"); release.add_argument("tag"); release.add_argument("--skip-restart", action="store_true")
+    rollback_parser = sub.add_parser("rollback"); rollback_parser.add_argument("tag")
     args = parser.parse_args(arguments)
     os.umask(0o077)
     try:
@@ -319,6 +369,7 @@ def main(arguments=None):
         with operation_lock():
             if args.command == "backup": backup()
             elif args.command == "activate": activate(args.tag, not args.skip_restart)
+            elif args.command == "rollback": rollback(args.tag)
         return 0
     except Exception as error:
         print(f"Operations failed: {type(error).__name__}: {error}", file=sys.stderr)

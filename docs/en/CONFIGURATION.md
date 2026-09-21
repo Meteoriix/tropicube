@@ -4,7 +4,7 @@
 
 Secrets and deployment-specific values belong in `.env`, never in Git. `.env.example` documents safe placeholders.
 
-The local language editor uses `LIBRETRANSLATE_URL` (default `http://127.0.0.1:5000`), optional `LIBRETRANSLATE_API_KEY`, `TROPICUBE_LANGUAGE_EDITOR_PORT` (default `8765`), `TROPICUBE_DOCKER_COMMAND` (default `docker`), and optional `TROPICUBE_MINECRAFT_CLIENT_JAR` for Minecraft 26.2 textures. Keep the API key exclusively in the local environment.
+The local language editor uses `LIBRETRANSLATE_URL` (default `http://127.0.0.1:5000`), optional `LIBRETRANSLATE_API_KEY`, `TROPICUBE_LANGUAGE_EDITOR_PORT` (default `8765`), `TROPICUBE_DOCKER_COMMAND` (default `docker`), and optional `TROPICUBE_MINECRAFT_CLIENT_JAR` for Minecraft 26.3 textures. Keep the API key exclusively in the local environment.
 
 `menus.yml`, `scoreboards.yml`, and `tablists.yml` use the versioned `version: 1` schema. Menus declare their title, rows, frame, static buttons, and dynamic regions; scoreboards declare a title and variants containing 1–15 lines; tablists declare one header key and one footer key for every state. Builds synchronize embedded resources with Docker mirrors.
 
@@ -51,7 +51,7 @@ Velocity also accepts the following operational settings:
 
 ## Geyser and Floodgate
 
-Both plugins run on Velocity only. `Dockerfile.velocity` downloads the official Geyser-Velocity `2.11.2-b1234` and Floodgate-Velocity `2.2.5-b140` artifacts from pinned build URLs and verifies pinned SHA-256 values. Third-party JARs stay out of Git. Before upgrading, verify Java `26.2` and current Bedrock support, then update the URLs, hashes, configuration comments, tests, and documentation together.
+Both plugins run on Velocity only. `Dockerfile.velocity` downloads the official Geyser-Velocity `2.11.3-b1245` and Floodgate-Velocity `2.2.5-b140` artifacts from pinned build URLs and verifies pinned SHA-256 values. Third-party JARs stay out of Git. Before upgrading, verify Java `26.3` and current Bedrock support, then update the URLs, hashes, configuration comments, tests, and documentation together.
 
 `dockerfiles/configs/Geyser-Velocity/config.yml` uses Geyser schema `config-version: 7`, listens on `0.0.0.0:${CFG_BEDROCK_PORT}`, advertises the same UDP port, and requires Floodgate authentication. Direct connection remains enabled. Command suggestions are disabled and Bedrock scaffolding is blocked for SheepWars parity.
 
@@ -118,6 +118,8 @@ Velocity `docker.memory-budget-mib=16384` covers dynamic container limits only. 
 Both the embedded and Docker profiles keep one Lobby instance at startup. SheepWars and Fallen Kingdoms use `min-instances: 0`, so game servers start only when matchmaking or an explicit creation requests one. The Docker development profile uses an 8192 MiB dynamic-container budget; each new instance reserves its configured heap and native overhead when it is created.
 
 Operations need Python 3.11+, Restic and SSH. Configure `RESTIC_REPOSITORY` as an off-host `sftp:` repository, `RESTIC_PASSWORD_FILE`, and optionally `TROPICUBE_OPS_STATE` (default `.runtime/ops`; systemd uses `/var/lib/tropicube-ops`). Keep recovery credentials outside Git and outside this host. Static and dynamic containers use Docker local logging with five 20 MiB files.
+
+The infrastructure lot pins Redis `8.10.1-alpine`, MySQL `9.7.2`, Adminer `5.5.1`, LibreTranslate `1.9.6`, and docker-socket-proxy `0.3` by digest. Redis Commander now uses the maintained `ghcr.io/joeferner/redis-commander` image, also pinned by digest. Updating an image requires refreshing its digest, matching integration services, backup/restore validation, and health checks.
 ## Fallen Kingdoms
 
 `dockerfiles/configs/TropicubeFallenKingdoms/config.yml` declares the `cactus` map. Its playable region is `(-947, 0, -898)` to `(-468, 150, -433)`. The five bases, hearts, and spawns are configured for blue, red, green, yellow, and orange kingdoms. Its 490-block initial border is centered at `(-702, -653)`, covering the maximum 245-block distance from the center to the declared playable region. Sudden death still ends with a 50-block border.

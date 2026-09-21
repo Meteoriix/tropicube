@@ -104,7 +104,7 @@ Une vérification manuelle complète reste possible avec :
 bash ./mvnw org.codehaus.mojo:versions-maven-plugin:2.19.1:display-dependency-updates
 ```
 
-Ne pas appliquer aveuglément une nouvelle version majeure : vérifier les notes de migration, les changements d'API et la compatibilité avec Minecraft 26.2.
+Ne pas appliquer aveuglément une nouvelle version majeure : vérifier les notes de migration, les changements d'API et la compatibilité avec Minecraft 26.3. Paper 26.3 reste épinglé sur un build qualifié tant que sa branche est en canal alpha.
 
 ## Documentation et qualité
 

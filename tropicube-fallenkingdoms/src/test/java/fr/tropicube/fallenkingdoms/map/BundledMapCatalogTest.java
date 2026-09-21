@@ -36,7 +36,7 @@ class BundledMapCatalogTest {
                 Path.of("dimensions", "minecraft", "overworld", "data", "paper", "level_overrides.dat"))) {
             Path metadata = world.resolve(relative);
             assertTrue(Files.isRegularFile(metadata) && Files.size(metadata) > 0,
-                    "Métadonnée Paper 26.2 absente: " + relative);
+                    "Métadonnée Paper 26.3 absente: " + relative);
         }
     }
 

@@ -260,7 +260,7 @@ function documentTemplate(page, rendered, locale) {
     <a class="brand" href="index.html"><span class="brand-cube">T</span><span><strong><span class="brand-name-accent">Tropi</span>cube</strong><small>${english ? "Network documentation" : "Documentation réseau"}</small></span></a>
     <a class="language-switch" href="${alternateHref}" hreflang="${english ? "fr" : "en"}">${alternateLabel}</a>
     <nav aria-label="${english ? "Main documentation" : "Documentation principale"}">${navigation(page.output, locale)}</nav>
-    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.3</strong><small>Paper · Velocity · Docker</small></span></div>
   </aside>
   <main id="content" class="main">
     <section class="hero"><div class="eyebrow">${english ? "Official documentation" : "Documentation officielle"}</div><h1>${escapeHtml(rendered.title)}</h1><p>${escapeHtml(page.description[locale])}</p></section>

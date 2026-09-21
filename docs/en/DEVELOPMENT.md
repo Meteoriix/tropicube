@@ -4,11 +4,11 @@
 
 - Java 25;
 - Maven 3.9.11 through the repository wrapper;
-- Minecraft 26.2 with the Paper and Velocity versions declared in the parent POM;
+- Minecraft 26.3 with the Paper and Velocity versions declared in the parent POM;
 - UTF-8 and four-space Java indentation;
 - Windows and Linux compatibility.
 
-Do not replace Minecraft 26.2 with a 1.21.x example version and do not introduce a `paper-mojangapi` dependency.
+Do not replace Minecraft 26.3 with a 1.21.x example version and do not introduce a `paper-mojangapi` dependency. Keep Paper 26.3 pinned to a qualified build while its branch remains on the alpha channel.
 
 ## Module boundaries
 

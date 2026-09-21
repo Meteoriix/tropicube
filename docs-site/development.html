@@ -27,7 +27,7 @@
 <a class="nav-link" href="language-editor.html"><span class="nav-icon">文</span><span>Éditeur de langues</span></a>
 <a class="nav-link" href="git-ci.html"><span class="nav-icon">⑂</span><span>Git & CI</span></a>
 <a class="nav-link" href="changelog.html"><span class="nav-icon">≡</span><span>Changements</span></a></nav>
-    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.2</strong><small>Paper · Velocity · Docker</small></span></div>
+    <div class="sidebar-status"><span class="status-dot"></span><span><strong>Minecraft 26.3</strong><small>Paper · Velocity · Docker</small></span></div>
   </aside>
   <main id="content" class="main">
     <section class="hero"><div class="eyebrow">Documentation officielle</div><h1>Développement et contribution</h1><p>Environnement, tests et contributions</p></section>
@@ -71,7 +71,7 @@ bash -n deploy.sh</code></pre></div>
 <p>Dependabot vérifie chaque semaine les dépendances Maven et chaque mois les actions GitHub. Ses pull requests doivent être validées par la CI puis, pour Paper et Velocity, par un démarrage réel du proxy, du lobby et d'une partie SheepWars.</p>
 <p>Une vérification manuelle complète reste possible avec :</p>
 <div class="code-block"><span class="code-language">bash</span><pre class=""><code>bash ./mvnw org.codehaus.mojo:versions-maven-plugin:2.19.1:display-dependency-updates</code></pre></div>
-<p>Ne pas appliquer aveuglément une nouvelle version majeure : vérifier les notes de migration, les changements d'API et la compatibilité avec Minecraft 26.2.</p>
+<p>Ne pas appliquer aveuglément une nouvelle version majeure : vérifier les notes de migration, les changements d'API et la compatibilité avec Minecraft 26.3. Paper 26.3 reste épinglé sur un build qualifié tant que sa branche est en canal alpha.</p>
 <h2 id="documentation-et-qualite">Documentation et qualité<a class="heading-anchor" href="#documentation-et-qualite" aria-label="Lien vers cette section">#</a></h2>
 <p>Les fichiers Markdown sont la source de vérité. Après leur modification, exécuter le générateur puis versionner les pages HTML mises à jour :</p>
 <div class="code-block"><span class="code-language">bash</span><pre class=""><code>node docs-site/build.mjs

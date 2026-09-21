@@ -312,9 +312,9 @@ foreach ($artifact in $artifacts) {
     }
 }
 
-# Core declares HeadDatabase as a hard Paper dependency. Keep third-party JARs
-# outside Git, but distribute the operator-provided verified copies to every backend.
-foreach ($pattern in @("HeadDatabase-*.jar", "NoChatReports-*.jar")) {
+# Core declares HeadDatabase as a hard Paper dependency. Keep the third-party JAR
+# outside Git, but distribute the operator-provided verified copy to every backend.
+foreach ($pattern in @("HeadDatabase-*.jar")) {
     $matches = @(Get-ChildItem "dockerfiles\plugins\lobby\$pattern" -File -ErrorAction SilentlyContinue)
     if ($matches.Count -ne 1) {
         Fail "Expected exactly one $pattern in dockerfiles\plugins\lobby, found $($matches.Count)."
@@ -434,7 +434,7 @@ foreach ($image in @("tropicube-lobby:$buildTag", "tropicube-sheepwars:$buildTag
 }
 
 Step "Verifying Geyser and Floodgate proxy artifacts..."
-$proxyBridgeCheck = 'set -eu; echo "28d796e67b466fd9832eb12d0b4a1b72a5046caae1fb6c67099f2a5d14423571  /opt/tropicube/server/plugins/Geyser-Velocity.jar" | sha256sum -c -; echo "f5867ad79b90d38abcc72755a685428fbcf423b52c9830a39ffed5203de6936a  /opt/tropicube/server/plugins/floodgate-velocity.jar" | sha256sum -c -; test -s /opt/tropicube/server/plugins/Geyser-Velocity/config.yml; test -s /opt/tropicube/server/plugins/floodgate/config.yml'
+$proxyBridgeCheck = 'set -eu; echo "306abe38291d24e874c7286e1c04b537ac3ab5e3901b710f56bd242500bedfbf  /opt/tropicube/server/plugins/Geyser-Velocity.jar" | sha256sum -c -; echo "f5867ad79b90d38abcc72755a685428fbcf423b52c9830a39ffed5203de6936a  /opt/tropicube/server/plugins/floodgate-velocity.jar" | sha256sum -c -; test -s /opt/tropicube/server/plugins/Geyser-Velocity/config.yml; test -s /opt/tropicube/server/plugins/floodgate/config.yml'
 & docker run --rm --entrypoint /bin/sh "tropicube-velocity:$buildTag" -c $proxyBridgeCheck
 if ($LASTEXITCODE -ne 0) { Fail "Geyser/Floodgate artifacts are incomplete in tropicube-velocity:latest." }
 Ok "Velocity contains the pinned Geyser and Floodgate artifacts."

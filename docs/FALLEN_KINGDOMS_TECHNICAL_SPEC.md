@@ -14,7 +14,7 @@ En cas de divergence, cette spécification prévaut pour la V1 Tropicube. Le gam
 
 La V1 comprend :
 
-- une partie automatisée sur une instance Paper 26.2 dédiée et éphémère ;
+- une partie automatisée sur une instance Paper 26.3 dédiée et éphémère ;
 - de deux à cinq royaumes actifs, choisis dynamiquement selon l'effectif ;
 - les phases de préparation, combat commun, assaut, mort subite et résultat ;
 - les quatre kits historiques et l'Alchimiste Tropicube : Mineur, Fermier, Éclaireur, Enchanteur et Alchimiste ;

@@ -61,7 +61,7 @@ public final class PlayerHeadProfileCache {
     }
 
     private static ResolvableProfile unresolvedProfile(UUID playerId) {
-        // Paper 26.2 treats UUID + name without properties as a static partial profile;
+        // Paper 26.3 treats UUID + name without properties as a static partial profile;
         // UUID alone is intentionally required to trigger the server-side dynamic lookup.
         return ResolvableProfile.resolvableProfile()
                 .uuid(playerId)

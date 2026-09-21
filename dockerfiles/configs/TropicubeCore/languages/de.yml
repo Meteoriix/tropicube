@@ -449,7 +449,7 @@ lobby:
   fk-custom-create-lore: "<gray>Linksklick: Instanz mit diesen Einstellungen erstellen"
   fk-custom-enabled: "Aktiviert"
   fk-custom-disabled: "Deaktiviert"
-  fk-custom-paper: "Paper-26.2-Kampf"
+  fk-custom-paper: "Paper-26.3-Kampf"
   fk-custom-legacy: "Klassischer 1.8-Kampf"
   fk-custom-ruins-light: "Leichte Ruinen"
   fk-custom-ruins-standard: "Normale Ruinen"

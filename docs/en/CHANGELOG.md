@@ -6,6 +6,10 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-17
 
+- Migrated the network to Minecraft 26.3 with explicitly pinned Paper alpha build 8, Velocity 4.2.0, Geyser 2.11.3-b1245, and Paper 26.3 descriptors; advancing Paper still requires full lot qualification.
+- Updated JUnit, Maven Compiler, Surefire, JaCoCo, React, Vite, Vitest, MySQL, Redis, and Adminer; moved Redis Commander to the maintained GHCR image and refreshed the Java 25 runtime digests.
+- Extended production manifests, backups, activation, rollback, and isolated smoke tests to Fallen Kingdoms and the static MySQL, Redis, and Docker proxy images.
+- Excluded NoChatReports 2.7.8 from the 26.3 images after confirming its NMS incompatibility, while retaining HeadDatabase 4.24.0 qualified on all three backends.
 - Fixed SheepWars scoreboard spacing by declaring the blank line after the map in every state, including players without a team and the starting countdown.
 - Pre-converted the Fallen Kingdoms world template to Paper 26.2 storage so new instances no longer run the world-folder migration or wait 30 seconds.
 

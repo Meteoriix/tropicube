@@ -449,7 +449,7 @@ lobby:
   fk-custom-create-lore: "<gray>Clic izquierdo: crear la instancia con estos ajustes"
   fk-custom-enabled: "Activado"
   fk-custom-disabled: "Desactivado"
-  fk-custom-paper: "Combate Paper 26.2"
+  fk-custom-paper: "Combate Paper 26.3"
   fk-custom-legacy: "Combate clásico 1.8"
   fk-custom-ruins-light: "Ruinas ligeras"
   fk-custom-ruins-standard: "Ruinas normales"

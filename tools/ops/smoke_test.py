@@ -27,7 +27,7 @@ def main():
     args = parser.parse_args()
     if not re.fullmatch(r"\d{8}-\d{6}", args.tag): raise ValueError("Expected UTC image lot")
     project = "tropicube-smoke-" + uuid.uuid4().hex[:8]
-    for name in ("lobby", "sheepwars", "velocity"):
+    for name in ("lobby", "sheepwars", "fallenkingdoms", "velocity"):
         command("docker", "image", "inspect", f"tropicube-{name}:{args.tag}", "--format", "{{.Id}}")
     private = ROOT / ".runtime" / "smoke"
     private.mkdir(parents=True, exist_ok=True)
@@ -60,22 +60,29 @@ def main():
         (stage / "compose.json").write_text(json.dumps(spec), encoding="utf-8")
         compose = ["docker", "compose", "-p", project, "-f", str(stage / "compose.json")]
         logs = private / (project + ".log")
+        backend_logs = {}
         try:
             command(*compose, "up", "-d", "--wait", "--wait-timeout", "180", timeout=240)
+            command("docker", "exec", project + "-velocity", "rcon-cli", "tropi", "start", "sheepwars")
+            command("docker", "exec", project + "-velocity", "rcon-cli", "tropi", "start", "fallenkingdoms")
             deadline = time.monotonic() + 240
             while time.monotonic() < deadline:
                 containers = command("docker", "ps", "-q", "--filter", "label=fr.tropicube.owner=" + project).splitlines()
                 ready = set()
                 for container in containers:
                     output = command("docker", "logs", container, timeout=15)
+                    backend_logs[container] = output
                     if "TROPICUBE_BACKEND_READY" in output:
                         template = command("docker", "inspect", container, "--format", '{{index .Config.Labels "fr.tropicube.template-id"}}')
                         ready.add(template)
-                if {"lobby", "sheepwars"}.issubset(ready):
-                    print("Isolated lot ready: Velocity, Lobby and SheepWars")
+                if {"lobby", "sheepwars", "fallenkingdoms"}.issubset(ready):
+                    print("Isolated lot ready: Velocity, Lobby, SheepWars and Fallen Kingdoms")
                     break
                 time.sleep(3)
             else: raise RuntimeError("Backends failed to become ready")
+            fatal_markers = ("[ERROR]", "Exception:", "java.lang.")
+            if any(marker in output for output in backend_logs.values() for marker in fatal_markers):
+                raise RuntimeError("A backend logged an error or exception")
             command(*compose, "stop", "velocity", timeout=180)
             deadline = time.monotonic() + 45
             while time.monotonic() < deadline:
@@ -86,6 +93,8 @@ def main():
         finally:
             with logs.open("w", encoding="utf-8") as output:
                 subprocess.run([*compose, "logs", "--no-color"], cwd=ROOT, stdout=output, stderr=subprocess.STDOUT)
+                for container, content in backend_logs.items():
+                    output.write("\n--- " + container + " ---\n" + content + "\n")
                 containers = command("docker", "ps", "-aq", "--filter", "label=fr.tropicube.owner=" + project).splitlines()
                 for container in containers:
                     subprocess.run(["docker", "logs", container], stdout=output, stderr=subprocess.STDOUT)

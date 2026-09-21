@@ -56,7 +56,7 @@ Toutes les ressources utilisent des placeholders nommés canoniques comme `{play
 
 La synchronisation live utilise exclusivement le client Docker local, des conteneurs Tropicube actifs et leur RCON interne. Elle ne publie aucun port supplémentaire et ne lit aucun mot de passe. `TROPICUBE_DOCKER_COMMAND` permet de remplacer le nom de l'exécutable `docker`. Une première livraison de cette version reste nécessaire pour installer le moteur. Les applications suivantes ne nécessitent plus de rebuild : Core publie une génération complète et hashée dans Redis, et toute nouvelle instance la restaure avant d'initialiser ses langues et interfaces.
 
-L'aperçu des items cherche le client Minecraft 26.2 local. `TROPICUBE_MINECRAFT_CLIENT_JAR` permet d'indiquer explicitement son JAR ; les textures lues sont conservées uniquement en mémoire par l'éditeur.
+L'aperçu des items cherche le client Minecraft 26.3 local. `TROPICUBE_MINECRAFT_CLIENT_JAR` permet d'indiquer explicitement son JAR ; les textures lues sont conservées uniquement en mémoire par l'éditeur.
 
 Le catalogue versionné `tools/language-editor/catalog.yml` contient le glossaire, les corrections de contexte et les exemples de placeholders. Les traductions automatiques restent des propositions : relire au minimum l'anglais et vérifier en jeu les interfaces sensibles à la largeur du texte.
 

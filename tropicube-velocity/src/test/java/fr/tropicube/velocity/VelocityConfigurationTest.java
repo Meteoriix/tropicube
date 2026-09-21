@@ -72,8 +72,8 @@ class VelocityConfigurationTest {
         for (String templateId : new String[]{"lobby", "sheepwars"}) {
             ConfigurationNode environment = config.node("templates", templateId, "environment");
             assertEquals("PAPER", environment.node("TYPE").getString());
-            assertEquals("26.2", environment.node("VERSION").getString());
-            assertEquals("97", environment.node("PAPER_BUILD").getString());
+            assertEquals("26.3", environment.node("VERSION").getString());
+            assertEquals("8", environment.node("PAPER_BUILD").getString());
         }
     }
 

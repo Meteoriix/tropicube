@@ -467,7 +467,7 @@ lobby:
   fk-custom-create-lore: "<gray>Clic gauche : créer l'instance avec ces paramètres"
   fk-custom-enabled: "Activé"
   fk-custom-disabled: "Désactivé"
-  fk-custom-paper: "Combat Paper 26.2"
+  fk-custom-paper: "Combat Paper 26.3"
   fk-custom-legacy: "Combat hérité 1.8"
   fk-custom-ruins-light: "Ruines légères"
   fk-custom-ruins-standard: "Ruines normales"

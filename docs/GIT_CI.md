@@ -43,7 +43,7 @@ git push -u origin main
 
 Ne jamais ajouter `.env`, une clé privée, un mot de passe, un secret de forwarding ou un export de base de données. Vérifier systématiquement le contenu préparé avec `git diff --cached` avant de valider un commit.
 
-Les JAR de plugins tiers sont également ignorés : chaque développeur doit déposer les versions requises dans `dockerfiles/plugins/lobby/` et `dockerfiles/plugins/sheepwars/` comme indiqué dans le guide de déploiement. Les données joueur, statistiques et verrous de session présents dans les mondes modèles ne sont jamais versionnés.
+Les JAR de plugins tiers sont également ignorés : chaque développeur dépose la référence HeadDatabase requise dans `dockerfiles/plugins/lobby/`, puis les scripts la distribuent aux autres backends comme indiqué dans le guide de déploiement. Les données joueur, statistiques et verrous de session présents dans les mondes modèles ne sont jamais versionnés.
 
 ## Cycle quotidien recommandé
 
@@ -171,7 +171,7 @@ Préférer `Squash and merge` pour une branche contenant des commits temporaires
 Dependabot inspecte Maven chaque semaine et GitHub Actions chaque mois. Pour chaque proposition :
 
 1. lire les notes de version et migrations ;
-2. vérifier la compatibilité avec Java 25 et Minecraft 26.2 ;
+2. vérifier la compatibilité avec Java 25 et Minecraft 26.3 ;
 3. laisser la CI terminer ;
 4. démarrer Velocity, le lobby et une partie SheepWars si Paper ou Velocity change ;
 5. mettre à jour la documentation si le comportement ou les prérequis évoluent.
@@ -217,6 +217,6 @@ Pour un nouveau mini-jeu, consulter également `AGENTS.md` à la racine. Il cont
 
 Le job Linux exécute les tests Python d'exploitation et `python tools/ops/integration_tests.py`. Ce script crée un projet Compose unique avec ports loopback éphémères et volumes temporaires, teste les migrations réelles MySQL, le verrou de sauvegarde, Redis et ses abonnements, puis supprime uniquement ce projet. Les tests d'intégration JUnit sont explicitement activés par `TROPICUBE_TEST_MYSQL_URL` / `TROPICUBE_TEST_REDIS_PORT` ; ils ne ciblent jamais les services de production.
 
-Le job `Native Windows validation` utilise le wrapper `.cmd`, Java 25, les tests Python et le parseur PowerShell. Le job Ubuntu reste responsable de Docker Engine et des scripts Bash. Dependabot suit maintenant Dockerfiles, Compose et les dépendances Maven/npm de l'éditeur de langues. Aucune fusion ni mise à jour majeure automatique : vérifier les notes officielles, les empreintes et la compatibilité du lot avant activation. Ne pas remplacer Minecraft 26.2 ni la branche MySQL par déduction d'une suggestion de Dependabot.
+Le job `Native Windows validation` utilise le wrapper `.cmd`, Java 25, les tests Python et le parseur PowerShell. Le job Ubuntu reste responsable de Docker Engine et des scripts Bash. Dependabot suit maintenant Dockerfiles, Compose et les dépendances Maven/npm de l'éditeur de langues. Aucune fusion ni mise à jour majeure automatique : vérifier les notes officielles, les empreintes et la compatibilité du lot avant activation. Ne pas avancer le build Paper 26.3 épinglé ni la branche MySQL par déduction d'une suggestion de Dependabot.
 
 Le workflow manuel `Isolated image lot smoke test` est réservé à `main` et à un runner Linux privé étiqueté `tropicube-staging`, disposant du lot vérifié demandé. Il démarre puis arrête une pile isolée via `tools/ops/smoke_test.py`. Ne pas exposer ce runner aux pull requests non fiables.

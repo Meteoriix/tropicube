@@ -4,7 +4,7 @@ Ce fichier s'applique à l'ensemble du dépôt. Il sert de contexte et de défin
 
 ## Objectif du projet
 
-Tropicube est un réseau Minecraft 26.2 composé d'un proxy Velocity, de serveurs Paper dynamiques, de Redis, de MySQL et d'une orchestration Docker. Java 25 et Maven 3.9.11 sont les versions de référence.
+Tropicube est un réseau Minecraft 26.3 composé d'un proxy Velocity, de serveurs Paper dynamiques, de Redis, de MySQL et d'une orchestration Docker. Java 25 et Maven 3.9.11 sont les versions de référence.
 
 Modules Maven :
 
@@ -19,7 +19,7 @@ Les fichiers Markdown sous `docs/` sont la documentation source. `docs-site/` es
 
 ## Environnement Minecraft
 
-- La cible est Minecraft 26.2. Ne jamais la remplacer automatiquement par Minecraft 1.21.x, même si des exemples ou documentations externes utilisent cette ancienne numérotation.
+- La cible est Minecraft 26.3. Ne jamais la remplacer automatiquement par Minecraft 1.21.x, même si des exemples ou documentations externes utilisent cette ancienne numérotation. Tant que Paper 26.3 reste en canal alpha, conserver le build explicitement épinglé et ne jamais l'avancer sans une qualification complète du lot.
 - Ne jamais inventer ni ajouter une dépendance `paper-mojangapi`.
 - Respecter les mappings, dépôts Maven, dépendances Paper/Velocity et versions déjà configurés dans le POM parent.
 - Toute migration de version doit être demandée ou justifiée, vérifiée dans les sources officielles et validée sur l'ensemble du réacteur.

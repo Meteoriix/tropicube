@@ -1,4 +1,4 @@
 # Paper world defaults shipped in the backend images so a fresh dynamic
 # instance never has to download this file during its startup path.
-# Missing options intentionally keep Paper 26.2 defaults.
+# Missing options intentionally keep Paper 26.3 defaults.
 _version: 31

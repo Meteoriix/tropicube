@@ -6,6 +6,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-17
 
+- Migre le réseau vers Minecraft 26.3 avec Paper alpha build 8 explicitement épinglé, Velocity 4.2.0, Geyser 2.11.3-b1245 et les descripteurs Paper 26.3 ; l'avancement vers un autre build reste soumis à la qualification complète du lot.
+- Actualise JUnit, Maven Compiler, Surefire, JaCoCo, React, Vite, Vitest, MySQL, Redis et Adminer ; migre Redis Commander vers l'image GHCR maintenue et rafraîchit les digests des runtimes Java 25.
+- Étend les manifestes, sauvegardes, activations, rollbacks et smoke tests de production à Fallen Kingdoms ainsi qu'aux images statiques MySQL, Redis et du proxy Docker.
+- Exclut NoChatReports 2.7.8 des images 26.3 après constat de son incompatibilité NMS, tout en conservant HeadDatabase 4.24.0 qualifié sur les trois backends.
 - Corrige définitivement l'espacement du scoreboard SheepWars en déclarant la ligne vide après la carte dans tous les états, y compris sans équipe et pendant le compte à rebours.
 - Préconvertit la carte modèle Fallen Kingdoms au format Paper 26.2 afin de supprimer la migration du dossier monde et son attente de 30 secondes à chaque nouvelle instance.
 

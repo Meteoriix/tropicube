@@ -178,9 +178,9 @@ copy_verified "$core_jar" dockerfiles/plugins/fallenkingdoms/tropicube-core.jar
 copy_verified "$fallenkingdoms_jar" dockerfiles/plugins/fallenkingdoms/tropicube-fallenkingdoms.jar
 copy_verified "$velocity_jar" dockerfiles/plugins/velocity/tropicube-velocity.jar
 
-# Core declares HeadDatabase as a hard Paper dependency. Keep third-party JARs
-# outside Git, but distribute the operator-provided verified copies to every backend.
-for pattern in 'HeadDatabase-*.jar' 'NoChatReports-*.jar'; do
+# Core declares HeadDatabase as a hard Paper dependency. Keep the third-party JAR
+# outside Git, but distribute the operator-provided verified copy to every backend.
+for pattern in 'HeadDatabase-*.jar'; do
   matches=()
   for candidate in dockerfiles/plugins/lobby/$pattern; do
     [[ -f $candidate ]] && matches+=("$candidate")
@@ -397,7 +397,7 @@ for image in "tropicube-lobby:$build_tag" "tropicube-sheepwars:$build_tag" "trop
 done
 
 step 'Verifying Geyser and Floodgate proxy artifacts...'
-proxy_bridge_check='set -eu; echo "28d796e67b466fd9832eb12d0b4a1b72a5046caae1fb6c67099f2a5d14423571  /opt/tropicube/server/plugins/Geyser-Velocity.jar" | sha256sum -c -; echo "f5867ad79b90d38abcc72755a685428fbcf423b52c9830a39ffed5203de6936a  /opt/tropicube/server/plugins/floodgate-velocity.jar" | sha256sum -c -; test -s /opt/tropicube/server/plugins/Geyser-Velocity/config.yml; test -s /opt/tropicube/server/plugins/floodgate/config.yml'
+proxy_bridge_check='set -eu; echo "306abe38291d24e874c7286e1c04b537ac3ab5e3901b710f56bd242500bedfbf  /opt/tropicube/server/plugins/Geyser-Velocity.jar" | sha256sum -c -; echo "f5867ad79b90d38abcc72755a685428fbcf423b52c9830a39ffed5203de6936a  /opt/tropicube/server/plugins/floodgate-velocity.jar" | sha256sum -c -; test -s /opt/tropicube/server/plugins/Geyser-Velocity/config.yml; test -s /opt/tropicube/server/plugins/floodgate/config.yml'
 docker run --rm --entrypoint /bin/sh "tropicube-velocity:$build_tag" -c "$proxy_bridge_check" \
   || fail 'Geyser/Floodgate artifacts are incomplete in tropicube-velocity:latest.'
 ok 'Velocity contains the pinned Geyser and Floodgate artifacts.'

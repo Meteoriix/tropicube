@@ -1,7 +1,7 @@
 name: TropicubeLobby
 version: 1.0.0
 main: fr.tropicube.lobby.TropicubeLobby
-api-version: '26.2'
+api-version: '26.3'
 description: "Tropicube - Plugin Lobby avec menus GUI, sélecteur de serveurs et boutique VIP"
 authors: [ Tropicube-Team ]
 

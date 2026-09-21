@@ -1,7 +1,7 @@
 name: TropicubeSheepwars
 version: 1.0.0
 main: fr.tropicube.sheepwars.TropicubeSheepwars
-api-version: '26.2'
+api-version: '26.3'
 description: "Tropicube - Plugin Sheepwars : mini-jeu"
 authors: [ Tropicube-Team ]
 

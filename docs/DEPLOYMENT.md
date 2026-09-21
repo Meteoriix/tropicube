@@ -65,14 +65,14 @@ Pour Docker rootless, régler `DOCKER_SOCKET_PATH`, par exemple `/run/user/1000/
 
 1. Placer le projet sur la machine de déploiement.
 2. Vérifier que les mondes existent sous `dockerfiles/worlds/lobby` et `dockerfiles/worlds/sheepwars`.
-3. Vérifier les exemplaires de référence des plugins tiers dans `dockerfiles/plugins/lobby`, notamment HeadDatabase et NoChatReports ; les scripts les copient avec contrôle d'empreinte vers SheepWars et Fallen Kingdoms.
+3. Vérifier l'exemplaire de référence de HeadDatabase dans `dockerfiles/plugins/lobby` ; les scripts le copient avec contrôle d'empreinte vers SheepWars et Fallen Kingdoms. NoChatReports 2.7.8 doit rester hors des images 26.3 : son fournisseur NMS ne reconnaît pas cette version et le plugin se désactive avec une erreur au démarrage. Le réintroduire uniquement après qualification d'une version explicitement compatible.
 4. Créer `.env` et remplacer tous les secrets.
 5. Adapter les UUID administrateurs, OPS, cartes et coordonnées.
 6. Valider sans construire d'image.
 
 Les images Paper Lobby et SheepWars copient aussi `dockerfiles/configs/spigot.yml`. Ce fichier désactive l'enregistrement et le chargement de tous les advancements (`*`) ; il doit rester présent dans les deux images pour éviter les notifications et la progression vanilla sur l'ensemble des backends.
 
-Le build de ces deux images télécharge Paper, le JAR serveur Mojang et produit le runtime patché avec `paperclip.patchonly`. Le build Velocity télécharge pour sa part les builds officiels épinglés de Geyser et Floodgate, puis BuildKit vérifie leurs SHA-256. Ces artefacts, leurs bibliothèques et les fichiers `bukkit.yml` et `paper-world-defaults.yml` sont stockés dans les couches Docker ; aucun JAR tiers n'entre dans Git. Le premier build ou un changement de version nécessite donc un accès à PaperMC, Mojang et `download.geysermc.org`, tandis que la création d'une instance Lobby ou SheepWars ne télécharge plus aucun de ces éléments.
+Le build des trois images Paper télécharge Paper, le JAR serveur Mojang et produit le runtime patché avec `paperclip.patchonly`. Le build Velocity télécharge pour sa part les builds officiels épinglés de Geyser et Floodgate, puis BuildKit vérifie leurs SHA-256. Ces artefacts, leurs bibliothèques et les fichiers `bukkit.yml` et `paper-world-defaults.yml` sont stockés dans les couches Docker ; aucun JAR tiers n'entre dans Git. Les Dockerfiles copient explicitement les JAR Tropicube et HeadDatabase afin qu'un ancien NoChatReports conservé localement ne puisse pas entrer dans un lot 26.3. Le premier build ou un changement de version nécessite donc un accès à PaperMC, Mojang et `download.geysermc.org`, tandis que la création d'une instance ne télécharge plus aucun de ces éléments.
 7. Exécuter le déploiement complet.
 
 Windows :
@@ -128,7 +128,7 @@ Le premier `docker compose up` télécharge MySQL, Redis, le proxy de socket et 
 | Nettoie l'ancien dossier de langues doublement imbriqué | oui | oui | oui |
 | Valide puis synchronise exactement les langues sources | .NET et SHA-256 | Python 3 et comparaison binaire | oui |
 | Refuse sections/clés dupliquées et feuilles trop imbriquées | oui | oui | oui |
-| Construit trois images en parallèle avec `--pull` | jobs PowerShell | processus Bash | oui |
+| Construit quatre images en parallèle avec `--pull` | jobs PowerShell | processus Bash | oui |
 | Vérifie Paper, le JAR Mojang, le runtime patché et les configurations de démarrage dans les images | oui | oui | oui |
 | Crée les tags `latest` et UTC horodaté | oui | oui | oui |
 | Attend tous les builds et restitue leurs logs | oui | oui | oui |
@@ -168,7 +168,7 @@ Exemples :
 
 ## Redéploiement de développement
 
-La commande habituelle `./deploy.ps1` ou `./deploy.sh` est le chemin de développement : elle ne lance ni `/maintenance`, ni sauvegarde Restic, ni attente de drain. Après les vérifications de build, elle applique les tags `latest` aux trois images puis recrée Velocity avec Compose. L'arrêt propre du proxy interrompt donc immédiatement les parties et instances dynamiques selon `shutdown.stop-dynamic-servers: true`.
+La commande habituelle `./deploy.ps1` ou `./deploy.sh` est le chemin de développement : elle ne lance ni `/maintenance`, ni sauvegarde Restic, ni attente de drain. Après les vérifications de build, elle applique les tags `latest` aux quatre images puis recrée Velocity avec Compose. L'arrêt propre du proxy interrompt donc immédiatement les parties et instances dynamiques selon `shutdown.stop-dynamic-servers: true`.
 
 ## Ce que fait le redéploiement de développement
 
@@ -176,9 +176,9 @@ La commande habituelle `./deploy.ps1` ou `./deploy.sh` est le chemin de dévelop
 2. compilation Maven de tout le réacteur ;
 3. copie des JAR ombrés vers les contextes Docker avec contrôle d'intégrité ;
 4. synchronisation exacte des traductions sources vers les configurations Docker ;
-5. construction parallèle de `tropicube-lobby`, `tropicube-sheepwars` et `tropicube-velocity` ;
-6. vérification des caches Paper/Mojang et des configurations de démarrage dans les deux images de backend ;
-7. tag UTC `YYYYMMDD-HHMMSS`, puis mise à jour des trois tags `latest` ;
+5. construction parallèle de `tropicube-lobby`, `tropicube-sheepwars`, `tropicube-fallenkingdoms` et `tropicube-velocity` ;
+6. vérification des caches Paper/Mojang et des configurations de démarrage dans les trois images de backend ;
+7. tag UTC `YYYYMMDD-HHMMSS`, puis mise à jour des quatre tags `latest` ;
 8. `docker compose up -d --no-build --force-recreate --wait --wait-timeout 180 velocity`.
 
 Compose démarre ou vérifie automatiquement Redis, MySQL et `docker-proxy` grâce aux dépendances de santé. Par défaut, l'arrêt de l'ancien Velocity supprime les backends dynamiques et leurs volumes de données éphémères avant le redémarrage. Le `/server` de Velocity est un `tmpfs` initialisé depuis l'image : son contenu disparaît à l'arrêt et le JAR fraîchement construit ne peut pas être masqué par un ancien volume. Le sous-dossier Floodgate est un volume nommé imbriqué : sa clé privée `key.pem` survit aux recréations et ne doit jamais être supprimée lors d'un déploiement normal. Lors de la première migration, les scripts suppriment précisément l'ancien volume anonyme détecté sur `/server`, sans toucher à `floodgate-data`. Les futures instances utilisent les nouvelles images `latest`.
@@ -189,7 +189,7 @@ Le redéploiement quotidien de développement interrompt volontairement les part
 
 Le build distribue aussi le plugin `tropicube-fallenkingdoms` et construit son image. La carte immuable est copiée depuis `dockerfiles/worlds/fallenkingdoms/`; les données `players/`, fichiers `session.lock`, sauvegardes `level.dat_old*` et données temporaires du mod Hole Filler sont exclus du contexte Docker et du suivi Git. Le template Velocity `fallenkingdoms` est actif sur la plage privée 25660–25669 et injecte `MAP_ID=cactus`. Le template classique et les files bêta 1v1 et 2v2, sur 25670–25679 et 25680–25689, démarrent à la demande sans instance préchauffée. Pour livrer une autre carte, ajouter son monde à l'image, déclarer une entrée activée sous `locations.maps`, puis changer `MAP_ID`. Le profil embarqué réserve 2 à 4 Gio par instance. La configuration Docker de développement limite chaque instance FK à 1–2 Gio afin qu'elle puisse tenir avec Lobby et les autres parties créées dans le budget local de 8 Gio.
 
-La carte modèle est enregistrée dans le format de stockage courant de Paper 26.2. Le dossier de données de l'Overworld doit conserver `minecraft/world_gen_settings.dat`, `paper/metadata.dat` et `paper/level_overrides.dat`. Leur suppression fait considérer chaque copie éphémère comme un monde vanilla à importer, déclenche l'avertissement `WorldFolderMigration`, ajoute 30 secondes au démarrage et peut empêcher le chargement du monde. Après une édition externe de la carte, démarrer une copie isolée avec la version Paper épinglée, laisser sa migration s'achever, arrêter proprement le serveur puis réintégrer ces métadonnées avant de reconstruire l'image.
+La carte modèle est enregistrée dans le format de stockage courant de Paper 26.3. Le dossier de données de l'Overworld doit conserver `minecraft/world_gen_settings.dat`, `paper/metadata.dat` et `paper/level_overrides.dat`. Leur suppression fait considérer chaque copie éphémère comme un monde vanilla à importer, déclenche l'avertissement `WorldFolderMigration`, ajoute 30 secondes au démarrage et peut empêcher le chargement du monde. Après une édition externe de la carte, démarrer une copie isolée avec la version Paper épinglée, laisser sa migration s'achever, arrêter proprement le serveur puis réintégrer ces métadonnées avant de reconstruire l'image.
 
 Les trois templates Fallen Kingdoms imposent `VIEW_DISTANCE=12` et `SIMULATION_DISTANCE=5`. La recette de déploiement doit donc contrôler le débit réseau, la mémoire de chunks et le temps de tick avec le nombre maximal de joueurs, en plus du coût des barrières de particules proches des bases.
 
@@ -251,16 +251,13 @@ Avec la configuration par défaut, l'arrêt propre du proxy arrête les serveurs
 
 ## Rollback
 
-Chaque déploiement affiche un tag UTC. Pour revenir au lot précédent :
+Chaque déploiement affiche un tag UTC. La livraison de production enregistre aussi les images MySQL, Redis et du proxy Docker. Pour revenir au lot précédent en maintenant le réseau fermé :
 
 ```bash
-docker tag tropicube-velocity:YYYYMMDD-HHMMSS tropicube-velocity:latest
-docker tag tropicube-lobby:YYYYMMDD-HHMMSS tropicube-lobby:latest
-docker tag tropicube-sheepwars:YYYYMMDD-HHMMSS tropicube-sheepwars:latest
-docker compose up -d --force-recreate velocity
+python3 tools/ops/tropicube_ops.py rollback YYYYMMDD-HHMMSS
 ```
 
-Les backends existants gardent leur image actuelle. Les arrêter proprement puis les recréer si le rollback doit également s'appliquer aux instances de jeu. Un rollback de code n'annule pas automatiquement une migration de données ; restaurer les sauvegardes compatibles si le schéma a changé.
+Le rollback restaure les quatre tags Tropicube et recrée les services statiques depuis les identifiants privés du manifeste. Il laisse volontairement la maintenance active jusqu'à validation des données et du gameplay. Un rollback de code n'annule pas automatiquement une migration de données ; restaurer la sauvegarde compatible avant de rouvrir si MySQL ou Redis ont modifié leur stockage.
 
 ## Sauvegardes
 
@@ -359,19 +356,19 @@ Les tâches `Tropicube-<identifiant>-backup` et `Tropicube-<identifiant>-diagnos
 
 Les tâches lancent directement `pythonw.exe` avec `tools/ops/windows_task.py`, sans PowerShell ni console. L'exécutable `pythonw.exe` doit être présent à côté du `python.exe` configuré. Tous les sous-processus Docker, Git et Restic, y compris la connexion de verrouillage SQL, utilisent `CREATE_NO_WINDOW` sous Windows ; masquer une fenêtre PowerShell après son démarrage ne suffit pas à éviter un flash de terminal. Les sorties restent dans `backup-task.log` et `diagnose-task.log`, et les erreurs conservent un code de retour non nul. Pour migrer les tâches existantes, relancer `.\tools\ops\setup-windows.ps1 -InstallTasks` ; les sauvegardes, la clé et les identifiants des tâches sont conservés. Les déploiements manuels utilisent toujours `windows.ps1` dans le terminal ouvert par le développeur.
 
-Pour un lot déjà construit, remplacer `deploy` par `activate -Tag YYYYMMDD-HHMMSS`. Pour charger les variables Restic dans le terminal sans lancer une opération : `. .\tools\ops\windows.ps1 -Command environment`. Pour restaurer sous Windows, repérer le répertoire `backup-...` contenant `manifest.json` avec `restic ls latest`, puis utiliser `restic restore "latest:/C/.../backup-..." --tag tropicube --target <répertoire privé>` en remplaçant le chemin par celui affiché. Restaurer ce sous-répertoire évite de réappliquer les métadonnées des répertoires système parents de Windows. Valider ensuite avec `python tools/ops/tropicube_ops.py verify-backup <répertoire privé>` avant tout import et tester sur une pile isolée. Ne pas restaurer directement par-dessus les données actives.
+Pour un lot déjà construit, remplacer `deploy` par `activate -Tag YYYYMMDD-HHMMSS`. Un retour utilise `rollback -Tag YYYYMMDD-HHMMSS`. Pour charger les variables Restic dans le terminal sans lancer une opération : `. .\tools\ops\windows.ps1 -Command environment`. Pour restaurer sous Windows, repérer le répertoire `backup-...` contenant `manifest.json` avec `restic ls latest`, puis utiliser `restic restore "latest:/C/.../backup-..." --tag tropicube --target <répertoire privé>` en remplaçant le chemin par celui affiché. Restaurer ce sous-répertoire évite de réappliquer les métadonnées des répertoires système parents de Windows. Valider ensuite avec `python tools/ops/tropicube_ops.py verify-backup <répertoire privé>` avant tout import et tester sur une pile isolée. Ne pas restaurer directement par-dessus les données actives.
 
 ### Serveur Linux avec sauvegarde externe
 
 La cible initiale reste un seul hôte Linux avec Compose et un objectif de 50 joueurs à mesurer. Python 3.11+, Restic, OpenSSH et systemd complètent les prérequis d'exploitation Linux. Le build et les vérifications Python fonctionnent également sous Windows.
 
-Pour une livraison de production, utiliser `-SkipRestart` / `--skip-restart` afin de construire uniquement les tags UTC candidats et de vérifier les trois images sans toucher la pile. Pour activer ensuite un lot vérifié :
+Pour une livraison de production, utiliser `-SkipRestart` / `--skip-restart` afin de construire uniquement les tags UTC candidats et de vérifier les quatre images sans toucher la pile. Pour activer ensuite un lot vérifié :
 
 ```bash
 python3 tools/ops/tropicube_ops.py activate YYYYMMDD-HHMMSS
 ```
 
-L'activation résout les trois identifiants d'images avant modification, enregistre le lot et les anciens identifiants sous `.runtime/ops/releases`, puis conserve les références précédentes avec les tags locaux `previous`. Sur une pile démarrée : maintenance réseau d'une minute, attente du drain, sauvegarde hors serveur obligatoire, arrêt de Velocity et vérification qu'aucun backend dynamique ne reste actif. L'option `shutdown.stop-dynamic-servers` doit donc être activée. Après remplacement, Compose attend la santé du proxy et l'outil attend un lobby prêt avant de lever la maintenance. Une erreur bloque l'opération ; consulter le manifeste local et les logs privés avant toute reprise. Aucun push ni tag Git n'est créé.
+L'activation résout les quatre identifiants Tropicube et les images statiques avant modification, enregistre le lot et les anciens identifiants sous `.runtime/ops/releases`, puis conserve les références précédentes avec les tags locaux `previous`. Sur une pile démarrée : maintenance réseau d'une minute, attente du drain, sauvegarde hors serveur obligatoire, arrêt de Velocity et vérification qu'aucun backend dynamique ne reste actif. L'option `shutdown.stop-dynamic-servers` doit donc être activée. MySQL, Redis et le proxy Docker sont ensuite recréés et vérifiés avant Velocity ; l'outil attend un lobby prêt avant de lever la maintenance. Une erreur bloque l'opération et conserve la maintenance ; utiliser le manifeste et la commande `rollback` après avoir décidé si la sauvegarde de données doit aussi être restaurée. Aucun push ni tag Git n'est créé.
 
 Au premier déploiement, les clients attendent la disponibilité du lobby. Lors d'une mise à jour depuis une ancienne version, recréer Redis avec sa nouvelle variable d'environnement avant la première sauvegarde automatisée ; le volume Redis doit être conservé. Ne pas exposer de port backend supplémentaire.
 

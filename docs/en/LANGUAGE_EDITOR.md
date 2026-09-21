@@ -56,7 +56,7 @@ All resources use canonical named placeholders such as `{player}`, `{balance}`, 
 
 Live synchronization exclusively uses the local Docker client, active Tropicube containers, and their internal RCON service. It does not publish an additional port or read a password. `TROPICUBE_DOCKER_COMMAND` overrides the default executable. This version must be delivered once to install the engine. Later applications need no image rebuild: Core publishes a complete hashed generation to Redis and new instances restore it before initializing languages and interfaces.
 
-Item previews look for the local Minecraft 26.2 client. `TROPICUBE_MINECRAFT_CLIENT_JAR` can point to its JAR explicitly; loaded textures are cached only in editor memory.
+Item previews look for the local Minecraft 26.3 client. `TROPICUBE_MINECRAFT_CLIENT_JAR` can point to its JAR explicitly; loaded textures are cached only in editor memory.
 
 The versioned `tools/language-editor/catalog.yml` stores the glossary, context overrides, and placeholder samples. Machine translations remain proposals: review at least English and verify width-sensitive interfaces in game.
 
