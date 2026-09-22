@@ -356,6 +356,34 @@ class YamlResourcesTest {
     }
 
     @Test
+    void lobbyHotbarAndQuickPlayActionUseTheExpectedLocalizedLabels() {
+        Map<String, String> games = Map.of(
+                "fr", "<green>⚡ Jeux", "en", "<green>⚡ Games",
+                "de", "<green>⚡ Spiele", "es", "<green>⚡ Juegos");
+        Map<String, String> quickPlay = Map.of(
+                "fr", "<green>▶ Clic gauche : file Quick Play.",
+                "en", "<green>▶ Left click: Quick Play queue.",
+                "de", "<green>▶ Linksklick: Quick-Play-Warteschlange.",
+                "es", "<green>▶ Clic izquierdo: cola Quick Play.");
+        for (String language : LANGUAGES) {
+            Map<String, Object> values = leafValues(
+                    Path.of("src/main/resources/languages", language + ".yml"));
+            assertEquals(games.get(language), values.get("lobby.hotbar-servers-name"));
+            assertEquals(quickPlay.get(language), values.get("lobby.type-lore-left-click"));
+            assertTrue(String.valueOf(values.get("social.hotbar-name")).startsWith("<green>"),
+                    () -> "Le bouton Social doit être vert en " + language);
+        }
+    }
+
+    @Test
+    void gameSelectorUsesOnlyTheNeutralFrame() {
+        YamlConfiguration menus = YamlConfiguration.loadConfiguration(
+                Path.of("../tropicube-lobby/src/main/resources/menus.yml").toFile());
+
+        assertEquals("neutral", menus.getString("menus.server-type-selector.frame"));
+    }
+
+    @Test
     void profileAndSocialMenusExposeExplicitLocalizedActions() {
         List<String> keys = List.of(
                 "center.profile-action", "center.missions-action", "center.notifications-action",

@@ -93,3 +93,5 @@ Assertions cover expired invitations, concurrent acceptance at capacity, permiss
 ## Reliability validation
 
 Run `python -m unittest discover -s tools/ops -p test_ops.py -v`, `python tools/ops/integration_tests.py` and the full Maven reactor. Integration credentials apply only to the disposable test project. SQL base statements are shared between runtime startup and integration tests through DatabaseSchema. Inspect private Spark/diagnostic evidence before changing refresh rates or query strategies.
+
+For Lobby UI changes, validate Java and Bedrock clients in all four languages: Games and Social use green hotbar labels, the main game selector is fully gray and advertises the left-click Quick Play action, `/lang` refreshes the hotbar without reconnecting, and Settings replaces a stalled Redis or MySQL load with Retry after five seconds. Closing or leaving the loading screen must prevent a late result from reopening it.

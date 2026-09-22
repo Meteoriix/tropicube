@@ -6,6 +6,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-22
 
+- Renomme le bouton de hotbar en « Jeux », colore Jeux et Social en vert, rend le sélecteur entièrement gris et restaure l'indication du clic gauche Quick Play dans les quatre langues.
+- Empêche le chargement infini de Paramètres : Redis et MySQL disposent chacun de cinq secondes avant d'afficher l'action Réessayer, sans réouverture tardive d'un écran quitté.
 - Fiabilise le bouton « Appliquer » de l'éditeur de langues : une seule opération peut être active, les conflits et erreurs conservent le brouillon, et un succès live exige désormais la confirmation du rechargement effectif par chaque conteneur Core ou Velocity.
 
 ### 2026-09-17

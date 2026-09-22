@@ -103,7 +103,7 @@ Tout type public, API partagée et comportement non évident doit avoir une Java
 ### Convention durable des interfaces Core et Lobby
 
 - Avant d'ajouter ou de modifier une hotbar, un inventaire ou un écran joueur, examiner les menus voisins et réutiliser `NetworkMenuStyle`, `ItemBuilder`, leurs boutons communs et la palette existante.
-- Tous les menus Core et Lobby suivent la même structure : fond gris neutre, accent aqua sur la ligne supérieure, actions principales au centre, retour à gauche et fermeture à droite sur la dernière ligne.
+- Tous les menus Core et Lobby suivent la même structure : fond gris neutre, accent aqua sur la ligne supérieure, actions principales au centre, retour à gauche et fermeture à droite sur la dernière ligne. Le sélecteur principal de jeux constitue l'exception durable : il conserve un cadre entièrement gris sans ligne d'accent.
 - Une même action conserve son matériau, sa couleur, son icône, son vocabulaire et sa position logique d'un menu à l'autre. Les états actif, verrouillé, indisponible, chargement et « bientôt » doivent être visuellement explicites.
 - Ne jamais coder un titre, un lore, une explication de verrouillage ou une donnée joueur directement en Java : utiliser les langues et, pour les données variables, des placeholders identiques dans les quatre langues.
 - Ne jamais exposer directement un identifiant technique, un nom d'énumération, une clé de template ou une valeur contenant des underscores. Chaque valeur métier visible possède un libellé localisé naturel ; un réglage précise son effet et son état courant, une mission son objectif, sa progression, ses récompenses et ses actions disponibles.

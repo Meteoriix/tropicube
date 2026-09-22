@@ -6,6 +6,8 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-22
 
+- Renamed the hotbar button to Games, colored Games and Social green, made the game selector fully gray, and restored the left-click Quick Play hint in all four languages.
+- Prevented Settings from loading forever: Redis and MySQL now each have five seconds before Retry is shown, without reopening a screen the player has left.
 - Made the language editor's Apply action reliable: only one operation can run at a time, conflicts and errors preserve the draft, and live success now requires every targeted Core or Velocity container to confirm that its reload completed.
 
 ### 2026-09-17

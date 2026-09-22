@@ -362,7 +362,7 @@ menus:
   server-type-selector:
     title-key: lobby.type-selector-title
     rows: 4
-    frame: network
+    frame: neutral
     buttons:
       beta:
         slot: 30

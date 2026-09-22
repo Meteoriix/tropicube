@@ -26,7 +26,7 @@ Les grades utilisent un libellé coloré en gras sans crochets. Le chat suit le 
 
 ## Inventaires et menus
 
-Tous les inventaires Core, Lobby et mini-jeux réutilisent le cadrage de `NetworkMenuStyle` : fond gris neutre, accent aqua en haut, actions principales au centre, retour à gauche et fermeture à droite sur la dernière ligne. Une action conserve son icône, sa couleur, son vocabulaire et sa position logique entre les écrans.
+Tous les inventaires Core, Lobby et mini-jeux réutilisent le cadrage de `NetworkMenuStyle` : fond gris neutre, accent aqua en haut, actions principales au centre, retour à gauche et fermeture à droite sur la dernière ligne. Le sélecteur principal de jeux utilise volontairement le cadre `neutral`, entièrement gris, pour ne pas afficher de ligne bleue. Une action conserve son icône, sa couleur, son vocabulaire et sa position logique entre les écrans.
 
 Les manifestes déclarent explicitement le cadrage `network`, `neutral` ou `none`. Un écran `neutral` conserve le fond sable gris sans bandeau, utile aux choix très rapides ; un écran `none` est réservé aux inventaires natifs comme l'enclume. Les opérations irréversibles ou qui débitent un solde ouvrent une confirmation qui rappelle l'effet, le coût s'il existe, et propose confirmer ou annuler.
 

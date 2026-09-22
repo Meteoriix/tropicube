@@ -154,7 +154,7 @@ L'objectif de charge initial est 50 joueurs sur un hôte Linux. Conserver les ra
 
 Tests automatiques : navigation des types de partie (gauche, droit, Maj, molette et gestes ignorés), seuils d'XP restante, accès au catalogue, prochains déblocages triés, catalogue YAML invalide, unicité et immutabilité. Les suites de langues auditent les références de tous les plugins et la parité FR/EN/DE/ES, y compris les copies Docker.
 
-Scénarios serveur Java/Bedrock à valider : hotbar inchangée ; Profil avec tête Java/icône Bedrock ; compteurs après réclamation et lecture ; fermeture pendant chargement sans réouverture tardive ; retour après action ; Guide sans ouverture automatique ; parcours Jeux entièrement au clic gauche et raccourcis Java préservés ; `/lang` sans reconnexion ; Profil dans l'attente SheepWars sans entrées Lobby. Le serveur client réel reste nécessaire pour valider visuellement ces parcours.
+Scénarios serveur Java/Bedrock à valider : hotbar Jeux/Social verte et localisée ; Profil avec tête Java/icône Bedrock ; sélecteur de jeux entièrement gris et indication Quick Play au clic gauche ; Paramètres affiché normalement, en erreur après expiration Redis/MySQL et récupérable par Réessayer ; fermeture pendant chargement sans réouverture tardive ; retour après action ; Guide sans ouverture automatique ; raccourcis Java préservés ; `/lang` sans reconnexion ; Profil dans l'attente SheepWars sans entrées Lobby. Le serveur client réel reste nécessaire pour valider visuellement ces parcours.
 
 ### Validation du vestiaire
 
@@ -171,9 +171,9 @@ La revue statique couvre les constructeurs d'inventaires Core, Lobby, SheepWars 
 | Inventaires examinés | Résultat de la revue statique |
 |---|---|
 | Core Profil, détails, missions, notifications | Cadre partagé et libellés localisés ; chargements annulables, compteurs rechargés, icônes Bedrock corrigées, retour notifications réaligné à gauche. |
-| Lobby Jeux, modes, Classé, serveurs publics, parties personnalisées | Raccourcis de jeux conservés ; nouveau choix au clic gauche ; navigation publique réalignée ; disponibilité issue des caches existants, chargement Classé protégé. |
+| Lobby Jeux, modes, Classé, serveurs publics, parties personnalisées | Cadre principal gris ; clic gauche Quick Play explicite ; raccourcis Classé/public conservés ; navigation publique réalignée ; disponibilité issue des caches existants, chargement Classé protégé. |
 | Lobby Social, demandes d'amis, invitations, guildes | Utilisent les primitives partagées et les langues ; aucune règle sociale modifiée. Les gestes spécialisés préexistants restent à vérifier sur les clients. |
-| Lobby Paramètres, Langues, Boutique/Grades | Chargements Paramètres/Boutique protégés, actualisation des parcours après langue ; fermeture Langues réalignée ; grades conservés. |
+| Lobby Paramètres, Langues, Boutique/Grades | Paramètres échoue vers Réessayer après cinq secondes sans Redis ou MySQL ; chargement Boutique protégé, actualisation des parcours après langue ; fermeture Langues réalignée ; grades conservés. |
 | Lobby Guide, Progression, Vestiaire, fiche, confirmation | Toutes les actions nouvelles au clic gauche, retours/fermeture explicites, instantanés relus, aperçus distincts des mutations ; filtre vide et panne de chargement affichés. |
 | SheepWars classes/kits, maîtrise, équipes, vote/choix carte, paramètres, whitelist/enclume | Primitives partagées présentes. Écarts historiques : certains menus utilisent seulement le fond neutre et les retours des paramètres occupent 49/26/22/53 selon la page. Aucun changement de ces menus ni des règles de jeu dans cette livraison. |
 

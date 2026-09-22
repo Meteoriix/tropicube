@@ -44,11 +44,13 @@ public final class MenuTemplateRegistry implements UiReloadParticipant {
         try { fr.tropicube.core.util.ConfigUpdater.update(plugin, "menus.yml", file); }
         catch (java.io.IOException error) { throw new IllegalStateException("Unable to update menus.yml", error); }
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
-        if (removeLegacyProfileGuildsButton(yaml)) {
+        boolean migrated = removeLegacyProfileGuildsButton(yaml);
+        migrated |= useNeutralGameSelectorFrame(yaml);
+        if (migrated) {
             try {
                 yaml.save(file);
             } catch (java.io.IOException error) {
-                throw new IllegalStateException("Unable to migrate the legacy profile menu", error);
+                throw new IllegalStateException("Unable to migrate menu layouts", error);
             }
         }
         if (yaml.getInt("version", -1) != 1) throw new IllegalArgumentException("menus.yml: version attendue=1");
@@ -116,6 +118,14 @@ public final class MenuTemplateRegistry implements UiReloadParticipant {
         if (guilds == null || guilds.getInt("slot", -1) != 24
                 || !"open_guilds".equals(guilds.getString("action"))) return false;
         buttons.set("guilds", null);
+        return true;
+    }
+
+    /** Replaces the former aqua header of the Lobby game selector with the requested gray surface. */
+    static boolean useNeutralGameSelectorFrame(YamlConfiguration yaml) {
+        ConfigurationSection selector = yaml.getConfigurationSection("menus.server-type-selector");
+        if (selector == null || !"network".equals(selector.getString("frame"))) return false;
+        selector.set("frame", "neutral");
         return true;
     }
 

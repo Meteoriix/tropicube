@@ -33,6 +33,20 @@ class MenuTemplateRegistryTest {
     }
 
     @Test
+    void migratesTheDeployedGameSelectorToANeutralFrame() throws Exception {
+        YamlConfiguration yaml = new YamlConfiguration();
+        yaml.loadFromString("""
+                menus:
+                  server-type-selector:
+                    frame: network
+                """);
+
+        assertTrue(MenuTemplateRegistry.useNeutralGameSelectorFrame(yaml));
+        assertEquals("neutral", yaml.getString("menus.server-type-selector.frame"));
+        assertFalse(MenuTemplateRegistry.useNeutralGameSelectorFrame(yaml));
+    }
+
+    @Test
     void exposesTypedStaticButtonsAndDynamicRegions() {
         var button = new MenuTemplateRegistry.Button(11, org.bukkit.Material.LIME_DYE,
                 "center.confirm", "center.confirm-action", "confirm", true, 1, false);
