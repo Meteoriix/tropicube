@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { parse, stringify } from 'yaml';
 import { collectPlaceholders, Diagnostic, documents, editableValue, FileSnapshot, filterKeys, flatten, inferContext, Locale, locales, PlaceholderSummary, rename, SearchMode, serialize, setValue, StateSet, value, valueFromEditor, withTranslations } from './model';
+import { hasNewerDraft, runExclusive } from './operations';
 import './styles.css';
 
 type Docs = ReturnType<typeof documents>;
@@ -19,6 +20,10 @@ async function api<T>(path: string, options?: RequestInit): Promise<T> {
   const body = await response.json();
   if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`);
   return body;
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error && error.message ? error.message : 'Erreur inconnue';
 }
 
 function App() {
@@ -55,16 +60,22 @@ function App() {
   const [catalogText, setCatalogText] = useState('');
   const [usages, setUsages] = useState<any[]>([]);
   const [notice, setNotice] = useState('Chargement…');
+  const [applying, setApplying] = useState(false);
   const frenchEditor = useRef<HTMLTextAreaElement>(null);
   const translationRevision = useRef(0);
+  const applicationInFlight = useRef(false);
+  const documentRevision = useRef(0);
+  const uiRevision = useRef(0);
   const translationBusy = translationPhase === 'waiting' || translationPhase === 'translating';
 
   useEffect(() => {
     Promise.all([api<{sets: StateSet[]; ui: UiSnapshot[]; catalog: string; live: LiveStatus}>('/api/state'), api<{available: boolean}>('/api/translation/status')])
-      .then(([state, status]) => { setSets(state.sets); setUiSnapshots(state.ui); setUiDocuments(Object.fromEntries(state.ui.map(file => [file.id, parse(file.content)]))); setCatalog(parse(state.catalog)); setCatalogText(state.catalog); setProvider(status.available); setLive(state.live); setNotice('Prêt'); })
+      .then(([state, status]) => { setSets(state.sets); setUiSnapshots(state.ui); setUiDocuments(Object.fromEntries(state.ui.map(file => [file.id, parse(file.content)]))); uiRevision.current = 0; setCatalog(parse(state.catalog)); setCatalogText(state.catalog); setProvider(status.available); setLive(state.live); setNotice('Prêt'); })
       .catch(error => setNotice(error.message));
   }, []);
 
+  // Reload only when the available set list or selection changes; saving updates set contents separately and
+  // must not overwrite edits typed while that request was in flight.
   useEffect(() => {
     if (!sets[setIndex]) return;
     translationRevision.current += 1;
@@ -72,10 +83,11 @@ function App() {
     setTranslationPhase('idle');
     setSnapshots(sets[setIndex].files);
     const parsed = documents(sets[setIndex].files);
+    documentRevision.current = 0;
     setDocs(parsed);
     const availableKeys = flatten(parsed.fr);
     setSelected(currentKey => availableKeys.includes(currentKey) ? currentKey : availableKeys[0] || '');
-  }, [sets, setIndex]);
+  }, [sets.length, setIndex]);
 
   const keys = useMemo(() => docs ? filterKeys(docs, search, searchMode) : [], [docs, search, searchMode]);
   const placeholders = useMemo(() => collectPlaceholders(sets), [sets]);
@@ -178,7 +190,7 @@ function App() {
   const mutate = (fn: (copy: Docs) => void) => {
     if (!docs) return;
     const copy = Object.fromEntries(locales.map(locale => [locale, docs[locale].clone()])) as Docs;
-    fn(copy); setDocs(copy);
+    fn(copy); documentRevision.current += 1; setDocs(copy);
   };
 
   const queueTranslation = (key: string, source: string | string[]) => {
@@ -232,6 +244,7 @@ function App() {
           translate('en'), translate('de'), translate('es')
         ]);
         if (translationRevision.current !== revision) return;
+        documentRevision.current += 1;
         setDocs(currentDocs => currentDocs ? withTranslations(currentDocs, key, { en, de, es }) : currentDocs);
         setTranslationJob(null);
         setTranslationPhase('done');
@@ -260,34 +273,61 @@ function App() {
     setNotice(`${token} inséré`);
   };
 
-  const validate = async () => {
-    if (!docs) return false;
-    const payload = { documents: Object.fromEntries(locales.map(locale => [locale, serialize(docs[locale])])) };
-    const result = await api<{diagnostics: Diagnostic[]}>('/api/validate', { method: 'POST', body: JSON.stringify(payload) });
-    setDiagnostics(result.diagnostics); setNotice(result.diagnostics.length ? `${result.diagnostics.length} erreur(s)` : 'Validation réussie');
-    return result.diagnostics.length === 0;
+  const validate = async (candidate: Docs | null = docs) => {
+    if (!candidate) return false;
+    try {
+      const payload = { documents: Object.fromEntries(locales.map(locale => [locale, serialize(candidate[locale])])) };
+      const result = await api<{diagnostics: Diagnostic[]}>('/api/validate', { method: 'POST', body: JSON.stringify(payload) });
+      setDiagnostics(result.diagnostics); setNotice(result.diagnostics.length ? `${result.diagnostics.length} erreur(s)` : 'Validation réussie');
+      return result.diagnostics.length === 0;
+    } catch (error) {
+      setNotice(`Validation impossible : ${errorMessage(error)}`);
+      return false;
+    }
   };
 
   const apply = async () => {
-    if (!docs || !snapshots || !(await validate())) return;
-    const result = await api<{files: Record<Locale, FileSnapshot>; live: LiveResult}>('/api/apply', { method: 'POST', body: JSON.stringify({
-      set: sets[setIndex].set,
-      expectedHashes: Object.fromEntries(locales.map(locale => [locale, snapshots[locale].hash])),
-      documents: Object.fromEntries(locales.map(locale => [locale, serialize(docs[locale])])),
-    }) });
-    setSnapshots(result.files); setDocs(documents(result.files));
-    setSets(currentSets => currentSets.map((entry, index) => index === setIndex ? { ...entry, files: result.files } : entry));
-    setLive({ available: result.live.available && !result.live.errors.length, message: result.live.errors.length ? result.live.errors.join(' · ') : 'Jeu synchronisé' });
-    if (result.live.updatedContainers > 0 && !result.live.errors.length) {
-      setNotice(`Enregistré et rechargé dans ${result.live.updatedContainers} serveur(s)`);
-    } else if (result.live.errors.length) {
-      setNotice(`Enregistré, mise à jour en jeu incomplète : ${result.live.errors.join(' · ')}`);
-    } else setNotice('Enregistré ; aucun serveur actif à recharger');
+    if (!docs || !snapshots) return;
+    const draft = docs;
+    const baseSnapshots = snapshots;
+    const selectedSet = sets[setIndex];
+    const submittedRevision = documentRevision.current;
+    await runExclusive(applicationInFlight, async () => {
+      setApplying(true);
+      try {
+        if (!(await validate(draft))) return;
+        setNotice('Enregistrement et rechargement en cours…');
+        const result = await api<{files: Record<Locale, FileSnapshot>; live: LiveResult}>('/api/apply', { method: 'POST', body: JSON.stringify({
+          set: selectedSet.set,
+          expectedHashes: Object.fromEntries(locales.map(locale => [locale, baseSnapshots[locale].hash])),
+          documents: Object.fromEntries(locales.map(locale => [locale, serialize(draft[locale])])),
+        }) });
+        const newerDraft = hasNewerDraft(documentRevision.current, submittedRevision);
+        setSnapshots(result.files);
+        if (!newerDraft) setDocs(documents(result.files));
+        setSets(currentSets => currentSets.map(entry => entry.set.id === selectedSet.set.id ? { ...entry, files: result.files } : entry));
+        applyLiveResult(result.live, newerDraft ? 'Enregistré (brouillon plus récent conservé)' : 'Enregistré');
+      } catch (error) {
+        setNotice(`Application impossible, brouillon conservé : ${errorMessage(error)}`);
+      } finally {
+        setApplying(false);
+      }
+    });
+  };
+
+  const applyLiveResult = (result: LiveResult, savedLabel: string) => {
+    setLive({ available: result.available && !result.errors.length, message: result.errors.length ? result.errors.join(' · ') : 'Jeu synchronisé' });
+    if (result.updatedContainers > 0 && !result.errors.length) {
+      setNotice(`${savedLabel} et rechargé dans ${result.updatedContainers} serveur(s)`);
+    } else if (result.errors.length) {
+      setNotice(`${savedLabel}, mise à jour en jeu incomplète : ${result.errors.join(' · ')}`);
+    } else setNotice(`${savedLabel} ; aucun serveur actif à recharger`);
   };
 
   const mutateUi = (mutation: (copy: Record<string, any>) => void) => {
     const copy = structuredClone(uiDocuments);
     mutation(copy);
+    uiRevision.current += 1;
     setUiHistory(history => [...history.slice(-49), structuredClone(uiDocuments)]);
     setUiFuture([]);
     setUiDocuments(copy);
@@ -295,67 +335,104 @@ function App() {
 
   const undoUi = () => {
     const previous = uiHistory.at(-1); if (!previous) return;
+    uiRevision.current += 1;
     setUiFuture(future => [structuredClone(uiDocuments), ...future]);
     setUiDocuments(previous); setUiHistory(history => history.slice(0, -1));
   };
 
   const redoUi = () => {
     const next = uiFuture[0]; if (!next) return;
+    uiRevision.current += 1;
     setUiHistory(history => [...history, structuredClone(uiDocuments)]);
     setUiDocuments(next); setUiFuture(future => future.slice(1));
   };
 
   const applyUi = async () => {
     if (!docs || !snapshots) return;
-    const uiSerialized = Object.fromEntries(uiSnapshots.map(file => [file.id, stringify(uiDocuments[file.id], { lineWidth: 0 })]));
-    for (const file of uiSnapshots) {
-      const validation = await api<{errors: string[]}>('/api/ui/validate', { method: 'POST', body: JSON.stringify({ type: file.type, content: uiSerialized[file.id] }) });
-      if (validation.errors.length) { setNotice(validation.errors.join(' · ')); return; }
-    }
-    const changed = uiSnapshots.filter(file => JSON.stringify(parse(file.content)) !== JSON.stringify(uiDocuments[file.id]));
-    const languagesChanged = locales.some(locale => JSON.stringify(docs[locale].toJSON()) !== JSON.stringify(parse(snapshots[locale].content)));
-    if (!changed.length && !languagesChanged) { setNotice('Aucune modification à appliquer'); return; }
-    const summary = [...changed.map(file => `• ${file.id}`), ...(languagesChanged ? ['• titres traduits'] : [])];
-    if (!window.confirm(`Appliquer et recharger ${summary.length} modification(s) ?\n\n${summary.join('\n')}`)) return;
-    let updatedContainers = 0;
-    let liveErrors: string[] = [];
-    let liveAvailable = false;
-    if (languagesChanged) {
-      if (!(await validate())) return;
-      const languageResult = await api<{files: Record<Locale, FileSnapshot>; live: LiveResult}>('/api/apply', { method: 'POST', body: JSON.stringify({
-        set: sets[setIndex].set,
-        expectedHashes: Object.fromEntries(locales.map(locale => [locale, snapshots[locale].hash])),
-        documents: Object.fromEntries(locales.map(locale => [locale, serialize(docs[locale])])),
-      }) });
-      setSnapshots(languageResult.files); setDocs(documents(languageResult.files));
-      setSets(currentSets => currentSets.map((entry, index) => index === setIndex ? { ...entry, files: languageResult.files } : entry));
-      liveAvailable ||= languageResult.live.available;
-      updatedContainers = Math.max(updatedContainers, languageResult.live.updatedContainers);
-      liveErrors.push(...languageResult.live.errors);
-    }
-    if (changed.length) {
-      const result = await api<{ui: UiSnapshot[]; live: LiveResult}>('/api/ui/apply', { method: 'POST', body: JSON.stringify({
-        expectedHashes: Object.fromEntries(uiSnapshots.map(file => [file.id, file.hash])), documents: uiSerialized,
-      }) });
-      setUiSnapshots(result.ui); setUiDocuments(Object.fromEntries(result.ui.map(file => [file.id, parse(file.content)])));
-      liveAvailable ||= result.live.available;
-      updatedContainers = Math.max(updatedContainers, result.live.updatedContainers);
-      liveErrors.push(...result.live.errors);
-    }
-    setUiHistory([]); setUiFuture([]);
-    setLive({ available: liveAvailable && !liveErrors.length, message: liveErrors.length ? liveErrors.join(' · ') : 'Jeu synchronisé' });
-    setNotice(updatedContainers ? `Interfaces rechargées dans ${updatedContainers} serveur(s)` : 'Interfaces enregistrées ; aucun serveur actif');
+    const draft = docs;
+    const baseSnapshots = snapshots;
+    const selectedSet = sets[setIndex];
+    const uiDraft = structuredClone(uiDocuments);
+    const baseUiSnapshots = uiSnapshots;
+    const submittedDocumentRevision = documentRevision.current;
+    const submittedUiRevision = uiRevision.current;
+    let savedAny = false;
+    await runExclusive(applicationInFlight, async () => {
+      setApplying(true);
+      try {
+        const uiSerialized = Object.fromEntries(baseUiSnapshots.map(file => [file.id, stringify(uiDraft[file.id], { lineWidth: 0 })]));
+        for (const file of baseUiSnapshots) {
+          const validation = await api<{errors: string[]}>('/api/ui/validate', { method: 'POST', body: JSON.stringify({ type: file.type, content: uiSerialized[file.id] }) });
+          if (validation.errors.length) { setNotice(validation.errors.join(' · ')); return; }
+        }
+        const changed = baseUiSnapshots.filter(file => JSON.stringify(parse(file.content)) !== JSON.stringify(uiDraft[file.id]));
+        const languagesChanged = locales.some(locale => JSON.stringify(draft[locale].toJSON()) !== JSON.stringify(parse(baseSnapshots[locale].content)));
+        if (!changed.length && !languagesChanged) { setNotice('Aucune modification à appliquer'); return; }
+        const summary = [...changed.map(file => `• ${file.id}`), ...(languagesChanged ? ['• titres traduits'] : [])];
+        if (!window.confirm(`Appliquer et recharger ${summary.length} modification(s) ?\n\n${summary.join('\n')}`)) return;
+        setNotice('Enregistrement et rechargement en cours…');
+        let updatedContainers = 0;
+        const liveErrors: string[] = [];
+        let liveAvailable = false;
+        if (languagesChanged) {
+          if (!(await validate(draft))) return;
+          const languageResult = await api<{files: Record<Locale, FileSnapshot>; live: LiveResult}>('/api/apply', { method: 'POST', body: JSON.stringify({
+            set: selectedSet.set,
+            expectedHashes: Object.fromEntries(locales.map(locale => [locale, baseSnapshots[locale].hash])),
+            documents: Object.fromEntries(locales.map(locale => [locale, serialize(draft[locale])])),
+          }) });
+          savedAny = true;
+          setSnapshots(languageResult.files);
+          if (!hasNewerDraft(documentRevision.current, submittedDocumentRevision)) {
+            setDocs(documents(languageResult.files));
+          }
+          setSets(currentSets => currentSets.map(entry => entry.set.id === selectedSet.set.id ? { ...entry, files: languageResult.files } : entry));
+          liveAvailable ||= languageResult.live.available;
+          updatedContainers = Math.max(updatedContainers, languageResult.live.updatedContainers);
+          liveErrors.push(...languageResult.live.errors);
+        }
+        if (changed.length) {
+          const result = await api<{ui: UiSnapshot[]; live: LiveResult}>('/api/ui/apply', { method: 'POST', body: JSON.stringify({
+            expectedHashes: Object.fromEntries(baseUiSnapshots.map(file => [file.id, file.hash])), documents: uiSerialized,
+          }) });
+          savedAny = true;
+          setUiSnapshots(result.ui);
+          if (!hasNewerDraft(uiRevision.current, submittedUiRevision)) {
+            setUiDocuments(Object.fromEntries(result.ui.map(file => [file.id, parse(file.content)])));
+          }
+          liveAvailable ||= result.live.available;
+          updatedContainers = Math.max(updatedContainers, result.live.updatedContainers);
+          liveErrors.push(...result.live.errors);
+        }
+        const newerDraft = hasNewerDraft(documentRevision.current, submittedDocumentRevision)
+          || hasNewerDraft(uiRevision.current, submittedUiRevision);
+        if (!hasNewerDraft(uiRevision.current, submittedUiRevision)) {
+          setUiHistory([]); setUiFuture([]);
+        }
+        applyLiveResult({ available: liveAvailable, updatedContainers, containers: [], errors: liveErrors },
+          newerDraft ? 'Interfaces enregistrées (brouillon plus récent conservé)' : 'Interfaces enregistrées');
+      } catch (error) {
+        setNotice(`${savedAny ? 'Application partielle' : 'Application impossible'}, brouillon restant conservé : ${errorMessage(error)}`);
+      } finally {
+        setApplying(false);
+      }
+    });
   };
 
   const validateUi = async () => {
-    const serialized = Object.fromEntries(uiSnapshots.map(file => [file.id, stringify(uiDocuments[file.id], { lineWidth: 0 })]));
-    const errors: string[] = [];
-    for (const file of uiSnapshots) {
-      const result = await api<{errors: string[]}>('/api/ui/validate', { method: 'POST', body: JSON.stringify({ type: file.type, content: serialized[file.id] }) });
-      errors.push(...result.errors.map(error => `${file.id}: ${error}`));
+    try {
+      const serialized = Object.fromEntries(uiSnapshots.map(file => [file.id, stringify(uiDocuments[file.id], { lineWidth: 0 })]));
+      const errors: string[] = [];
+      for (const file of uiSnapshots) {
+        const result = await api<{errors: string[]}>('/api/ui/validate', { method: 'POST', body: JSON.stringify({ type: file.type, content: serialized[file.id] }) });
+        errors.push(...result.errors.map(error => `${file.id}: ${error}`));
+      }
+      setNotice(errors.length ? errors.join(' · ') : 'Validation réussie');
+      return errors.length === 0;
+    } catch (error) {
+      setNotice(`Validation impossible : ${errorMessage(error)}`);
+      return false;
     }
-    setNotice(errors.length ? errors.join(' · ') : 'Validation réussie');
-    return errors.length === 0;
   };
 
   const createKey = () => {
@@ -399,7 +476,7 @@ function App() {
     <header><div><strong>TROPICUBE</strong><span>Éditeur de langues</span></div><div className="actions">
       <span className={provider ? 'status ok' : 'status'}>{provider ? 'LibreTranslate prêt' : 'Traduction hors ligne'}</span>
       <span title={live.message} className={live.available ? 'status ok' : 'status'}>{live.available ? 'Jeu connecté' : 'Jeu hors ligne'}</span>
-      {mode !== 'placeholders' && <><button onClick={mode === 'texts' ? validate : validateUi}>Valider</button><button className="primary" disabled={translationBusy} title={translationBusy ? 'Attendez la fin de la traduction automatique' : undefined} onClick={mode === 'texts' ? apply : applyUi}>Appliquer</button></>}
+      {mode !== 'placeholders' && <><button disabled={applying} onClick={() => void (mode === 'texts' ? validate() : validateUi())}>Valider</button><button className="primary" disabled={translationBusy || applying} title={translationBusy ? 'Attendez la fin de la traduction automatique' : applying ? 'Une application est déjà en cours' : undefined} onClick={mode === 'texts' ? apply : applyUi}>{applying ? 'Application…' : 'Appliquer'}</button></>}
     </div></header>
     <section className="toolbar">
       <div className="mode-tabs">{(['texts','scoreboards','tablists','menus','placeholders'] as EditorMode[]).map(item => <button className={mode === item ? 'active' : ''} key={item} onClick={() => { setMode(item); setSearch(''); }}>{item === 'texts' ? 'Textes' : item === 'scoreboards' ? 'Scoreboards' : item === 'tablists' ? 'Tablists' : item === 'menus' ? 'Menus' : `Placeholders (${placeholders.length})`}</button>)}</div>

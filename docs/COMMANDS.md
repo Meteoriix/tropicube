@@ -61,7 +61,7 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 | `/staff` | — | `tropicube.staff` + session TOTP | Active le spectateur invisible sans interaction |
 | `/staffchat <message>` | `/sc` | `tropicube.staff` + session TOTP | Chat staff interserveurs |
 | `/coreadmin reload` | `/tropiadmin`, `/ca` | `tropicube.admin` | Recharge la configuration Core et les langues |
-| `/languageeditorreload` | — | console uniquement | Recharge uniquement les langues Core ou Velocity après une synchronisation de l'éditeur local |
+| `/languageeditorreload <request-id>` | — | console uniquement | Recharge les langues et interfaces après une synchronisation locale, puis publie l'accusé de réception attendu par l'éditeur |
 | `/coreadmin info` | `/tropiadmin`, `/ca` | `tropicube.admin` | Affiche l'état des services Core |
 
 Durées de grade acceptées : une valeur comprise par `DurationParser`, par exemple `30s`, `10m`, `2h`, `7d`. Les niveaux attribués par `/level` sont permanents.

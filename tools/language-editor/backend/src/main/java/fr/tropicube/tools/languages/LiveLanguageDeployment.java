@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -13,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 /** Copies validated translations to running Tropicube containers and reloads them through local RCON. */
 final class LiveLanguageDeployment {
     private static final Duration COMMAND_TIMEOUT = Duration.ofSeconds(30);
+    private static final int RELOAD_WAIT_SECONDS = 20;
     private static final int MAX_OUTPUT_CHARACTERS = 16_384;
 
     private final Path repository;
@@ -87,7 +89,9 @@ final class LiveLanguageDeployment {
         for (String container : containers) {
             String token = UUID.randomUUID().toString().replace("-", "");
             List<String> temporaryFiles = new ArrayList<>();
+            String completionFile = paper.completionFile(token);
             try {
+                remove(container, completionFile);
                 for (UiFiles.UiSnapshot snapshot : snapshots) {
                     String temporary = "/tmp/tropicube-ui-" + token + "-" + snapshot.module()
                             + "-" + snapshot.type() + ".yml";
@@ -106,8 +110,10 @@ final class LiveLanguageDeployment {
                                     + target + ".next'; mv '" + target + ".next' '" + target + "'")),
                             "installation de " + snapshot.id());
                 }
-                requireSuccess(run(List.of(dockerCommand, "exec", container, "rcon-cli", "languageeditorreload")),
+                requireSuccess(run(List.of(dockerCommand, "exec", container, "rcon-cli",
+                                "languageeditorreload " + token)),
                         "rechargement en jeu");
+                awaitReload(container, completionFile);
                 updated.add(container);
             } catch (IllegalStateException failure) {
                 errors.add(container + " : " + failure.getMessage());
@@ -115,6 +121,7 @@ final class LiveLanguageDeployment {
                 for (String temporary : temporaryFiles) {
                     run(List.of(dockerCommand, "exec", container, "rm", "-f", temporary));
                 }
+                remove(container, completionFile);
             }
         }
         return new LiveResult(true, updated.size(), List.copyOf(updated), List.copyOf(errors));
@@ -123,7 +130,9 @@ final class LiveLanguageDeployment {
     private void synchronize(String container, Path sourceDirectory, Target target) {
         String token = UUID.randomUUID().toString().replace("-", "").toLowerCase(Locale.ROOT);
         String prefix = "/tmp/tropicube-language-editor-" + token;
+        String completionFile = target.completionFile(token);
         try {
+            remove(container, completionFile);
             for (String language : LanguageFiles.LANGUAGES) {
                 Path source = sourceDirectory.resolve(language + ".yml");
                 requireSuccess(run(List.of(dockerCommand, "cp", source.toString(),
@@ -131,11 +140,40 @@ final class LiveLanguageDeployment {
             }
             requireSuccess(run(List.of(dockerCommand, "exec", container, "sh", "-c",
                     installScript(prefix, target.directory()))), "installation atomique des langues");
-            requireSuccess(run(List.of(dockerCommand, "exec", container, "rcon-cli", "languageeditorreload")),
+            requireSuccess(run(List.of(dockerCommand, "exec", container, "rcon-cli",
+                            "languageeditorreload " + token)),
                     "rechargement en jeu");
+            awaitReload(container, completionFile);
         } finally {
             run(List.of(dockerCommand, "exec", container, "sh", "-c", "rm -f " + prefix + "-*.yml"));
+            remove(container, completionFile);
         }
+    }
+
+    private void awaitReload(String container, String completionFile) {
+        String script = "i=0; while [ ! -f '" + completionFile + "' ] && [ \"$i\" -lt "
+                + RELOAD_WAIT_SECONDS + " ]; do i=$((i+1)); sleep 1; done; "
+                + "[ -f '" + completionFile + "' ] || { echo 'délai de rechargement dépassé'; exit 124; }; "
+                + "cat '" + completionFile + "'";
+        CommandResult result = run(List.of(dockerCommand, "exec", container, "sh", "-c", script));
+        requireSuccess(result, "confirmation du rechargement");
+        String status = result.output() == null ? "" : result.output().strip();
+        if (status.equals("ok")) return;
+        if (status.startsWith("error:")) {
+            String message;
+            try {
+                message = new String(Base64.getDecoder().decode(status.substring("error:".length())),
+                        StandardCharsets.UTF_8);
+            } catch (IllegalArgumentException invalidStatus) {
+                throw new IllegalStateException("confirmation de rechargement invalide");
+            }
+            throw new IllegalStateException("rechargement refusé : " + message);
+        }
+        throw new IllegalStateException("confirmation de rechargement invalide : " + result.summary());
+    }
+
+    private void remove(String container, String path) {
+        run(List.of(dockerCommand, "exec", container, "rm", "-f", path));
     }
 
     private static String installScript(String prefix, String directory) {
@@ -175,12 +213,14 @@ final class LiveLanguageDeployment {
     record LiveStatus(boolean available, String message) {}
     record LiveResult(boolean available, int updatedContainers, List<String> containers, List<String> errors) {}
 
-    private record Target(String directory, List<String> filters) {
+    private record Target(String directory, String completionDirectory, List<String> filters) {
         static Target forSet(String id) {
             return switch (id) {
                 case "tropicube-core" -> new Target("/data/plugins/TropicubeCore/languages",
+                        "/data/plugins/TropicubeCore",
                         List.of("--filter", "label=fr.tropicube.dynamic=true", "--filter", "name=^/tropicube-"));
                 case "tropicube-velocity" -> new Target("/server/plugins/tropicube-velocity/languages",
+                        "/server/plugins/tropicube-velocity",
                         List.of("--filter", "name=^/tropicube-velocity$"));
                 default -> null;
             };
@@ -191,6 +231,10 @@ final class LiveLanguageDeployment {
             command.addAll(filters);
             command.addAll(List.of("--format", "{{.Names}}"));
             return command;
+        }
+
+        String completionFile(String token) {
+            return completionDirectory + "/.language-editor-reload-" + token + ".status";
         }
     }
 

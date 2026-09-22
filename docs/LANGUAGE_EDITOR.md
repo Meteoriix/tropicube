@@ -45,8 +45,9 @@ Toutes les ressources utilisent des placeholders nommés canoniques comme `{play
 - la validation contrôle YAML, parité des clés, placeholders et balises autorisées ;
 - une écriture est refusée si un fichier a changé depuis son ouverture ;
 - les quatre sources et leurs miroirs Docker sont remplacés ensemble, avec rollback sur erreur ;
-- après l'enregistrement, les fichiers validés sont copiés dans Velocity ou dans toutes les instances Paper actives, puis la commande interne `languageeditorreload` recharge uniquement les langues ;
-- la barre d'état distingue Docker disponible d'une synchronisation live partielle ou impossible, sans annuler les fichiers déjà enregistrés.
+- après l'enregistrement, les fichiers validés sont copiés dans Velocity ou dans toutes les instances Paper actives, puis la commande interne `languageeditorreload` recharge les langues et interfaces concernées ; chaque conteneur écrit un accusé de réception seulement après le remplacement du catalogue et le rafraîchissement des vues ;
+- le bouton `Appliquer` reste désactivé pendant l'opération afin d'éviter deux écritures concurrentes ; un conflit ou une erreur conserve le brouillon et s'affiche dans la barre d'état ;
+- la barre d'état distingue les fichiers enregistrés d'un rechargement live complet, partiel ou impossible. Une erreur live n'annule pas les sources déjà enregistrées.
 - l'onglet Scoreboards regroupe les variantes d'un même scoreboard, permet d'éditer son titre et chacune de ses lignes dans les quatre langues, affiche leur rendu MiniMessage avec les valeurs d'exemple des placeholders, puis permet d'ajouter, retirer ou réordonner ses quinze lignes Minecraft ;
 - l'onglet Tablists regroupe Lobby et SheepWars par variante d'état, édite en-tête et pied dans les quatre langues et prévisualise l'ensemble autour de joueurs d'exemple ;
 - l'onglet Menus affiche la grille de l'inventaire, les boutons requis, les zones dynamiques et les propriétés localisées des items ;

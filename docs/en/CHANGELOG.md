@@ -4,6 +4,10 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+### 2026-09-22
+
+- Made the language editor's Apply action reliable: only one operation can run at a time, conflicts and errors preserve the draft, and live success now requires every targeted Core or Velocity container to confirm that its reload completed.
+
 ### 2026-09-17
 
 - Migrated the network to Minecraft 26.3 with explicitly pinned Paper alpha build 8, Velocity 4.2.0, Geyser 2.11.3-b1245, and Paper 26.3 descriptors; advancing Paper still requires full lot qualification.

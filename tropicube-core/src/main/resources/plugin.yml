@@ -128,7 +128,7 @@ commands:
     aliases: [ tropiadmin, ca ]
   languageeditorreload:
     description: "Recharge les langues depuis l'éditeur local"
-    usage: /languageeditorreload
+    usage: /languageeditorreload <request-id>
   help:
     description: "Affiche les commandes Tropicube disponibles"
     usage: /help [general|games|social|profile|staff]

@@ -45,6 +45,14 @@ public class VelocityLanguageManager {
     }
 
     private void loadLanguages() {
+        try {
+            languages = readLanguages();
+        } catch (IOException failure) {
+            logger.warn(MessageStyle.log("LANG", "<yellow>Catalogue de langues inchangé : {}"), failure.getMessage());
+        }
+    }
+
+    private Map<String, ConfigurationNode> readLanguages() throws IOException {
         Path langDir = dataDir.resolve("languages");
         Map<String, ConfigurationNode> loaded = new HashMap<>();
         for (String lang : SUPPORTED) {
@@ -55,20 +63,19 @@ public class VelocityLanguageManager {
                     try (InputStream in = getClass().getResourceAsStream("/languages/" + lang + ".yml")) {
                         if (in != null) Files.copy(in, file);
                     }
-                } catch (IOException e) {
-                    logger.warn(MessageStyle.log("LANG", "<yellow>Impossible de copier {}.yml : {}"), lang, e.getMessage());
+                } catch (IOException failure) {
+                    throw new IOException("Impossible de copier " + lang + ".yml : " + failure.getMessage(), failure);
                 }
             }
-            if (Files.exists(file)) {
-                try {
-                    loaded.put(lang, YamlConfigurationLoader.builder().path(file).build().load());
-                    logger.info(MessageStyle.log("LANG", "<gray>Langue chargée : {}"), lang);
-                } catch (IOException e) {
-                    logger.warn(MessageStyle.log("LANG", "<yellow>Impossible de charger {}.yml : {}"), lang, e.getMessage());
-                }
+            if (!Files.exists(file)) throw new IOException("Fichier langue manquant : " + lang + ".yml");
+            try {
+                loaded.put(lang, YamlConfigurationLoader.builder().path(file).build().load());
+                logger.info(MessageStyle.log("LANG", "<gray>Langue chargée : {}"), lang);
+            } catch (IOException failure) {
+                throw new IOException("Impossible de charger " + lang + ".yml : " + failure.getMessage(), failure);
             }
         }
-        if (!loaded.isEmpty()) languages = Map.copyOf(loaded);
+        return Map.copyOf(loaded);
     }
 
     private void subscribeToLangChanges() {
@@ -193,6 +200,10 @@ public class VelocityLanguageManager {
     }
 
     public void reload() {
-        loadLanguages();
+        try {
+            languages = readLanguages();
+        } catch (IOException failure) {
+            throw new IllegalStateException(failure.getMessage(), failure);
+        }
     }
 }

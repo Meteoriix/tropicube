@@ -57,7 +57,7 @@ Geyser and Floodgate commands are not advertised to players by Tropicube's comma
 | `/notifications [read <id>]` | none | Reads the complete notification center |
 | `/guild info|create|invite|accept|leave|kick|promote|demote|transfer ...` | role-dependent | Manages a persistent 50-member guild |
 | `/coreadmin reload` | Core administration | Reloads supported Core configuration (`/tropiadmin` remains an alias) |
-| `/languageeditorreload` | Internal editor bridge | Reloads Core or Velocity language files only; console access only |
+| `/languageeditorreload <request-id>` | Internal editor bridge | Reloads synchronized languages and interfaces, then publishes the completion acknowledgement expected by the editor; console access only |
 
 ## Lobby commands
 

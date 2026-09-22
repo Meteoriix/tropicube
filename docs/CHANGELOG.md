@@ -4,6 +4,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-09-22
+
+- Fiabilise le bouton « Appliquer » de l'éditeur de langues : une seule opération peut être active, les conflits et erreurs conservent le brouillon, et un succès live exige désormais la confirmation du rechargement effectif par chaque conteneur Core ou Velocity.
+
 ### 2026-09-17
 
 - Migre le réseau vers Minecraft 26.3 avec Paper alpha build 8 explicitement épinglé, Velocity 4.2.0, Geyser 2.11.3-b1245 et les descripteurs Paper 26.3 ; l'avancement vers un autre build reste soumis à la qualification complète du lot.

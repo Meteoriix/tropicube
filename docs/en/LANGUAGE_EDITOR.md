@@ -45,8 +45,9 @@ All resources use canonical named placeholders such as `{player}`, `{balance}`, 
 - validation checks YAML, key parity, placeholders, and allowed tags;
 - writes are rejected when a file changed after it was opened;
 - four sources and their Docker mirrors are replaced together, with rollback on failure;
-- after saving, validated files are copied to Velocity or every active Paper instance, then the internal `languageeditorreload` command reloads languages only;
-- the status bar distinguishes an available Docker daemon from a partial or failed live synchronization without rolling back files that were already saved.
+- after saving, validated files are copied to Velocity or every active Paper instance, then the internal `languageeditorreload` command reloads the affected languages and interfaces; each container acknowledges completion only after replacing its catalog and refreshing active views;
+- the `Apply` button stays disabled during the operation to prevent concurrent writes; conflicts and errors preserve the draft and appear in the status bar;
+- the status bar distinguishes saved files from a complete, partial, or failed live reload. A live failure does not roll back sources that were already saved.
 - the Scoreboards tab groups variants, edits the title and every line in all four languages, previews their MiniMessage rendering with placeholder sample values, and can add, remove, or reorder all fifteen Minecraft lines;
 - the Tablists tab groups Lobby and SheepWars by state variant, edits headers and footers in all four languages, and previews the complete layout around sample players;
 - the Menus tab renders the inventory grid, required buttons, dynamic regions, and localized item properties;

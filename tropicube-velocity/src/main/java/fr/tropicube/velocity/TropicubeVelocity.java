@@ -280,7 +280,7 @@ public class TropicubeVelocity {
         );
         server.getCommandManager().register(
                 server.getCommandManager().metaBuilder("languageeditorreload").build(),
-                new LanguageEditorReloadCommand(this, server, languageManager)
+                new LanguageEditorReloadCommand(this, server, languageManager, dataDirectory, logger)
         );
         server.getCommandManager().register(
                 server.getCommandManager().metaBuilder("server").build(),
