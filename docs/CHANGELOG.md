@@ -4,6 +4,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-09-24
+
+- Empêche une ancienne génération d'interface Redis de restaurer les anciens libellés des menus Lobby, tout en conservant les textes réellement personnalisés dans l'éditeur.
+
 ### 2026-09-23
 
 - Corrige la position du dixième coffre progressif de Cactus afin que la validation de la carte autorise le démarrage d'une partie Fallen Kingdoms.

@@ -64,6 +64,7 @@ public final class RuntimeUiBundle {
             // Redis can predate the JAR: the startup merge performed before restore is insufficient.
             if (id.startsWith("core/languages/")) {
                 ConfigUpdater.update(plugin, id.substring("core/".length()), temporary.toFile());
+                BundledLanguageMigrations.apply(id, temporary);
             }
             moveAtomically(temporary, path);
         } finally {

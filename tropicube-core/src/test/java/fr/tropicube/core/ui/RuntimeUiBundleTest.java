@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -64,6 +65,47 @@ class RuntimeUiBundleTest {
     }
 
     @Test
+    void formerBundledNavigationTextsAreMigratedWithoutReplacingCustomValues() throws Exception {
+        Plugin plugin = resourcePlugin();
+        Map<String, List<String>> formerValues = Map.of(
+                "fr", List.of("<aqua>⚡ Sélecteur de serveur", "<yellow>Clic gauche : choisir le type de partie", "<aqua>☀ Social"),
+                "en", List.of("<aqua>⚡ Server Selector", "<yellow>Left click: choose a match type", "<aqua>☀ Social"),
+                "de", List.of("<aqua>⚡ Serverauswahl", "<yellow>Linksklick: Art der Partie wählen", "<aqua>☀ Sozial"),
+                "es", List.of("<aqua>⚡ Selector de servidor", "<yellow>Clic izquierdo: elegir el tipo de partida", "<aqua>☀ Social"));
+
+        for (String language : List.of("fr", "en", "de", "es")) {
+            Path bundled = Path.of("src/main/resources/languages", language + ".yml");
+            YamlConfiguration previous = YamlConfiguration.loadConfiguration(bundled.toFile());
+            previous.set("lobby.hotbar-servers-name", formerValues.get(language).get(0));
+            previous.set("lobby.type-lore-left-click", formerValues.get(language).get(1));
+            previous.set("social.hotbar-name", formerValues.get(language).get(2));
+            previous.set("social.menu-title", "Custom social");
+            Path target = directory.resolve("migrated-" + language + ".yml");
+
+            RuntimeUiBundle.installFile(plugin, "core/languages/" + language + ".yml", target,
+                    previous.saveToString().getBytes(StandardCharsets.UTF_8));
+
+            YamlConfiguration actual = YamlConfiguration.loadConfiguration(target.toFile());
+            YamlConfiguration current = YamlConfiguration.loadConfiguration(bundled.toFile());
+            assertEquals(current.getString("lobby.hotbar-servers-name"), actual.getString("lobby.hotbar-servers-name"));
+            assertEquals(current.getString("lobby.type-lore-left-click"), actual.getString("lobby.type-lore-left-click"));
+            assertEquals(current.getString("social.hotbar-name"), actual.getString("social.hotbar-name"));
+            assertEquals("Custom social", actual.getString("social.menu-title"));
+        }
+
+        Path customized = directory.resolve("customized-fr.yml");
+        YamlConfiguration custom = YamlConfiguration.loadConfiguration(
+                Path.of("src/main/resources/languages/fr.yml").toFile());
+        custom.set("lobby.hotbar-servers-name", "<blue>Mes jeux");
+        custom.set("lobby.type-lore-left-click", formerValues.get("fr").get(1));
+        RuntimeUiBundle.installFile(plugin, "core/languages/fr.yml", customized,
+                custom.saveToString().getBytes(StandardCharsets.UTF_8));
+        YamlConfiguration actual = YamlConfiguration.loadConfiguration(customized.toFile());
+        assertEquals("<blue>Mes jeux", actual.getString("lobby.hotbar-servers-name"));
+        assertEquals("<green>▶ Clic gauche : file Quick Play.", actual.getString("lobby.type-lore-left-click"));
+    }
+
+    @Test
     void failedCatalogMergePreservesInstalledFileAndCleansTemporaryFile() throws Exception {
         Path target = directory.resolve("fr.yml");
         Files.writeString(target, "social:\n  menu-title: Installed\n");
@@ -81,5 +123,15 @@ class RuntimeUiBundleTest {
         try (var files = Files.list(directory)) {
             assertEquals(1, files.count());
         }
+    }
+
+    private static Plugin resourcePlugin() {
+        return (Plugin) Proxy.newProxyInstance(Plugin.class.getClassLoader(),
+                new Class<?>[]{Plugin.class}, (proxy, method, arguments) -> switch (method.getName()) {
+                    case "getResource" -> new ByteArrayInputStream(Files.readAllBytes(
+                            Path.of("src/main/resources", (String) arguments[0])));
+                    case "getLogger" -> Logger.getAnonymousLogger();
+                    default -> null;
+                });
     }
 }

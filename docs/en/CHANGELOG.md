@@ -4,6 +4,10 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+### 2026-09-24
+
+- Prevented an older Redis UI generation from restoring retired Lobby menu labels while preserving text genuinely customized in the editor.
+
 ### 2026-09-23
 
 - Fixed Cactus's tenth progressive chest position so map validation allows Fallen Kingdoms matches to start.
