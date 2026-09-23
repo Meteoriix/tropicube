@@ -23,6 +23,7 @@ scoreboards:
         lines:
           - key: fk.sb-separator
           - key: fk.sb-phase
+          - key: fk.sb-day
           - key: fk.sb-next-phase
           - key: fk.sb-team
           - blank: true

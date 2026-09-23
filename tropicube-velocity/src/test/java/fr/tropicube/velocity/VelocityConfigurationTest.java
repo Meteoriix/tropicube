@@ -121,6 +121,14 @@ class VelocityConfigurationTest {
         assertEquals("SheepWars", motd.node("game-SHEEPWARS").getString());
     }
 
+    @Test
+    void bundledAnnouncementRotationIsEmpty() throws IOException {
+        for (ConfigurationNode config : new ConfigurationNode[]{loadBundledConfig(),
+                loadRepositoryConfig("dockerfiles/configs/TropicubeVelocity/config.yml")}) {
+            assertTrue(config.node("announcements", "entries").childrenList().isEmpty());
+        }
+    }
+
     private ConfigurationNode loadBundledConfig() throws IOException {
         var resource = getClass().getResource("/config.yml");
         assertNotNull(resource);

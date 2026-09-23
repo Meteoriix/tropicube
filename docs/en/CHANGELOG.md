@@ -4,6 +4,13 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+### 2026-09-23
+
+- Reworked Fallen Kingdoms into six ten-minute days: PvP at 10 minutes, assault at 20, sudden death at 40, and resolution at 60, with the current day in the scoreboard and updated custom-game defaults.
+- Added kingdom-colored profile names, ally-only glowing, exact kit contents, and defending-team alerts after valid heart damage.
+- Added Cactus's ten progressive neutral chests, empty on day 1 and refilled from weighted day 2–6 tables, with storage, hopper, and destruction protection.
+- Removed the welcome message from Velocity's periodic rotation while retaining its translation for manual announcements.
+
 ### 2026-09-22
 
 - Renamed the hotbar button to Games, colored Games and Social green, made the game selector fully gray, and restored the left-click Quick Play hint in all four languages.

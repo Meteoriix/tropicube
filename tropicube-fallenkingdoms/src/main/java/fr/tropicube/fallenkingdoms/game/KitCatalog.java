@@ -75,19 +75,23 @@ public final class KitCatalog {
     public void give(Player player, String kitId) {
         KitDefinition kit = definitions.getOrDefault(kitId, definitions.get(defaultKit));
         kit.items().forEach(item -> {
-            ItemStack stack = new ItemStack(item.material(), item.amount());
-            if (item.potionType() != null) stack.editMeta(PotionMeta.class,
-                    meta -> meta.setBasePotionType(PotionType.valueOf(item.potionType())));
-            if (item.damage() > 0) stack.editMeta(Damageable.class, meta -> meta.setDamage(item.damage()));
-            item.enchantments().forEach((name, level) -> {
-                Enchantment enchantment = org.bukkit.Registry.ENCHANTMENT.get(NamespacedKey.minecraft(name));
-                if (enchantment == null) throw new IllegalStateException("Enchantement validé absent du registre Paper: " + name);
-                if (stack.getItemMeta() instanceof EnchantmentStorageMeta) stack.editMeta(EnchantmentStorageMeta.class,
-                        meta -> meta.addStoredEnchant(enchantment, level, true));
-                else stack.addUnsafeEnchantment(enchantment, level);
-            });
-            player.getInventory().setItem(item.slot(), stack);
+            player.getInventory().setItem(item.slot(), itemStack(item));
         });
+    }
+    /** Builds the exact configured item for delivery or a localized menu preview. */
+    public static ItemStack itemStack(KitDefinition.KitItem item) {
+        ItemStack stack = new ItemStack(item.material(), item.amount());
+        if (item.potionType() != null) stack.editMeta(PotionMeta.class,
+                meta -> meta.setBasePotionType(PotionType.valueOf(item.potionType())));
+        if (item.damage() > 0) stack.editMeta(Damageable.class, meta -> meta.setDamage(item.damage()));
+        item.enchantments().forEach((name, level) -> {
+            Enchantment enchantment = org.bukkit.Registry.ENCHANTMENT.get(NamespacedKey.minecraft(name));
+            if (enchantment == null) throw new IllegalStateException("Enchantement validé absent du registre Paper: " + name);
+            if (stack.getItemMeta() instanceof EnchantmentStorageMeta) stack.editMeta(EnchantmentStorageMeta.class,
+                    meta -> meta.addStoredEnchant(enchantment, level, true));
+            else stack.addUnsafeEnchantment(enchantment, level);
+        });
+        return stack;
     }
     private static Material material(String value, String path) {
         try { return Material.valueOf(value.toUpperCase(Locale.ROOT)); }

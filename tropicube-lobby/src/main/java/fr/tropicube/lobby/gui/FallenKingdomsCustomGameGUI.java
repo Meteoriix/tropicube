@@ -43,8 +43,8 @@ public final class FallenKingdomsCustomGameGUI {
             indexes.put(Option.COUNTDOWN, 1);
             indexes.put(Option.MAX_TEAM, 2);
             indexes.put(Option.MAX_KINGDOMS, 3);
-            indexes.put(Option.PVP, 0);
-            indexes.put(Option.ASSAULT, 0);
+            indexes.put(Option.PVP, 1);
+            indexes.put(Option.ASSAULT, 1);
             indexes.put(Option.SUDDEN_DEATH, 1);
             indexes.put(Option.FORCE_END, 1);
             indexes.put(Option.HEART, 1);
@@ -157,7 +157,7 @@ public final class FallenKingdomsCustomGameGUI {
         MAX_KINGDOMS("FK_MAX_KINGDOMS", Material.WHITE_BANNER, "lobby.fk-custom-max-kingdoms", new String[]{"2", "3", "4", "5"}, null),
         PVP("FK_PVP_AT_SECONDS", Material.IRON_SWORD, "lobby.fk-custom-pvp", new String[]{"300", "600", "900"}, null),
         ASSAULT("FK_ASSAULT_AT_SECONDS", Material.TNT, "lobby.fk-custom-assault", new String[]{"900", "1200", "1500"}, null),
-        SUDDEN_DEATH("FK_SUDDEN_DEATH_AT_SECONDS", Material.ENDER_EYE, "lobby.fk-custom-sudden", new String[]{"1800", "2700", "3600"}, null),
+        SUDDEN_DEATH("FK_SUDDEN_DEATH_AT_SECONDS", Material.ENDER_EYE, "lobby.fk-custom-sudden", new String[]{"1800", "2400", "2700", "3600"}, null),
         FORCE_END("FK_FORCE_END_AT_SECONDS", Material.BARRIER, "lobby.fk-custom-end", new String[]{"2700", "3600", "4500"}, null),
         HEART("FK_HEART_HEALTH", Material.END_CRYSTAL, "lobby.fk-custom-heart", new String[]{"250", "500", "1000"}, null),
         RESPAWN("FK_RESPAWN_DELAY_SECONDS", Material.TOTEM_OF_UNDYING, "lobby.fk-custom-respawn", new String[]{"5", "10", "15"}, null),

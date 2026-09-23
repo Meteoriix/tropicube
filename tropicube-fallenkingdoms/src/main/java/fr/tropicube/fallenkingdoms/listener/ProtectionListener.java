@@ -25,6 +25,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.weather.WeatherChangeEvent;
+import org.bukkit.block.BlockFace;
 
 /** Enforces map-independent territorial rules at Paper event boundaries. */
 public final class ProtectionListener implements Listener {
@@ -33,17 +34,25 @@ public final class ProtectionListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void place(BlockPlaceEvent event) {
-        if (!session.mayChangeBlock(event.getPlayer(), event.getBlock().getLocation(), event.getBlockPlaced().getType(), true))
+        if (wouldMergeWithLootChest(event) || !session.mayChangeBlock(event.getPlayer(), event.getBlock().getLocation(), event.getBlockPlaced().getType(), true))
             event.setCancelled(true);
+    }
+
+    private boolean wouldMergeWithLootChest(BlockPlaceEvent event) {
+        if (event.getBlockPlaced().getType() != org.bukkit.Material.CHEST
+                && event.getBlockPlaced().getType() != org.bukkit.Material.TRAPPED_CHEST) return false;
+        return java.util.stream.Stream.of(BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST)
+                .map(event.getBlockPlaced()::getRelative).anyMatch(session::isLootBlock);
     }
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void breakBlock(BlockBreakEvent event) {
-        if (!session.mayChangeBlock(event.getPlayer(), event.getBlock().getLocation(), event.getBlock().getType(), false))
+        if (session.isLootBlock(event.getBlock())
+                || !session.mayChangeBlock(event.getPlayer(), event.getBlock().getLocation(), event.getBlock().getType(), false))
             event.setCancelled(true);
     }
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void destroy(BlockDestroyEvent event) {
-        if (protectsWaitingRoom(session.state())) event.setCancelled(true);
+        if (protectsWaitingRoom(session.state()) || session.isLootBlock(event.getBlock())) event.setCancelled(true);
     }
     @EventHandler(priority = EventPriority.HIGHEST)
     public void damage(EntityDamageEvent event) {
@@ -88,13 +97,15 @@ public final class ProtectionListener implements Listener {
     }
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void pistonExtend(BlockPistonExtendEvent event) {
-        for (var block : event.getBlocks()) if (!sameTerritory(block.getLocation(), block.getRelative(event.getDirection()).getLocation())) {
+        for (var block : event.getBlocks()) if (session.isLootBlock(block)
+                || !sameTerritory(block.getLocation(), block.getRelative(event.getDirection()).getLocation())) {
             event.setCancelled(true); return;
         }
     }
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void pistonRetract(BlockPistonRetractEvent event) {
-        for (var block : event.getBlocks()) if (!sameTerritory(block.getLocation(), block.getRelative(event.getDirection().getOppositeFace()).getLocation())) {
+        for (var block : event.getBlocks()) if (session.isLootBlock(block)
+                || !sameTerritory(block.getLocation(), block.getRelative(event.getDirection().getOppositeFace()).getLocation())) {
             event.setCancelled(true); return;
         }
     }

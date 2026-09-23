@@ -39,6 +39,10 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>fr.skytasul</groupId>
+            <artifactId>glowingentities</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
@@ -54,6 +58,12 @@
                     <configuration><shadedArtifactAttached>true</shadedArtifactAttached>
                         <shadedClassifierName>all</shadedClassifierName><createDependencyReducedPom>false</createDependencyReducedPom>
                         <artifactSet><excludes><exclude>fr.tropicube:tropicube-core</exclude><exclude>fr.tropicube:tropicube-docker-api</exclude><exclude>fr.tropicube:tropicube-language-api</exclude></excludes></artifactSet>
+                        <relocations>
+                            <relocation>
+                                <pattern>fr.skytasul.glowingentities</pattern>
+                                <shadedPattern>fr.tropicube.fallenkingdoms.libs.glowingentities</shadedPattern>
+                            </relocation>
+                        </relocations>
                     </configuration>
                 </execution></executions>
             </plugin>

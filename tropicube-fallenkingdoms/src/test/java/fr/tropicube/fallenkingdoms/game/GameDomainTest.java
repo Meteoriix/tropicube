@@ -116,14 +116,25 @@ class GameDomainTest {
         }
     }
     @Test void timelineAndStateMachineHaveExactBoundaries() {
-        PhaseTimeline timeline = new PhaseTimeline(300, 900, 2700, 3600);
-        assertEquals(GameState.PREPARATION, timeline.targetAt(299)); assertEquals(GameState.PVP, timeline.targetAt(300));
-        assertEquals(GameState.PVP, timeline.targetAt(899)); assertEquals(GameState.ASSAULT, timeline.targetAt(900));
-        assertEquals(GameState.ASSAULT, timeline.targetAt(2699)); assertEquals(GameState.SUDDEN_DEATH, timeline.targetAt(2700));
+        PhaseTimeline timeline = new PhaseTimeline(600, 1200, 2400, 3600);
+        assertEquals(GameState.PREPARATION, timeline.targetAt(599)); assertEquals(GameState.PVP, timeline.targetAt(600));
+        assertEquals(GameState.PVP, timeline.targetAt(1199)); assertEquals(GameState.ASSAULT, timeline.targetAt(1200));
+        assertEquals(GameState.ASSAULT, timeline.targetAt(2399)); assertEquals(GameState.SUDDEN_DEATH, timeline.targetAt(2400));
         assertEquals(GameState.SUDDEN_DEATH, timeline.targetAt(3599)); assertEquals(GameState.ENDING, timeline.targetAt(3600));
         GameStateMachine machine = new GameStateMachine();
         assertFalse(machine.transitionTo(GameState.ASSAULT)); assertTrue(machine.transitionTo(GameState.COUNTDOWN));
         assertTrue(machine.transitionTo(GameState.PREPARATION)); assertTrue(machine.transitionTo(GameState.PREPARATION));
+    }
+    @Test void gameDaysHaveExactTenMinuteBoundariesAndStopAtSix() {
+        assertEquals(1, GameDay.at(-1));
+        assertEquals(1, GameDay.at(599));
+        assertEquals(2, GameDay.at(600));
+        assertEquals(2, GameDay.at(1199));
+        assertEquals(3, GameDay.at(1200));
+        assertEquals(4, GameDay.at(1800));
+        assertEquals(5, GameDay.at(2400));
+        assertEquals(6, GameDay.at(3000));
+        assertEquals(6, GameDay.at(3600));
     }
     @Test void placementRulesAllowConstructionAndReserveEnemyBasesForAssaultTnt() {
         ProtectionRules rules = new ProtectionRules();

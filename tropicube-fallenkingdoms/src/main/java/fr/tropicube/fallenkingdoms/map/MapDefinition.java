@@ -1,18 +1,21 @@
 package fr.tropicube.fallenkingdoms.map;
 
 import fr.tropicube.fallenkingdoms.game.KingdomId;
+import fr.tropicube.fallenkingdoms.loot.LootChestDefinition;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
 
 /** Fully validated immutable map definition consumed by every game service. */
 public record MapDefinition(String id, String displayNameKey, String world, Position lobby, Position spectator,
                             BlockRegion playableRegion, double borderX, double borderZ,
                             double initialBorderSize, Map<Integer, List<KingdomId>> layouts,
-                            Map<KingdomId, BaseDefinition> bases) {
+                            Map<KingdomId, BaseDefinition> bases, List<LootChestDefinition> lootChests) {
     public MapDefinition {
         layouts = layouts.entrySet().stream().collect(java.util.stream.Collectors.toUnmodifiableMap(
                 Map.Entry::getKey, entry -> List.copyOf(entry.getValue())));
         bases = Map.copyOf(bases);
+        lootChests = List.copyOf(lootChests);
         if (id == null || id.isBlank() || displayNameKey == null || displayNameKey.isBlank())
             throw new IllegalArgumentException("Identifiant ou traduction de carte manquant");
         if (initialBorderSize <= 50) throw new IllegalArgumentException("La bordure initiale doit dépasser 50 blocs");
@@ -39,5 +42,23 @@ public record MapDefinition(String id, String displayNameKey, String world, Posi
         }
         for (int left = 0; left < values.size(); left++) for (int right = left + 1; right < values.size(); right++)
             if (values.get(left).region().overlaps(values.get(right).region())) throw new IllegalArgumentException("Les régions de base se chevauchent");
+        var identifiers = new HashSet<String>();
+        var positions = new HashSet<String>();
+        for (LootChestDefinition chest : lootChests) {
+            Position position = chest.position();
+            String blockPosition = (int) Math.floor(position.x()) + ":" + (int) Math.floor(position.y())
+                    + ":" + (int) Math.floor(position.z());
+            if (!identifiers.add(chest.id()) || !positions.add(blockPosition))
+                throw new IllegalArgumentException("Coffre de butin dupliqué: " + chest.id());
+            if (!playableRegion.contains(position) || bases.values().stream().anyMatch(base -> base.region().contains(position)))
+                throw new IllegalArgumentException("Coffre de butin hors zone commune: " + chest.id());
+        }
+    }
+
+    public MapDefinition(String id, String displayNameKey, String world, Position lobby, Position spectator,
+                         BlockRegion playableRegion, double borderX, double borderZ, double initialBorderSize,
+                         Map<Integer, List<KingdomId>> layouts, Map<KingdomId, BaseDefinition> bases) {
+        this(id, displayNameKey, world, lobby, spectator, playableRegion, borderX, borderZ, initialBorderSize,
+                layouts, bases, List.of());
     }
 }

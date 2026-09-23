@@ -49,9 +49,11 @@ Toutes les échéances sont mesurées depuis l'entrée en `PREPARATION` :
 | Instant | Effet |
 |---:|---|
 | 00:00 | Début de la préparation, remise du kit et téléportation aux bases |
-| 05:00 | Activation du JcJ dans la zone commune |
-| 15:00 | Ouverture des bases ennemies et vulnérabilité des cœurs |
-| 45:00 | Destruction forcée de tous les cœurs restants et mort subite |
+| 10:00 | Jour 2 et activation du JcJ dans la zone commune |
+| 20:00 | Jour 3, ouverture des bases ennemies et vulnérabilité des cœurs |
+| 30:00 | Jour 4, poursuite des assauts |
+| 40:00 | Jour 5, destruction forcée de tous les cœurs restants et mort subite |
+| 50:00 | Jour 6, poursuite de la mort subite |
 | 60:00 | Résolution forcée selon le nombre de survivants |
 
 La partie se termine avant 60 minutes dès qu'une seule équipe possède encore au moins un joueur vivant.
@@ -85,7 +87,7 @@ La partie se termine avant 60 minutes dès qu'une seule équipe possède encore 
 
 ### Mort subite et résultat à 60 minutes
 
-- À 45 minutes, tous les cœurs encore vivants sont détruits avec la cause `FORCED_SUDDEN_DEATH` et aucune réapparition supplémentaire n'est possible.
+- À 40 minutes, tous les cœurs encore vivants sont détruits avec la cause `FORCED_SUDDEN_DEATH` et aucune réapparition supplémentaire n'est possible.
 - La bordure se resserre autour du centre configuré pour atteindre exactement 50 × 50 blocs à 60 minutes.
 - Si un seul royaume conserve des survivants avant cette échéance, il gagne immédiatement.
 - À 60 minutes, gagne la ou les équipes ayant le plus grand nombre de survivants.
@@ -101,9 +103,9 @@ Les valeurs de gameplay sont validées au chargement et regroupées dans `config
 | Joueurs minimum par royaume | 3 en Quick Play, 4 en partie personnalisée | non |
 | Joueurs maximum par royaume | 6 | oui, dans la capacité de la carte |
 | Royaumes maximum | 5 | oui, de 2 à 5 |
-| Début du JcJ | 5 min | oui |
-| Début de l'assaut | 15 min | oui |
-| Mort subite | 45 min | oui |
+| Début du JcJ | 10 min | oui |
+| Début de l'assaut | 20 min | oui |
+| Mort subite | 40 min | oui |
 | Fin forcée | 60 min | oui |
 | Points de vie du cœur | 500 | oui |
 | Délai de réapparition | 10 s | oui |
@@ -134,7 +136,7 @@ WAITING ──effectif et carte valides──> COUNTDOWN
    └──effectif/carte invalides────────────┘
                                           │ compte à rebours terminé
                                           v
-PREPARATION ──05:00──> PVP ──15:00──> ASSAULT ──45:00──> SUDDEN_DEATH
+PREPARATION ──10:00──> PVP ──20:00──> ASSAULT ──40:00──> SUDDEN_DEATH
      │                    │               │                    │
      └──────────── abandon administrateur / condition de victoire ───────┐
                                                                          v
@@ -165,9 +167,9 @@ PREPARATION ──05:00──> PVP ──15:00──> ASSAULT ──45:00──>
 | `WAITING` | `COUNTDOWN` | démarrage automatique ou administrateur, effectif ≥ 6 en Quick Play et carte/agencement valides | démarre le minuteur et publie l'état |
 | `COUNTDOWN` | `WAITING` | effectif insuffisant, carte/agencement invalide ou annulation | annule le minuteur et déverrouille les sélections |
 | `COUNTDOWN` | `PREPARATION` | minuteur à zéro et préconditions toujours valides | verrouille le roster, résout le vote, calcule les royaumes, assigne joueurs/kits, crée les cœurs et téléporte |
-| `PREPARATION` | `PVP` | horloge à 05:00 | active le JcJ dans la zone commune |
-| `PVP` | `ASSAULT` | horloge à 15:00 | ouvre les bases et rend les cœurs vulnérables |
-| `ASSAULT` | `SUDDEN_DEATH` | horloge à 45:00 | détruit les cœurs restants, annule les réapparitions et démarre la bordure |
+| `PREPARATION` | `PVP` | horloge à 10:00 | active le JcJ dans la zone commune |
+| `PVP` | `ASSAULT` | horloge à 20:00 | ouvre les bases et rend les cœurs vulnérables |
+| `ASSAULT` | `SUDDEN_DEATH` | horloge à 40:00 | détruit les cœurs restants, annule les réapparitions et démarre la bordure |
 
 En `WAITING` et `COUNTDOWN`, Paper annule dégâts, faim, pose, casse, destructions physiques et drops. Le monde reste en journée claire. Au passage en `PREPARATION`, l'horloge repart au lever du soleil et suit un cycle réel de cinq minutes par demi-journée. Jusqu'à `ASSAULT`, chaque participant reçoit uniquement les particules proches des limites de ses bases ennemies ; les contrôles de déplacement restent l'autorité physique.
 | `ASSAULT` | `ENDING` | un seul royaume vivant | fige le vainqueur |
@@ -204,7 +206,7 @@ Chaque transition est idempotente et exécutée sur le thread serveur pour les m
 | `KitService` | Charge le catalogue, mémorise le choix et remet une seule fois le contenu configuré. |
 | `RespawnService` | Programme les dix secondes, annule à la destruction du cœur et réapparaît sans kit. |
 | `RuinService` | Exécute les vagues visuelles et la destruction filtrée, puis neutralise la région. |
-| `BorderService` | Initialise la bordure et garantit son interpolation vers 50 × 50 entre la mort subite à 45 minutes et la fin forcée à 60 minutes. |
+| `BorderService` | Initialise la bordure et garantit son interpolation vers 50 × 50 entre la mort subite à 40 minutes et la fin forcée à 60 minutes. |
 | `HudService` | Produit scoreboard, bossbars, titres, hotbar et rafraîchissement après changement de langue à partir des manifestes FK. |
 | `TaskRegistry` | Enregistre toutes les tâches Paper et les annule de façon idempotente à la fin. |
 | `StatisticsService` | Construit un résultat immuable, orchestre l'écriture durable et la mise à jour du cache. |
@@ -264,9 +266,9 @@ game:
   max-kingdoms: 5
 
 phases:
-  pvp-at-seconds: 300
-  assault-at-seconds: 900
-  sudden-death-at-seconds: 2700
+  pvp-at-seconds: 600
+  assault-at-seconds: 1200
+  sudden-death-at-seconds: 2400
   force-end-at-seconds: 3600
 
 combat:
@@ -404,9 +406,13 @@ L'exemple est un schéma cible, pas une carte prête à jouer. `enabled: false` 
 | `/stats` | `tropicube.stats` | Affiche sur Velocity les agrégats globaux puis le détail par jeu. |
 | `/stats <joueur>` | `tropicube.stats.others` | Affiche les statistiques globales d'un autre joueur. |
 
-La sélection de carte, équipe et kit reste graphique. La hotbar d'attente reprend le parcours SheepWars : équipe, kit et carte aux emplacements 0 à 2, lancement ou annulation pour l'hôte en 4, Profil en 7 et retour au lobby en 8. Les objets affichent le choix courant et le clic attendu. Les inventaires partagent le cadrage réseau, placent le retour à gauche et la fermeture à droite, distinguent le choix actif et présentent les demandes par équipe, la description des kits et le nombre de votes. Une commande refusée ne modifie jamais partiellement la session. Les textes sont fournis en `fr`, `en`, `de` et `es` via Adventure/MiniMessage.
+La sélection de carte, équipe et kit reste graphique. La hotbar d'attente reprend le parcours SheepWars : équipe, kit et carte aux emplacements 0 à 2, lancement ou annulation pour l'hôte en 4, Profil en 7 et retour au lobby en 8. Les objets affichent le choix courant et le clic attendu. Les inventaires partagent le cadrage réseau, placent le retour à gauche et la fermeture à droite, distinguent le choix actif et présentent les demandes par équipe, le contenu réel des kits (quantité totale, stacks, potion et enchantements) et le nombre de votes. Une commande refusée ne modifie jamais partiellement la session. Les textes sont fournis en `fr`, `en`, `de` et `es` via Adventure/MiniMessage.
 
-Le scoreboard actif affiche la phase actuelle, le nom et le délai de la prochaine phase, l'équipe du joueur et uniquement les équipes affectées, sans PV de cœur. La tablist porte la carte et colore les pseudonymes selon la préférence en attente puis l'affectation réelle. L'actionbar affiche en continu les PV actuels et maximaux du cœur allié pendant les phases actives ; les alertes contextuelles de réapparition ou de territoire la remplacent temporairement et sont rerendues dans la langue courante. Un coup valide sur un cœur ennemi affiche à l'attaquant une bossbar pendant cinq secondes depuis le dernier coup.
+Le scoreboard actif affiche le jour calculé par `elapsed / 600 + 1`, borné de 1 à 6, la phase actuelle, le nom et le délai de la prochaine phase, l'équipe du joueur et uniquement les équipes affectées, sans PV de cœur. Chaque scoreboard personnel crée une équipe par royaume avec le nom réel du profil comme entrée ; les spectateurs sont gris et les nicks visuels restent compatibles. La tablist porte la carte et colore les pseudonymes selon la préférence en attente puis l'affectation réelle. `glowingentities` rend uniquement les alliés vivants lumineux pour leur propre royaume et le rendu est reconstruit aux changements de cycle de vie ou d'identité. L'actionbar affiche en continu les PV actuels et maximaux du cœur allié pendant les phases actives ; les alertes contextuelles de réapparition ou de territoire la remplacent temporairement. Après un dégât réellement appliqué au cœur, une alerte blanche/rouge et `minecraft:entity.blaze.hurt` préviennent ses membres en ligne, avec durée, cadence et anti-spam configurables. Un coup valide sur un cœur ennemi affiche à l'attaquant une bossbar pendant cinq secondes depuis le dernier coup.
+
+### Coffres progressifs
+
+Chaque carte activée déclare ses coffres spéciaux par identifiant et position. Au chargement, leurs chunks sont chargés sans bloquer le thread Paper, puis la présence des coffres est validée sur ce thread ; une carte incomplète ne peut pas démarrer. Le jour 1 les initialise vides. Au passage exact des jours 2 à 6, leur inventaire est remplacé par trois tirages dans la table pondérée correspondante et une annonce localisée est envoyée. Les coffres sont marqués par données persistantes, protégés contre la casse, les explosions et pistons, et reconnaissent les deux moitiés d'un grand coffre. Les joueurs peuvent seulement retirer ; les dépôts, transferts par raccourci et entonnoirs sont annulés, avec un message limité à un toutes les deux secondes.
 
 ## Protections par phase
 
@@ -514,7 +520,7 @@ La phase classée ajoutera une ou plusieurs files **à format fixe** propres à 
 
 - Départ d'un joueur pendant le compte à rebours : recalculer les préconditions et revenir à `WAITING` si nécessaire.
 - Vote gagnant pour une carte sans agencement compatible : l'exclure avant le vote ; refuser le départ si aucune carte ne convient.
-- Événements exactement à 05:00, 15:00, 45:00 ou 60:00 : une seule transition, dans cet ordre, sans tick ambigu.
+- Événements exactement à 10:00, 20:00, 40:00 ou 60:00 : une seule transition, dans cet ordre, sans tick ambigu.
 - Destruction d'un cœur pendant une réapparition : annuler la tâche et éliminer le joueur.
 - Plusieurs dégâts de cœur dans le même tick : une seule destruction et une seule publication.
 - Éliminations simultanées : calculer tous les effets du tick avant de figer le résultat ; le résultat peut être nul.
@@ -539,13 +545,14 @@ La phase classée ajoutera une ou plusieurs files **à format fixe** propres à 
 - Pour chaque effectif de 0 à 31, le calcul Quick Play accepte uniquement 6 à 30, produit 2 à 5 royaumes et respecte les tailles 3 à 6 avec un écart maximal de un ; les surcharges bêta 1v1 et 2v2 restent inchangées.
 - L'affectation est déterministe à graine identique, respecte les capacités et maximise les préférences après le critère d'équilibrage.
 - La machine refuse toute transition non déclarée et rend chaque transition répétée sans effet supplémentaire.
-- Les bornes 299/300, 899/900, 2699/2700 et 3599/3600 secondes déclenchent exactement les phases attendues.
+- Les bornes 599/600, 1199/1200, 2399/2400 et 3599/3600 secondes déclenchent exactement les phases attendues ; les jours restent bornés de 1 à 6.
 - Les règles de victoire couvrent un survivant unique, plusieurs équipes, égalité au maximum, zéro survivant simultané et arrêt administrateur.
 - Les validations YAML couvrent clés manquantes, types, ordre des durées, régions, positions, matériaux, layouts et capacités.
 - La décision de protection couvre chaque phase, territoire, type d'action, projectile, explosion et mécanisme indirect.
 - Les dégâts de cœur refusent allié, phase protégée et TNT, puis plafonnent les points de vie à zéro sans double destruction.
 - La destruction d'un cœur élimine les joueurs en réapparition et place uniquement les survivants en dernière vie.
 - La sélection de ruine est bornée, reproductible pour un test, préserve conteneurs/technique et reste dans la région autorisée.
+- Les tables de butin refusent les quantités, poids ou jours invalides et leurs tirages sont reproductibles avec une source aléatoire déterministe.
 - Le calcul de statistiques attribue victoire et nul à chaque gagnant ex æquo et exclut `ADMIN_ABORT`.
 - Le résultat persistant est idempotent par identifiant de partie.
 
@@ -564,7 +571,8 @@ La phase classée ajoutera une ou plusieurs files **à format fixe** propres à 
 - Le JcJ, l'entrée des bases, les cœurs et la construction suivent le tableau de protections à chaque transition.
 - Une mort avec cœur vivant réapparaît nue après dix secondes ; sa destruction pendant le décompte rend le joueur spectateur.
 - Une base n'explose pas à la destruction du cœur, mais se ruine une seule fois à l'élimination du dernier survivant en conservant les coffres.
-- À 45 minutes, les cœurs restants disparaissent, les réapparitions cessent et la bordure commence sa réduction.
+- Aux jours 2 à 6, les dix coffres Cactus remplacent leur contenu, refusent tout dépôt et restent protégés des entonnoirs et déplacements.
+- À 40 minutes, les cœurs restants disparaissent, les réapparitions cessent et la bordure commence sa réduction.
 - À 60 minutes, la bordure mesure 50 × 50 et le résultat correspond au compte des survivants, y compris une égalité multi-vainqueur.
 - Un spectateur tardif ne peut interagir, sortir des limites ni redevenir participant.
 - `/lang` rafraîchit immédiatement les surfaces en cache.

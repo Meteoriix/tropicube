@@ -7,9 +7,9 @@ game:
   max-players-per-kingdom: 6
   max-kingdoms: 5
 phases:
-  pvp-at-seconds: 300
-  assault-at-seconds: 900
-  sudden-death-at-seconds: 2700
+  pvp-at-seconds: 600
+  assault-at-seconds: 1200
+  sudden-death-at-seconds: 2400
   force-end-at-seconds: 3600
 world-cycle:
   day-duration-seconds: 300
@@ -22,6 +22,13 @@ drops:
 hearts:
   max-health: 500.0
   tnt-direct-damage: false
+heart-alert:
+  sound: minecraft:entity.blaze.hurt
+  volume: 1.0
+  pitch: 1.0
+  sound-cooldown-ticks: 40
+  duration-ticks: 120
+  flash-interval-ticks: 10
 respawn:
   delay-seconds: 10
   drop-inventory: true
@@ -98,6 +105,54 @@ kits:
         - { material: GLASS_BOTTLE, amount: 6, slot: 3 }
         - { material: SUGAR, amount: 4, slot: 4 }
         - { material: SPIDER_EYE, amount: 4, slot: 5 }
+progressive-loot:
+  rolls-per-chest: 3
+  tables:
+    "2":
+      - { material: GUNPOWDER, min: 2, max: 4, weight: 30 }
+      - { material: SAND, min: 4, max: 8, weight: 25 }
+      - { material: STRING, min: 2, max: 4, weight: 15 }
+      - { material: REDSTONE, min: 2, max: 5, weight: 15 }
+      - { material: IRON_INGOT, min: 1, max: 2, weight: 10 }
+      - { material: GOLD_INGOT, min: 1, max: 1, weight: 5 }
+    "3":
+      - { material: GUNPOWDER, min: 3, max: 5, weight: 25 }
+      - { material: SAND, min: 4, max: 8, weight: 20 }
+      - { material: STRING, min: 3, max: 5, weight: 10 }
+      - { material: REDSTONE, min: 3, max: 6, weight: 10 }
+      - { material: IRON_INGOT, min: 2, max: 3, weight: 12 }
+      - { material: GOLD_INGOT, min: 1, max: 2, weight: 8 }
+      - { material: TNT, min: 1, max: 1, weight: 10 }
+      - { material: GOLDEN_APPLE, min: 1, max: 1, weight: 3 }
+      - { material: DIAMOND, min: 1, max: 1, weight: 2 }
+    "4":
+      - { material: GUNPOWDER, min: 4, max: 6, weight: 20 }
+      - { material: SAND, min: 4, max: 8, weight: 15 }
+      - { material: STRING, min: 2, max: 4, weight: 2 }
+      - { material: REDSTONE, min: 4, max: 8, weight: 8 }
+      - { material: IRON_INGOT, min: 2, max: 4, weight: 12 }
+      - { material: GOLD_INGOT, min: 2, max: 3, weight: 10 }
+      - { material: TNT, min: 1, max: 2, weight: 15 }
+      - { material: GOLDEN_APPLE, min: 1, max: 1, weight: 8 }
+      - { material: DIAMOND, min: 1, max: 1, weight: 10 }
+    "5":
+      - { material: GUNPOWDER, min: 4, max: 8, weight: 15 }
+      - { material: SAND, min: 4, max: 8, weight: 10 }
+      - { material: REDSTONE, min: 4, max: 8, weight: 5 }
+      - { material: IRON_INGOT, min: 3, max: 5, weight: 10 }
+      - { material: GOLD_INGOT, min: 2, max: 4, weight: 10 }
+      - { material: TNT, min: 1, max: 3, weight: 20 }
+      - { material: GOLDEN_APPLE, min: 1, max: 2, weight: 14 }
+      - { material: DIAMOND, min: 1, max: 2, weight: 16 }
+    "6":
+      - { material: GUNPOWDER, min: 5, max: 10, weight: 10 }
+      - { material: SAND, min: 4, max: 8, weight: 8 }
+      - { material: REDSTONE, min: 4, max: 8, weight: 4 }
+      - { material: IRON_INGOT, min: 3, max: 6, weight: 8 }
+      - { material: GOLD_INGOT, min: 3, max: 5, weight: 8 }
+      - { material: TNT, min: 2, max: 4, weight: 22 }
+      - { material: GOLDEN_APPLE, min: 1, max: 2, weight: 18 }
+      - { material: DIAMOND, min: 1, max: 3, weight: 22 }
 # Shared map schema. Add future maps under locations.maps without changing Java code.
 locations:
   world: world
@@ -118,6 +173,17 @@ locations:
         "3": [BLUE, RED, GREEN, YELLOW, ORANGE]
         "4": [BLUE, RED, GREEN, YELLOW, ORANGE]
         "5": [BLUE, RED, GREEN, YELLOW, ORANGE]
+      loot-chests:
+        coffre-1: { x: -686, y: 70, z: -670 }
+        coffre-2: { x: -705, y: 71, z: -686 }
+        coffre-3: { x: -721, y: 71, z: -675 }
+        coffre-4: { x: -728, y: 70, z: -656 }
+        coffre-5: { x: -732, y: 70, z: -630 }
+        coffre-6: { x: -716, y: 70, z: -620 }
+        coffre-7: { x: -694, y: 70, z: -616 }
+        coffre-8: { x: -679, y: 71, z: -627 }
+        coffre-9: { x: -674, y: 71, z: -651 }
+        coffre-10: { x: -691, y: 71, z: -652 }
       kingdoms:
         blue:
           spawn: { x: -727.0, y: 72.0, z: -738.0, yaw: 180.0, pitch: 0.0 }

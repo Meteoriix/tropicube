@@ -58,9 +58,7 @@ motd:
 
 announcements:
   interval-seconds: 300
-  entries:
-    - message-key: "proxy.announcement-welcome"
-      target: "network"
+  entries: []
 
 # Deletes dynamic servers and their managed ephemeral data volumes when the proxy is stopped.
 # Set to false only to preserve games during a Velocity redeploy.

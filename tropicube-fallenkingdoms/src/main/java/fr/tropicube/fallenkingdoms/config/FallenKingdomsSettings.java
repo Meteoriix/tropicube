@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 public record FallenKingdomsSettings(int countdownSeconds, int resultDisplaySeconds, int minPlayersPerKingdom,
                                      int maxPlayersPerKingdom, int maxKingdoms, PhaseTimeline timeline,
                                      WorldCycleSettings worldCycle, SpawnSettings spawns, DropSettings drops,
-                                     BarrierSettings enemyBaseBarrier,
+                                     BarrierSettings enemyBaseBarrier, HeartAlertSettings heartAlert,
                                      double heartHealth, int respawnDelaySeconds, double finalBorderSize,
                                      Set<Material> forbiddenPlacementMaterials,
                                       boolean autoStart, int ruinWaves, int ruinTicksBetweenWaves,
@@ -61,6 +61,11 @@ public record FallenKingdomsSettings(int countdownSeconds, int resultDisplaySeco
         if(effectiveCountdown<=0||effectiveRespawn<0||effectiveHeart<=0||effectiveRuinWaves<1||effectiveRuinWaves>10
                 ||effectiveRuinRadius<=0||effectiveRuinRadius>32||effectiveRuinRatio<=0||effectiveRuinRatio>1)
             throw new IllegalArgumentException("Surcharges de délais, cœur ou ruine FK invalides");
+        String soundId = config.getString("heart-alert.sound", "minecraft:entity.blaze.hurt");
+        HeartAlertSettings heartAlert = new HeartAlertSettings(soundId,
+                (float) config.getDouble("heart-alert.volume"), (float) config.getDouble("heart-alert.pitch"),
+                config.getInt("heart-alert.sound-cooldown-ticks"), config.getInt("heart-alert.duration-ticks"),
+                config.getInt("heart-alert.flash-interval-ticks"));
         return new FallenKingdomsSettings(effectiveCountdown, display, effectiveMin,
                 effectiveMax, effectiveKingdoms,
                 new PhaseTimeline(integerOverride("FK_PVP_AT_SECONDS",config.getInt("phases.pvp-at-seconds")),integerOverride("FK_ASSAULT_AT_SECONDS",config.getInt("phases.assault-at-seconds")),
@@ -73,7 +78,7 @@ public record FallenKingdomsSettings(int countdownSeconds, int resultDisplaySeco
                 new BarrierSettings(config.getInt("protections.enemy-base-barrier.render-interval-ticks"),
                         config.getInt("protections.enemy-base-barrier.view-distance-blocks"),
                         config.getDouble("protections.enemy-base-barrier.particle-spacing-blocks"),
-                        config.getInt("protections.enemy-base-barrier.vertical-radius-blocks")),
+                        config.getInt("protections.enemy-base-barrier.vertical-radius-blocks")), heartAlert,
                 effectiveHeart, effectiveRespawn, border,
                 forbidden, booleanOverride("FK_AUTO_START",host?false:config.getBoolean("game.auto-start", true)), effectiveRuinWaves, ruinTicks,
                 effectiveRuinRadius, effectiveRuinRatio, config.getBoolean("ruins.preserve-containers", true), profile,

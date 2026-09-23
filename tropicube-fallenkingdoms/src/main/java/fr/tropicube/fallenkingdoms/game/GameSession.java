@@ -8,6 +8,9 @@ import fr.tropicube.fallenkingdoms.map.MapCatalog;
 import fr.tropicube.fallenkingdoms.persistence.FallenKingdomsPreferenceService;
 import fr.tropicube.fallenkingdoms.event.*;
 import fr.tropicube.fallenkingdoms.hud.FallenKingdomsHud;
+import fr.tropicube.fallenkingdoms.loot.LootChestService;
+import fr.tropicube.fallenkingdoms.loot.LootTables;
+import fr.skytasul.glowingentities.GlowingEntities;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -81,11 +84,15 @@ public final class GameSession {
     private final MapVote mapVote = new MapVote();
     private final FallenKingdomsPreferenceService preferences;
     private final FallenKingdomsHud hud;
+    private final LootChestService lootChests;
+    private final GlowingEntities glowingEntities;
+    private final Map<UUID, Long> lootDepositWarnings = new HashMap<>();
     private BukkitTask countdownTask;
     private int countdownRemaining;
     private long startedAt;
     private GameResult result;
     private boolean winnerCheckScheduled;
+    private int lastProcessedDay = 1;
 
     public GameSession(TropicubeFallenKingdoms plugin, GameStateMachine state, MapCatalog maps, String defaultMap,
                        FallenKingdomsSettings settings,FileConfiguration config) {
@@ -100,11 +107,24 @@ public final class GameSession {
         TropicubeCore core = (TropicubeCore) Bukkit.getPluginManager().getPlugin("TropicubeCore");
         this.preferences = new FallenKingdomsPreferenceService(Objects.requireNonNull(core).getDatabaseManager());
         this.hud = new FallenKingdomsHud(plugin, this);
+        this.lootChests = new LootChestService(plugin, LootTables.load(config), sessionId);
+        this.glowingEntities = new GlowingEntities(plugin);
+        this.lootChests.validateAsync(maps.maps(), this::onLootValidationComplete);
         prepareWaitingWorld();
+    }
+
+    private void onLootValidationComplete() {
+        for (MapDefinition definition : maps.maps()) {
+            String failure = lootChests.failure(definition);
+            if (failure != null) plugin.getLogger().severe("Carte " + definition.id() + ": " + failure);
+        }
+        if (state.state() == GameState.WAITING && settings.autoStart() && validRosterSize()
+                && lootChests.ready(map)) startCountdown();
     }
 
     public boolean startCountdown() {
         if (!validRosterSize()) return false;
+        if (!lootChests.ready(map)) return false;
         int kingdoms = configuredKingdomCount(Bukkit.getOnlinePlayers().size());
         if (!map.layouts().containsKey(kingdoms)) return false;
         if (!transition(GameState.COUNTDOWN)) return false;
@@ -154,6 +174,12 @@ public final class GameSession {
             return;
         }
         map = maps.select(mapVote.winner(map.id()));
+        if (!lootChests.ready(map)) {
+            plugin.getLogger().severe("Carte " + map.id() + ": coffres progressifs absents ou non validés");
+            transition(GameState.WAITING);
+            plugin.updateInstanceStatus(ServerInstance.Status.GAME_WAITING);
+            return;
+        }
         var roster = Bukkit.getOnlinePlayers().stream()
                 .map(player -> new KingdomAllocator.PlayerPreference(player.getUniqueId(), kingdomPreferences.get(player.getUniqueId()))).toList();
         int kingdomCount = configuredKingdomCount(roster.size());
@@ -169,6 +195,7 @@ public final class GameSession {
             plugin.updateInstanceStatus(ServerInstance.Status.GAME_WAITING);
             return;
         }
+        lootChests.initialize(map);
         Map<UUID, KingdomId> allocations = new KingdomAllocator().allocate(roster, layout, kingdomCount,
                 settings.minPlayersPerKingdom(), settings.maxPlayersPerKingdom(), allocationRandom);
         try { Files.writeString(plugin.sessionMarker(),sessionId.toString()); }
@@ -188,6 +215,7 @@ public final class GameSession {
             PlayerSession runtime = players.get(player.getUniqueId());
             if (runtime != null) prepareParticipant(player, runtime.kingdom());
         }
+        refreshAlliedGlowing();
         startedAt = System.currentTimeMillis();
         plugin.updateInstanceStatus(ServerInstance.Status.GAME_PLAYING);
         tasks.register(Bukkit.getScheduler().runTaskTimer(plugin, this::tick, 20L, 20L));
@@ -211,9 +239,19 @@ public final class GameSession {
     private void tick() {
         if (!state.state().active()) return;
         int seconds = (int) ((System.currentTimeMillis() - startedAt) / 1000L);
-        updateHud(seconds);
         advancePhases(seconds);
+        updateLootChests(seconds);
+        updateHud(seconds);
         if (seconds >= timeline.forceEndAt()) finishAtTimeLimit();
+    }
+
+    private void updateLootChests(int seconds) {
+        int day = GameDay.at(seconds);
+        if (day <= lastProcessedDay || day < 2) return;
+        lastProcessedDay = day;
+        lootChests.refill(day);
+        for (Player player : Bukkit.getOnlinePlayers()) player.sendMessage(core().getLanguageManager().getComponent(
+                player.getUniqueId(), "fk.loot-refilled", PlaceholderValues.of("day", day)));
     }
 
     private void advancePhases(int seconds) {
@@ -273,7 +311,10 @@ public final class GameSession {
         Bukkit.getPluginManager().callEvent(damage);
         if (damage.isCancelled()) return;
         double applied = heart.damage(attackingPlayer.kingdom(), damage.damage(), false);
-        if (applied > 0) hud.showEnemyHeart(attacker, heart);
+        if (applied > 0) {
+            hud.showEnemyHeart(attacker, heart);
+            alertHeartAttack(heart);
+        }
         if (before != HeartState.DESTROYED && heart.state() == HeartState.DESTROYED) {
             attackingPlayer.recordObjective();
             crystal.remove();
@@ -281,6 +322,15 @@ public final class GameSession {
             Bukkit.getPluginManager().callEvent(new KingdomHeartDestroyedEvent(sessionId, heart.owner(),
                     KingdomHeartDestroyedEvent.Cause.PLAYER));
         }
+    }
+
+    private void alertHeartAttack(Heart heart) {
+        players.values().stream().filter(player -> player.kingdom() == heart.owner())
+                .filter(player -> player.state() == PlayerLifeState.ACTIVE
+                        || player.state() == PlayerLifeState.LAST_LIFE
+                        || player.state() == PlayerLifeState.RESPAWNING)
+                .map(player -> Bukkit.getPlayer(player.playerId())).filter(Objects::nonNull)
+                .forEach(player -> hud.showHeartAttack(player, heart, settings.heartAlert()));
     }
 
     private void markLastLives(KingdomId kingdom) {
@@ -304,6 +354,7 @@ public final class GameSession {
         Heart heart = hearts.get(runtime.kingdom());
         boolean canRespawn = state.state() != GameState.SUDDEN_DEATH && heart != null && heart.state() != HeartState.DESTROYED;
         runtime.state(canRespawn ? PlayerLifeState.RESPAWNING : PlayerLifeState.ELIMINATED);
+        refreshAlliedGlowing();
         scheduleWinnerCheck();
     }
 
@@ -339,6 +390,7 @@ public final class GameSession {
         player.getInventory().clear();
         player.setGameMode(GameMode.SURVIVAL);
         player.teleport(base(runtime.kingdom()).spawn().in(world()));
+        refreshAlliedGlowing();
     }
 
     public void join(Player player) {
@@ -362,16 +414,22 @@ public final class GameSession {
         } else {
             applyCombatAttributes(player);
             if (runtime.state() != PlayerLifeState.OFFLINE) return;
-            if(!settings.disconnectCountsAsDeath()){runtime.state(PlayerLifeState.ACTIVE);return;}
+            if(!settings.disconnectCountsAsDeath()) {
+                runtime.state(PlayerLifeState.ACTIVE);
+                refreshAlliedGlowing();
+                return;
+            }
             runtime.state(PlayerLifeState.RESPAWNING);
             respawn(player);
         }
+        refreshAlliedGlowing();
     }
 
     public void quit(Player player) {
         core().getNetworkProgressionService().releaseDisplay(player.getUniqueId());
         restoreCombatAttributes(player);
         hud.remove(player);
+        removeGlowingFor(player);
         baseEntryWarnings.remove(player.getUniqueId());
         if (state.state() == GameState.COUNTDOWN) Bukkit.getScheduler().runTask(plugin, this::reevaluateCountdown);
         PlayerSession runtime = players.get(player.getUniqueId());
@@ -384,6 +442,7 @@ public final class GameSession {
         Heart heart = hearts.get(runtime.kingdom());
         runtime.state(heart != null && heart.state() != HeartState.DESTROYED
                 && state.state() != GameState.SUDDEN_DEATH ? PlayerLifeState.OFFLINE : PlayerLifeState.ELIMINATED);
+        refreshAlliedGlowing();
         scheduleWinnerCheck();
     }
 
@@ -427,6 +486,7 @@ public final class GameSession {
     }
 
     public boolean mayChangeBlock(Player player, Location location, Material material, boolean placing) {
+        if (lootChests.isLootBlock(location.getBlock())) return false;
         PlayerSession runtime = players.get(player.getUniqueId());
         if (!state.state().active() || runtime == null || !runtime.surviving()) return false;
         ProtectionRules.Territory territory = territoryAt(location, runtime.kingdom());
@@ -475,6 +535,7 @@ public final class GameSession {
     public boolean mayExplosionChange(Block block) {
         Location location=block.getLocation();
         if (!state.state().active() || !map.playableRegion().contains(location)) return false;
+        if (lootChests.isLootBlock(block)) return false;
         if(settings.preserveContainers()&&block.getState() instanceof Container)return false;
         if(block.getType()==Material.BEDROCK||block.getType()==Material.BARRIER||block.getType()==Material.END_PORTAL_FRAME)return false;
         boolean inBase = map.bases().values().stream().anyMatch(base -> base.region().contains(location));
@@ -519,6 +580,7 @@ public final class GameSession {
         plugin.updateInstanceStatus(ServerInstance.Status.GAME_ENDING);
         announceResult(result);
         Bukkit.getOnlinePlayers().forEach(this::restoreCombatAttributes);
+        refreshAlliedGlowing();
         crystals.values().forEach(EnderCrystal::remove);
         tasks.register(Bukkit.getScheduler().runTaskLater(plugin, () -> {
             tasks.cancelAll();
@@ -529,6 +591,7 @@ public final class GameSession {
 
     public void shutdown() {
         tasks.cancelAll();
+        clearAlliedGlowing();
         crystals.values().forEach(EnderCrystal::remove);
         for (Player player : Bukkit.getOnlinePlayers()) {
             restoreCombatAttributes(player);
@@ -583,9 +646,26 @@ public final class GameSession {
     }
     public int maxPlayersPerKingdom() { return settings.maxPlayersPerKingdom(); }
     public KingdomId kingdomOf(Player player) { PlayerSession runtime = players.get(player.getUniqueId()); return runtime == null ? null : runtime.kingdom(); }
+    public PlayerLifeState playerLifeState(UUID playerId) {
+        PlayerSession runtime = players.get(playerId);
+        return runtime == null ? PlayerLifeState.SPECTATOR : runtime.state();
+    }
     public boolean isParticipant(Player player) { return players.containsKey(player.getUniqueId()); }
     public void refreshHud(Player player){hud.update(player,elapsedSeconds());}
+    public void refreshIdentity(Player player) {
+        hud.update(player, elapsedSeconds());
+        refreshAlliedGlowing();
+    }
     public Heart heart(KingdomId kingdom) { return hearts.get(kingdom); }
+    public boolean isLootInventory(org.bukkit.inventory.Inventory inventory) { return lootChests.isLootInventory(inventory); }
+    public boolean isLootBlock(Block block) { return lootChests.isLootBlock(block); }
+    public void warnLootDeposit(UUID playerId) {
+        long now = System.currentTimeMillis();
+        if (now - lootDepositWarnings.getOrDefault(playerId, 0L) < 2_000L) return;
+        lootDepositWarnings.put(playerId, now);
+        Player player = Bukkit.getPlayer(playerId);
+        if (player != null) player.sendMessage(core().getLanguageManager().getComponent(playerId, "fk.loot-deposit-forbidden"));
+    }
     public Map<KingdomId, Integer> survivorCounts() { return Map.copyOf(survivors()); }
     public Set<KingdomId> activeKingdoms() { return Set.copyOf(hearts.keySet()); }
     public int elapsedSeconds() { return startedAt == 0 ? 0 : (int)((System.currentTimeMillis()-startedAt)/1000L); }
@@ -615,6 +695,46 @@ public final class GameSession {
 
     private void updateHud(int elapsedSeconds) {
         hud.updateAll(elapsedSeconds);
+    }
+
+    private void refreshAlliedGlowing() {
+        clearAlliedGlowing();
+        if (!state.state().active()) return;
+        for (Player viewer : Bukkit.getOnlinePlayers()) {
+            PlayerSession viewerSession = players.get(viewer.getUniqueId());
+            if (viewerSession == null || !livingForGlow(viewerSession)) continue;
+            for (Player target : Bukkit.getOnlinePlayers()) {
+                if (viewer.equals(target)) continue;
+                PlayerSession targetSession = players.get(target.getUniqueId());
+                if (targetSession == null || !livingForGlow(targetSession)
+                        || targetSession.kingdom() != viewerSession.kingdom()) continue;
+                try {
+                    glowingEntities.setGlowing(target, viewer);
+                } catch (ReflectiveOperationException failure) {
+                    plugin.getLogger().log(java.util.logging.Level.WARNING,
+                            "Impossible d'activer le surlignage allié FK", failure);
+                }
+            }
+        }
+    }
+
+    private void removeGlowingFor(Player target) {
+        for (Player viewer : Bukkit.getOnlinePlayers()) {
+            try {
+                glowingEntities.unsetGlowing(target, viewer);
+            } catch (ReflectiveOperationException failure) {
+                plugin.getLogger().log(java.util.logging.Level.FINE,
+                        "Impossible de retirer le surlignage allié FK", failure);
+            }
+        }
+    }
+
+    private void clearAlliedGlowing() {
+        for (Player target : Bukkit.getOnlinePlayers()) removeGlowingFor(target);
+    }
+
+    private static boolean livingForGlow(PlayerSession player) {
+        return player.state() == PlayerLifeState.ACTIVE || player.state() == PlayerLifeState.LAST_LIFE;
     }
 
     private void applyCombatAttributes(Player player) {

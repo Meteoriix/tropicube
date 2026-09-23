@@ -9,6 +9,7 @@ import fr.tropicube.fallenkingdoms.listener.ProtectionListener;
 import fr.tropicube.fallenkingdoms.listener.LobbyMenuListener;
 import fr.tropicube.fallenkingdoms.listener.PlayerIdentityListener;
 import fr.tropicube.fallenkingdoms.listener.WorldBalanceListener;
+import fr.tropicube.fallenkingdoms.listener.LootChestListener;
 import fr.tropicube.fallenkingdoms.map.MapCatalog;
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.language.PlaceholderValues;
@@ -47,6 +48,7 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
     private ProtectionListener protectionListener;
     private LobbyMenuListener lobbyMenuListener;
     private WorldBalanceListener worldBalanceListener;
+    private LootChestListener lootChestListener;
     private MenuTemplateRegistry menuTemplates;
     private Consumer<String> languageChangeHandler;
     private ProtectedBlockInteractionPolicy blockInteractionPolicy;
@@ -83,6 +85,7 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
         if (protectionListener != null) HandlerList.unregisterAll(protectionListener);
         if (lobbyMenuListener != null) { HandlerList.unregisterAll(lobbyMenuListener); lobbyMenuListener.unregister(); }
         if (worldBalanceListener != null) HandlerList.unregisterAll(worldBalanceListener);
+        if (lootChestListener != null) HandlerList.unregisterAll(lootChestListener);
         if (session != null) session.shutdown();
         settings = loadedSettings;
         session = loadedSession;
@@ -90,10 +93,12 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
         protectionListener = new ProtectionListener(session);
         lobbyMenuListener = new LobbyMenuListener(this, session);
         worldBalanceListener = new WorldBalanceListener(session, settings.spawns(), settings.drops());
+        lootChestListener = new LootChestListener(session);
         getServer().getPluginManager().registerEvents(gameListener, this);
         getServer().getPluginManager().registerEvents(protectionListener, this);
         getServer().getPluginManager().registerEvents(lobbyMenuListener, this);
         getServer().getPluginManager().registerEvents(worldBalanceListener, this);
+        getServer().getPluginManager().registerEvents(lootChestListener, this);
         lobbyMenuListener.refreshViewers();
     }
     private void subscribeLanguageChanges(){
@@ -103,7 +108,7 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
                     && !message.startsWith("GRADE_LOADED:") && !message.startsWith("GRADE_CHANGED:"))return;
             if(!isEnabled())return;
             String[] parts=message.split(":",3);if(parts.length<2)return;
-            try{java.util.UUID playerId=java.util.UUID.fromString(parts[1]);getServer().getScheduler().runTask(this,()->{var player=getServer().getPlayer(playerId);if(player!=null){session.refreshHud(player);lobbyMenuListener.refresh(player);}});}catch(IllegalArgumentException ignored){}
+            try{java.util.UUID playerId=java.util.UUID.fromString(parts[1]);getServer().getScheduler().runTask(this,()->{var player=getServer().getPlayer(playerId);if(player!=null){session.refreshIdentity(player);lobbyMenuListener.refresh(player);}});}catch(IllegalArgumentException ignored){}
         };core.getRedisManager().subscribeToPlayerEvents(languageChangeHandler);}
     }
     @Override public void onDisable() {
@@ -154,7 +159,7 @@ public final class TropicubeFallenKingdoms extends JavaPlugin {
     public void refreshPlayerIdentity(UUID playerId) {
         Player player = getServer().getPlayer(playerId);
         if (player == null || session == null) return;
-        session.refreshHud(player);
+        session.refreshIdentity(player);
         if (lobbyMenuListener != null) lobbyMenuListener.refresh(player);
     }
     public FallenKingdomsSettings settings() { return settings; }

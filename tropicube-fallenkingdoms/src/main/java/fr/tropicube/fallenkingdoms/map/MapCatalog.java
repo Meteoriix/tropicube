@@ -1,6 +1,7 @@
 package fr.tropicube.fallenkingdoms.map;
 
 import fr.tropicube.fallenkingdoms.game.KingdomId;
+import fr.tropicube.fallenkingdoms.loot.LootChestDefinition;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import java.util.*;
@@ -29,8 +30,13 @@ public final class MapCatalog {
             for (String name : kingdoms.getKeys(false)) { KingdomId kingdom = KingdomId.valueOf(name.toUpperCase(Locale.ROOT)); ConfigurationSection base = requiredSection(kingdoms, name); bases.put(kingdom, new BaseDefinition(position(requiredSection(base, "spawn")), position(requiredSection(base, "heart")), region(requiredSection(base, "base-region")))); }
             Map<Integer, List<KingdomId>> layouts = new HashMap<>(); ConfigurationSection layoutRoot = requiredSection(map, "layouts");
             for (String count : layoutRoot.getKeys(false)) layouts.put(Integer.parseInt(count), layoutRoot.getStringList(count).stream().map(KingdomId::valueOf).toList());
+            ConfigurationSection lootRoot = requiredSection(map, "loot-chests");
+            List<LootChestDefinition> lootChests = new ArrayList<>();
+            for (String chestId : lootRoot.getKeys(false)) {
+                lootChests.add(new LootChestDefinition(chestId, position(requiredSection(lootRoot, chestId))));
+            }
             MapDefinition definition = new MapDefinition(id, required(map, "display-name-key"), world, lobby, spectator, playable,
-                    borderCenter.getDouble("x"), borderCenter.getDouble("z"), border.getDouble("initial-size"), layouts, bases);
+                    borderCenter.getDouble("x"), borderCenter.getDouble("z"), border.getDouble("initial-size"), layouts, bases, lootChests);
             result.put(id, definition);
         }
         if (result.isEmpty()) throw new IllegalArgumentException("locations.maps: aucune carte activée");

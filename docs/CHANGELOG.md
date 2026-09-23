@@ -4,6 +4,13 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-09-23
+
+- Réorganise Fallen Kingdoms en six jours de dix minutes : JcJ à 10 minutes, assaut à 20 minutes, mort subite à 40 minutes et résolution à 60 minutes, avec jour courant dans le scoreboard et nouveaux défauts du créateur de parties.
+- Colore les pseudonymes par royaume, surligne uniquement les alliés, détaille le contenu réel des kits et alerte les membres après un dégât valide sur leur cœur.
+- Ajoute les dix coffres neutres progressifs de Cactus, vides au jour 1 puis réapprovisionnés aux jours 2 à 6 par tables pondérées, protégés contre le stockage, les entonnoirs et la destruction.
+- Retire l'annonce d'accueil de la rotation périodique Velocity tout en conservant sa traduction pour les annonces manuelles.
+
 ### 2026-09-22
 
 - Renomme le bouton de hotbar en « Jeux », colore Jeux et Social en vert, rend le sélecteur entièrement gris et restaure l'indication du clic gauche Quick Play dans les quatre langues.

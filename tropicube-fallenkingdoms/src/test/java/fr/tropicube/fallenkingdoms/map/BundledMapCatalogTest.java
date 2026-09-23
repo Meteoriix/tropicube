@@ -19,6 +19,7 @@ class BundledMapCatalogTest {
             assertEquals("cactus", catalog.select("cactus").id());
             assertEquals(5, catalog.select("cactus").bases().size());
             assertEquals(5, catalog.select("cactus").layouts().get(2).size());
+            assertEquals(10, catalog.select("cactus").lootChests().size());
             assertEquals(-712.0, catalog.select("cactus").lobby().x());
             assertEquals(59.0, catalog.select("cactus").lobby().y());
             assertEquals(5, KitCatalog.load(config).definitions().size());
@@ -51,7 +52,8 @@ class BundledMapCatalogTest {
                 "world-cycle.night-duration-seconds", "spawns.natural-hostile-night-retention",
                 "drops.flint-base-chance", "drops.creeper-gunpowder-multiplier",
                 "protections.enemy-base-barrier.render-interval-ticks", "locations.lobby.x",
-                "locations.lobby.y", "locations.lobby.z")) {
+                "locations.lobby.y", "locations.lobby.z", "progressive-loot.rolls-per-chest",
+                "locations.maps.cactus.loot-chests.coffre-10.x")) {
             assertEquals(embedded.get(path), deployed.get(path), path);
         }
         assertEquals(embedded.getStringList("locations.maps.cactus.layouts.2"),
