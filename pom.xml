@@ -30,7 +30,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.build.outputTimestamp>2026-01-01T00:00:00Z</project.build.outputTimestamp>
         <velocity.version>4.2.0</velocity.version>
-        <paper.version>26.3.build.8-alpha</paper.version>
+        <paper.version>26.3-pre-2.build.0-alpha</paper.version>
         <docker.java.version>3.7.1</docker.java.version>
         <jedis.version>7.5.3</jedis.version>
         <hikari.version>7.1.0</hikari.version>
