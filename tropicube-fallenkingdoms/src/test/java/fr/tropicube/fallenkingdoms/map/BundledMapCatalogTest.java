@@ -20,6 +20,9 @@ class BundledMapCatalogTest {
             assertEquals(5, catalog.select("cactus").bases().size());
             assertEquals(5, catalog.select("cactus").layouts().get(2).size());
             assertEquals(10, catalog.select("cactus").lootChests().size());
+            assertEquals(-698.0, catalog.select("cactus").lootChests().stream()
+                    .filter(chest -> chest.id().equals("coffre-10"))
+                    .findFirst().orElseThrow().position().x());
             assertEquals(-712.0, catalog.select("cactus").lobby().x());
             assertEquals(59.0, catalog.select("cactus").lobby().y());
             assertEquals(5, KitCatalog.load(config).definitions().size());

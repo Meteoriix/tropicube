@@ -6,6 +6,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-23
 
+- Corrige la position du dixième coffre progressif de Cactus afin que la validation de la carte autorise le démarrage d'une partie Fallen Kingdoms.
 - Réorganise Fallen Kingdoms en six jours de dix minutes : JcJ à 10 minutes, assaut à 20 minutes, mort subite à 40 minutes et résolution à 60 minutes, avec jour courant dans le scoreboard et nouveaux défauts du créateur de parties.
 - Colore les pseudonymes par royaume, surligne uniquement les alliés, détaille le contenu réel des kits et alerte les membres après un dégât valide sur leur cœur.
 - Ajoute les dix coffres neutres progressifs de Cactus, vides au jour 1 puis réapprovisionnés aux jours 2 à 6 par tables pondérées, protégés contre le stockage, les entonnoirs et la destruction.

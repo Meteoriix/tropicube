@@ -183,7 +183,7 @@ locations:
         coffre-7: { x: -694, y: 70, z: -616 }
         coffre-8: { x: -679, y: 71, z: -627 }
         coffre-9: { x: -674, y: 71, z: -651 }
-        coffre-10: { x: -691, y: 71, z: -652 }
+        coffre-10: { x: -698, y: 71, z: -652 }
       kingdoms:
         blue:
           spawn: { x: -727.0, y: 72.0, z: -738.0, yaw: 180.0, pitch: 0.0 }

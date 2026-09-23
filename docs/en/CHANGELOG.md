@@ -6,6 +6,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-23
 
+- Fixed Cactus's tenth progressive chest position so map validation allows Fallen Kingdoms matches to start.
 - Reworked Fallen Kingdoms into six ten-minute days: PvP at 10 minutes, assault at 20, sudden death at 40, and resolution at 60, with the current day in the scoreboard and updated custom-game defaults.
 - Added kingdom-colored profile names, ally-only glowing, exact kit contents, and defending-team alerts after valid heart damage.
 - Added Cactus's ten progressive neutral chests, empty on day 1 and refilled from weighted day 2–6 tables, with storage, hopper, and destruction protection.
