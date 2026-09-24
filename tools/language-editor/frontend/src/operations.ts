@@ -18,3 +18,16 @@ export async function runExclusive(lock: OperationLock, operation: () => Promise
 export function hasNewerDraft(currentRevision: number, submittedRevision: number): boolean {
   return currentRevision !== submittedRevision;
 }
+
+type UiFileIdentity = { id: string; hash: string };
+
+/** Builds an optimistic-lock payload containing only manifests edited in the current draft. */
+export function uiApplicationPayload(files: UiFileIdentity[], documents: Record<string, string>,
+                                     changedIds: string[]): { expectedHashes: Record<string, string>; documents: Record<string, string> } {
+  const changed = new Set(changedIds);
+  const selected = files.filter(file => changed.has(file.id));
+  return {
+    expectedHashes: Object.fromEntries(selected.map(file => [file.id, file.hash])),
+    documents: Object.fromEntries(selected.map(file => [file.id, documents[file.id]])),
+  };
+}

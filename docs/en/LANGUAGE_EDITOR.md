@@ -43,7 +43,7 @@ All resources use canonical named placeholders such as `{player}`, `{balance}`, 
 - raw French YAML mode supports bulk changes;
 - previews cover chat, titles, actionbar, inventories, lore, scoreboard, and tablist;
 - validation checks YAML, key parity, placeholders, and allowed tags;
-- writes are rejected when a file changed after it was opened;
+- writes are rejected when a file actually edited in the draft changed after it was opened; unchanged manifests do not participate in conflict detection;
 - four sources and their Docker mirrors are replaced together, with rollback on failure;
 - after saving, validated files are copied to Velocity or every active Paper instance, then the internal `languageeditorreload` command reloads the affected languages and interfaces; each container acknowledges completion only after replacing its catalog and refreshing active views;
 - the `Apply` button stays disabled during the operation to prevent concurrent writes; conflicts and errors preserve the draft and appear in the status bar;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hasNewerDraft, runExclusive } from './operations';
+import { hasNewerDraft, runExclusive, uiApplicationPayload } from './operations';
 
 describe('runExclusive', () => {
   it('ignores a second application while the first one is pending', async () => {
@@ -30,5 +30,20 @@ describe('runExclusive', () => {
   it('detects edits made after an application captured its draft', () => {
     expect(hasNewerDraft(12, 12)).toBe(false);
     expect(hasNewerDraft(13, 12)).toBe(true);
+  });
+
+  it('submits only changed UI manifests for optimistic locking', () => {
+    const payload = uiApplicationPayload([
+      { id: 'lobby:menus.yml', hash: 'menu-old' },
+      { id: 'tropicube-sheepwars:scoreboards.yml', hash: 'scoreboard-stale' },
+    ], {
+      'lobby:menus.yml': 'updated menu',
+      'tropicube-sheepwars:scoreboards.yml': 'unchanged draft',
+    }, ['lobby:menus.yml']);
+
+    expect(payload).toEqual({
+      expectedHashes: { 'lobby:menus.yml': 'menu-old' },
+      documents: { 'lobby:menus.yml': 'updated menu' },
+    });
   });
 });

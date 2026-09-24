@@ -43,7 +43,7 @@ Toutes les ressources utilisent des placeholders nommés canoniques comme `{play
 - le mode YAML français convient aux changements groupés ;
 - les aperçus couvrent chat, titres, actionbar, inventaires, lores, scoreboard et tablist ;
 - la validation contrôle YAML, parité des clés, placeholders et balises autorisées ;
-- une écriture est refusée si un fichier a changé depuis son ouverture ;
+- une écriture est refusée si l'un des fichiers effectivement modifiés dans le brouillon a changé depuis son ouverture ; les manifestes non modifiés ne participent pas au contrôle de conflit ;
 - les quatre sources et leurs miroirs Docker sont remplacés ensemble, avec rollback sur erreur ;
 - après l'enregistrement, les fichiers validés sont copiés dans Velocity ou dans toutes les instances Paper actives, puis la commande interne `languageeditorreload` recharge les langues et interfaces concernées ; chaque conteneur écrit un accusé de réception seulement après le remplacement du catalogue et le rafraîchissement des vues ;
 - le bouton `Appliquer` reste désactivé pendant l'opération afin d'éviter deux écritures concurrentes ; un conflit ou une erreur conserve le brouillon et s'affiche dans la barre d'état ;

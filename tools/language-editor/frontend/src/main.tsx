@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { parse, stringify } from 'yaml';
 import { collectPlaceholders, Diagnostic, documents, editableValue, FileSnapshot, filterKeys, flatten, inferContext, Locale, locales, PlaceholderSummary, rename, SearchMode, serialize, setValue, StateSet, value, valueFromEditor, withTranslations } from './model';
-import { hasNewerDraft, runExclusive } from './operations';
+import { hasNewerDraft, runExclusive, uiApplicationPayload } from './operations';
 import './styles.css';
 
 type Docs = ReturnType<typeof documents>;
@@ -392,8 +392,9 @@ function App() {
           liveErrors.push(...languageResult.live.errors);
         }
         if (changed.length) {
+          const payload = uiApplicationPayload(baseUiSnapshots, uiSerialized, changed.map(file => file.id));
           const result = await api<{ui: UiSnapshot[]; live: LiveResult}>('/api/ui/apply', { method: 'POST', body: JSON.stringify({
-            expectedHashes: Object.fromEntries(baseUiSnapshots.map(file => [file.id, file.hash])), documents: uiSerialized,
+            expectedHashes: payload.expectedHashes, documents: payload.documents,
           }) });
           savedAny = true;
           setUiSnapshots(result.ui);
