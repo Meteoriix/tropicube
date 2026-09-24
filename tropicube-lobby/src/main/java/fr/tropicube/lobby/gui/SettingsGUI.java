@@ -3,6 +3,7 @@ package fr.tropicube.lobby.gui;
 import fr.tropicube.core.TropicubeCore;
 import fr.tropicube.core.network.PlayerPreferenceService;
 import fr.tropicube.core.menu.NetworkMenuStyle;
+import fr.tropicube.language.PlaceholderValues;
 import fr.tropicube.lobby.utils.ItemBuilder;
 import fr.tropicube.lobby.utils.LangHelper;
 import me.arcaniax.hdb.api.HeadDatabaseAPI;
@@ -60,12 +61,10 @@ public final class SettingsGUI {
                                 ? "lobby.settings-global-chat-on" : "lobby.settings-global-chat-off"),
                         LangHelper.get(player, "lobby.settings-global-chat-help")).build());
         boolean enabled = autoReplayRemaining >= 0;
-        String stateKey = !enabled ? "lobby.settings-auto-replay-off"
-                : autoReplayRemaining == 0 ? "lobby.settings-auto-replay-confirm"
-                : "lobby.settings-auto-replay-on";
+        AutoReplayPresentation autoReplay = autoReplayPresentation(autoReplayRemaining);
         inventory.setItem(AUTO_REPLAY_SLOT, new ItemBuilder(enabled ? Material.LIME_DYE : Material.GRAY_DYE)
                 .name(LangHelper.get(player, "lobby.settings-auto-replay-name"))
-                .lore(LangHelper.get(player, stateKey, autoReplayRemaining),
+                .lore(LangHelper.get(player, autoReplay.key(), autoReplay.placeholders()),
                         LangHelper.get(player, "lobby.settings-auto-replay-help")).build());
         inventory.setItem(VISIBILITY_SLOT, new ItemBuilder(Material.ENDER_EYE)
                 .name(LangHelper.get(player, "lobby.settings-visibility-name"))
@@ -106,6 +105,19 @@ public final class SettingsGUI {
         String key = rawValue.toLowerCase(Locale.ROOT).replace('_', '-');
         return LangHelper.get(player, "lobby.settings-value-" + key);
     }
+
+    static AutoReplayPresentation autoReplayPresentation(int remainingGames) {
+        if (remainingGames < 0) {
+            return new AutoReplayPresentation("lobby.settings-auto-replay-off", PlaceholderValues.empty());
+        }
+        if (remainingGames == 0) {
+            return new AutoReplayPresentation("lobby.settings-auto-replay-confirm", PlaceholderValues.empty());
+        }
+        return new AutoReplayPresentation("lobby.settings-auto-replay-on",
+                PlaceholderValues.of("remaining_games", remainingGames));
+    }
+
+    record AutoReplayPresentation(String key, PlaceholderValues placeholders) { }
 
     public static final class Holder implements InventoryHolder {
         private Inventory inventory;

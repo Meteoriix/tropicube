@@ -7,6 +7,7 @@ This document records functional, technical, and operational changes. Entries ar
 ### 2026-09-24
 
 - Prevented an older Redis UI generation from restoring retired Lobby menu labels while preserving text genuinely customized in the editor.
+- Fixed Profile → Settings opening when automatic replay is disabled or awaiting confirmation, without passing a value to text that expects none.
 
 ### 2026-09-23
 
