@@ -87,7 +87,7 @@ public class TropiAdminCommand implements SimpleCommand {
             return;
         }
         String templateId = args[1];
-        String customName = args.length >= 3 ? args[2] : null;
+        String customName = args.length >= 3 ? joinArguments(args, 2) : null;
 
         if (!manager.getTemplates().containsKey(templateId)) {
             source.sendMessage(lm.getComponent(source, "proxy.admin-start-not-found", templateId));
@@ -113,7 +113,8 @@ public class TropiAdminCommand implements SimpleCommand {
             source.sendMessage(lm.getComponent(source, "proxy.admin-stop-usage"));
             return;
         }
-        resolveInstance(args[1]).ifPresentOrElse(instance -> {
+        String nameOrId = joinArguments(args, 1);
+        resolveInstance(nameOrId).ifPresentOrElse(instance -> {
             source.sendMessage(lm.getComponent(source, "proxy.admin-stopping", instance.getServerName()));
             manager.stopServer(instance.getInstanceId())
                     .thenAccept(ok -> source.sendMessage(lm.getComponent(
@@ -122,7 +123,7 @@ public class TropiAdminCommand implements SimpleCommand {
                         source.sendMessage(lm.getComponent(source, "proxy.admin-stop-failed"));
                         return null;
                     });
-        }, () -> source.sendMessage(lm.getComponent(source, "proxy.admin-instance-not-found", args[1])));
+        }, () -> source.sendMessage(lm.getComponent(source, "proxy.admin-instance-not-found", nameOrId)));
     }
 
     private void handleKill(CommandSource source, String[] args) {
@@ -130,7 +131,8 @@ public class TropiAdminCommand implements SimpleCommand {
             source.sendMessage(lm.getComponent(source, "proxy.admin-kill-usage"));
             return;
         }
-        resolveInstance(args[1]).ifPresentOrElse(instance -> {
+        String nameOrId = joinArguments(args, 1);
+        resolveInstance(nameOrId).ifPresentOrElse(instance -> {
             source.sendMessage(lm.getComponent(source, "proxy.admin-killing", instance.getServerName()));
             String serverName = instance.getServerName();
             manager.killServer(instance.getInstanceId())
@@ -140,7 +142,7 @@ public class TropiAdminCommand implements SimpleCommand {
                         source.sendMessage(lm.getComponent(source, "proxy.admin-kill-failed", serverName));
                         return null;
                     });
-        }, () -> source.sendMessage(lm.getComponent(source, "proxy.admin-instance-not-found", args[1])));
+        }, () -> source.sendMessage(lm.getComponent(source, "proxy.admin-instance-not-found", nameOrId)));
     }
 
     private void handleInfo(CommandSource source, String[] args) {
@@ -148,7 +150,8 @@ public class TropiAdminCommand implements SimpleCommand {
             source.sendMessage(lm.getComponent(source, "proxy.admin-info-usage"));
             return;
         }
-        resolveInstance(args[1]).ifPresentOrElse(i -> {
+        String nameOrId = joinArguments(args, 1);
+        resolveInstance(nameOrId).ifPresentOrElse(i -> {
             source.sendMessage(lm.getComponent(source, "proxy.admin-header"));
             source.sendMessage(lm.getComponent(source, "proxy.admin-info-name", i.getServerName()));
             source.sendMessage(lm.getComponent(source, "proxy.admin-info-id", i.getInstanceId()));
@@ -169,7 +172,7 @@ public class TropiAdminCommand implements SimpleCommand {
                     : lm.get(source, "proxy.admin-info-whitelist-no");
             source.sendMessage(lm.getComponent(source, "proxy.admin-info-whitelist", wlVal));
             source.sendMessage(lm.getComponent(source, "proxy.admin-footer"));
-        }, () -> source.sendMessage(lm.getComponent(source, "proxy.admin-instance-not-found", args[1])));
+        }, () -> source.sendMessage(lm.getComponent(source, "proxy.admin-instance-not-found", nameOrId)));
     }
 
     private void handleTemplates(CommandSource source) {
@@ -215,6 +218,19 @@ public class TropiAdminCommand implements SimpleCommand {
                 .findFirst();
     }
 
+    static String joinArguments(String[] args, int startIndex) {
+        if (startIndex >= args.length) return "";
+        return String.join(" ", Arrays.copyOfRange(args, startIndex, args.length)).trim();
+    }
+
+    static List<String> filterInstanceNameSuggestions(Collection<String> serverNames, String query) {
+        String normalizedQuery = query.toLowerCase(Locale.ROOT);
+        return serverNames.stream()
+                .filter(name -> name.toLowerCase(Locale.ROOT).startsWith(normalizedQuery))
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
+    }
+
     private static String errorMessage(Throwable error) {
         Throwable current = error;
         while (current.getCause() != null) current = current.getCause();
@@ -241,11 +257,16 @@ public class TropiAdminCommand implements SimpleCommand {
         if (args.length == 1) {
             return Arrays.asList("list", "start", "stop", "kill", "info", "templates", "maintenance", "reload");
         }
-        if (args.length == 2) {
+        if (args.length >= 2) {
             return switch (args[0].toLowerCase()) {
-                case "start", "maintenance" -> new ArrayList<>(manager.getTemplates().keySet());
-                case "stop", "kill", "info" -> manager.getActiveInstances().values().stream()
-                        .map(ServerInstance::getServerName).collect(Collectors.toList());
+                case "start", "maintenance" -> args.length == 2
+                        ? new ArrayList<>(manager.getTemplates().keySet())
+                        : Collections.emptyList();
+                case "stop", "kill", "info" -> filterInstanceNameSuggestions(
+                        manager.getActiveInstances().values().stream()
+                                .map(ServerInstance::getServerName)
+                                .collect(Collectors.toList()),
+                        joinArguments(args, 1));
                 default -> Collections.emptyList();
             };
         }

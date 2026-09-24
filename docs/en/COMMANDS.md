@@ -27,6 +27,8 @@ Velocity validates `/whitelist`: the sender must own an active private custom ga
 
 Geyser and Floodgate commands are not advertised to players by Tropicube's command catalog. Operators can run `geyser connectiontest <host> <port>` from the Velocity console after deployment. Other commands require their proxy-side `geyser.command.*` or `floodgate.command.*` permissions and remain outside Tropicube's level model until explicitly integrated.
 
+Dynamic instance names may contain spaces. The `start`, `stop`, `kill`, and `info` subcommands treat every remaining word as the complete name; full and abbreviated instance IDs remain accepted by the three lookup and shutdown commands.
+
 ## Core commands
 
 | Command | Permission | Purpose |

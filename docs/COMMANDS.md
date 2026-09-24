@@ -163,6 +163,8 @@ Les commandes Geyser/Floodgate ne sont pas publiées aux joueurs par le catalogu
 | `/tropi maintenance <template> <on|off>` | Interdit ou réautorise les créations sur un template |
 | `/tropi reload` | Recharge les templates et la configuration du proxy |
 
+Les noms d'instance peuvent contenir des espaces. Les commandes `start`, `stop`, `kill` et `info` utilisent tous les mots restants comme nom complet ; les identifiants d'instance complets ou abrégés restent acceptés par les trois commandes de consultation et d'arrêt.
+
 ## Capacités réseau dérivées
 
 Les nœuds Paper et Velocity sont uniquement des adaptateurs calculés depuis `vipLevel` et `modLevel` :

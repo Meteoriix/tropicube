@@ -8,6 +8,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 - Empêche une ancienne génération d'interface Redis de restaurer les anciens libellés des menus Lobby, tout en conservant les textes réellement personnalisés dans l'éditeur.
 - Corrige l'ouverture de Profil → Paramètres lorsque le rejeu automatique est désactivé ou attend une confirmation, sans transmettre de valeur à un texte qui n'en attend pas.
+- Permet aux commandes d'administration `/tropi start`, `stop`, `kill` et `info` d'utiliser des noms de serveur contenant des espaces.
 
 ### 2026-09-23
 
