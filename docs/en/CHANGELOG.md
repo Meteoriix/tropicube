@@ -9,6 +9,7 @@ This document records functional, technical, and operational changes. Entries ar
 - Prevented an older Redis UI generation from restoring retired Lobby menu labels while preserving text genuinely customized in the editor.
 - Fixed Profile → Settings opening when automatic replay is disabled or awaiting confirmation, without passing a value to text that expects none.
 - Allowed the `/tropi start`, `stop`, `kill`, and `info` administration commands to use server names containing spaces.
+- Updated the Cactus map metadata for Minecraft 26.3's split world-data layout without including player data or temporary files.
 
 ### 2026-09-23
 
