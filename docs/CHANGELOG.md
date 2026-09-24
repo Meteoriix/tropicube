@@ -11,6 +11,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 - Permet aux commandes d'administration `/tropi start`, `stop`, `kill` et `info` d'utiliser des noms de serveur contenant des espaces.
 - Actualise les métadonnées de la carte Cactus selon le découpage des données de monde de Minecraft 26.3, sans embarquer les données joueur ni les fichiers temporaires.
 - Empêche un manifeste d'interface obsolète mais non modifié de bloquer l'application d'un autre brouillon dans l'éditeur de langues.
+- Rend les scoreboards et tablists Fallen Kingdoms déployables par l'éditeur et synchronise leur miroir Docker pendant les builds Maven.
 
 ### 2026-09-23
 

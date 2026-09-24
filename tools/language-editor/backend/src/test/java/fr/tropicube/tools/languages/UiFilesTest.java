@@ -54,6 +54,20 @@ class UiFilesTest {
                 .isEmpty());
     }
 
+    @Test
+    void mirrorsFallenKingdomsManifests() throws Exception {
+        Path source = repository.resolve("tropicube-fallenkingdoms/src/main/resources/scoreboards.yml");
+        Files.createDirectories(source.getParent());
+        Files.writeString(source, scoreboard("fk.title.old"));
+        UiFiles files = new UiFiles(repository);
+        UiFiles.UiSnapshot snapshot = files.readAll().getFirst();
+
+        files.apply(Map.of(snapshot.id(), snapshot.hash()), Map.of(snapshot.id(), scoreboard("fk.title.new")));
+
+        assertEquals(Files.readString(source), Files.readString(
+                repository.resolve("dockerfiles/configs/TropicubeFallenKingdoms/scoreboards.yml")));
+    }
+
     private static String scoreboard(String title) {
         return "version: 1\nscoreboards:\n  lobby:\n    title-key: " + title
                 + "\n    variants:\n      idle:\n        lines:\n          - {key: line}\n";

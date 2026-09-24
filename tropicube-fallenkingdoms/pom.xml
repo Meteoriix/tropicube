@@ -53,6 +53,22 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions><execution>
+                    <id>sync-docker-ui-configs</id>
+                    <phase>process-resources</phase>
+                    <goals><goal>copy-resources</goal></goals>
+                    <configuration>
+                        <outputDirectory>${project.basedir}/../dockerfiles/configs/TropicubeFallenKingdoms</outputDirectory>
+                        <changeDetection>content</changeDetection>
+                        <resources><resource><directory>${project.basedir}/src/main/resources</directory>
+                            <includes><include>scoreboards.yml</include><include>tablists.yml</include></includes>
+                        </resource></resources>
+                    </configuration>
+                </execution></executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <executions><execution><phase>package</phase><goals><goal>shade</goal></goals>
                     <configuration><shadedArtifactAttached>true</shadedArtifactAttached>

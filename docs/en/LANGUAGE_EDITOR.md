@@ -1,6 +1,6 @@
 # Language editor
 
-The Tropicube language editor is a local web application for Core, Lobby, SheepWars, and Velocity MiniMessage resources and interfaces. It discovers languages plus `scoreboards.yml`, `tablists.yml`, and `menus.yml` manifests, treats French as the source, and maintains their Docker mirrors.
+The Tropicube language editor is a local web application for Core, Lobby, SheepWars, Fallen Kingdoms, and Velocity MiniMessage resources and interfaces. It discovers languages plus `scoreboards.yml`, `tablists.yml`, and `menus.yml` manifests, treats French as the source, and maintains their Docker mirrors.
 
 ## Starting the editor
 

@@ -54,8 +54,11 @@ class LiveLanguageDeploymentTest {
     @Test
     void copiesUiManifestsBeforeOneReloadPerContainer() throws Exception {
         Path source = repository.resolve("tropicube-lobby/src/main/resources/menus.yml");
+        Path fallenKingdoms = repository.resolve("tropicube-fallenkingdoms/src/main/resources/scoreboards.yml");
         Files.createDirectories(source.getParent());
+        Files.createDirectories(fallenKingdoms.getParent());
         Files.writeString(source, "version: 1\nmenus: {}\n");
+        Files.writeString(fallenKingdoms, "version: 1\nscoreboards: {}\n");
         List<List<String>> commands = new ArrayList<>();
         LiveLanguageDeployment deployment = new LiveLanguageDeployment(repository, (command, _, _) -> {
             commands.add(List.copyOf(command));
@@ -64,12 +67,17 @@ class LiveLanguageDeploymentTest {
             return new LiveLanguageDeployment.CommandResult(0, "ok");
         }, "docker-test");
 
-        var result = deployment.deployUi(List.of(new UiFiles.UiSnapshot("tropicube-lobby:menus.yml",
-                "tropicube-lobby", "menus", "tropicube-lobby/src/main/resources/menus.yml", null,
-                Files.readString(source), "hash")));
+        var result = deployment.deployUi(List.of(
+                new UiFiles.UiSnapshot("tropicube-lobby:menus.yml", "tropicube-lobby", "menus",
+                        "tropicube-lobby/src/main/resources/menus.yml", null, Files.readString(source), "hash"),
+                new UiFiles.UiSnapshot("tropicube-fallenkingdoms:scoreboards.yml", "tropicube-fallenkingdoms",
+                        "scoreboards", "tropicube-fallenkingdoms/src/main/resources/scoreboards.yml", null,
+                        Files.readString(fallenKingdoms), "hash")));
 
         assertEquals(1, result.updatedContainers());
-        assertEquals(1, commands.stream().filter(command -> command.contains("cp")).count());
+        assertEquals(2, commands.stream().filter(command -> command.contains("cp")).count());
+        assertTrue(commands.stream().flatMap(List::stream)
+                .anyMatch(argument -> argument.contains("/data/plugins/TropicubeFallenKingdoms")));
         assertEquals(1, commands.stream().filter(LiveLanguageDeploymentTest::isReloadCommand).count());
     }
 

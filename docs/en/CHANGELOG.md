@@ -11,6 +11,7 @@ This document records functional, technical, and operational changes. Entries ar
 - Allowed the `/tropi start`, `stop`, `kill`, and `info` administration commands to use server names containing spaces.
 - Updated the Cactus map metadata for Minecraft 26.3's split world-data layout without including player data or temporary files.
 - Prevented a stale but unchanged UI manifest from blocking another draft in the language editor.
+- Made Fallen Kingdoms scoreboards and tablists deployable from the editor and synchronized their Docker mirror during Maven builds.
 
 ### 2026-09-23
 

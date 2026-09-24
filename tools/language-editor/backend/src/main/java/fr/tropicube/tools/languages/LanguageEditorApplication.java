@@ -206,10 +206,15 @@ public final class LanguageEditorApplication {
 
     private void applyUi(HttpExchange exchange) throws IOException {
         JsonObject request = body(exchange);
+        Map<String, String> documents = stringMap(request.getAsJsonObject("documents"));
         Map<String, UiFiles.UiSnapshot> snapshots = uiFiles.apply(
                 stringMap(request.getAsJsonObject("expectedHashes")),
-                stringMap(request.getAsJsonObject("documents")));
-        LiveLanguageDeployment.LiveResult live = liveDeployment.deployUi(snapshots.values());
+                documents);
+        List<UiFiles.UiSnapshot> changedSnapshots = documents.keySet().stream()
+                .map(snapshots::get)
+                .filter(java.util.Objects::nonNull)
+                .toList();
+        LiveLanguageDeployment.LiveResult live = liveDeployment.deployUi(changedSnapshots);
         json(exchange, 200, Map.of("ok", true, "ui", snapshots.values(), "live", live));
     }
 

@@ -102,6 +102,7 @@ final class LiveLanguageDeployment {
                         case "tropicube-core" -> "/data/plugins/TropicubeCore";
                         case "tropicube-lobby" -> "/data/plugins/TropicubeLobby";
                         case "tropicube-sheepwars" -> "/data/plugins/TropicubeSheepwars";
+                        case "tropicube-fallenkingdoms" -> "/data/plugins/TropicubeFallenKingdoms";
                         default -> throw new IllegalArgumentException("Module UI non déployable : " + snapshot.module());
                     };
                     String target = pluginDirectory + "/" + snapshot.type() + ".yml";

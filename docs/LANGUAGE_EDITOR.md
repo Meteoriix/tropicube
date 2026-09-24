@@ -1,6 +1,6 @@
 # Éditeur de langues
 
-L'éditeur de langues Tropicube est une application web locale destinée aux ressources MiniMessage et aux interfaces de Core, Lobby, SheepWars et Velocity. Il découvre les langues ainsi que les manifestes `scoreboards.yml`, `tablists.yml` et `menus.yml`, utilise le français comme source et maintient leurs copies Docker.
+L'éditeur de langues Tropicube est une application web locale destinée aux ressources MiniMessage et aux interfaces de Core, Lobby, SheepWars, Fallen Kingdoms et Velocity. Il découvre les langues ainsi que les manifestes `scoreboards.yml`, `tablists.yml` et `menus.yml`, utilise le français comme source et maintient leurs copies Docker.
 
 ## Démarrage
 

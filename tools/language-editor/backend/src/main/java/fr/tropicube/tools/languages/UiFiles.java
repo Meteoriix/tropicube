@@ -222,6 +222,7 @@ final class UiFiles {
             case "tropicube-core" -> "TropicubeCore";
             case "tropicube-lobby" -> "TropicubeLobby";
             case "tropicube-sheepwars" -> "TropicubeSheepwars";
+            case "tropicube-fallenkingdoms" -> "TropicubeFallenKingdoms";
             default -> null;
         };
         if (plugin == null) return null;
