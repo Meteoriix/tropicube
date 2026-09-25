@@ -104,7 +104,8 @@ Ces trois valeurs doivent être strictement positives et le seuil d'expiration d
 
 Chaque entrée de `templates` décrit :
 
-- `enabled`, `name`, `image`, `type` ;
+- `enabled`, `name`, `image`, `type`, ainsi que le `game-type` affiché au joueur ;
+- `game-format`, facultatif, pour préciser un format comme `4v4`, `8v8`, `1v1` ou `2v2` ;
 - plage de ports, `max-players` et `spectator-slots` ;
 - mémoire minimale/maximale en Mio ;
 - `auto-start`, `min-instances` et `max-instances` ;
@@ -112,6 +113,8 @@ Chaque entrée de `templates` décrit :
 - variables d'environnement passées à l'image Paper.
 
 Les templates Paper fournis fixent `VERSION: "26.3"` et `PAPER_BUILD: "8"`. Ce build alpha explicitement qualifié garantit que le runtime sélectionné au démarrage correspond aux artefacts préchauffés dans les trois Dockerfiles Paper. Toute mise à jour doit modifier ensemble ces valeurs, les arguments par défaut des Dockerfiles et la dépendance Paper du POM parent, puis reconstruire et requalifier les quatre images du lot.
+
+Velocity publie `game-type` et `game-format` dans son catalogue Redis. Le scoreboard de file du Lobby affiche ainsi le nom localisé du jeu, l'icône du type de file et, lorsqu'il existe, le format. Une ancienne configuration sans `game-type` reste compatible en utilisant `type` comme valeur de repli.
 
 SheepWars utilise trois recettes : `sheepwars` (`GAME_MODE=QUICK_PLAY`, ports 25625–25639), `sheepwars-ranked-4v4` (25640–25649) et `sheepwars-ranked-8v8` (25650–25659). Les deux templates classés sont créés seulement lorsqu'un groupe compatible atteint respectivement 8 ou 16 joueurs. `matchmaking.ranked.initial-rating-range`, `growth-per-step`, `step-seconds` et `maximum-rating-range` règlent l'élargissement progressif de leur fenêtre de cote.
 

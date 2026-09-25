@@ -6,6 +6,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-25
 
+- Uniformise les menus sans ligne de vitres bleues, corrige l'affichage du solde Boutique jusqu'à 100 B, conserve le vrai pseudo dans les listes d'amis et complète les compteurs de demandes.
+- Affiche le jeu, l'icône et le format dans le scoreboard de file, signale les files Ranked absentes et simplifie le menu Guildes sans bouton d'actualisation permanent.
 - Aligne les validations des interfaces sur la nouvelle palette et migre l'ancien bouton Jeux vert vers son accent aqua foncé sans écraser les personnalisations.
 - Rend réellement vide la ligne d'espacement du scoreboard SheepWars en supprimant explicitement son nombre côté client et vérifie la représentation Paper complète de chaque variante.
 

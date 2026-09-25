@@ -333,7 +333,7 @@ public class TropicubeVelocity {
 
     private void registerListeners() {
         server.getEventManager().register(this, new PlayerConnectionListener(this, tropiServerManager, redisManager,
-                accessProfileCache, logger, languageManager));
+                accessProfileCache, nickManager, logger, languageManager));
         server.getEventManager().register(this, new ServerSwitchListener(this, redisManager, nickManager, partyCoordinator, logger));
         server.getEventManager().register(this, new NickListener(nickManager, logger));
         server.getEventManager().register(this, new CommandVisibilityListener());

@@ -16,7 +16,6 @@ import java.util.Locale;
 /** Shared visual primitives for every Core, Lobby, and mini-game inventory. */
 public final class NetworkMenuStyle {
     public static final Material BACKGROUND = Material.GRAY_STAINED_GLASS_PANE;
-    public static final Material ACCENT = Material.LIGHT_BLUE_STAINED_GLASS_PANE;
 
     private NetworkMenuStyle() { }
 
@@ -32,11 +31,9 @@ public final class NetworkMenuStyle {
         }
     }
 
-    /** Draws an accent top row over the neutral shared background. */
+    /** Draws the shared neutral background without a decorative accent row. */
     public static void frame(Inventory inventory) {
         fill(inventory);
-        ItemStack accent = item(ACCENT, Component.text(" "));
-        for (int slot = 0; slot < Math.min(9, inventory.getSize()); slot++) inventory.setItem(slot, accent);
     }
 
     /**
@@ -51,8 +48,8 @@ public final class NetworkMenuStyle {
     }
 
     /**
-     * Applies a manifest-declared visual treatment.  Keeping the choice here
-     * prevents a screen from silently drifting away from its declared layout.
+     * Applies a manifest-declared visual treatment. The legacy {@code network}
+     * and {@code neutral} names now intentionally share the same gray surface.
      */
     public static void applyFrame(Inventory inventory, Player player, String frame) {
         switch (frame) {

@@ -5,6 +5,14 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GradeUpgradePricingTest {
+
+    @Test
+    void formatsBalancesWithoutNarrowingToInteger() {
+        assertEquals("100.0B", VipShopGUI.formatCoins(100_000_000_000D));
+        assertEquals("2.1B", VipShopGUI.formatCoins(2_147_483_647D));
+        assertEquals("1.5M", VipShopGUI.formatCoins(1_500_000D));
+        assertEquals("100", VipShopGUI.formatCoins(100D));
+    }
     @Test
     void deductsTheAlreadyPurchasedCatalogValue() {
         assertEquals(10_000, GradeUpgradePricing.difference(5_000, 15_000));

@@ -660,6 +660,7 @@ lobby:
   ranked-cancel-name: "<red>Leave active queue"
   ranked-cancel-lore: "<gray>Current queue: <white>{queue}"
   ranked-cancelled: "<tc><green>You left your active queue."
+  ranked-unavailable-for-game: "<tc><yellow>The Ranked queue is not available for this game yet."
   welcome-title: "<gold><bold>Welcome to Tropicube!</bold>"
   welcome-subtitle: "<aqua>Pick an adventure and jump into the game"
   welcome-return: "<aqua>Back in the Tropicube lobby"
@@ -1034,7 +1035,7 @@ social:
   menu-follow-on: "<green>Follow leader: enabled"
   menu-follow-off: "<red>Follow leader: disabled"
   menu-warp: "<light_purple>Gather the party"
-  menu-requests-sent-count: <gray>{sent_request_count} invitation(s) sent
+  menu-requests-sent-count: "<gray>{sent_request_count} sent request(s)"
 access:
   usage: "<yellow>Usage: /level \\<player> [vip|mod] [level]"
   invalid: "<red>Invalid axis or level. VIP: 0 to 3, mod: 0 to 4."

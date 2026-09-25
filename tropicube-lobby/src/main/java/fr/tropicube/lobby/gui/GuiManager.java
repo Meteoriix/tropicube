@@ -199,7 +199,10 @@ public class GuiManager {
         Inventory loading = SocialGUI.loading(player, view);
         player.openInventory(loading);
         var social = core.getSocialService();
-        social.friends(playerId).thenCombine(social.requests(playerId), (friends, requests) -> {
+        social.friends(playerId).thenCombine(social.requests(playerId), SocialData::new)
+                .thenCombine(social.sentRequests(playerId), (socialData, sentRequests) -> {
+            var friends = socialData.friends();
+            var requests = socialData.requests();
             List<CompletableFuture<SocialGUI.FriendEntry>> entryFutures = friends.stream()
                     .map(friend -> playerHeadProfiles.resolve(friend.playerId())
                             .thenApply(profile -> new SocialGUI.FriendEntry(friend.playerId(), friend.username(),
@@ -220,7 +223,7 @@ public class GuiManager {
                     .thenApply(ignored -> new SocialSnapshot(
                             entryFutures.stream().map(CompletableFuture::join).toList(),
                             partyEntryFutures.stream().map(CompletableFuture::join).toList(),
-                            requests.size(), invites.size(), sentInvites.size(), party));
+                            requests.size(), sentRequests.size(), invites.size(), sentInvites.size(), party));
         }).thenCompose(snapshot -> snapshot)
                 .whenComplete((snapshot, error) -> Bukkit.getScheduler().runTask(plugin, () -> {
             Player online = Bukkit.getPlayer(playerId);
@@ -234,7 +237,7 @@ public class GuiManager {
             }
             try {
                 Inventory inventory = SocialGUI.build(online, view, snapshot.friends(), snapshot.partyMembers(),
-                        snapshot.friendRequestCount(), snapshot.receivedPartyInviteCount(),
+                        snapshot.friendRequestCount(), snapshot.sentFriendRequestCount(), snapshot.receivedPartyInviteCount(),
                         snapshot.sentPartyInviteCount(), snapshot.party());
                 openGuis.put(playerId, GuiType.SOCIAL);
                 online.openInventory(inventory);
@@ -397,9 +400,13 @@ public class GuiManager {
 
     private record SocialSnapshot(List<SocialGUI.FriendEntry> friends,
                                   List<SocialGUI.PartyEntry> partyMembers,
-                                  int friendRequestCount, int receivedPartyInviteCount,
+                                  int friendRequestCount, int sentFriendRequestCount,
+                                  int receivedPartyInviteCount,
                                   int sentPartyInviteCount,
                                   fr.tropicube.docker.model.PartySnapshot party) { }
+
+    private record SocialData(List<fr.tropicube.core.social.FriendshipRepository.FriendView> friends,
+                              List<fr.tropicube.core.social.FriendshipRepository.PendingRequest> requests) { }
 
     private record FriendRequestSnapshot(List<FriendRequestsGUI.RequestEntry> incoming,
                                          List<FriendRequestsGUI.RequestEntry> sent) { }

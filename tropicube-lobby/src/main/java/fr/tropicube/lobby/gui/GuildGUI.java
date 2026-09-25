@@ -48,7 +48,7 @@ public final class GuildGUI {
     }
 
     public static void error(Player player, Holder holder) {
-        item(player, holder, 22, Material.RED_DYE, "guild-ui.error", new GuildScreen.Action(REFRESH));
+        item(player, holder, 22, Material.RED_DYE, "guild-ui.error", new GuildScreen.Action(RETRY));
     }
 
     public static Holder build(Player player, GuildScreen requested, Snapshot data) {
@@ -179,7 +179,6 @@ public final class GuildGUI {
         holder.actions.put(6, new GuildScreen.Action(HOME));
         item(player, holder, 45, Material.ARROW, screen.view() == GuildScreen.View.HOME ? "guild-ui.back-social"
                 : screen.view() == GuildScreen.View.MEMBER ? "guild-ui.back-members" : "guild-ui.back", new GuildScreen.Action(BACK));
-        item(player, holder, 49, Material.SUNFLOWER, "guild-ui.refresh", new GuildScreen.Action(REFRESH));
         holder.inventory.setItem(53, ItemBuilder.closeButton(player));
         holder.actions.put(53, new GuildScreen.Action(CLOSE));
         return holder;

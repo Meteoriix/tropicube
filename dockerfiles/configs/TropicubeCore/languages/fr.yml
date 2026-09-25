@@ -668,6 +668,7 @@ lobby:
   ranked-cancel-name: "<red>Quitter la file active"
   ranked-cancel-lore: "<gray>File actuelle : <white>{queue}"
   ranked-cancelled: "<tc><green>Tu as quitté la file active."
+  ranked-unavailable-for-game: "<tc><yellow>La file Ranked n'est pas encore disponible pour ce jeu."
   welcome-title: "<gold><bold>Bienvenue sur Tropicube !</bold>"
   welcome-subtitle: "<aqua>Choisis une aventure et plonge dans le jeu"
   welcome-return: "<aqua>De retour au lobby Tropicube"
@@ -1042,7 +1043,7 @@ social:
   menu-follow-on: "<green>Suivi du chef : activé"
   menu-follow-off: "<red>Suivi du chef : désactivé"
   menu-warp: "<light_purple>Rassembler la party"
-  menu-requests-sent-count: <gray>{sent_request_count} invitation(s) envoyée(s)
+  menu-requests-sent-count: "<gray>{sent_request_count} demande(s) envoyée(s)"
 access:
   usage: "<yellow>Utilisation : /level \\<joueur> [vip|mod] [niveau]"
   invalid: "<red>Axe ou niveau invalide. VIP : 0 à 3, mod : 0 à 4."

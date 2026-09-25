@@ -86,7 +86,8 @@ public class LobbyServerManager {
                     .filter(t -> t.name() != null && !t.name().isBlank())
                     .filter(t -> t.type() != null && !t.type().isBlank())
                     .map(t -> new TemplateInfo(t.id(), t.name(), t.type(), Math.max(1, t.maxPlayers()),
-                            t.mode() == null ? InstanceMode.QUICK_PLAY : t.mode()))
+                            t.mode() == null ? InstanceMode.QUICK_PLAY : t.mode(),
+                            t.gameType(), t.gameFormat()))
                     .toList();
             templateCacheRef.set(templates);
             refreshRankedStats(templates);
@@ -164,6 +165,11 @@ public class LobbyServerManager {
                 .filter(template -> template.mode().isRanked())
                 .sorted(Comparator.comparing(TemplateInfo::mode))
                 .toList();
+    }
+
+    /** Returns the published metadata for one exact template identifier. */
+    public Optional<TemplateInfo> getTemplate(String templateId) {
+        return templateCacheRef.get().stream().filter(template -> template.id().equals(templateId)).findFirst();
     }
 
     /** Returns the enabled queue templates published for one player-facing category. */
@@ -267,7 +273,13 @@ public class LobbyServerManager {
     /**
      * Immutable data from a server template (published by Velocity).
      */
-    public record TemplateInfo(String id, String name, String type, int maxPlayers, InstanceMode mode) {}
+    public record TemplateInfo(String id, String name, String type, int maxPlayers, InstanceMode mode,
+                               String gameType, String gameFormat) {
+        /** Compatibility constructor for callers and cached JSON created before queue display metadata. */
+        public TemplateInfo(String id, String name, String type, int maxPlayers, InstanceMode mode) {
+            this(id, name, type, maxPlayers, mode, type, null);
+        }
+    }
     public record RankedQueueStats(int version, String templateId, int groups, int reservedPlayers,
                                    int capacity, long oldestWaitSeconds, long updatedAt) {}
 

@@ -126,6 +126,7 @@ templates:
     name: "Lobby"
     image: "tropicube-lobby:latest"
     type: "LOBBY"
+    game-type: "LOBBY"
     port-min: 25600
     port-max: 25624
     max-players: 100
@@ -169,6 +170,7 @@ templates:
     name: "Sheepwars"
     image: "tropicube-sheepwars:latest"
     type: "SHEEPWARS"
+    game-type: "SHEEPWARS"
     port-min: 25625
     port-max: 25639
     max-players: 16
@@ -212,6 +214,8 @@ templates:
     name: "Sheepwars Ranked 4v4"
     image: "tropicube-sheepwars:latest"
     type: "SHEEPWARS"
+    game-type: "SHEEPWARS"
+    game-format: "4v4"
     port-min: 25640
     port-max: 25649
     max-players: 8
@@ -243,6 +247,8 @@ templates:
     name: "Sheepwars Ranked 8v8"
     image: "tropicube-sheepwars:latest"
     type: "SHEEPWARS"
+    game-type: "SHEEPWARS"
+    game-format: "8v8"
     port-min: 25650
     port-max: 25659
     max-players: 16
@@ -274,6 +280,7 @@ templates:
     name: "Fallen Kingdoms"
     image: "tropicube-fallenkingdoms:latest"
     type: "FALLENKINGDOMS"
+    game-type: "FALLENKINGDOMS"
     port-min: 25660
     port-max: 25669
     max-players: 30
@@ -316,6 +323,8 @@ templates:
     name: "Fallen Kingdoms 1v1"
     image: "tropicube-fallenkingdoms:latest"
     type: "BETA"
+    game-type: "FALLENKINGDOMS"
+    game-format: "1v1"
     port-min: 25670
     port-max: 25679
     max-players: 30
@@ -360,6 +369,8 @@ templates:
     name: "Fallen Kingdoms 2v2"
     image: "tropicube-fallenkingdoms:latest"
     type: "BETA"
+    game-type: "FALLENKINGDOMS"
+    game-format: "2v2"
     port-min: 25680
     port-max: 25689
     max-players: 30

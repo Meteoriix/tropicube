@@ -650,6 +650,7 @@ lobby:
   ranked-cancel-name: "<red>Aktive Warteschlange verlassen"
   ranked-cancel-lore: "<gray>Aktuelle Warteschlange: <white>{queue}"
   ranked-cancelled: "<tc><green>Du hast die aktive Warteschlange verlassen."
+  ranked-unavailable-for-game: "<tc><yellow>Die Ranked-Warteschlange ist für dieses Spiel noch nicht verfügbar."
   welcome-title: "<gold><bold>Willkommen auf Tropicube!</bold>"
   welcome-subtitle: "<aqua>Wähle ein Abenteuer und stürze dich ins Spiel"
   welcome-return: "<aqua>Zurück in der Tropicube-Lobby"
@@ -1024,7 +1025,7 @@ social:
   menu-follow-on: "<green>Leiter folgen: aktiviert"
   menu-follow-off: "<red>Leiter folgen: deaktiviert"
   menu-warp: "<light_purple>Party sammeln"
-  menu-requests-sent-count: <gray>{sent_request_count} einladung(en)
+  menu-requests-sent-count: "<gray>{sent_request_count} gesendete Anfrage(n)"
 access:
   usage: "<yellow>Verwendung: /level \\<Spieler> [vip|mod] [Stufe]"
   invalid: "<red>Ungültige Zugriffsart oder Stufe. VIP: 0 bis 3, Mod: 0 bis 4."

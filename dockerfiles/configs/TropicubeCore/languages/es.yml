@@ -650,6 +650,7 @@ lobby:
   ranked-cancel-name: "<red>Salir de la cola activa"
   ranked-cancel-lore: "<gray>Cola actual: <white>{queue}"
   ranked-cancelled: "<tc><green>Has salido de la cola activa."
+  ranked-unavailable-for-game: "<tc><yellow>La cola Ranked aún no está disponible para este juego."
   welcome-title: "<gold><bold>¡Bienvenido a Tropicube!</bold>"
   welcome-subtitle: "<aqua>Elige una aventura y entra en el juego"
   welcome-return: "<aqua>De vuelta al lobby de Tropicube"
@@ -1024,7 +1025,7 @@ social:
   menu-follow-on: "<green>Seguir al líder: activado"
   menu-follow-off: "<red>Seguir al líder: desactivado"
   menu-warp: "<light_purple>Reunir al grupo"
-  menu-requests-sent-count: <gray>{sent_request_count} invitaciones enviadas
+  menu-requests-sent-count: "<gray>{sent_request_count} solicitud(es) enviada(s)"
 access:
   usage: "<yellow>Uso: /level \\<jugador> [vip|mod] [nivel]"
   invalid: "<red>Eje o nivel no válido. VIP: 0 a 3, mod: 0 a 4."

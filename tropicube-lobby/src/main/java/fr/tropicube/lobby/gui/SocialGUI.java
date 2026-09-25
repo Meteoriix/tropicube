@@ -42,6 +42,7 @@ public final class SocialGUI {
 
     public static Inventory build(Player player, View view, List<FriendEntry> friends,
                                    List<PartyEntry> partyMembers, int friendRequestCount,
+                                   int sentFriendRequestCount,
                                    int receivedPartyInviteCount, int sentPartyInviteCount,
                                    PartySnapshot party) {
         Map<Integer, Action> actions = new LinkedHashMap<>();
@@ -69,6 +70,7 @@ public final class SocialGUI {
             inventory.setItem(REQUESTS_SLOT, new ItemBuilder(Material.WRITABLE_BOOK)
                     .name(LangHelper.get(player, "social.menu-requests"))
                     .lore(LangHelper.get(player, "social.menu-requests-count", friendRequestCount),
+                            LangHelper.get(player, "social.menu-requests-sent-count", sentFriendRequestCount),
                             LangHelper.get(player, "social.menu-requests-action")).build());
             actions.put(REQUESTS_SLOT, new Action(ActionType.OPEN_FRIEND_REQUESTS, ""));
         } else {
@@ -88,7 +90,7 @@ public final class SocialGUI {
 
     /** Displays navigation immediately while SQL and Redis are being read. */
     public static Inventory loading(Player player, View view) {
-        Inventory inventory = build(player, view, List.of(), List.of(), 0, 0, 0, null);
+        Inventory inventory = build(player, view, List.of(), List.of(), 0, 0, 0, 0, null);
         Holder holder = (Holder) inventory.getHolder();
         holder.actions.keySet().removeIf(slot -> slot != FRIENDS_TAB_SLOT && slot != PARTY_TAB_SLOT && slot != GUILDS_TAB_SLOT);
         inventory.setItem(REQUESTS_SLOT, null);

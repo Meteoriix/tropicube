@@ -3,6 +3,7 @@ package fr.tropicube.core.managers;
 import fr.tropicube.core.util.MessageStyle;
 import fr.tropicube.core.TropicubeCore;
 import org.bukkit.entity.Player;
+import fr.tropicube.docker.model.PlayerIdentityKeys;
 
 import java.sql.*;
 import java.util.*;
@@ -55,10 +56,12 @@ public class PlayerDataManager {
     public CompletableFuture<PlayerProfile> loadPlayer(Player player) {
         // Bukkit properties are captured before leaving the main thread.
         UUID uuid = player.getUniqueId();
-        String username = player.getName();
+        String connectionUsername = player.getName();
         String displayName = player.getName();
         String initialLanguage = LanguageManager.resolveClientLanguage(player.locale().toLanguageTag());
         return db.supplyAsync(() -> {
+            String username = canonicalUsername(
+                    plugin.getRedisManager().get(PlayerIdentityKeys.authenticatedName(uuid)), connectionUsername);
             long now = System.currentTimeMillis();
             PlayerProfile profile;
             boolean existing;
@@ -87,6 +90,10 @@ public class PlayerDataManager {
             permissionManager.loadPlayer(uuid);
             return profile;
         });
+    }
+
+    static String canonicalUsername(String authenticatedName, String connectionUsername) {
+        return authenticatedName == null || authenticatedName.isBlank() ? connectionUsername : authenticatedName;
     }
 
     public void unloadPlayer(UUID uuid) {

@@ -268,6 +268,9 @@ public class TropiServerManager {
                 template.setName(node.node("name").getString(key.toString()));
                 template.setDockerImage(node.node("image").getString("itzg/minecraft-server:latest"));
                 template.setServerType(node.node("type").getString("SURVIVAL").toUpperCase());
+                template.setGameType(node.node("game-type").getString(template.getServerType()).toUpperCase(Locale.ROOT));
+                String gameFormat = node.node("game-format").getString();
+                template.setGameFormat(gameFormat == null || gameFormat.isBlank() ? null : gameFormat.trim());
                 template.setMinPort(node.node("port-min").getInt(25600));
                 template.setMaxPort(node.node("port-max").getInt(25700));
                 template.setMaxPlayers(node.node("max-players").getInt(50));
@@ -644,6 +647,8 @@ public class TropiServerManager {
             sb.append("{\"id\":\"").append(escape(t.getId())).append("\"")
               .append(",\"name\":\"").append(escape(t.getName())).append("\"")
               .append(",\"type\":\"").append(escape(t.getServerType())).append("\"")
+              .append(",\"gameType\":\"").append(escape(t.getGameType())).append("\"")
+              .append(",\"gameFormat\":\"").append(escape(t.getGameFormat())).append("\"")
               .append(",\"maxPlayers\":").append(t.getMaxPlayers())
               .append(",\"mode\":\"").append(resolveInstanceMode(t, Collections.emptyMap()).name()).append("\"")
               .append("}");

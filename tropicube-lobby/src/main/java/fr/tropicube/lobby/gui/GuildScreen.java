@@ -11,7 +11,7 @@ public record GuildScreen(View view, int page, UUID member, Action confirmation)
     public enum View { HOME, MEMBERS, MEMBER, INVITATIONS, CHALLENGES, RANKING, CONFIRM }
     /** Safe action identifiers, never rendered directly to players. */
     public enum Kind { HOME, BACK, FRIENDS, PARTY, MEMBERS, MEMBER, INVITATIONS, CHALLENGES, RANKING,
-        CREATE, INVITE, ACCEPT, LEAVE, KICK, PROMOTE, DEMOTE, TRANSFER, CONFIRM, REFRESH, PREVIOUS, NEXT, CLOSE }
+        CREATE, INVITE, ACCEPT, LEAVE, KICK, PROMOTE, DEMOTE, TRANSFER, CONFIRM, RETRY, PREVIOUS, NEXT, CLOSE }
     /** Target identity is captured from trusted server data, not client item metadata. */
     public record Action(Kind kind, UUID player, String tag, long guildId) {
         public Action(Kind kind) { this(kind, null, "", 0); }

@@ -1,6 +1,7 @@
 package fr.tropicube.lobby.managers;
 
 import fr.tropicube.lobby.TropicubeLobby;
+import fr.tropicube.lobby.gui.ServerTypeSelectorGUI;
 import fr.tropicube.lobby.utils.LangHelper;
 import fr.tropicube.core.ui.ScoreboardTemplate;
 import fr.tropicube.core.ui.TablistTemplate;
@@ -69,7 +70,8 @@ public class LobbyScoreboardManager implements UiReloadParticipant {
                 .put("visible_games", visibleGames)
                 .put("instance_number", System.getenv().getOrDefault("INSTANCE_ID", Bukkit.getServer().getName()));
         if (queued) {
-            values.putComponent("queue", MessageStyle.component(LangHelper.get(player, queue.labelKey())))
+            String gameName = ServerTypeSelectorGUI.displayType(player, queue.display().gameType());
+            values.putComponent("queue", MessageStyle.component(queue.display().decorate(gameName)))
                     .put("reserved_players", queue.reservedPlayers())
                     .put("max_players", queue.capacity())
                     .put("wait_seconds", queue.waitSeconds());
@@ -182,7 +184,8 @@ public class LobbyScoreboardManager implements UiReloadParticipant {
                 var stats = plugin.getLobbyServerManager().getRankedStats(templateId).orElse(null);
                 long since = plugin.getLobbyServerManager().getMatchmakingSince(playerId);
                 long wait = since <= 0 ? 0 : Math.max(0, (System.currentTimeMillis() - since) / 1000);
-                queueSnapshots.put(playerId, new QueueSnapshot(templateId, queueLabelKey(templateId),
+                QueueDisplay display = QueueDisplay.from(plugin.getLobbyServerManager().getTemplate(templateId).orElse(null));
+                queueSnapshots.put(playerId, new QueueSnapshot(templateId, display,
                         stats == null ? 0 : stats.reservedPlayers(), stats == null ? 0 : stats.capacity(), wait));
             } finally {
                 queueRefreshes.remove(playerId);
@@ -194,16 +197,10 @@ public class LobbyScoreboardManager implements UiReloadParticipant {
         });
     }
 
-    private static String queueLabelKey(String templateId) {
-        String normalized = templateId.toLowerCase(java.util.Locale.ROOT);
-        if (normalized.contains("4v4")) return "lobby.sb-queue-label-ranked-4v4";
-        if (normalized.contains("8v8")) return "lobby.sb-queue-label-ranked-8v8";
-        if (normalized.equals("fallenkingdoms-beta-1v1")) return "lobby.sb-queue-label-beta-fk-1v1";
-        if (normalized.equals("fallenkingdoms-beta-2v2")) return "lobby.sb-queue-label-beta-fk-2v2";
-        return "lobby.sb-queue-label-quick-play";
-    }
-
-    private record QueueSnapshot(String templateId, String labelKey, int reservedPlayers, int capacity, long waitSeconds) {
-        private static QueueSnapshot none() { return new QueueSnapshot(null, "", 0, 0, 0); }
+    private record QueueSnapshot(String templateId, QueueDisplay display, int reservedPlayers, int capacity,
+                                 long waitSeconds) {
+        private static QueueSnapshot none() {
+            return new QueueSnapshot(null, new QueueDisplay("UNKNOWN", QueueDisplay.Kind.QUICK_PLAY, null), 0, 0, 0);
+        }
     }
 }

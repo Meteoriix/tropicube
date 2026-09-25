@@ -198,7 +198,7 @@ public class ServerTypeSelectorGUI {
         return new ItemStack(Material.PAPER);
     }
 
-    static String displayType(Player player, String type) {
+    public static String displayType(Player player, String type) {
         if ("SHEEPWARS".equalsIgnoreCase(type)) return LangHelper.get(player, "lobby.game-type-sheepwars");
         if ("FALLENKINGDOMS".equalsIgnoreCase(type)) return LangHelper.get(player, "lobby.game-type-fallenkingdoms");
         if (BetaQueueSelectorGUI.TYPE.equalsIgnoreCase(type)) return LangHelper.get(player, "lobby.game-type-beta");

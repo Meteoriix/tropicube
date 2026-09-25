@@ -6,6 +6,8 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-25
 
+- Standardizes menus without a blue glass line, fixes Shop balances up to 100B, preserves authenticated names in friend lists, and completes friend-request counts.
+- Shows the game, queue icon, and format on the queue scoreboard, reports unavailable Ranked queues, and simplifies Guilds without a permanent refresh button.
 - Aligned UI validation with the new palette and migrated the former green Games button to its dark aqua accent without replacing customizations.
 - Made the SheepWars scoreboard spacer row truly blank by explicitly hiding its client-side score number and validating every variant's complete Paper representation.
 

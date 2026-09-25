@@ -40,6 +40,12 @@ public class ServerTemplate {
      */
     private String serverType;
 
+    /** Player-facing game identity, independent from routing categories such as BETA. */
+    private String gameType;
+
+    /** Optional player-facing queue format such as 4v4 or 2v2. */
+    private String gameFormat;
+
     /**
      *
      */
@@ -173,6 +179,22 @@ public class ServerTemplate {
 
     public void setServerType(String serverType) {
         this.serverType = serverType;
+    }
+
+    public String getGameType() {
+        return gameType;
+    }
+
+    public void setGameType(String gameType) {
+        this.gameType = gameType;
+    }
+
+    public String getGameFormat() {
+        return gameFormat;
+    }
+
+    public void setGameFormat(String gameFormat) {
+        this.gameFormat = gameFormat;
     }
 
     public int getMinPort() {
@@ -318,6 +340,8 @@ public class ServerTemplate {
         requireNonBlank(name, "name");
         requireNonBlank(dockerImage, "dockerImage");
         requireNonBlank(serverType, "serverType");
+        if (gameType != null && gameType.isBlank()) throw new IllegalStateException("gameType ne peut pas être vide");
+        if (gameFormat != null && gameFormat.isBlank()) throw new IllegalStateException("gameFormat ne peut pas être vide");
         if (minPort != 0 || maxPort != 0) {
             requirePort(minPort, "minPort");
             requirePort(maxPort, "maxPort");

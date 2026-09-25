@@ -36,7 +36,7 @@ Source: `tropicube-velocity/src/main/resources/config.yml`; deployment copy: `do
 - `remove-dynamic-servers-on-shutdown` controls cleanup during a normal proxy shutdown;
 - health-check values define probe frequency, timeout, and failed-start cleanup;
 - `nick.skin-uuids` extends the Mojang skin pool;
-- `templates` define Docker image, server type, capacity, scaling, auto-stop, volumes, and environment variables. `max-players` is the participant limit; `spectator-slots` adds backend capacity only for an ongoing game (`8` for SheepWars).
+- `templates` define Docker image, server type, player-facing `game-type`, optional `game-format`, capacity, scaling, auto-stop, volumes, and environment variables. `max-players` is the participant limit; `spectator-slots` adds backend capacity only for an ongoing game (`8` for SheepWars). Velocity publishes the two display fields in Redis so the Lobby queue scoreboard can show the localized game name, queue icon, and format. Older configurations without `game-type` fall back to `type`.
 
 The `BETA` category publishes `fallenkingdoms-beta-1v1` on ports 25670–25679 and `fallenkingdoms-beta-2v2` on ports 25680–25689. Both templates start on demand and share the Fallen Kingdoms image and Cactus map. The first requires at least one player in each of at least two kingdoms and can therefore start with 2 players; the second requires at least two players per kingdom and starts with 4. Both retain the public capacity of six players per kingdom and may use two to five kingdoms, up to 30 participants. They keep no warm instance floor.
 

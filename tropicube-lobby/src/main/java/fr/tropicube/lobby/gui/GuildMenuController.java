@@ -125,7 +125,7 @@ public final class GuildMenuController implements Listener, AutoCloseable {
             case MEMBER -> open(player, new GuildScreen(GuildScreen.View.MEMBER, holder.screen.page(), action.player(), null));
             case PREVIOUS, NEXT -> open(player, new GuildScreen(holder.screen.view(),
                     holder.screen.page() + (action.kind() == GuildScreen.Kind.NEXT ? 1 : -1), holder.screen.member(), null));
-            case REFRESH -> open(player, holder.screen);
+            case RETRY -> open(player, holder.screen);
             case CREATE -> askName(player);
             case INVITE -> askInvite(player, holder.guildId);
             case ACCEPT -> execute(player, holder, () -> plugin.getCore().getGuildService().accept(player.getUniqueId(), action.tag()));

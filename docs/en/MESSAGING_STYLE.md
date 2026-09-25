@@ -26,9 +26,9 @@ Grades use a bold colored label without brackets. Chat follows `VIP Player > mes
 
 ## Inventories and menus
 
-Every Core, Lobby, and game inventory reuses the `NetworkMenuStyle` frame: neutral gray background, aqua top accent, main actions in the center, back on the left, and close on the right of the last row. The main game selector deliberately uses the fully gray `neutral` frame without a blue header. The same action keeps its icon, color, wording, and logical position across screens.
+Every Core, Lobby, and game inventory reuses the `NetworkMenuStyle` frame: neutral gray background without a blue glass line, main actions in the center, back on the left, and close on the right of the last row. The same action keeps its icon, color, wording, and logical position across screens.
 
-Manifests explicitly declare the `network`, `neutral`, or `none` frame. A `neutral` screen keeps the sand-gray surface without a header for fast choices; `none` is reserved for native inventories such as anvils. Irreversible operations and balance debits open a confirmation that states the effect, cost when applicable, and offers confirm or cancel.
+Manifests explicitly declare the `network`, `neutral`, or `none` frame. Both `network` and `neutral` keep the sand-gray surface without a header; `none` is reserved for native inventories such as anvils. Irreversible operations and balance debits open a confirmation that states the effect, cost when applicable, and offers confirm or cancel.
 
 Player-facing labels never expose enum names, template identifiers, or underscored values. Each domain value has a natural translation in all four languages. Settings show their current state and explain their actual effect; missions show objective, progress, rewards, status, and available actions. Buttons name the exact click and its result. Profile entries use the relevant player's head whenever available.
 

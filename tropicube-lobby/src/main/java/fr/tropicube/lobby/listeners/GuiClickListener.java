@@ -150,7 +150,13 @@ public class GuiClickListener implements Listener {
                 if ("sheepwars".equalsIgnoreCase(type)) player.performCommand("quickplay");
                 else plugin.getLobbyServerManager().requestStartGame(player, type);
             }
-            case RANKED -> plugin.getGuiManager().openRankedSelector(player, type);
+            case RANKED -> {
+                if (plugin.getLobbyServerManager().getRankedTemplatesForType(type).isEmpty()) {
+                    player.sendMessage(LangHelper.component(player, "lobby.ranked-unavailable-for-game"));
+                } else {
+                    plugin.getGuiManager().openRankedSelector(player, type);
+                }
+            }
             case PUBLIC_INSTANCES -> plugin.getGuiManager().openServerSelector(player, type, 0);
             case NONE -> {
             }

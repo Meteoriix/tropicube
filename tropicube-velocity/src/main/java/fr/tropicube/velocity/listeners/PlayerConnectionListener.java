@@ -11,11 +11,13 @@ import com.velocitypowered.api.permission.Tristate;
 import com.velocitypowered.api.proxy.Player;
 import fr.tropicube.docker.client.RedisManager;
 import fr.tropicube.docker.model.PlayerSessionKeys;
+import fr.tropicube.docker.model.PlayerIdentityKeys;
 import fr.tropicube.docker.model.SecuritySessionKeys;
 import fr.tropicube.docker.model.ServerInstance;
 import fr.tropicube.velocity.TropicubeVelocity;
 import fr.tropicube.velocity.managers.TropiServerManager;
 import fr.tropicube.velocity.managers.AccessProfileCache;
+import fr.tropicube.velocity.managers.NickManager;
 import fr.tropicube.velocity.managers.VelocityLanguageManager;
 import org.slf4j.Logger;
 
@@ -36,16 +38,18 @@ public class PlayerConnectionListener {
     private final Logger logger;
     private final VelocityLanguageManager lm;
     private final AccessProfileCache accessProfiles;
+    private final NickManager nickManager;
 
     public PlayerConnectionListener(TropicubeVelocity plugin, TropiServerManager serverManager,
                                     RedisManager redisManager, AccessProfileCache accessProfiles,
-                                    Logger logger, VelocityLanguageManager lm) {
+                                    NickManager nickManager, Logger logger, VelocityLanguageManager lm) {
         this.plugin = plugin;
         this.serverManager = serverManager;
         this.redisManager = redisManager;
         this.logger = logger;
         this.lm = lm;
         this.accessProfiles = accessProfiles;
+        this.nickManager = nickManager;
     }
 
     @Subscribe
@@ -92,6 +96,7 @@ public class PlayerConnectionListener {
     public void onLogin(LoginEvent event) {
         if (!event.getResult().isAllowed()) return;
         Player player = event.getPlayer();
+        String authenticatedName = nickManager.realName(player.getUniqueId(), player.getUsername());
 
         lm.loadPlayerLanguage(player.getUniqueId());
         accessProfiles.refresh(player.getUniqueId());
@@ -102,6 +107,7 @@ public class PlayerConnectionListener {
         redisManager.set("player:uuid:" + player.getUsername().toLowerCase(java.util.Locale.ROOT),
                 player.getUniqueId().toString(), 2_592_000);
         redisManager.set("player:name:" + player.getUniqueId(), player.getUsername(), 2_592_000);
+        redisManager.set(PlayerIdentityKeys.authenticatedName(player.getUniqueId()), authenticatedName, 2_592_000);
         redisManager.publishPlayerEvent("PLAYER_JOIN",
                 player.getUniqueId() + ":" + player.getUsername());
         plugin.getPartyCoordinator().onPlayerConnected(player.getUniqueId());

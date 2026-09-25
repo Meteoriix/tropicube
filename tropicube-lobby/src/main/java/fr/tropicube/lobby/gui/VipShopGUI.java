@@ -14,6 +14,7 @@ import org.jspecify.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.Set;
@@ -66,7 +67,7 @@ public class VipShopGUI {
         NetworkMenuStyle.applyFrame(inv, player, LangHelper.menuFrame("vip-shop-home"));
         inv.setItem(4, new ItemBuilder(Material.GOLD_INGOT)
                 .name(LangHelper.get(player, "lobby.shop-home-name"))
-                .lore(LangHelper.get(player, "lobby.vip-banner-balance", formatCoins((int) balance))).glow(player).build());
+                .lore(LangHelper.get(player, "lobby.vip-banner-balance", formatCoins(balance))).glow(player).build());
         inv.setItem(HOME_GRADES_SLOT, new ItemBuilder(Material.NAME_TAG)
                 .name(LangHelper.get(player, "lobby.shop-grades-tab"))
                 .lore(LangHelper.get(player, "lobby.shop-grades-tab-lore")).build());
@@ -88,7 +89,7 @@ public class VipShopGUI {
                 .name(LangHelper.get(player, "lobby.vip-banner-name"))
                 .lore(LangHelper.get(player, "lobby.vip-banner-lore"),
                       "",
-                      LangHelper.get(player, "lobby.vip-banner-balance", formatCoins((int) balance)))
+                      LangHelper.get(player, "lobby.vip-banner-balance", formatCoins(balance)))
                 .glow(player).build());
 
         List<ShopEntry> entries = loadEntries(player);
@@ -233,10 +234,11 @@ public class VipShopGUI {
         return cur >= 0 && tgt >= 0 && cur >= tgt;
     }
 
-    public static String formatCoins(int amount) {
-        if (amount >= 1_000_000) return String.format("%.1fM", amount / 1_000_000.0);
-        if (amount >= 1_000)     return String.format("%.1fK", amount / 1_000.0);
-        return String.valueOf(amount);
+    public static String formatCoins(double amount) {
+        if (amount >= 1_000_000_000) return String.format(Locale.ROOT, "%.1fB", amount / 1_000_000_000.0);
+        if (amount >= 1_000_000) return String.format(Locale.ROOT, "%.1fM", amount / 1_000_000.0);
+        if (amount >= 1_000) return String.format(Locale.ROOT, "%.1fK", amount / 1_000.0);
+        return java.math.BigDecimal.valueOf(amount).stripTrailingZeros().toPlainString();
     }
 
     private static String hardcodedKeyForSlot(int slot) {
