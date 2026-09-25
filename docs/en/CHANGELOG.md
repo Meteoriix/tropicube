@@ -6,6 +6,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-25
 
+- Aligned UI validation with the new palette and migrated the former green Games button to its dark aqua accent without replacing customizations.
 - Made the SheepWars scoreboard spacer row truly blank by explicitly hiding its client-side score number and validating every variant's complete Paper representation.
 
 ### 2026-09-24

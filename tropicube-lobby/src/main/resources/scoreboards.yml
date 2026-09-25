@@ -21,13 +21,15 @@ scoreboards:
       queued:
         lines:
           - key: lobby.sb-separator
+          - blank: true
           - key: lobby.sb-profile
           - key: lobby.sb-profile-value
           - key: lobby.sb-balance
+          - blank: true
           - key: lobby.sb-queue
           - key: lobby.sb-queue-state
-          - key: lobby.sb-network-online
           - blank: true
-          - key: lobby.sb-server-label
+          - key: lobby.sb-network
+          - key: lobby.sb-network-online
           - key: lobby.sb-server-value
           - key: lobby.sb-separator

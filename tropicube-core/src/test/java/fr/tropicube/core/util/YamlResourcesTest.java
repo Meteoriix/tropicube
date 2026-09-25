@@ -358,8 +358,8 @@ class YamlResourcesTest {
     @Test
     void lobbyHotbarAndQuickPlayActionUseTheExpectedLocalizedLabels() {
         Map<String, String> games = Map.of(
-                "fr", "<green>⚡ Jeux", "en", "<green>⚡ Games",
-                "de", "<green>⚡ Spiele", "es", "<green>⚡ Juegos");
+                "fr", "<dark_aqua>⚡ Jeux", "en", "<dark_aqua>⚡ Games",
+                "de", "<dark_aqua>⚡ Spiele", "es", "<dark_aqua>⚡ Juegos");
         Map<String, String> quickPlay = Map.of(
                 "fr", "<green>▶ Clic gauche : file Quick Play.",
                 "en", "<green>▶ Left click: Quick Play queue.",
@@ -402,7 +402,7 @@ class YamlResourcesTest {
         Map<String, Object> french = leafValues(Path.of("src/main/resources/languages/fr.yml"));
         assertEquals("<green>▶ Clic gauche : sélectionner ce type et choisir un jeu",
                 french.get("lobby.custom-game-type-click"));
-        assertEquals("<dark_aqua>Social <dark_gray>• Amis", french.get("social.menu-title"));
+        assertEquals("<green>Social <dark_gray>• Amis", french.get("social.menu-title"));
     }
 
     @Test
@@ -552,7 +552,7 @@ class YamlResourcesTest {
             assertTrue(String.valueOf(values.get("lobby.tab-header")).contains("🌴 TROPICUBE"));
             assertTrue(String.valueOf(values.get("sw.tab-header")).contains("🌴 TROPICUBE"));
             assertTrue(String.valueOf(values.get("sw.tab-header")).contains("SheepWars"));
-            assertTrue(String.valueOf(values.get("fk.tab-header")).contains("🏰 FALLEN KINGDOMS"));
+            assertTrue(String.valueOf(values.get("fk.tab-header")).contains("Fallen Kingdoms"));
         }
     }
 

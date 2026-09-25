@@ -72,6 +72,9 @@ class RuntimeUiBundleTest {
                 "en", List.of("<aqua>⚡ Server Selector", "<yellow>Left click: choose a match type", "<aqua>☀ Social"),
                 "de", List.of("<aqua>⚡ Serverauswahl", "<yellow>Linksklick: Art der Partie wählen", "<aqua>☀ Sozial"),
                 "es", List.of("<aqua>⚡ Selector de servidor", "<yellow>Clic izquierdo: elegir el tipo de partida", "<aqua>☀ Social"));
+        Map<String, String> previousGamesValues = Map.of(
+                "fr", "<green>⚡ Jeux", "en", "<green>⚡ Games",
+                "de", "<green>⚡ Spiele", "es", "<green>⚡ Juegos");
 
         for (String language : List.of("fr", "en", "de", "es")) {
             Path bundled = Path.of("src/main/resources/languages", language + ".yml");
@@ -91,6 +94,14 @@ class RuntimeUiBundleTest {
             assertEquals(current.getString("lobby.type-lore-left-click"), actual.getString("lobby.type-lore-left-click"));
             assertEquals(current.getString("social.hotbar-name"), actual.getString("social.hotbar-name"));
             assertEquals("Custom social", actual.getString("social.menu-title"));
+
+            previous.set("lobby.hotbar-servers-name", previousGamesValues.get(language));
+            Path recentlyBundled = directory.resolve("recently-bundled-" + language + ".yml");
+            RuntimeUiBundle.installFile(plugin, "core/languages/" + language + ".yml", recentlyBundled,
+                    previous.saveToString().getBytes(StandardCharsets.UTF_8));
+            YamlConfiguration migratedRecent = YamlConfiguration.loadConfiguration(recentlyBundled.toFile());
+            assertEquals(current.getString("lobby.hotbar-servers-name"),
+                    migratedRecent.getString("lobby.hotbar-servers-name"));
         }
 
         Path customized = directory.resolve("customized-fr.yml");

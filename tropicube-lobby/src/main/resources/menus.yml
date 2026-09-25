@@ -500,7 +500,7 @@ menus:
         material: WRITABLE_BOOK
         name-key: social.menu-requests
         lore-key: social.menu-requests-count
-        action: requests
+        action: friends
       close:
         slot: 53
         material: BARRIER
