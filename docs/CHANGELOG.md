@@ -4,6 +4,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-09-25
+
+- Rend réellement vide la ligne d'espacement du scoreboard SheepWars en supprimant explicitement son nombre côté client et vérifie la représentation Paper complète de chaque variante.
+
 ### 2026-09-24
 
 - Empêche une ancienne génération d'interface Redis de restaurer les anciens libellés des menus Lobby, tout en conservant les textes réellement personnalisés dans l'éditeur.

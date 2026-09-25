@@ -4,6 +4,10 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+### 2026-09-25
+
+- Made the SheepWars scoreboard spacer row truly blank by explicitly hiding its client-side score number and validating every variant's complete Paper representation.
+
 ### 2026-09-24
 
 - Prevented an older Redis UI generation from restoring retired Lobby menu labels while preserving text genuinely customized in the editor.

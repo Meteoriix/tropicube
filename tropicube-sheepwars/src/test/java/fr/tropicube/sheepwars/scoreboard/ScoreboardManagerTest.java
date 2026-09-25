@@ -28,9 +28,4 @@ class ScoreboardManagerTest {
         player.setTeam(GameTeam.BLUE);
         assertEquals(NamedTextColor.BLUE, ScoreboardManager.playerListColor(player));
     }
-
-    @Test
-    void blankScoreboardLinesUseANonBreakingSpace() {
-        assertEquals(Component.text("\u00A0"), ScoreboardManager.blankLine());
-    }
 }

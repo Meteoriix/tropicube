@@ -94,11 +94,11 @@ public class ScoreboardManager implements UiReloadParticipant {
             default -> "waiting";
         };
         PlaceholderValues values = placeholders.build();
-        int line = 15;
-        for (ScoreboardTemplate.Line definition : template.lines(phase + (spectator ? "_spectator" : "_alive"))) {
-            Component display = definition.blank() ? blankLine()
-                    : LangHelper.component(player, definition.key(), values);
-            setLine(objective, line--, display);
+        List<ScoreboardLineRenderer.RenderedLine> renderedLines = ScoreboardLineRenderer.render(
+                template.lines(phase + (spectator ? "_spectator" : "_alive")),
+                key -> LangHelper.component(player, key, values));
+        for (ScoreboardLineRenderer.RenderedLine renderedLine : renderedLines) {
+            setLine(objective, renderedLine);
         }
 
         // ── Team glow / color setup ───────────────────────────────────────────
@@ -253,10 +253,11 @@ public class ScoreboardManager implements UiReloadParticipant {
         updateAll();
     }
 
-    private void setLine(Objective objective, int lineNum, Component display) {
-        Score score = objective.getScore("sw_" + lineNum);
-        score.setScore(lineNum);
-        score.customName(display);
+    static void setLine(Objective objective, ScoreboardLineRenderer.RenderedLine line) {
+        Score score = objective.getScore(line.entry());
+        score.setScore(line.score());
+        score.customName(line.display());
+        score.numberFormat(line.numberFormat());
     }
 
     private Component mapDisplay(Player player, GameState state) {
@@ -271,10 +272,6 @@ public class ScoreboardManager implements UiReloadParticipant {
         return Component.text(plugin.getGameManager().getSelectedMap() == null
                 ? LangHelper.get(player, "sw.sb-map-unknown")
                 : plugin.getGameManager().getSelectedMap().getName());
-    }
-
-    static Component blankLine() {
-        return Component.text("\u00A0");
     }
 
     private String formatTime(int seconds) {
