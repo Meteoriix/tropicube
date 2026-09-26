@@ -140,7 +140,12 @@ public final class LanguageEditorApplication {
         Map<String, String> glossary = new LinkedHashMap<>();
         if (request.has("glossary")) request.getAsJsonObject("glossary").entrySet()
                 .forEach(entry -> glossary.put(entry.getKey(), entry.getValue().getAsString()));
-        String translated = translations.translate(request.get("text").getAsString(), target, glossary);
+        List<String> protectedTerms = request.has("protectedTerms")
+                ? gson.fromJson(request.getAsJsonArray("protectedTerms"),
+                        new com.google.gson.reflect.TypeToken<List<String>>() { }.getType())
+                : List.of();
+        String translated = translations.translate(request.get("text").getAsString(), target, glossary,
+                protectedTerms);
         json(exchange, 200, Map.of("translatedText", translated));
     }
 

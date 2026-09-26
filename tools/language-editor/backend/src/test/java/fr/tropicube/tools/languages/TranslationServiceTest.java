@@ -31,7 +31,8 @@ class TranslationServiceTest {
         try {
             URI endpoint = URI.create("http://127.0.0.1:" + server.getAddress().getPort() + "/translate");
             String result = new TranslationService(endpoint, "").translate(
-                    "<tc><green>Bonjour Tropicube {player}, utilise /play", "en", Map.of("Tropicube", "Tropicube"));
+                    "<tc><green>Bonjour Tropicube {player}, utilise /play", "en",
+                    Map.of("Tropicube", "Tropicube"), List.of());
             assertEquals("<tc><green>translated Tropicube {player}translated /play", result);
             assertTrue(requests.stream().noneMatch(body -> body.contains("<tc>")
                     || body.contains("Tropicube") || body.contains("{player}") || body.contains("/play")));
@@ -57,7 +58,7 @@ class TranslationServiceTest {
             URI endpoint = URI.create("http://127.0.0.1:" + server.getAddress().getPort() + "/translate");
             TranslationService service = new TranslationService(endpoint, "");
             for (String target : List.of("en", "de", "es")) {
-                assertEquals("▶ translation ⚠ 🌴", service.translate("▶ Bonjour ⚠ 🌴", target, Map.of()));
+                assertEquals("▶ translation ⚠ 🌴", service.translate("▶ Bonjour ⚠ 🌴", target, Map.of(), List.of()));
             }
             assertEquals(3, requests.size());
             assertTrue(requests.stream().noneMatch(body -> body.contains("▶")
@@ -65,6 +66,32 @@ class TranslationServiceTest {
             assertTrue(requests.stream().anyMatch(body -> body.contains("\"target\":\"en\"")));
             assertTrue(requests.stream().anyMatch(body -> body.contains("\"target\":\"de\"")));
             assertTrue(requests.stream().anyMatch(body -> body.contains("\"target\":\"es\"")));
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void preservesRepeatedProtectedPhrasesAndPrefersTheLongestMatch() throws Exception {
+        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        List<String> requests = new ArrayList<>();
+        server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
+        server.createContext("/translate", exchange -> {
+            requests.add(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+            byte[] response = "{\"translatedText\":\"translated\"}".getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, response.length);
+            exchange.getResponseBody().write(response);
+            exchange.close();
+        });
+        server.start();
+        try {
+            URI endpoint = URI.create("http://127.0.0.1:" + server.getAddress().getPort() + "/translate");
+            String result = new TranslationService(endpoint, "").translate(
+                    "Mode Fallen Kingdoms puis Fallen Kingdoms", "en", Map.of(),
+                    List.of("Fallen", "Fallen Kingdoms", "Fallen Kingdoms", ""));
+
+            assertEquals("translated Fallen Kingdoms translated Fallen Kingdoms", result);
+            assertTrue(requests.stream().noneMatch(body -> body.contains("Fallen")));
         } finally {
             server.stop(0);
         }

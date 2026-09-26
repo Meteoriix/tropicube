@@ -47,8 +47,9 @@ final class TranslationService {
         }
     }
 
-    String translate(String text, String target, Map<String, String> glossary) throws IOException, InterruptedException {
-        List<Token> tokens = protectedTokens(text, glossary);
+    String translate(String text, String target, Map<String, String> glossary, List<String> protectedTerms)
+            throws IOException, InterruptedException {
+        List<Token> tokens = protectedTokens(text, glossary, protectedTerms);
         StringBuilder result = new StringBuilder();
         int cursor = 0;
         for (Token token : tokens) {
@@ -60,11 +61,19 @@ final class TranslationService {
         return result.toString();
     }
 
-    private List<Token> protectedTokens(String text, Map<String, String> glossary) {
+    private List<Token> protectedTokens(String text, Map<String, String> glossary, List<String> protectedTerms) {
         List<Token> tokens = new ArrayList<>();
         Matcher matcher = PROTECTED.matcher(text);
         while (matcher.find()) tokens.add(new Token(matcher.start(), matcher.end(), matcher.group()));
-        glossary.forEach((source, target) -> {
+        Map<String, String> configured = new java.util.LinkedHashMap<>(glossary);
+        protectedTerms.stream().filter(term -> term != null && !term.isBlank())
+                .forEach(term -> configured.put(term, term));
+        configured.entrySet().stream()
+                .filter(entry -> entry.getKey() != null && !entry.getKey().isEmpty())
+                .sorted(Map.Entry.<String, String>comparingByKey(Comparator.comparingInt(String::length).reversed()))
+                .forEach(entry -> {
+            String source = entry.getKey();
+            String target = entry.getValue();
             int from = 0;
             while ((from = text.indexOf(source, from)) >= 0) {
                 tokens.add(new Token(from, from + source.length(), target));

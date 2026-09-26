@@ -1,4 +1,7 @@
-version: 1
+version: 2
+
+# Ces chaînes sont conservées exactement, avec leur casse, dans toutes les traductions automatiques.
+protectedTerms: []
 
 glossary:
   Tropicube:

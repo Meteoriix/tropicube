@@ -29,7 +29,9 @@ docker compose --env-file .env.example --profile language-editor up -d libretran
 
 `LIBRETRANSLATE_URL` defaults to `http://127.0.0.1:5000`. `LIBRETRANSLATE_API_KEY` selects a protected external instance and must never be committed.
 
-In structured text, scoreboard, and tablist editing, every French change automatically schedules English, German, and Spanish regeneration after 800 ms without typing. All three translations are produced directly from French, remain manually editable, and a stale response cannot overwrite newer input. MiniMessage tags, placeholders, commands, glossary terms, and decorative Unicode symbols such as `▶`, `⚠`, or `🌴` are kept out of translatable text and preserved in their original positions. The editor remains available for drafting while the service is offline, with that state shown below the French field.
+In structured text, scoreboard, and tablist editing, every French change automatically schedules English, German, and Spanish regeneration after 800 ms without typing. All three translations are produced directly from French, remain manually editable, and a stale response cannot overwrite newer input. MiniMessage tags, placeholders, commands, glossary terms, strings from the Do not translate list, and decorative Unicode symbols such as `▶`, `⚠`, or `🌴` are kept out of translatable text and preserved in their original positions. The editor remains available for drafting while the service is offline, with that state shown below the French field.
+
+The **Do not translate** tab manages one global list of exact words, phrases, or strings. Entries are case-sensitive, retain their punctuation, and remain identical in all three target languages. Empty and duplicate entries are removed; when several entries start at the same position, the longest wins. Additions and deletions save the versioned catalog immediately; an edited entry is applied with its Save button.
 
 Validation recognizes every tag supplied by `StandardTags.defaults()` in the project's Adventure version, plus the internal `<tc>` and `<sw>` tags. In structured mode, Enter inserts a line break directly and the editor stores it as the MiniMessage `<br>` tag (`<newline>` remains accepted as its long alias), including blank lines. In raw YAML mode, write `<br>` without spaces. Multi-line lore uses one key with lines separated by `<br>`. When an item is rendered, Core, Lobby, and SheepWars convert both these tags and line breaks already stored in YAML into distinct Minecraft lore rows; double breaks remain blank rows and are never sent to the client as control glyphs.
 
@@ -52,6 +54,7 @@ All resources use canonical named placeholders such as `{player}`, `{balance}`, 
 - the Tablists tab groups Lobby and SheepWars by state variant, edits headers and footers in all four languages, and previews the complete layout around sample players;
 - the Menus tab renders the inventory grid, required buttons, dynamic regions, and localized item properties;
 - the Placeholders tab automatically inventories every canonical named Core and Velocity placeholder, precisely describes the business information supplied by each one, supports search, and lists every module and translation key that uses it;
+- the Do not translate tab adds, edits, and removes global strings that LibreTranslate must never receive;
 - while editing structured text, the compact bottom-right picker searches the same placeholders, displays their descriptions, and inserts the selected token at the cursor;
 - manifest drafts support undo/redo, drag and drop, and a summary before applying changes.
 
@@ -59,7 +62,7 @@ Live synchronization exclusively uses the local Docker client, active Tropicube 
 
 Item previews look for the local Minecraft 26.3 client. `TROPICUBE_MINECRAFT_CLIENT_JAR` can point to its JAR explicitly; loaded textures are cached only in editor memory.
 
-The versioned `tools/language-editor/catalog.yml` stores the glossary, context overrides, and placeholder samples. Machine translations remain proposals: review at least English and verify width-sensitive interfaces in game.
+The versioned `tools/language-editor/catalog.yml` stores `protectedTerms`, the glossary, context overrides, and placeholder samples. Machine translations remain proposals: review at least English and verify width-sensitive interfaces in game.
 
 ## Validation
 

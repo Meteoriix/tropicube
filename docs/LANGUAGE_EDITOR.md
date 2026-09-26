@@ -29,7 +29,9 @@ docker compose --env-file .env.example --profile language-editor up -d libretran
 
 `LIBRETRANSLATE_URL` vaut `http://127.0.0.1:5000` par défaut. `LIBRETRANSLATE_API_KEY` permet d'utiliser une instance externe protégée et ne doit jamais être ajoutée au dépôt.
 
-Dans l'édition structurée des textes, scoreboards et tablists, chaque modification française programme automatiquement la régénération de l'anglais, de l'allemand et de l'espagnol après 800 ms sans frappe. Les trois traductions partent directement du français, restent modifiables manuellement et une réponse devenue obsolète ne peut pas écraser une saisie plus récente. Les balises MiniMessage, placeholders, commandes, termes du glossaire et symboles Unicode décoratifs tels que `▶`, `⚠` ou `🌴` ne sont pas envoyés comme texte traduisible et sont conservés à leur position d'origine. Une indisponibilité du service n'empêche pas de préparer un brouillon et est indiquée sous le champ français.
+Dans l'édition structurée des textes, scoreboards et tablists, chaque modification française programme automatiquement la régénération de l'anglais, de l'allemand et de l'espagnol après 800 ms sans frappe. Les trois traductions partent directement du français, restent modifiables manuellement et une réponse devenue obsolète ne peut pas écraser une saisie plus récente. Les balises MiniMessage, placeholders, commandes, termes du glossaire, chaînes de la liste « Ne pas traduire » et symboles Unicode décoratifs tels que `▶`, `⚠` ou `🌴` ne sont pas envoyés comme texte traduisible et sont conservés à leur position d'origine. Une indisponibilité du service n'empêche pas de préparer un brouillon et est indiquée sous le champ français.
+
+L'onglet **Ne pas traduire** gère une liste globale de mots, phrases ou chaînes exactes. Une entrée est sensible à la casse, conserve sa ponctuation et reste identique dans les trois langues cibles. Les doublons et les entrées vides sont supprimés ; lorsque plusieurs entrées commencent au même endroit, la plus longue est retenue. Les ajouts et suppressions enregistrent le catalogue versionné immédiatement ; une modification est appliquée par son bouton Enregistrer.
 
 La validation reconnaît toutes les balises fournies par `StandardTags.defaults()` dans la version Adventure du projet, ainsi que les balises internes `<tc>` et `<sw>`. Dans la vue structurée, la touche Entrée insère directement un saut de ligne et l'éditeur l'enregistre sous la forme MiniMessage `<br>` (`<newline>` reste accepté comme alias long). Une ligne vide est donc conservée. Dans le mode YAML brut, écrire `<br>` sans espaces. Un lore composé de plusieurs lignes doit utiliser une seule clé et séparer ses lignes avec `<br>`. Lors de l'affichage d'un item, Core, Lobby et SheepWars convertissent aussi bien ces balises que les retours déjà enregistrés dans YAML en lignes de lore Minecraft distinctes ; les doubles retours restent des lignes vides et ne sont jamais envoyés au client comme des glyphes de contrôle.
 
@@ -52,6 +54,7 @@ Toutes les ressources utilisent des placeholders nommés canoniques comme `{play
 - l'onglet Tablists regroupe Lobby et SheepWars par variante d'état, édite en-tête et pied dans les quatre langues et prévisualise l'ensemble autour de joueurs d'exemple ;
 - l'onglet Menus affiche la grille de l'inventaire, les boutons requis, les zones dynamiques et les propriétés localisées des items ;
 - l'onglet Placeholders inventorie automatiquement tous les placeholders nommés canoniques de Core et Velocity, décrit précisément l'information métier fournie par chacun, permet de les rechercher et affiche chaque module et clé de traduction qui les utilise ;
+- l'onglet Ne pas traduire ajoute, modifie et retire les chaînes globales que LibreTranslate ne doit jamais recevoir ;
 - pendant l'édition structurée d'un texte, le sélecteur compact en bas à droite recherche les mêmes placeholders, affiche leur description et insère le jeton choisi à la position du curseur ;
 - les brouillons de manifestes disposent d'un historique annuler/rétablir, du glisser-déposer et d'un récapitulatif avant application.
 
@@ -59,7 +62,7 @@ La synchronisation live utilise exclusivement le client Docker local, des conten
 
 L'aperçu des items cherche le client Minecraft 26.3 local. `TROPICUBE_MINECRAFT_CLIENT_JAR` permet d'indiquer explicitement son JAR ; les textures lues sont conservées uniquement en mémoire par l'éditeur.
 
-Le catalogue versionné `tools/language-editor/catalog.yml` contient le glossaire, les corrections de contexte et les exemples de placeholders. Les traductions automatiques restent des propositions : relire au minimum l'anglais et vérifier en jeu les interfaces sensibles à la largeur du texte.
+Le catalogue versionné `tools/language-editor/catalog.yml` contient la liste `protectedTerms`, le glossaire, les corrections de contexte et les exemples de placeholders. Les traductions automatiques restent des propositions : relire au minimum l'anglais et vérifier en jeu les interfaces sensibles à la largeur du texte.
 
 ## Validation
 

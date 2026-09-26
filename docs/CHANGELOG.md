@@ -6,6 +6,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-26
 
+- Ajoute à l'éditeur de langues un onglet versionné pour gérer les mots et phrases exacts que les traductions automatiques doivent toujours conserver.
 - Corrige le rendu MiniMessage de l'état de la whitelist dans `/tropi info` afin que sa couleur soit interprétée sans afficher les balises.
 - Complète et réorganise le scoreboard d'attente Fallen Kingdoms avec la carte, la capacité totale et une présentation plus lisible, réduit les noms de royaumes à leur couleur et localise entièrement les objets, quantités, potions et enchantements du menu des kits.
 

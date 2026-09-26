@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { parse, stringify } from 'yaml';
 import { collectPlaceholders, Diagnostic, documents, editableValue, FileSnapshot, filterKeys, flatten, inferContext, Locale, locales, PlaceholderSummary, rename, SearchMode, serialize, setValue, StateSet, value, valueFromEditor, withTranslations } from './model';
 import { hasNewerDraft, runExclusive, uiApplicationPayload } from './operations';
+import { normalizeProtectedTerms, withProtectedTerms } from './catalog';
 import './styles.css';
 
 type Docs = ReturnType<typeof documents>;
@@ -10,7 +11,7 @@ type ComponentNode = { text?: string; color?: string; bold?: boolean; italic?: b
 type LiveStatus = { available: boolean; message: string };
 type LiveResult = { available: boolean; updatedContainers: number; containers: string[]; errors: string[] };
 type UiSnapshot = { id: string; module: string; type: 'scoreboards' | 'tablists' | 'menus'; sourcePath: string; mirrorPath?: string; content: string; hash: string };
-type EditorMode = 'texts' | 'scoreboards' | 'tablists' | 'menus' | 'placeholders';
+type EditorMode = 'texts' | 'scoreboards' | 'tablists' | 'menus' | 'placeholders' | 'protected';
 type TranslationJob = { key: string; source: string | string[]; revision: number };
 type TranslationPhase = 'idle' | 'waiting' | 'translating' | 'done' | 'error' | 'offline';
 type EditLocalized = (locale: Locale, key: string, currentValue: string | string[], text: string) => void;
@@ -56,7 +57,7 @@ function App() {
   const [live, setLive] = useState<LiveStatus>({ available: false, message: 'Jeu hors ligne' });
   const [translationJob, setTranslationJob] = useState<TranslationJob | null>(null);
   const [translationPhase, setTranslationPhase] = useState<TranslationPhase>('idle');
-  const [catalog, setCatalog] = useState<any>({ glossary: {}, entries: {} });
+  const [catalog, setCatalog] = useState<any>({ version: 2, protectedTerms: [], glossary: {}, entries: {} });
   const [catalogText, setCatalogText] = useState('');
   const [usages, setUsages] = useState<any[]>([]);
   const [notice, setNotice] = useState('Chargement…');
@@ -233,7 +234,8 @@ function App() {
         const items = Array.isArray(source) ? source : [source];
         const translated = await Promise.all(items.map(async text => {
           const result = await api<{translatedText: string}>('/api/translate', {
-            method: 'POST', body: JSON.stringify({ text, target, glossary })
+            method: 'POST', body: JSON.stringify({ text, target, glossary,
+              protectedTerms: normalizeProtectedTerms(catalog.protectedTerms) })
           });
           return result.translatedText;
         }));
@@ -472,15 +474,27 @@ function App() {
     setCatalog(parsed); setNotice('Glossaire et contextes enregistrés');
   };
 
+  const saveProtectedTerms = async (terms: string[]) => {
+    try {
+      const next = withProtectedTerms(catalog, terms);
+      const content = stringify(next);
+      await api('/api/catalog', { method: 'POST', body: JSON.stringify({ content }) });
+      setCatalog(next); setCatalogText(content); setNotice('Liste des chaînes protégées enregistrée');
+    } catch (error) {
+      setNotice(`Enregistrement impossible : ${errorMessage(error)}`);
+      throw error;
+    }
+  };
+
   if (!docs || !snapshots || !sets.length) return <main className="loading">{notice}</main>;
   return <main>
     <header><div><strong>TROPICUBE</strong><span>Éditeur de langues</span></div><div className="actions">
       <span className={provider ? 'status ok' : 'status'}>{provider ? 'LibreTranslate prêt' : 'Traduction hors ligne'}</span>
       <span title={live.message} className={live.available ? 'status ok' : 'status'}>{live.available ? 'Jeu connecté' : 'Jeu hors ligne'}</span>
-      {mode !== 'placeholders' && <><button disabled={applying} onClick={() => void (mode === 'texts' ? validate() : validateUi())}>Valider</button><button className="primary" disabled={translationBusy || applying} title={translationBusy ? 'Attendez la fin de la traduction automatique' : applying ? 'Une application est déjà en cours' : undefined} onClick={mode === 'texts' ? apply : applyUi}>{applying ? 'Application…' : 'Appliquer'}</button></>}
+      {mode !== 'placeholders' && mode !== 'protected' && <><button disabled={applying} onClick={() => void (mode === 'texts' ? validate() : validateUi())}>Valider</button><button className="primary" disabled={translationBusy || applying} title={translationBusy ? 'Attendez la fin de la traduction automatique' : applying ? 'Une application est déjà en cours' : undefined} onClick={mode === 'texts' ? apply : applyUi}>{applying ? 'Application…' : 'Appliquer'}</button></>}
     </div></header>
     <section className="toolbar">
-      <div className="mode-tabs">{(['texts','scoreboards','tablists','menus','placeholders'] as EditorMode[]).map(item => <button className={mode === item ? 'active' : ''} key={item} onClick={() => { setMode(item); setSearch(''); }}>{item === 'texts' ? 'Textes' : item === 'scoreboards' ? 'Scoreboards' : item === 'tablists' ? 'Tablists' : item === 'menus' ? 'Menus' : `Placeholders (${placeholders.length})`}</button>)}</div>
+      <div className="mode-tabs">{(['texts','scoreboards','tablists','menus','placeholders','protected'] as EditorMode[]).map(item => <button className={mode === item ? 'active' : ''} key={item} onClick={() => { setMode(item); setSearch(''); }}>{item === 'texts' ? 'Textes' : item === 'scoreboards' ? 'Scoreboards' : item === 'tablists' ? 'Tablists' : item === 'menus' ? 'Menus' : item === 'protected' ? `Ne pas traduire (${normalizeProtectedTerms(catalog.protectedTerms).length})` : `Placeholders (${placeholders.length})`}</button>)}</div>
       {mode === 'texts' && <select value={setIndex} onChange={event => setSetIndex(Number(event.target.value))}>{sets.map((entry, index) => <option key={entry.set.id} value={index}>{entry.set.id}</option>)}</select>}
       {(mode === 'scoreboards' || mode === 'tablists' || mode === 'menus') && <><button disabled={!uiHistory.length} onClick={undoUi}>Annuler</button><button disabled={!uiFuture.length} onClick={redoUi}>Rétablir</button></>}
       {mode === 'texts' && <>
@@ -498,9 +512,11 @@ function App() {
     <div className="workspace">
       <aside>{mode === 'texts' ? keys.map(key => <button className={key === selected ? 'active' : ''} key={key} onClick={() => setSelected(key)}>{key}</button>)
         : mode === 'placeholders' ? filteredPlaceholders.map(entry => <button title={entry.description} className={entry.name === selectedPlaceholder ? 'active' : ''} key={entry.name} onClick={() => setSelectedPlaceholder(entry.name)}>{`{${entry.name}}`}<small>{entry.references.length} clé(s)</small></button>)
+        : mode === 'protected' ? <p className="protected-summary">Liste globale appliquée aux traductions EN, DE et ES.</p>
         : surfaces.map(surface => <button className={surface.identity === selectedUi ? 'active' : ''} key={surface.identity} onClick={() => { setSelectedUi(surface.identity); setSelectedVariant(Object.keys(surface.definition.variants || {})[0] || ''); }}>{surface.file.module}<small>{surface.id}</small></button>)}</aside>
       <section className="editor">
         {mode === 'placeholders' ? <PlaceholderEditor placeholder={placeholder} />
+        : mode === 'protected' ? <ProtectedTermsEditor terms={normalizeProtectedTerms(catalog.protectedTerms)} save={saveProtectedTerms} />
         : mode === 'scoreboards' && selectedSurface ? <ScoreboardEditor surface={selectedSurface} variant={selectedVariant} setVariant={setSelectedVariant} mutate={mutateUi} docs={docs} editLocalized={editLocalized} />
         : mode === 'tablists' && selectedSurface ? <TablistEditor surface={selectedSurface} variant={selectedVariant} setVariant={setSelectedVariant} mutate={mutateUi} docs={docs} editLocalized={editLocalized} />
         : mode === 'menus' && selectedSurface ? <MenuEditor surface={selectedSurface} selectedButton={selectedButton} setSelectedButton={setSelectedButton} mutate={mutateUi} />
@@ -522,6 +538,7 @@ function App() {
       </section>
       <section className="preview"><div className="preview-head"><b>Aperçu</b>{mode === 'texts' && <select value={context} onChange={event => { setContext(event.target.value); updateEntry({ context: event.target.value }); }}>{['chat','title','subtitle','actionbar','inventory','lore','scoreboard','tablist'].map(item => <option key={item}>{item}</option>)}</select>}</div>
         {mode === 'placeholders' ? <PlaceholderPreview placeholder={placeholder} />
+        : mode === 'protected' ? <div className="protected-preview"><b>Conservation exacte</b><p>Chaque occurrence reste identique à la source française, y compris sa casse et sa ponctuation.</p><code>Joue à Fallen Kingdoms</code><span>→</span><code>Play Fallen Kingdoms</code></div>
         : mode === 'scoreboards' ? <div className="scoreboard-full"><strong><Rendered node={scoreboardTitlePreview} /></strong>{surfacePreview.map((line,index) => <div key={index}><Rendered node={line} /></div>)}</div>
         : mode === 'tablists' ? <div className="tablist-full"><div className="tablist-header"><Rendered node={tablistPreview?.header || null} /></div><div className="tablist-players">Nathan<span>42 ms</span><br />Alex<span>58 ms</span><br />Sam<span>71 ms</span></div><div className="tablist-footer"><Rendered node={tablistPreview?.footer || null} /></div></div>
         : mode === 'menus' && selectedSurface ? <MenuPreview surface={selectedSurface} selectedButton={selectedButton} docs={docs} />
@@ -541,6 +558,39 @@ function App() {
       <button className="placeholder-picker-toggle" aria-expanded={placeholderPickerOpen} onClick={() => setPlaceholderPickerOpen(open => !open)}>{'{ }'} Placeholders</button>
     </div>}
   </main>;
+}
+
+function ProtectedTermsEditor({ terms, save }: { terms: string[]; save: (terms: string[]) => Promise<void> }) {
+  const [draft, setDraft] = useState(terms);
+  const [newTerm, setNewTerm] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => setDraft(terms), [terms.join('\u0000')]);
+
+  const persist = async (next: string[]) => {
+    const normalized = normalizeProtectedTerms(next);
+    setSaving(true);
+    try {
+      await save(normalized);
+      setDraft(normalized);
+    } finally {
+      setSaving(false);
+    }
+  };
+  const add = () => {
+    const term = newTerm.trim();
+    if (!term || draft.includes(term)) return;
+    setNewTerm('');
+    void persist([...draft, term]).catch(() => {});
+  };
+
+  return <div className="protected-editor">
+    <div className="keyline"><h2>Chaînes à ne jamais traduire</h2></div>
+    <p>Les correspondances sont exactes et sensibles à la casse. Les phrases les plus longues gagnent lorsqu'elles commencent au même endroit.</p>
+    <div className="protected-add"><input aria-label="Nouvelle chaîne protégée" placeholder="Mot, phrase ou chaîne exacte…" value={newTerm} onChange={event => setNewTerm(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') add(); }} /><button className="primary" disabled={saving || !newTerm.trim() || draft.includes(newTerm.trim())} onClick={add}>Ajouter</button></div>
+    <div className="protected-list">{draft.map((term, index) => <div key={index}><input aria-label={`Chaîne protégée ${index + 1}`} value={term} onChange={event => setDraft(current => current.map((value, position) => position === index ? event.target.value : value))} /><button disabled={saving} onClick={() => void persist(draft).catch(() => {})}>Enregistrer</button><button className="danger" disabled={saving} onClick={() => void persist(draft.filter((_, position) => position !== index)).catch(() => {})}>Supprimer</button></div>)}</div>
+    {!draft.length && <p className="empty-editor">Aucune chaîne personnalisée n'est protégée.</p>}
+  </div>;
 }
 
 function TablistEditor({ surface, variant, setVariant, mutate, docs, editLocalized }: { surface: any; variant: string; setVariant: (value: string) => void; mutate: (fn: (copy: Record<string, any>) => void) => void; docs: Docs; editLocalized: EditLocalized }) {

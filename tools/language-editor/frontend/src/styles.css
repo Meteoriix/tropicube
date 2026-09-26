@@ -66,6 +66,15 @@ details code { display: block; padding: 6px; white-space: pre-wrap; }
 .samples input { min-width: 0; flex: 1; }
 .catalog { margin-top: 14px; }
 .catalog textarea { height: 230px; margin: 8px 0; font-size: 12px; }
+.protected-summary { padding: 10px; color: #86a8ab; line-height: 1.5; }
+.protected-editor > p { color: #86a8ab; }
+.protected-add, .protected-list > div { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; margin-top: 10px; }
+.protected-add { grid-template-columns: 1fr auto; margin: 18px 0; }
+.protected-add input, .protected-list input { width: 100%; }
+.protected-preview { display: grid; gap: 12px; padding: 18px; border: 1px solid #29494d; border-radius: 8px; background: #0c1c1f; }
+.protected-preview p { color: #86a8ab; line-height: 1.5; }
+.protected-preview code { padding: 10px; border-radius: 6px; color: #dffafa; background: #071113; }
+.protected-preview span { color: #42e0df; text-align: center; }
 .loading { padding: 40px; color: #75e8e5; }
 .surface-editor > input { width: 100%; }
 .line-list { display: grid; gap: 7px; margin-top: 18px; }
