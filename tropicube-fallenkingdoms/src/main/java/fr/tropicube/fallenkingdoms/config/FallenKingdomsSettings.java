@@ -18,6 +18,11 @@ public record FallenKingdomsSettings(int countdownSeconds, int resultDisplaySeco
                                       double ruinRadius, double ruinDestructionRatio, boolean preserveContainers,
                                       CombatProfile combatProfile, boolean tntBreachesEnabled,
                                       boolean dropInventory, boolean disconnectCountsAsDeath) {
+    /** Returns the maximum number of participants accepted by this session configuration. */
+    public int maximumPlayerCapacity() {
+        return Math.multiplyExact(maxPlayersPerKingdom, maxKingdoms);
+    }
+
     public static FallenKingdomsSettings load(FileConfiguration config) {
         int min = config.getInt("game.min-players-per-kingdom");
         int max = config.getInt("game.max-players-per-kingdom");

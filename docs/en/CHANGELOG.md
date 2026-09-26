@@ -4,6 +4,10 @@ This document records functional, technical, and operational changes. Entries ar
 
 ## Unreleased
 
+### 2026-09-26
+
+- Completes the Fallen Kingdoms waiting scoreboard with its total capacity, shortens kingdom names to their color, and fully localizes kit-menu items, quantities, potions, and enchantments.
+
 ### 2026-09-25
 
 - Standardizes menus without a blue glass line, fixes Shop balances up to 100B, preserves authenticated names in friend lists, and completes friend-request counts.

@@ -645,6 +645,7 @@ public final class GameSession {
         return kingdomPreferences.values().stream().filter(kingdom::equals).count();
     }
     public int maxPlayersPerKingdom() { return settings.maxPlayersPerKingdom(); }
+    public int maximumPlayerCapacity() { return settings.maximumPlayerCapacity(); }
     public KingdomId kingdomOf(Player player) { PlayerSession runtime = players.get(player.getUniqueId()); return runtime == null ? null : runtime.kingdom(); }
     public PlayerLifeState playerLifeState(UUID playerId) {
         PlayerSession runtime = players.get(playerId);

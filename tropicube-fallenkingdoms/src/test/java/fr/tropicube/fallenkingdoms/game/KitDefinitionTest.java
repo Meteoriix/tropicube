@@ -1,12 +1,15 @@
 package fr.tropicube.fallenkingdoms.game;
 
 import org.bukkit.Material;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class KitDefinitionTest {
     @Test
@@ -26,5 +29,36 @@ class KitDefinitionTest {
         assertEquals("SWIFTNESS", summaries.get(1).item().potionType());
         assertEquals("LONG_SWIFTNESS", summaries.get(2).item().potionType());
         assertEquals(Map.of("sharpness", 2), summaries.get(3).item().enchantments());
+    }
+
+    @Test
+    void everyBundledKitContentHasLocalizedPresentation() {
+        var config = YamlConfiguration.loadConfiguration(Path.of("src/main/resources/config.yml").toFile());
+        var definitions = KitCatalog.load(config).definitions().values();
+        for (String language : List.of("fr", "en", "de", "es")) {
+            var translations = YamlConfiguration.loadConfiguration(Path.of(
+                    "../tropicube-core/src/main/resources/languages", language + ".yml").toFile());
+            for (KitDefinition definition : definitions) {
+                for (KitDefinition.KitItem item : definition.items()) {
+                    assertFalse(translations.getString(KitContentPresentation.itemKey(item), "").isBlank(),
+                            () -> language + ": " + KitContentPresentation.itemKey(item));
+                    for (String enchantment : item.enchantments().keySet()) {
+                        assertFalse(translations.getString(KitContentPresentation.enchantmentKey(enchantment), "").isBlank(),
+                                () -> language + ": " + KitContentPresentation.enchantmentKey(enchantment));
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    void presentationKeysAndEnchantmentLevelsAreStable() {
+        var potion = new KitDefinition.KitItem(Material.SPLASH_POTION, 1, 0,
+                "LONG_SWIFTNESS", 0, Map.of());
+        assertEquals("fk.kit-item-splash-potion-long-swiftness", KitContentPresentation.itemKey(potion));
+        assertEquals("fk.kit-enchantment-fire-aspect", KitContentPresentation.enchantmentKey("fire_aspect"));
+        assertEquals("I", KitContentPresentation.romanLevel(1));
+        assertEquals("IV", KitContentPresentation.romanLevel(4));
+        assertEquals("12", KitContentPresentation.romanLevel(12));
     }
 }

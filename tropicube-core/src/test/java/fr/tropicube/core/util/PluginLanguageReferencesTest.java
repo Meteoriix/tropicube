@@ -157,7 +157,25 @@ class PluginLanguageReferencesTest {
         families.put("lobby.settings-value-", settings);
         families.put("fk.phase-", Set.of("preparation", "pvp", "assault", "sudden_death"));
         families.put("fk.team-", Set.of("blue", "red", "green", "yellow", "orange", "spectator"));
-        families.put("fk.kit-", Set.of("miner", "farmer", "scout", "enchanter"));
+        families.put("fk.kit-", Set.of("miner", "farmer", "scout", "enchanter", "alchemist"));
+        var fallenKingdoms = YamlConfiguration.loadConfiguration(
+                root.resolve("tropicube-fallenkingdoms/src/main/resources/config.yml").toFile());
+        Set<String> kitItems = new HashSet<>();
+        Set<String> kitEnchantments = new HashSet<>();
+        var kitDefinitions = fallenKingdoms.getConfigurationSection("kits.definitions");
+        assertNotNull(kitDefinitions);
+        for (String kit : kitDefinitions.getKeys(false)) {
+            for (Map<?, ?> item : kitDefinitions.getMapList(kit + ".items")) {
+                String suffix = item.get("material").toString().toLowerCase(Locale.ROOT).replace('_', '-');
+                if (item.containsKey("potion-type")) suffix += "-" + item.get("potion-type").toString()
+                        .toLowerCase(Locale.ROOT).replace('_', '-');
+                kitItems.add(suffix);
+                if (item.get("enchantments") instanceof Map<?, ?> enchantments) enchantments.keySet().forEach(
+                        enchantment -> kitEnchantments.add(enchantment.toString().toLowerCase(Locale.ROOT).replace('_', '-')));
+            }
+        }
+        families.put("fk.kit-item-", kitItems);
+        families.put("fk.kit-enchantment-", kitEnchantments);
         var lobby = YamlConfiguration.loadConfiguration(root.resolve("tropicube-lobby/src/main/resources/config.yml").toFile());
         // Grade entries are configuration-driven; the configured grade identifiers are audited below.
         Set<String> grades = new HashSet<>();

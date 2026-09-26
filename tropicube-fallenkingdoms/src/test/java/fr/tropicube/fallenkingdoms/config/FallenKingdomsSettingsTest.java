@@ -14,6 +14,7 @@ class FallenKingdomsSettingsTest {
             var settings=FallenKingdomsSettings.load(config);
             assertEquals(500.0,settings.heartHealth());assertFalse(config.getBoolean("combat.friendly-fire"));
             assertEquals(3, settings.minPlayersPerKingdom());
+            assertEquals(30, settings.maximumPlayerCapacity());
             assertEquals(CombatProfile.LEGACY_1_8, settings.combatProfile());
             assertEquals(600, settings.timeline().pvpAt());
             assertEquals(1200, settings.timeline().assaultAt());

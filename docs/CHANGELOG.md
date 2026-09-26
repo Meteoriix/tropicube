@@ -4,6 +4,10 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ## Non publié
 
+### 2026-09-26
+
+- Complète le scoreboard d'attente Fallen Kingdoms avec sa capacité totale, réduit les noms de royaumes à leur couleur et localise entièrement les objets, quantités, potions et enchantements du menu des kits.
+
 ### 2026-09-25
 
 - Uniformise les menus sans ligne de vitres bleues, corrige l'affichage du solde Boutique jusqu'à 100 B, conserve le vrai pseudo dans les listes d'amis et complète les compteurs de demandes.

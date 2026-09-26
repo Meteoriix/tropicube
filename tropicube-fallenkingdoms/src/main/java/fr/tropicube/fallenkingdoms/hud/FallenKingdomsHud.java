@@ -98,6 +98,7 @@ public final class FallenKingdomsHud implements UiReloadParticipant {
                 .put("time", session.remainingTime(elapsed)).put("day", GameDay.at(elapsed))
                 .putComponent("map", language.getComponent(player.getUniqueId(), mapKey))
                 .put("players", session.participantCount())
+                .put("max_players", session.maximumPlayerCapacity())
                 .put("blue_players", survivors.getOrDefault(KingdomId.BLUE, 0))
                 .put("red_players", survivors.getOrDefault(KingdomId.RED, 0))
                 .put("green_players", survivors.getOrDefault(KingdomId.GREEN, 0))

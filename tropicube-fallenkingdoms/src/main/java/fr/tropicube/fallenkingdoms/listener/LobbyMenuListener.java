@@ -9,7 +9,7 @@ import fr.tropicube.fallenkingdoms.game.GameSession;
 import fr.tropicube.fallenkingdoms.game.GameState;
 import fr.tropicube.fallenkingdoms.game.KingdomId;
 import fr.tropicube.fallenkingdoms.game.KitDefinition;
-import fr.tropicube.fallenkingdoms.game.KitCatalog;
+import fr.tropicube.fallenkingdoms.game.KitContentPresentation;
 import fr.tropicube.fallenkingdoms.map.MapDefinition;
 import fr.tropicube.language.PlaceholderValues;
 import net.kyori.adventure.text.Component;
@@ -38,7 +38,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.ArrayList;
-import net.kyori.adventure.text.format.NamedTextColor;
 
 /**
  * Presents the Fallen Kingdoms waiting room using the same navigation and visual rules as
@@ -264,7 +263,7 @@ public final class LobbyMenuListener implements Listener, UiReloadParticipant {
             lore.add(text(player, "fk.kit-" + kit.id() + "-description"));
             lore.add(Component.empty());
             lore.add(text(player, "fk.kit-content-title"));
-            lore.addAll(kitContent(kit));
+            lore.addAll(kitContent(player, kit));
             lore.add(Component.empty());
             lore.add(text(player, current.equals(kit.id()) ? "fk.menu-selected" : "fk.menu-select"));
             inventory.setItem(slots.get(index++), item(kit.icon(), text(player, "fk.kit-" + kit.id()),
@@ -273,19 +272,23 @@ public final class LobbyMenuListener implements Listener, UiReloadParticipant {
         open(player, inventory, MenuType.KIT);
     }
 
-    private List<Component> kitContent(KitDefinition kit) {
+    private List<Component> kitContent(Player player, KitDefinition kit) {
         List<Component> lines = new ArrayList<>();
         for (KitDefinition.KitItemSummary summary : kit.contentSummary()) {
-            Component itemName = KitCatalog.itemStack(summary.item()).effectiveName().color(NamedTextColor.WHITE);
-            Component line = Component.text("• ", NamedTextColor.DARK_GRAY)
-                    .append(Component.text(summary.amount() + "× ", NamedTextColor.GRAY)).append(itemName);
-            if (summary.stacks() > 1) line = line.append(Component.text(
-                    " (" + summary.stacks() + " × " + summary.item().amount() + ")", NamedTextColor.DARK_GRAY));
-            lines.add(line);
+            Component itemName = text(player, KitContentPresentation.itemKey(summary.item()));
+            PlaceholderValues.Builder values = PlaceholderValues.builder()
+                    .put("amount", summary.amount()).putComponent("item", itemName);
+            String lineKey = "fk.kit-content-item";
+            if (summary.stacks() > 1) {
+                lineKey = "fk.kit-content-stacked-item";
+                values.put("stacks", summary.stacks()).put("stack_size", summary.item().amount());
+            }
+            lines.add(text(player, lineKey, values.build()));
             summary.item().enchantments().forEach((name, level) -> {
-                var enchantment = org.bukkit.Registry.ENCHANTMENT.get(NamespacedKey.minecraft(name));
-                if (enchantment != null) lines.add(Component.text("  ", NamedTextColor.DARK_GRAY)
-                        .append(enchantment.displayName(level).color(NamedTextColor.GRAY)));
+                Component enchantment = text(player, KitContentPresentation.enchantmentKey(name));
+                lines.add(text(player, "fk.kit-content-enchantment", PlaceholderValues.builder()
+                        .putComponent("enchantment", enchantment)
+                        .put("level", KitContentPresentation.romanLevel(level)).build()));
             });
         }
         return lines;
