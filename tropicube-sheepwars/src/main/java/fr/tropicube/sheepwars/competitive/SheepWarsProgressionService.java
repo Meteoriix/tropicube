@@ -247,7 +247,7 @@ public final class SheepWarsProgressionService {
             if (participant.kills() > 0) core.getMissionService().progress(participant.playerId(), "PLAYER_KILL", participant.kills());
             if (participant.sheepLaunched() > 0) core.getMissionService().progress(participant.playerId(), "SHEEP_LAUNCHED", participant.sheepLaunched());
             if (mode.ranked()) {
-                core.getGuildService().recordRankedResult(participant.playerId(), completion.seasonId(),
+                core.getClanService().recordRankedResult(participant.playerId(), completion.seasonId(),
                         completion.ratingDeltas().getOrDefault(participant.playerId(), 0.0));
             }
         }

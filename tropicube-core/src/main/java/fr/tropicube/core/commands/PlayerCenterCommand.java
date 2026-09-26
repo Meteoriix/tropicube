@@ -65,7 +65,7 @@ public final class PlayerCenterCommand implements CommandExecutor {
                     send(viewer, "center.profile-sheepwars", profile.matches(), profile.wins(), profile.kills());
                     if (profile.access() == ProfileService.Access.FULL) {
                         send(viewer, "center.profile-details", Math.round(profile.rating()), profile.friends(),
-                                profile.guildName() == null ? "—" : profile.guildName(),
+                                profile.clanName() == null ? "—" : profile.clanName(),
                                 plugin.getEconomyManager().format(profile.balance()));
                         profile.badges().forEach(badge -> send(viewer, "center.profile-badge",
                                 plugin.getLanguageManager().get(viewer.getUniqueId(), badge.displayKey())));

@@ -32,7 +32,7 @@ import java.util.function.Consumer;
 public final class PlayerCenterMenu implements Listener {
     private static final int PAGE_SIZE = 36;
     private static final int[] MISSION_SLOTS = {10, 11, 12, 13, 14, 15, 16, 19};
-    private static final List<String> FILTERS = List.of("ALL", "GUILD", "SOCIAL", "SYSTEM", "MISSION", "MODERATION");
+    private static final List<String> FILTERS = List.of("ALL", "CLAN", "SOCIAL", "SYSTEM", "MISSION", "MODERATION");
     private final TropicubeCore plugin;
     private final NamespacedKey actionKey;
     private final NamespacedKey idKey;
@@ -205,7 +205,7 @@ public final class PlayerCenterMenu implements Listener {
                             message(online, "center.profile-sheepwars", profile.matches(), profile.wins(), profile.kills())));
                     inventory.setItem(14, display(Material.GOLD_INGOT,
                             message(online, "center.profile-details", Math.round(profile.rating()), profile.friends(),
-                                    profile.guildName() == null ? "—" : profile.guildName(),
+                                    profile.clanName() == null ? "—" : profile.clanName(),
                                     plugin.getEconomyManager().format(profile.balance()))));
                     if (profile.selectedTitleKey() != null) inventory.setItem(16, display(Material.NAME_TAG,
                             message(online, "center.profile-title", plugin.getLanguageManager().get(

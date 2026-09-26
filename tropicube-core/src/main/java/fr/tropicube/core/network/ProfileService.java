@@ -21,7 +21,7 @@ public final class ProfileService {
     public record KitMastery(String kitId, long experience, int level, String branch) {}
     public record Profile(UUID playerId, String username, String grade, long playTimeSeconds,
                           long networkExperience, int networkLevel, double balance, int friends,
-                          String guildName, long matches, long wins, long kills, double rating,
+                          String clanName, long matches, long wins, long kills, double rating,
                           String selectedTitleId, String selectedTitleKey, List<ProfileTitle> titles,
                           List<Badge> badges, List<SeasonArchive> seasonArchives,
                           List<KitMastery> kitMasteries, Access access) {
@@ -80,7 +80,7 @@ public final class ProfileService {
                             COALESCE(e.balance, 0) balance,
                             (SELECT COUNT(*) FROM tropicube_friendships f
                              WHERE (f.player_a = p.uuid OR f.player_b = p.uuid) AND f.status = 'ACCEPTED') friends,
-                            g.name guild_name,
+                            g.name clan_name,
                             COUNT(DISTINCT mp.match_id) matches,
                             COALESCE(SUM(CASE WHEN m.winning_team = mp.team THEN 1 ELSE 0 END), 0) wins,
                             COALESCE(SUM(mp.kills), 0) kills,
@@ -88,8 +88,8 @@ public final class ProfileService {
                      FROM tropicube_players p
                      LEFT JOIN tropicube_network_progression np ON np.player_uuid = p.uuid
                      LEFT JOIN tropicube_economy e ON e.uuid = p.uuid
-                     LEFT JOIN tropicube_guild_members gm ON gm.player_uuid = p.uuid
-                     LEFT JOIN tropicube_guilds g ON g.id = gm.guild_id
+                     LEFT JOIN tropicube_clan_members gm ON gm.player_uuid = p.uuid
+                     LEFT JOIN tropicube_clans g ON g.id = gm.clan_id
                      LEFT JOIN tropicube_sheepwars_match_players mp ON mp.player_uuid = p.uuid
                      LEFT JOIN tropicube_sheepwars_matches m ON m.id = mp.match_id
                      LEFT JOIN tropicube_sheepwars_ratings r ON r.player_uuid = p.uuid
@@ -108,7 +108,7 @@ public final class ProfileService {
                 return new Profile(targetId, result.getString("username"), result.getString("grade"),
                         result.getLong("play_time"), result.getLong("network_experience"),
                         result.getInt("network_level"), result.getDouble("balance"), result.getInt("friends"),
-                        result.getString("guild_name"), result.getLong("matches"), result.getLong("wins"),
+                        result.getString("clan_name"), result.getLong("matches"), result.getLong("wins"),
                         result.getLong("kills"), result.getDouble("rating"),
                         title == null ? null : title.id(), title == null ? null : title.displayKey(),
                         titles, badges, archives, masteries, access);

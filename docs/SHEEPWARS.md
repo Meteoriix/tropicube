@@ -18,7 +18,7 @@ Sources historiques : [présentation d'Epicube et origine du nom](https://www.mi
 
 | Catégorie | Décision |
 |---|---|
-| Réutilisable tel quel | Les profils, niveaux réseau, missions, guildes, parties Redis, instances Docker et préférences de langue restent fournis par Core, Docker API et Velocity. |
+| Réutilisable tel quel | Les profils, niveaux réseau, missions, clans, parties Redis, instances Docker et préférences de langue restent fournis par Core, Docker API et Velocity. |
 | À généraliser | Le mode fonctionnel d'une instance est un contrat partagé ; aucune règle de cote ou de kit SheepWars n'est déplacée dans Core. |
 | Propre aux jeux existants | Les moutons, cartes, équipes, classes, kits et la machine à états demeurent strictement dans `tropicube-sheepwars`. Fallen Kingdoms conserve son propre domaine et n'est pas une dépendance. |
 | Nouveau | Quick Play, files classées 4v4/8v8, cote et incertitude, saisons, sanctions d'abandon, maîtrise des kits, vote exhaustif des cartes et résumés de partie. |
@@ -178,6 +178,6 @@ En déploiement Docker, `INSTANCE_ID`, `SERVER_NAME`, `IS_HOST`, `HOST_UUID` et 
 
 Après l'écran de fin, SheepWars publie `PROXY:FINISH_GAME:<instanceId>`. Velocity transfère tous les joueurs vers le meilleur lobby disponible, réessaie chaque seconde en cas d'échec, puis tue et supprime immédiatement le conteneur ainsi que son état Redis. La disparition du backend n'est donc plus différée par l'auto-stop générique.
 
-Chaque résultat est enregistré avec mode, carte, équipes, kit, éliminations, morts, moutons lancés et cote avant/après. L'écran final affiche le résultat personnel et les distinctions « éliminations » et « moutons ». Le profil agrégé réutilise ces données sans créer de nouvelle file de guilde. `/sheepwars summary public|team|private` conserve le niveau de détail souhaité pour les présentations publiques futures.
+Chaque résultat est enregistré avec mode, carte, équipes, kit, éliminations, morts, moutons lancés et cote avant/après. L'écran final affiche le résultat personnel et les distinctions « éliminations » et « moutons ». Le profil agrégé réutilise ces données sans créer de nouvelle file de clan. `/sheepwars summary public|team|private` conserve le niveau de détail souhaité pour les présentations publiques futures.
 
 Pour l'installation complète, la création des images et la configuration des cartes, consulter [Déploiement](DEPLOYMENT.md) et [Configuration](CONFIGURATION.md).

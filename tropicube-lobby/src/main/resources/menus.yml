@@ -488,12 +488,12 @@ menus:
         name-key: social.menu-party
         action: party
         required: true
-      guilds:
+      clans:
         slot: 6
         material: SHIELD
-        name-key: guild-ui.tab
-        lore-key: guild-ui.tab-action
-        action: guilds
+        name-key: clan-ui.tab
+        lore-key: clan-ui.tab-action
+        action: clans
         required: true
       requests:
         slot: 49

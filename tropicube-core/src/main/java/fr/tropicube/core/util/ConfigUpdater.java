@@ -22,6 +22,25 @@ public final class ConfigUpdater {
 
     private ConfigUpdater() {}
 
+    /** Renames or removes a legacy root section while preserving configured values and comments. */
+    public static void migrateRootSection(File diskFile, String legacyName, String currentName) throws IOException {
+        if (!diskFile.exists() || legacyName.equals(currentName)) return;
+        String raw = Files.readString(diskFile.toPath(), StandardCharsets.UTF_8)
+                .replace("\r\n", "\n").replace('\r', '\n');
+        List<String> lines = new ArrayList<>(Arrays.asList(raw.split("\n", -1)));
+        int legacyStart = findSectionStart(lines, legacyName);
+        if (legacyStart < 0) return;
+        int legacyEnd = findRootSectionEnd(lines, legacyStart);
+        int currentStart = findSectionStart(lines, currentName);
+        if (currentStart < 0) {
+            String line = lines.get(legacyStart);
+            lines.set(legacyStart, currentName + line.substring(legacyName.length()));
+        } else {
+            lines.subList(legacyStart, legacyEnd).clear();
+        }
+        Files.writeString(diskFile.toPath(), String.join("\n", lines), StandardCharsets.UTF_8);
+    }
+
     /**
      * Adds resource keys missing from {@code diskFile}.
      * Existing configured values are preserved. An inline empty mapping such as
@@ -175,6 +194,16 @@ public final class ConfigUpdater {
             if (isSectionHeader(lines.get(i), section)) return i;
         }
         return -1;
+    }
+
+    private static int findRootSectionEnd(List<String> lines, int start) {
+        for (int index = start + 1; index < lines.size(); index++) {
+            String line = lines.get(index);
+            if (!line.isEmpty() && line.charAt(0) != ' ' && line.charAt(0) != '\t' && line.charAt(0) != '#') {
+                return index;
+            }
+        }
+        return lines.size();
     }
 
     private static boolean isSectionHeader(String line, String section) {

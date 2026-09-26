@@ -76,11 +76,11 @@ Generated HTML under `docs-site/` and `docs-site/en/` is committed with its Mark
 7. Inspect the full diff, status, LFS state when relevant, and secrets.
 8. Commit with a conventional French commit subject as defined by project policy.
 
-## Guild SQL tests
+## Clan SQL tests
 
-`GuildSqlTest` runs the actual migrations against a dedicated disposable database. Without `TROPICUBE_GUILD_TEST_URL`, its four SQL scenarios are skipped; domain and resource tests remain active. Start a test MySQL container matching the Compose version, with database `guild_test`, an empty-password root account restricted to this disposable instance and a port published only on `127.0.0.1`. Set `TROPICUBE_GUILD_TEST_URL=jdbc:mysql://127.0.0.1:<port>/guild_test?allowPublicKeyRetrieval=true&useSSL=false`, then run the Maven reactor. Never target the network database. Remove the temporary container afterwards.
+`ClanSqlTest` runs the actual migrations against a dedicated disposable database. Without `TROPICUBE_CLAN_TEST_URL`, its four SQL scenarios are skipped; domain and resource tests remain active. Start a test MySQL container matching the Compose version, with database `clan_test`, an empty-password root account restricted to this disposable instance and a port published only on `127.0.0.1`. Set `TROPICUBE_CLAN_TEST_URL=jdbc:mysql://127.0.0.1:<port>/clan_test?allowPublicKeyRetrieval=true&useSSL=false`, then run the Maven reactor. Never target the network database. Remove the temporary container afterwards.
 
-Assertions cover expired invitations, concurrent acceptance at capacity, permissions and ownership transfer, stale screens after guild changes, last-member departure and weekly contribution display rollover. Pure tests also cover guild identities, input deadlines, menu permissions, pagination and atomic input consumption.
+Assertions cover expired invitations, concurrent acceptance at capacity, permissions and ownership transfer, stale screens after clan changes, last-member departure and weekly contribution display rollover. Pure tests also cover clan identities, input deadlines, menu permissions, pagination and atomic input consumption.
 
 ## Translation reference audit
 

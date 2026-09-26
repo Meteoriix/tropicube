@@ -387,7 +387,7 @@ class YamlResourcesTest {
     void profileAndSocialMenusExposeExplicitLocalizedActions() {
         List<String> keys = List.of(
                 "center.profile-action", "center.missions-action", "center.notifications-action",
-                "center.guilds-action", "center.privacy-action", "center.profile-title-action",
+                "center.clans-action", "center.privacy-action", "center.profile-title-action",
                 "social.party-request-left-click", "social.party-request-right-click",
                 "social.party-request-sent-right-click", "lobby.custom-game-type-click");
         for (String language : LANGUAGES) {
@@ -585,7 +585,7 @@ class YamlResourcesTest {
                 "msg", "reply", "ignore", "globalchat", "report",
                 "play", "quickplay", "competitive", "server", "queue", "replay",
                 "replayconfirm", "rejoin", "whitelist", "sheepwars",
-                "friend", "party", "pc", "guild", "profile", "center", "missions",
+                "friend", "party", "pc", "clan", "profile", "center", "missions",
                 "notifications", "settings", "nick", "fly", "2fa", "staff", "staffchat",
                 "reports", "kick", "mute", "unmute", "warn", "history", "ban", "tempban",
                 "unban", "privacy", "find", "send", "pull", "maintenance", "announce",
@@ -611,7 +611,7 @@ class YamlResourcesTest {
                         "msg", "reply", "ignore", "globalchat", "report"),
                 "games", List.of("play", "quickplay", "competitive", "server", "queue", "replay",
                         "replayconfirm", "rejoin", "whitelist", "sheepwars"),
-                "social", List.of("friend", "party", "pc", "guild"),
+                "social", List.of("friend", "party", "pc", "clan"),
                 "profile", List.of("profile", "center", "missions", "notifications", "settings", "nick", "fly"),
                 "staff", List.of("2fa", "staff", "staffchat", "reports", "kick", "mute", "unmute",
                         "warn", "history", "ban", "tempban", "unban", "privacy", "find", "send", "pull",
@@ -627,7 +627,7 @@ class YamlResourcesTest {
                 Map.entry("replay", List.of("playnext", "playagain", "rejouer")),
                 Map.entry("sheepwars", List.of("swprofile")),
                 Map.entry("friend", List.of("friends", "ami", "amis")),
-                Map.entry("party", List.of("groupe")), Map.entry("guild", List.of("guilde")),
+                Map.entry("party", List.of("groupe")),
                 Map.entry("profile", List.of("profil")), Map.entry("center", List.of("centre")),
                 Map.entry("notifications", List.of("inbox")),
                 Map.entry("settings", List.of("preferences", "parametres")),
@@ -730,6 +730,27 @@ class YamlResourcesTest {
         assertEquals("user-value", updated.getString("custom.existing"));
         assertEquals("Private", updated.getString("custom.privacy.private"));
         assertEquals("Public", updated.getString("custom.privacy.public"));
+    }
+
+    @Test
+    void configUpdaterMigratesTheLegacyClanSectionWithoutLosingCustomValues() throws Exception {
+        Path disk = temporaryDirectory.resolve("config.yml");
+        Files.writeString(disk, """
+                guilds:
+                  max-members: 73 # Customized capacity.
+                  max-officers: 8
+                database:
+                  host: mysql
+                """);
+
+        ConfigUpdater.migrateRootSection(disk.toFile(), "guilds", "clans");
+
+        YamlConfiguration updated = YamlConfiguration.loadConfiguration(disk.toFile());
+        assertEquals(73, updated.getInt("clans.max-members"));
+        assertEquals(8, updated.getInt("clans.max-officers"));
+        assertFalse(updated.contains("guilds"));
+        assertEquals("mysql", updated.getString("database.host"));
+        assertTrue(Files.readString(disk).contains("# Customized capacity."));
     }
 
     @Test

@@ -13,23 +13,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MenuTemplateRegistryTest {
     @Test
-    void removesLegacyGuildsButtonThatConflictsWithWardrobe() throws Exception {
+    void removesLegacyClansButtonThatConflictsWithWardrobe() throws Exception {
         YamlConfiguration yaml = new YamlConfiguration();
         yaml.loadFromString("""
                 menus:
                   profile-home:
                     buttons:
-                      guilds:
+                      clans:
                         slot: 24
-                        action: open_guilds
+                        action: open_clans
                       wardrobe:
                         slot: 24
                         action: open_wardrobe
                 """);
 
-        assertTrue(MenuTemplateRegistry.removeLegacyProfileGuildsButton(yaml));
-        assertNull(yaml.getConfigurationSection("menus.profile-home.buttons.guilds"));
-        assertFalse(MenuTemplateRegistry.removeLegacyProfileGuildsButton(yaml));
+        assertTrue(MenuTemplateRegistry.removeLegacyProfileClansButton(yaml));
+        assertNull(yaml.getConfigurationSection("menus.profile-home.buttons.clans"));
+        assertFalse(MenuTemplateRegistry.removeLegacyProfileClansButton(yaml));
     }
 
     @Test

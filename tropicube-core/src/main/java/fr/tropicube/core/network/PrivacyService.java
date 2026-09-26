@@ -59,8 +59,8 @@ public final class PrivacyService {
                 export.put("friendships", rows(connection, "SELECT * FROM tropicube_friendships WHERE player_a = ? OR player_b = ? OR requester_uuid = ?", playerId, playerId, playerId));
                 export.put("ignoredPlayers", rows(connection, "SELECT * FROM tropicube_ignored_players WHERE owner_uuid = ? OR ignored_uuid = ?", playerId, playerId));
                 export.put("privateMessages", rows(connection, "SELECT * FROM tropicube_private_messages WHERE sender_uuid = ? OR recipient_uuid = ?", playerId, playerId));
-                export.put("guildMembership", rows(connection, "SELECT * FROM tropicube_guild_members WHERE player_uuid = ?", playerId));
-                export.put("guildOwnership", rows(connection, "SELECT * FROM tropicube_guilds WHERE owner_uuid = ?", playerId));
+                export.put("clanMembership", rows(connection, "SELECT * FROM tropicube_clan_members WHERE player_uuid = ?", playerId));
+                export.put("clanOwnership", rows(connection, "SELECT * FROM tropicube_clans WHERE owner_uuid = ?", playerId));
                 export.put("ratings", rows(connection, "SELECT * FROM tropicube_sheepwars_ratings WHERE player_uuid = ?", playerId));
                 export.put("mastery", rows(connection, "SELECT * FROM tropicube_sheepwars_kit_mastery WHERE player_uuid = ?", playerId));
                 export.put("matches", rows(connection, "SELECT * FROM tropicube_sheepwars_match_players WHERE player_uuid = ?", playerId));
@@ -158,15 +158,15 @@ public final class PrivacyService {
                     updateRequest(connection, requestId, "LEGAL_HOLD"); connection.commit(); return false;
                 }
                 String anonymous = "anon-" + sha256(playerId).substring(0, 31);
-                transferOwnedGuilds(connection, playerId);
+                transferOwnedClans(connection, playerId);
                 execute(connection, "DELETE FROM tropicube_private_messages WHERE sender_uuid=? OR recipient_uuid=?", playerId, playerId);
                 execute(connection, "DELETE FROM tropicube_sheepwars_match_players WHERE player_uuid=?", playerId);
                 execute(connection, "DELETE FROM tropicube_sanctions WHERE player_uuid=?", playerId);
                 execute(connection, "DELETE FROM tropicube_sheepwars WHERE uuid=?", playerId);
                 execute(connection, "UPDATE tropicube_transactions SET from_uuid=? WHERE from_uuid=?", anonymous, playerId);
                 execute(connection, "UPDATE tropicube_transactions SET to_uuid=? WHERE to_uuid=?", anonymous, playerId);
-                execute(connection, "UPDATE tropicube_guild_audit SET actor_uuid=? WHERE actor_uuid=?", anonymous, playerId);
-                execute(connection, "UPDATE tropicube_guild_invites SET invited_by=? WHERE invited_by=?", anonymous, playerId);
+                execute(connection, "UPDATE tropicube_clan_audit SET actor_uuid=? WHERE actor_uuid=?", anonymous, playerId);
+                execute(connection, "UPDATE tropicube_clan_invites SET invited_by=? WHERE invited_by=?", anonymous, playerId);
                 execute(connection, "UPDATE tropicube_reports SET reporter_uuid=? WHERE reporter_uuid=?", anonymous, playerId);
                 execute(connection, "UPDATE tropicube_reports SET target_uuid=? WHERE target_uuid=?", anonymous, playerId);
                 execute(connection, "UPDATE tropicube_report_evidence SET author_uuid=? WHERE author_uuid=?", anonymous, playerId);
@@ -194,40 +194,40 @@ public final class PrivacyService {
         }
     }
 
-    private void transferOwnedGuilds(Connection connection, String ownerId) throws SQLException {
-        List<Long> guildIds = new ArrayList<>();
+    private void transferOwnedClans(Connection connection, String ownerId) throws SQLException {
+        List<Long> clanIds = new ArrayList<>();
         try (PreparedStatement select = connection.prepareStatement(
-                "SELECT id FROM tropicube_guilds WHERE owner_uuid=? FOR UPDATE")) {
+                "SELECT id FROM tropicube_clans WHERE owner_uuid=? FOR UPDATE")) {
             select.setString(1, ownerId);
             try (ResultSet result = select.executeQuery()) {
-                while (result.next()) guildIds.add(result.getLong(1));
+                while (result.next()) clanIds.add(result.getLong(1));
             }
         }
         long activeSince = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000;
-        for (long guildId : guildIds) {
+        for (long clanId : clanIds) {
             String successor = null;
             try (PreparedStatement select = connection.prepareStatement("""
-                    SELECT player_uuid FROM tropicube_guild_members
-                    WHERE guild_id=? AND player_uuid<>?
+                    SELECT player_uuid FROM tropicube_clan_members
+                    WHERE clan_id=? AND player_uuid<>?
                     ORDER BY (last_active_at >= ?) DESC, joined_at ASC LIMIT 1 FOR UPDATE
                     """)) {
-                select.setLong(1, guildId); select.setString(2, ownerId); select.setLong(3, activeSince);
+                select.setLong(1, clanId); select.setString(2, ownerId); select.setLong(3, activeSince);
                 try (ResultSet result = select.executeQuery()) { if (result.next()) successor = result.getString(1); }
             }
             if (successor == null) {
-                try (PreparedStatement delete = connection.prepareStatement("DELETE FROM tropicube_guilds WHERE id=?")) {
-                    delete.setLong(1, guildId); delete.executeUpdate();
+                try (PreparedStatement delete = connection.prepareStatement("DELETE FROM tropicube_clans WHERE id=?")) {
+                    delete.setLong(1, clanId); delete.executeUpdate();
                 }
                 continue;
             }
-            try (PreparedStatement guild = connection.prepareStatement(
-                    "UPDATE tropicube_guilds SET owner_uuid=?, updated_at=? WHERE id=?")) {
-                guild.setString(1, successor); guild.setLong(2, System.currentTimeMillis());
-                guild.setLong(3, guildId); guild.executeUpdate();
+            try (PreparedStatement clan = connection.prepareStatement(
+                    "UPDATE tropicube_clans SET owner_uuid=?, updated_at=? WHERE id=?")) {
+                clan.setString(1, successor); clan.setLong(2, System.currentTimeMillis());
+                clan.setLong(3, clanId); clan.executeUpdate();
             }
             try (PreparedStatement member = connection.prepareStatement(
-                    "UPDATE tropicube_guild_members SET role='OWNER' WHERE guild_id=? AND player_uuid=?")) {
-                member.setLong(1, guildId); member.setString(2, successor); member.executeUpdate();
+                    "UPDATE tropicube_clan_members SET role='OWNER' WHERE clan_id=? AND player_uuid=?")) {
+                member.setLong(1, clanId); member.setString(2, successor); member.executeUpdate();
             }
         }
     }

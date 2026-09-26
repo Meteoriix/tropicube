@@ -31,6 +31,13 @@ public class DatabaseManager {
         executor = new BoundedDatabaseExecutor(options.maxConcurrent(), options.queueCapacity());
     }
 
+    /** Test seam for repositories that supply their own disposable JDBC connection. */
+    protected DatabaseManager(java.util.function.ToIntBiFunction<String, Integer> optionReader) {
+        this.plugin = null;
+        options = DatabaseOptions.read(optionReader);
+        executor = new BoundedDatabaseExecutor(options.maxConcurrent(), options.queueCapacity());
+    }
+
     public void initialize() throws SQLException {
         HikariConfig config = new HikariConfig();
 

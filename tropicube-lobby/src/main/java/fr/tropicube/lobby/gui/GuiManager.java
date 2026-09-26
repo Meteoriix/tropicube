@@ -394,7 +394,7 @@ public class GuiManager {
     }
 
     public void onPlayerQuit(UUID playerId) {
-        if (plugin.getGuildMenus() != null) plugin.getGuildMenus().quit(playerId);
+        if (plugin.getClanMenus() != null) plugin.getClanMenus().quit(playerId);
         openGuis.remove(playerId);
     }
 

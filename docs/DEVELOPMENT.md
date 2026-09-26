@@ -128,11 +128,11 @@ Tout changement fonctionnel, de configuration ou d'exploitation doit mettre à j
 5. Tester en jeu tout flux dépendant de Paper, Velocity, Redis ou Docker.
 6. Décrire précisément les vérifications dans la pull request.
 
-## Tests SQL des guildes
+## Tests SQL des clans
 
-`GuildSqlTest` utilise les migrations réelles sur une base jetable dédiée. Sans `TROPICUBE_GUILD_TEST_URL`, les quatre scénarios SQL sont ignorés ; les tests métier et ressources restent actifs. Pour les exécuter, démarrer un conteneur MySQL de test avec la même version que Compose, une base `guild_test`, un port publié uniquement sur `127.0.0.1` et un compte root sans mot de passe limité à ce conteneur jetable. Définir `TROPICUBE_GUILD_TEST_URL=jdbc:mysql://127.0.0.1:<port>/guild_test?allowPublicKeyRetrieval=true&useSSL=false`, puis lancer le réacteur Maven. Ne jamais utiliser la base du réseau. Supprimer le conteneur temporaire après les essais.
+`ClanSqlTest` utilise les migrations réelles sur une base jetable dédiée. Sans `TROPICUBE_CLAN_TEST_URL`, les quatre scénarios SQL sont ignorés ; les tests métier et ressources restent actifs. Pour les exécuter, démarrer un conteneur MySQL de test avec la même version que Compose, une base `clan_test`, un port publié uniquement sur `127.0.0.1` et un compte root sans mot de passe limité à ce conteneur jetable. Définir `TROPICUBE_CLAN_TEST_URL=jdbc:mysql://127.0.0.1:<port>/clan_test?allowPublicKeyRetrieval=true&useSSL=false`, puis lancer le réacteur Maven. Ne jamais utiliser la base du réseau. Supprimer le conteneur temporaire après les essais.
 
-Les assertions couvrent invitations expirées, acceptations simultanées face à la capacité, permissions et transfert, écrans périmés après changement de guilde, départ du dernier membre et contribution hebdomadaire affichée après changement de semaine. Les tests purs couvrent également les identités de guilde, le délai de saisie, les droits graphiques, la pagination et la consommation atomique d'une saisie.
+Les assertions couvrent invitations expirées, acceptations simultanées face à la capacité, permissions et transfert, écrans périmés après changement de clan, départ du dernier membre et contribution hebdomadaire affichée après changement de semaine. Les tests purs couvrent également les identités de clan, le délai de saisie, les droits graphiques, la pagination et la consommation atomique d'une saisie.
 
 ## Audit des références de langues
 
@@ -142,7 +142,7 @@ Les assertions couvrent invitations expirées, acceptations simultanées face à
 
 `ConfigUpdater` préserve les valeurs et commentaires existants lorsqu'il ajoute les clés d'une ressource embarquée. Si une ancienne configuration représente une section vide par `{}`, il développe cette écriture avant d'y insérer de nouvelles sous-clés afin de conserver un YAML valide. Les changements coordonnés de géométrie d'un menu (`rows`, cadre, boutons et régions dynamiques) utilisent une migration propre au module, car conserver seulement une partie de l'ancien agencement peut produire un manifeste valide mais inutilisable. Toute évolution de structure doit être couverte par un test partant de la forme réellement déployée avant la migration.
 
-`RuntimeUiBundleTest` restaure une ancienne génération sur des catalogues déjà à jour et vérifie toutes les clés des quatre langues, la préservation des personnalisations, les appels répétés et le nettoyage des fichiers temporaires. Pour diagnostiquer un serveur actif, comparer également ses fichiers de langue aux ressources embarquées : une validation du dépôt seule ne prouve pas que la génération Redis restaurée est complète. Vérifier en jeu Social (amis, groupes, guildes), les autres inventaires, le HUD et leur rafraîchissement après `/lang` sans reconnexion.
+`RuntimeUiBundleTest` restaure une ancienne génération sur des catalogues déjà à jour et vérifie toutes les clés des quatre langues, la préservation des personnalisations, les appels répétés et le nettoyage des fichiers temporaires. Pour diagnostiquer un serveur actif, comparer également ses fichiers de langue aux ressources embarquées : une validation du dépôt seule ne prouve pas que la génération Redis restaurée est complète. Vérifier en jeu Social (amis, groupes, clans), les autres inventaires, le HUD et leur rafraîchissement après `/lang` sans reconnexion.
 
 ## Contrôles avant ouverture
 
@@ -172,7 +172,7 @@ La revue statique couvre les constructeurs d'inventaires Core, Lobby, SheepWars 
 |---|---|
 | Core Profil, détails, missions, notifications | Cadre partagé et libellés localisés ; chargements annulables, compteurs rechargés, icônes Bedrock corrigées, retour notifications réaligné à gauche. |
 | Lobby Jeux, modes, Classé, serveurs publics, parties personnalisées | Cadre principal gris ; clic gauche Quick Play explicite ; raccourcis Classé/public conservés ; navigation publique réalignée ; disponibilité issue des caches existants, chargement Classé protégé. |
-| Lobby Social, demandes d'amis, invitations, guildes | Utilisent les primitives partagées et les langues ; aucune règle sociale modifiée. Les gestes spécialisés préexistants restent à vérifier sur les clients. |
+| Lobby Social, demandes d'amis, invitations, clans | Utilisent les primitives partagées et les langues ; aucune règle sociale modifiée. Les gestes spécialisés préexistants restent à vérifier sur les clients. |
 | Lobby Paramètres, Langues, Boutique/Grades | Paramètres échoue vers Réessayer après cinq secondes sans Redis ou MySQL ; chargement Boutique protégé, actualisation des parcours après langue ; fermeture Langues réalignée ; grades conservés. |
 | Lobby Guide, Progression, Vestiaire, fiche, confirmation | Toutes les actions nouvelles au clic gauche, retours/fermeture explicites, instantanés relus, aperçus distincts des mutations ; filtre vide et panne de chargement affichés. |
 | SheepWars classes/kits, maîtrise, équipes, vote/choix carte, paramètres, whitelist/enclume | Primitives partagées présentes. Écarts historiques : certains menus utilisent seulement le fond neutre et les retours des paramètres occupent 49/26/22/53 selon la page. Aucun changement de ces menus ni des règles de jeu dans cette livraison. |

@@ -330,9 +330,11 @@ DOCKER_SOCKET_PATH=/run/user/1000/docker.sock
 
 Puis vérifier que Compose peut monter ce chemin et que le daemon correspondant est actif pour l'utilisateur du déploiement.
 
-## Vérification des menus de guilde
+## Vérification des menus de clan
 
-Après mise à jour conjointe de Core et Lobby, vérifier sur Java et Bedrock : Social aux trois onglets, absence du bouton Guildes dans Profil, création par nom/tag, invitations, pagination de plus de 21 membres, défis et classement vide ou rempli. Vérifier les rôles membre/officier/chef, les confirmations d'exclusion/transfert/départ et l'avertissement de suppression de la dernière guilde. Une saisie privée ne doit jamais apparaître dans le chat des autres joueurs. Tester `!`, l'expiration, la déconnexion, une navigation pendant chargement, les doubles clics et `/lang` dans les quatre langues. Simuler un échec SQL puis utiliser Actualiser. Aucun changement de ports ni de volume de production n'est requis.
+La livraison doit mettre à jour Core et Lobby ensemble. Au premier démarrage, `V013__rename_guilds_to_clans.sql` conserve les données existantes en renommant le schéma et les notifications avant l'initialisation des services. Une ancienne version de Core ne peut plus fonctionner après cette migration ; effectuer la sauvegarde MySQL habituelle avant le déploiement.
+
+Après mise à jour conjointe de Core et Lobby, vérifier sur Java et Bedrock : Social aux trois onglets, absence du bouton Clans dans Profil, création par nom/tag, invitations, pagination de plus de 21 membres, défis et classement vide ou rempli. Vérifier les rôles membre/officier/chef, les confirmations d'exclusion/transfert/départ et l'avertissement de suppression du dernier clan. Une saisie privée ne doit jamais apparaître dans le chat des autres joueurs. Tester `!`, l'expiration, la déconnexion, une navigation pendant chargement, les doubles clics et `/lang` dans les quatre langues. Simuler un échec SQL puis utiliser Actualiser. Aucun changement de ports ni de volume de production n'est requis.
 
 ## Procédure de livraison fiable avant ouverture
 

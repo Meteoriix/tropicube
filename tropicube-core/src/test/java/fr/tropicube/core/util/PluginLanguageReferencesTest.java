@@ -3,8 +3,8 @@ package fr.tropicube.core.util;
 import com.sun.source.tree.*;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.TreePathScanner;
-import fr.tropicube.core.guild.GuildPresentation;
-import fr.tropicube.core.guild.GuildService;
+import fr.tropicube.core.clan.ClanPresentation;
+import fr.tropicube.core.clan.ClanService;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 
@@ -87,9 +87,9 @@ class PluginLanguageReferencesTest {
 
                         @Override public Void visitMethodInvocation(MethodInvocationTree call, Void ignored) {
                             // Fixed-arity varargs adapters insert all values following the key.
-                            boolean guildItem = method(call).equals("item") && unit.getSourceFile().getName().endsWith("GuildGUI.java");
+                            boolean clanItem = method(call).equals("item") && unit.getSourceFile().getName().endsWith("ClanGUI.java");
                             if (Set.of("component", "getComponent", "getComponentForLang", "message", "messageText").contains(method(call))
-                                    || isTranslationGet(call) || guildItem) {
+                                    || isTranslationGet(call) || clanItem) {
                                 var args = call.getArguments();
                                 for (int i = 0; i < args.size(); i++) if (args.get(i) instanceof LiteralTree literal
                                         && literal.getValue() instanceof String key && KEY.matcher(key).matches()) {
@@ -98,7 +98,7 @@ class PluginLanguageReferencesTest {
                                     Set<String> values = new LinkedHashSet<>();
                                     var matcher = PLACEHOLDER.matcher(template);
                                     while (matcher.find()) values.add(matcher.group(1));
-                                    int provided = args.size() - i - 1 - (guildItem ? 1 : 0);
+                                    int provided = args.size() - i - 1 - (clanItem ? 1 : 0);
                                     // Named/array adapters are verified by their dedicated renderer tests.
                                     boolean namedOrArray = provided == 1 && !(args.get(i + 1) instanceof LiteralTree)
                                             && (args.get(i + 1).toString().contains("Placeholders")
@@ -144,7 +144,7 @@ class PluginLanguageReferencesTest {
         }
         families.put("sw.mastery-branch-", Set.of("a-name", "b-name"));
         families.put("economy.admin-", Set.of("set", "add", "remove"));
-        families.put("center.notification-category-value-", Set.of("all", "guild", "social", "system", "mission", "moderation"));
+        families.put("center.notification-category-value-", Set.of("all", "clan", "social", "system", "mission", "moderation"));
         families.put("center.mission-rotation-", Set.of("daily", "weekly"));
         Set<String> missionEvents = new HashSet<>();
         var missions = YamlConfiguration.loadConfiguration(root.resolve("tropicube-core/src/main/resources/missions.yml").toFile());
@@ -187,7 +187,7 @@ class PluginLanguageReferencesTest {
             if (suffixes == null || suffixes.isEmpty()) { errors.add("Uncovered dynamic translation family: " + prefix); continue; }
             for (String suffix : suffixes) references.add(new Reference("core", prefix + suffix, "dynamic family " + prefix));
         }
-        for (var result : GuildService.Result.values()) references.add(new Reference("core", GuildPresentation.resultKey(result), "GuildService.Result"));
+        for (var result : ClanService.Result.values()) references.add(new Reference("core", ClanPresentation.resultKey(result), "ClanService.Result"));
         for (Reference reference : references) for (String language : List.of("fr", "en", "de", "es")) {
             Object value = catalogs.get(reference.module() + "/" + language).get(reference.key());
             if (!(value instanceof String) && !(value instanceof List<?>)) errors.add(

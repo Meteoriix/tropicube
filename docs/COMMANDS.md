@@ -48,11 +48,11 @@ Les commandes Paper sont disponibles uniquement sur le backend qui héberge le p
 | `/missions claim <daily\|weekly> <slot>` | — | aucune | Réclame monnaie et XP réseau d'une mission terminée |
 | `/notifications [read <id>]` | `/inbox` | aucune | Consulte le centre de notifications ou marque une entrée comme lue |
 | `/center` | `/centre` | aucune | Ouvre le centre joueur et sa boîte de notifications paginée |
-| `/guild info` | `/guilde` | aucune | Affiche membres, rôles, niveau, contributions et défis hebdomadaires |
-| `/guild create <nom> <tag>` | `/guilde` | aucune | Crée une guilde dont la capacité initiale est 50 membres |
-| `/guild invite <joueur>` puis `/guild accept <tag>` | `/guilde` | officier/chef pour inviter | Gère les invitations conservées sept jours |
-| `/guild leave\|kick\|promote\|demote\|transfer ...` | `/guilde` | selon le rôle | Gère les membres, officiers et la propriété |
-| `/guild ranking` | `/guilde classement` | aucune | Affiche le classement agrégé de la saison classée active |
+| `/clan info` | — | aucune | Affiche membres, rôles, niveau, contributions et défis hebdomadaires |
+| `/clan create <nom> <tag>` | — | aucune | Crée un clan dont la capacité initiale est 50 membres |
+| `/clan invite <joueur>` puis `/clan accept <tag>` | — | officier/chef pour inviter | Gère les invitations conservées sept jours |
+| `/clan leave\|kick\|promote\|demote\|transfer ...` | — | selon le rôle | Gère les membres, officiers et la propriété |
+| `/clan ranking` | `/clan classement` | aucune | Affiche le classement agrégé de la saison classée active |
 | `/privacy export\|erase\|status <joueur>` | — | `tropicube.privacy.manage` + session TOTP | Exporte, programme l'anonymisation ou consulte les demandes RGPD |
 | `/privacy cancel <id>` | — | `tropicube.privacy.manage` + session TOTP | Annule une demande en attente ou placée sous gel légal |
 | `/2fa issue <joueur>` | — | `tropicube.2fa.issue` | Émet un jeton d'inscription TOTP à usage court |
@@ -68,7 +68,7 @@ Durées de grade acceptées : une valeur comprise par `DurationParser`, par exem
 
 Les amis sont persistants en MySQL. Une party est temporaire dans Redis, limitée par la configuration Core et créée lors de la première invitation. Accepter une invitation depuis une autre party retire atomiquement le joueur de l'ancienne ; s'il en était chef, un autre membre est promu, ou la party vide est dissoute. Le suivi est activé par défaut à l'entrée, puis reste un choix individuel. Les transferts sociaux respectent la whitelist et la capacité de l'instance cible.
 
-L'aide en jeu regroupe la navigation et le chat dans `general`, les files et la progression SheepWars dans `games`, les amis/parties/guildes dans `social`, la progression réseau et les préférences dans `profile`, puis les outils sécurisés de modération et d'exploitation dans `staff`. Chaque commande principale occupe exactement une ligne avec sa syntaxe complète ; seuls ses véritables alias restent entre parenthèses sur cette ligne. L'autocomplétion masque la catégorie `staff` aux joueurs non habilités.
+L'aide en jeu regroupe la navigation et le chat dans `general`, les files et la progression SheepWars dans `games`, les amis/parties/clans dans `social`, la progression réseau et les préférences dans `profile`, puis les outils sécurisés de modération et d'exploitation dans `staff`. Chaque commande principale occupe exactement une ligne avec sa syntaxe complète ; seuls ses véritables alias restent entre parenthèses sur cette ligne. L'autocomplétion masque la catégorie `staff` aux joueurs non habilités.
 
 ### Hiérarchie des niveaux
 
@@ -178,11 +178,11 @@ Velocity utilise le profil révisionné publié par Core dans Redis et le conser
 
 `modLevel 3` couvre toute l'administration Tropicube. `modLevel 4` ajoute le wildcard global ; les opérateurs Paper et UUID configurés ne donnent plus de droits.
 
-## Parcours graphique des guildes
+## Parcours graphique des clans
 
-Dans la hotbar du Lobby, **Social → Guildes** propose création, invitations reçues, membres, défis hebdomadaires et top 20 saisonnier. Le Profil ne comporte plus de bouton Guildes. La création demande le nom puis le tag dans une saisie privée ; inviter demande le pseudo. Saisir `!` annule et revient au menu. Chaque étape expire après le délai configuré.
+Dans la hotbar du Lobby, **Social → Clans** propose création, invitations reçues, membres, défis hebdomadaires et top 20 saisonnier. Le Profil ne comporte plus de bouton Clans. La création demande le nom puis le tag dans une saisie privée ; inviter demande le pseudo. Saisir `!` annule et revient au menu. Chaque étape expire après le délai configuré.
 
-Les officiers et le chef peuvent inviter ; un officier peut exclure un membre, et le chef peut aussi gérer les officiers, promouvoir, rétrograder et transférer la propriété. Départ, exclusion et transfert nécessitent une confirmation dans les menus. Un chef doit transférer sa guilde avant de partir si d'autres membres restent ; le départ de son dernier membre la supprime avec un avertissement explicite. Les commandes `/guild` et `/guilde` ainsi que leurs permissions restent inchangées. Les libellés de rôle, de défi et de résultat sont localisés dans les quatre langues.
+Les officiers et le chef peuvent inviter ; un officier peut exclure un membre, et le chef peut aussi gérer les officiers, promouvoir, rétrograder et transférer la propriété. Départ, exclusion et transfert nécessitent une confirmation dans les menus. Un chef doit transférer son clan avant de partir si d'autres membres restent ; le départ de son dernier membre le supprime avec un avertissement explicite. Seule la commande `/clan` est enregistrée. Les libellés de rôle, de défi et de résultat sont localisés dans les quatre langues.
 
 ## Commandes locales d'exploitation
 

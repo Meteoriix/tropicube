@@ -6,6 +6,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-26
 
+- Immediately renames the complete Guild system to Clans: a single `/clan` command, dedicated code and interfaces, migrated `clans.*` configuration, and a lossless `V013` schema rename.
 - Adds a versioned language-editor tab for exact words and phrases that machine translation must always preserve.
 - Fixes the MiniMessage rendering of the whitelist status in `/tropi info`, applying its color without displaying formatting tags.
 - Completes the Fallen Kingdoms waiting scoreboard with its total capacity, shortens kingdom names to their color, and fully localizes kit-menu items, quantities, potions, and enchantments.
@@ -13,7 +14,7 @@ This document records functional, technical, and operational changes. Entries ar
 ### 2026-09-25
 
 - Standardizes menus without a blue glass line, fixes Shop balances up to 100B, preserves authenticated names in friend lists, and completes friend-request counts.
-- Shows the game, queue icon, and format on the queue scoreboard, reports unavailable Ranked queues, and simplifies Guilds without a permanent refresh button.
+- Shows the game, queue icon, and format on the queue scoreboard, reports unavailable Ranked queues, and simplifies Clans without a permanent refresh button.
 - Aligned UI validation with the new palette and migrated the former green Games button to its dark aqua accent without replacing customizations.
 - Made the SheepWars scoreboard spacer row truly blank by explicitly hiding its client-side score number and validating every variant's complete Paper representation.
 
@@ -106,8 +107,8 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-06
 
-- An automated audit checks translation references across all plugins in all four languages, including known dynamic families. Guild result, insufficient balance and quick-play filter keys are corrected; Docker copies remain synchronized.
-- Social now hosts complete guild management: invitations, members, challenges, ranking and cancellable private input; Profile no longer contains the button. Mutations revalidate permissions and the displayed guild under a SQL lock; roles, challenges and results are localized.
+- An automated audit checks translation references across all plugins in all four languages, including known dynamic families. Clan result, insufficient balance and quick-play filter keys are corrected; Docker copies remain synchronized.
+- Social now hosts complete clan management: invitations, members, challenges, ranking and cancellable private input; Profile no longer contains the button. Mutations revalidate permissions and the displayed clan under a SQL lock; roles, challenges and results are localized.
 
 ### 2026-09-04
 
@@ -183,7 +184,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 - Replaced grade and individual-permission authorization with cumulative `vipLevel` (0–3) and `modLevel` (0–4), `/level`, SQL auditing, and a revisioned Redis cache shared with Velocity.
 - Grades are now cosmetic and atomically apply their configured default levels; administrator UUIDs, Docker operators, and `/tropiperm` were removed.
-- Match and mission XP now contributes automatically to the player's guild within the configured weekly cap.
+- Match and mission XP now contributes automatically to the player's clan within the configured weekly cap.
 - Global chat applies `tropicube.chat.color` only to safe MiniMessage colors and decorations; online and offline private messages use the recipient's language.
 - Unconsumed classes, methods, permissions, SheepWars configuration, and 85 language keys were removed together with their Docker copies and obsolete tests.
 
@@ -250,7 +251,7 @@ This document records functional, technical, and operational changes. Entries ar
 - Network communication and moderation: global chat, offline private messages, ignores, proxy-enforced bans, reports, and 90-day chat evidence.
 - Visibility-aware network profiles, network levels, a versioned mission catalog, personal 5-daily/3-weekly rotations, rerolls, and atomic rewards.
 - Lobby contextual help, persistent entity visibility, and fill-oriented smart match selection.
-- Complete persistent guilds with 50-member capacity, bounded roles, invites, audit, capped contributions, weekly challenges, aggregate competitive ranking, and inactive-owner succession.
+- Complete persistent clans with 50-member capacity, bounded roles, invites, audit, capped contributions, weekly challenges, aggregate competitive ranking, and inactive-owner succession.
 
 #### Fixed
 

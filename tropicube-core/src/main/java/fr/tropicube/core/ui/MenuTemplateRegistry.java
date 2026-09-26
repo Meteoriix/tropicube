@@ -44,7 +44,7 @@ public final class MenuTemplateRegistry implements UiReloadParticipant {
         try { fr.tropicube.core.util.ConfigUpdater.update(plugin, "menus.yml", file); }
         catch (java.io.IOException error) { throw new IllegalStateException("Unable to update menus.yml", error); }
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
-        boolean migrated = removeLegacyProfileGuildsButton(yaml);
+        boolean migrated = removeLegacyProfileClansButton(yaml);
         migrated |= useNeutralGameSelectorFrame(yaml);
         if (migrated) {
             try {
@@ -102,7 +102,7 @@ public final class MenuTemplateRegistry implements UiReloadParticipant {
     }
 
     /**
-     * Removes the Guilds button from the pre-wardrobe profile layout.
+     * Removes the Clans button from the pre-wardrobe profile layout.
      *
      * <p>That entry occupied slot 24 in persisted runtime UI bundles. The
      * wardrobe deliberately takes that slot now, so retaining it would make
@@ -111,13 +111,13 @@ public final class MenuTemplateRegistry implements UiReloadParticipant {
      * @param yaml persisted menu configuration to migrate.
      * @return {@code true} when the configuration was changed.
      */
-    static boolean removeLegacyProfileGuildsButton(YamlConfiguration yaml) {
+    static boolean removeLegacyProfileClansButton(YamlConfiguration yaml) {
         ConfigurationSection buttons = yaml.getConfigurationSection("menus.profile-home.buttons");
         if (buttons == null) return false;
-        ConfigurationSection guilds = buttons.getConfigurationSection("guilds");
-        if (guilds == null || guilds.getInt("slot", -1) != 24
-                || !"open_guilds".equals(guilds.getString("action"))) return false;
-        buttons.set("guilds", null);
+        ConfigurationSection clans = buttons.getConfigurationSection("clans");
+        if (clans == null || clans.getInt("slot", -1) != 24
+                || !"open_clans".equals(clans.getString("action"))) return false;
+        buttons.set("clans", null);
         return true;
     }
 

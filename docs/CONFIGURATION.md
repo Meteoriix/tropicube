@@ -194,9 +194,9 @@ Sections métier :
 - `social.friends.request-expiry-days` : expiration des demandes en attente (`30`) ;
 - `social.party.max-size` : taille maximale d'une party (`8`) ;
 - `social.party.invite-expiry-seconds` : validité d'une invitation de party (`60`) ;
-- `guilds.max-members` : capacité d'une guilde (`50`) ;
-- `guilds.max-officers` : nombre maximal d'officiers (`5`) ;
-- `guilds.weekly-contribution-cap` : contribution d'XP hebdomadaire maximale par membre (`5000`), alimentée automatiquement par l'XP des parties et des missions ;
+- `clans.max-members` : capacité d'un clan (`50`) ;
+- `clans.max-officers` : nombre maximal d'officiers (`5`) ;
+- `clans.weekly-contribution-cap` : contribution d'XP hebdomadaire maximale par membre (`5000`), alimentée automatiquement par l'XP des parties et des missions ;
 - `language.default` : langue utilisée avant chargement d'un profil existant. À la création d'un joueur, la langue du client Minecraft sélectionne `fr`, `en`, `es` ou `de` ; toute autre locale utilise l'anglais ;
 - `grades` : présentation MiniMessage, priorité et niveaux VIP/modérateur appliqués par défaut.
 
@@ -282,9 +282,11 @@ Les balises internes `<tc>` et `<sw>` insèrent respectivement les marques rése
 
 Éviter les clés YAML dupliquées. Le merge de déploiement accepte les sections de premier niveau et leurs feuilles indentées de deux espaces ; une structure plus profonde doit être migrée explicitement plutôt qu'ignorée silencieusement.
 
-## Saisie privée des guildes dans le Lobby
+## Saisie privée des clans dans le Lobby
 
-Dans `TropicubeLobby/config.yml`, `guilds.input-timeout-seconds` définit le délai de chaque étape de saisie privée (nom, tag ou pseudo). Valeur par défaut : `120` secondes ; un entier entre `10` et `600` est requis. Les valeurs fractionnaires, textuelles ou hors limites sont refusées au démarrage avec la clé et la valeur reçue. La ressource embarquée et sa copie Docker sont synchronisées ; les anciennes configurations reçoivent la valeur par défaut via le mécanisme existant. Les limites de membres, d'officiers et de contribution restent celles de Core.
+Dans `TropicubeLobby/config.yml`, `clans.input-timeout-seconds` définit le délai de chaque étape de saisie privée (nom, tag ou pseudo). Valeur par défaut : `120` secondes ; un entier entre `10` et `600` est requis. Les valeurs fractionnaires, textuelles ou hors limites sont refusées au démarrage avec la clé et la valeur reçue. La ressource embarquée et sa copie Docker sont synchronisées ; les anciennes configurations reçoivent la valeur par défaut via le mécanisme existant. Les limites de membres, d'officiers et de contribution restent celles de Core.
+
+Core et Lobby renomment au démarrage l'ancienne section `guilds` en `clans` avant la fusion des valeurs par défaut. Les valeurs personnalisées et commentaires sont conservés, puis l'ancien nom disparaît du fichier actif. Il n'existe aucun alias de configuration durable.
 
 ## Fiabilité avant ouverture
 

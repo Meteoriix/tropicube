@@ -43,7 +43,7 @@ public final class PrivateChatInput implements Listener, AutoCloseable {
             if (!prompts.remove(id, prompt)) return;
             Player online = Bukkit.getPlayer(id);
             if (online != null) {
-                online.sendMessage(plugin.getLanguageManager().getComponent(id, "guild-ui.input-expired"));
+                online.sendMessage(plugin.getLanguageManager().getComponent(id, "clan-ui.input-expired"));
                 cancelled.run();
             }
         }, timeoutSeconds * 20L));

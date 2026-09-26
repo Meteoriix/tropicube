@@ -131,9 +131,11 @@ The runtime file `plugins/TropicubeFallenKingdoms/active-session.lock` is create
 
 Keep image tags and deployment inputs reproducible. Roll back by restoring the prior code revision, rebuilding the affected images, and recreating services. Database changes must provide a compatible rollback or a documented forward-only migration. Never use destructive Git commands on a dirty worktree.
 
-## Guild menu verification
+## Clan menu verification
 
-Update Core and Lobby together, then check Java and Bedrock: three Social tabs, no Guilds button in Profile, private name/tag creation, invitations, lists exceeding 21 members, challenges and empty/populated rankings. Check member/officer/owner permissions and removal/transfer/leave confirmations, including last-member deletion. Private input must never reach other players' chat. Test `!`, timeout, logout, navigation during loading, double clicks and `/lang` in all four languages. Simulate a SQL failure and use Refresh. No production port or volume change is needed.
+Deploy Core and Lobby together. On first startup, `V013__rename_guilds_to_clans.sql` preserves existing data while renaming the schema and notifications before services initialize. An older Core build cannot run after this migration; take the usual MySQL backup before deployment.
+
+Update Core and Lobby together, then check Java and Bedrock: three Social tabs, no Clans button in Profile, private name/tag creation, invitations, lists exceeding 21 members, challenges and empty/populated rankings. Check member/officer/owner permissions and removal/transfer/leave confirmations, including last-member deletion. Private input must never reach other players' chat. Test `!`, timeout, logout, navigation during loading, double clicks and `/lang` in all four languages. Simulate a SQL failure and use Refresh. No production port or volume change is needed.
 
 ## Development redeploy
 

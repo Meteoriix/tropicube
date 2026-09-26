@@ -169,7 +169,7 @@ public final class NotificationService {
     }
 
     private static boolean allowedCommand(String value) {
-        return value != null && (value.matches("/guild accept [A-Z0-9]{2,8}")
+        return value != null && (value.matches("/clan accept [A-Z0-9]{2,8}")
                 || value.equals("/missions") || value.equals("/profile")
                 || value.matches("/competitive (4v4|8v8)"));
     }

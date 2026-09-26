@@ -114,10 +114,9 @@ commands:
     description: "Exporter ou anonymiser les données d'un joueur"
     usage: /privacy <export|erase|status|cancel> ...
     permission: tropicube.privacy.manage
-  guild:
-    description: "Créer et gérer une guilde"
-    usage: /guild <info|create|invite|accept|leave|kick|promote|demote|transfer>
-    aliases: [ guilde ]
+  clan:
+    description: "Créer et gérer un clan"
+    usage: /clan <info|create|invite|accept|leave|kick|promote|demote|transfer>
   level:
     description: "Consulter ou modifier les niveaux VIP et modérateur"
     usage: /level <joueur> [vip|mod] [niveau]

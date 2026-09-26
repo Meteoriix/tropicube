@@ -16,7 +16,7 @@ class SocialGUITest {
     void socialTabsUseTheConfiguredSlotsAndHeadDatabaseIcons() {
         assertEquals(2, SocialGUI.FRIENDS_TAB_SLOT);
         assertEquals(4, SocialGUI.PARTY_TAB_SLOT);
-        assertEquals(6, SocialGUI.GUILDS_TAB_SLOT);
+        assertEquals(6, SocialGUI.CLANS_TAB_SLOT);
         assertEquals("117085", SocialGUI.FRIENDS_HEAD_ID);
         assertEquals("117095", SocialGUI.PARTY_HEAD_ID);
     }
@@ -37,7 +37,7 @@ class SocialGUITest {
 
     @Test
     void inventoryShortcutsCannotTriggerSocialActions() {
-        var action = new SocialGUI.Action(SocialGUI.ActionType.OPEN_GUILDS, "");
+        var action = new SocialGUI.Action(SocialGUI.ActionType.OPEN_CLANS, "");
         for (ClickType click : java.util.List.of(ClickType.MIDDLE, ClickType.NUMBER_KEY, ClickType.DROP, ClickType.SWAP_OFFHAND))
             org.junit.jupiter.api.Assertions.assertNull(SocialGUI.actionForClick(action, null, click));
     }

@@ -65,7 +65,7 @@ Source: `tropicube-core/src/main/resources/config.yml`; deployment copy: `docker
 
 Core configuration covers Redis, MySQL, the default language, economy cache rules, and the complete cosmetic grade catalog. A player's balance is capped at 100 billion TropiCoins, and displays use the `K`, `M`, and `B` suffixes. Each grade defines validated `default-vip-level` (0–3) and `default-mod-level` (0–4); applying a grade always replaces both current levels. `access.audit-retention-days` defaults to 365 and drives the daily SQL audit purge.
 
-Guild limits are `guilds.max-members` (`50`), `guilds.max-officers` (`5`), and `guilds.weekly-contribution-cap` (`5000` XP per member). Match and mission XP automatically feeds the capped guild contribution.
+Clan limits are `clans.max-members` (`50`), `clans.max-officers` (`5`), and `clans.weekly-contribution-cap` (`5000` XP per member). Match and mission XP automatically feeds the capped clan contribution.
 
 `TropicubeCore/missions.yml` is a versioned business catalog. Every mission declares an event, target, network-XP reward, and currency reward. Stable IDs and a version bump are required when it changes; startup rejects invalid or undersized catalogs.
 
@@ -105,9 +105,11 @@ Compose defines Velocity, Redis, MySQL, the Docker socket proxy, and any static 
 
 New options require a safe default, startup validation, documentation, and deployment-copy synchronization. Old configuration should remain readable whenever practical. Redis changes must identify keys and TTLs; SQL changes require migrations and indexes.
 
-## Private guild input in Lobby
+## Private clan input in Lobby
 
-`TropicubeLobby/config.yml` exposes `guilds.input-timeout-seconds` for each private input step (name, tag or username). Default: `120` seconds; only integers from `10` to `600` are accepted. Fractional, textual and out-of-range values fail startup with the key and supplied value. The bundled resource and Docker copy match; existing configuration files receive the default through the current updater. Member, officer and contribution limits remain owned by Core.
+`TropicubeLobby/config.yml` exposes `clans.input-timeout-seconds` for each private input step (name, tag or username). Default: `120` seconds; only integers from `10` to `600` are accepted. Fractional, textual and out-of-range values fail startup with the key and supplied value. The bundled resource and Docker copy match; existing configuration files receive the default through the current updater. Member, officer and contribution limits remain owned by Core.
+
+Core and Lobby rename the former `guilds` root section to `clans` at startup before merging defaults. Customized values and comments are preserved, then the old name is removed from the active file. No permanent configuration alias remains.
 
 ## Pre-opening reliability settings
 

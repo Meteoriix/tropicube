@@ -6,6 +6,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-26
 
+- Renomme immédiatement l'ensemble du système Guildes en Clans : commande `/clan` unique, code et interfaces dédiés, configurations `clans.*` migrées et schéma SQL renommé sans perte par `V013`.
 - Ajoute à l'éditeur de langues un onglet versionné pour gérer les mots et phrases exacts que les traductions automatiques doivent toujours conserver.
 - Corrige le rendu MiniMessage de l'état de la whitelist dans `/tropi info` afin que sa couleur soit interprétée sans afficher les balises.
 - Complète et réorganise le scoreboard d'attente Fallen Kingdoms avec la carte, la capacité totale et une présentation plus lisible, réduit les noms de royaumes à leur couleur et localise entièrement les objets, quantités, potions et enchantements du menu des kits.
@@ -13,7 +14,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 ### 2026-09-25
 
 - Uniformise les menus sans ligne de vitres bleues, corrige l'affichage du solde Boutique jusqu'à 100 B, conserve le vrai pseudo dans les listes d'amis et complète les compteurs de demandes.
-- Affiche le jeu, l'icône et le format dans le scoreboard de file, signale les files Ranked absentes et simplifie le menu Guildes sans bouton d'actualisation permanent.
+- Affiche le jeu, l'icône et le format dans le scoreboard de file, signale les files Ranked absentes et simplifie le menu Clans sans bouton d'actualisation permanent.
 - Aligne les validations des interfaces sur la nouvelle palette et migre l'ancien bouton Jeux vert vers son accent aqua foncé sans écraser les personnalisations.
 - Rend réellement vide la ligne d'espacement du scoreboard SheepWars en supprimant explicitement son nombre côté client et vérifie la représentation Paper complète de chaque variante.
 
@@ -106,7 +107,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 - Corrige le démarrage des backends dynamiques : le flux de logs Docker reste ouvert au-delà de la fenêtre de disponibilité Paper, ce qui évite de supprimer un Lobby ou SheepWars encore en initialisation.
 
-- Migre la disposition Profil antérieure qui plaçait Guildes en case 24, désormais réservée au Vestiaire, avant validation de la configuration restaurée.
+- Migre la disposition Profil antérieure qui plaçait Clans en case 24, désormais réservée au Vestiaire, avant validation de la configuration restaurée.
 
 - Intègre les cosmétiques à la Boutique avec confirmation et achat atomique sans double débit ; vérifie concurrence et rollback MySQL, relie les déblocages aux récompenses existantes et complète les protections de navigation/rafraîchissement après `/lang`.
 
@@ -132,9 +133,9 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-06
 
-- La restauration des interfaces Redis complète désormais les langues avec les nouvelles clés du JAR avant leur chargement, en conservant les personnalisations. Une ancienne génération pouvait supprimer 79 clés par langue, notamment dans Social et les guildes, malgré des catalogues embarqués complets.
-- Un audit automatique vérifie les références de traduction de tous les plugins dans les quatre langues, y compris les familles dynamiques connues. Les clés des résultats de guilde, du solde insuffisant et du filtre de partie rapide sont corrigées ; les copies Docker restent synchronisées.
-- Social accueille la gestion complète des guildes : invitations, membres, défis, classement et saisie privée annulable ; le bouton quitte le Profil. Les mutations revalident les droits et la guilde affichée sous verrou SQL ; rôles, défis et résultats sont localisés.
+- La restauration des interfaces Redis complète désormais les langues avec les nouvelles clés du JAR avant leur chargement, en conservant les personnalisations. Une ancienne génération pouvait supprimer 79 clés par langue, notamment dans Social et les clans, malgré des catalogues embarqués complets.
+- Un audit automatique vérifie les références de traduction de tous les plugins dans les quatre langues, y compris les familles dynamiques connues. Les clés des résultats de clan, du solde insuffisant et du filtre de partie rapide sont corrigées ; les copies Docker restent synchronisées.
+- Social accueille la gestion complète des clans : invitations, membres, défis, classement et saisie privée annulable ; le bouton quitte le Profil. Les mutations revalident les droits et le clan affichée sous verrou SQL ; rôles, défis et résultats sont localisés.
 
 ### 2026-09-04
 
@@ -210,7 +211,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 - Refonte complète des autorisations autour de `vipLevel` (0–3) et `modLevel` (0–4) : grades cosmétiques, commande `/level`, audit SQL, cache Redis révisionné et suppression des permissions individuelles, des UUID administrateurs et des opérateurs Docker.
 - Les achats, commandes et expirations de grade appliquent désormais atomiquement les niveaux configurés ; Velocity utilise les mêmes niveaux pour `/nick`, les files prioritaires et les commandes d'exploitation.
-- L'XP gagnée en partie ou via une mission contribue désormais automatiquement à la guilde, dans la limite hebdomadaire configurée.
+- L'XP gagnée en partie ou via une mission contribue désormais automatiquement à le clan, dans la limite hebdomadaire configurée.
 - Le chat global applique `tropicube.chat.color` aux seules couleurs et décorations MiniMessage sûres ; les messages privés en ligne et hors ligne utilisent la langue du destinataire.
 - Les classes, méthodes, permissions, configurations SheepWars et 85 clés de langue sans consommateur ont été retirées, ainsi que leurs copies Docker et tests obsolètes.
 
@@ -281,8 +282,8 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 - Communication et modération réseau : chat global, messages privés hors ligne, réglages d'ignorance, bannissements appliqués au proxy, file de signalements et preuves de chat conservées 90 jours.
 - Profils réseau à détails réglables, niveaux réseau, catalogue YAML de missions versionné, rotations personnelles de 5 quotidiennes et 3 hebdomadaires, rerolls et récompenses atomiques.
 - Lobby enrichi avec aide contextuelle désactivable, visibilité persistante tous/amis/party/personne et sélection de partie intelligente orientée remplissage.
-- Guildes persistantes complètes : 50 membres, rôles bornés, invitations, audit, contributions plafonnées, défis hebdomadaires, classement compétitif agrégé et succession automatique du chef inactif.
-- Centre joueur localisé : profil enrichi, archives saisonnières, titres/badges, missions avec jetons de reroll, classement des guildes et boîte de notifications filtrable conservée sept jours.
+- Clans persistantes complètes : 50 membres, rôles bornés, invitations, audit, contributions plafonnées, défis hebdomadaires, classement compétitif agrégé et succession automatique du chef inactif.
+- Centre joueur localisé : profil enrichi, archives saisonnières, titres/badges, missions avec jetons de reroll, classement des clans et boîte de notifications filtrable conservée sept jours.
 - Outillage de confidentialité TOTP : exports JSON exhaustifs supprimés après sept jours, demandes d'anonymisation différées de trente jours, annulation, suivi et gel légal des preuves de modération.
 - Reconnexion classée SheepWars : grâce de trois minutes, forfait après trente secondes lorsqu'une équipe entière est hors ligne, sanctions graduées uniquement à expiration ou lors d'un abandon explicite.
 - Récompenses de saison SheepWars : archivage trimestriel idempotent, reset souple, titre, badge et monnaie sans avantage de jeu pour les joueurs ayant terminé leurs placements.

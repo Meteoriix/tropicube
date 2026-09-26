@@ -10,3 +10,4 @@ V009__cosmetics.sql
 V010__game_statistics.sql
 V011__fallenkingdoms_preferences.sql
 V012__cap_economy_balances.sql
+V013__rename_guilds_to_clans.sql

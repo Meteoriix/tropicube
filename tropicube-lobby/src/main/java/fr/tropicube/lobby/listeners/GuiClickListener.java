@@ -495,7 +495,7 @@ public class GuiClickListener implements Listener {
         SocialGUI.Action action = holder.action(slot, click);
         if (action == null) return;
         switch (action.type()) {
-            case OPEN_GUILDS -> plugin.getGuildMenus().open(player);
+            case OPEN_CLANS -> plugin.getClanMenus().open(player);
             case OPEN_FRIENDS -> plugin.getGuiManager().openSocial(player, SocialGUI.View.FRIENDS);
             case OPEN_PARTY -> plugin.getGuiManager().openSocial(player, SocialGUI.View.PARTY);
             case FRIEND_JOIN -> player.performCommand("friend join " + action.argument());
@@ -507,7 +507,7 @@ public class GuiClickListener implements Listener {
             case PARTY_WARP_MEMBER -> player.performCommand("party warp " + action.argument());
             case PARTY_KICK -> player.performCommand("party kick " + action.argument());
         }
-        if (action.type() == SocialGUI.ActionType.OPEN_GUILDS
+        if (action.type() == SocialGUI.ActionType.OPEN_CLANS
                 || action.type() == SocialGUI.ActionType.OPEN_FRIENDS
                 || action.type() == SocialGUI.ActionType.OPEN_PARTY
                 || action.type() == SocialGUI.ActionType.OPEN_FRIEND_REQUESTS

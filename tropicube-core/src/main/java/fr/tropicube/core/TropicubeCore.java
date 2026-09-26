@@ -23,7 +23,7 @@ import fr.tropicube.core.network.ProfileService;
 import fr.tropicube.core.progression.MissionCatalog;
 import fr.tropicube.core.progression.MissionService;
 import fr.tropicube.core.progression.NetworkProgressionService;
-import fr.tropicube.core.guild.GuildService;
+import fr.tropicube.core.clan.ClanService;
 import fr.tropicube.core.ui.RuntimeUiBundle;
 import fr.tropicube.core.ui.MenuTemplateRegistry;
 import org.bukkit.GameRules;
@@ -87,8 +87,8 @@ public class TropicubeCore extends JavaPlugin {
     private fr.tropicube.core.cosmetic.CosmeticCatalog cosmeticCatalog;
     private fr.tropicube.core.cosmetic.CosmeticService cosmeticService;
     private ProfileService profileService;
-    private GuildService guildService;
-    private fr.tropicube.core.guild.GuildInvitations guildInvitations;
+    private ClanService clanService;
+    private fr.tropicube.core.clan.ClanInvitations clanInvitations;
     private final fr.tropicube.core.network.PrivateChatInput privateChatInput = new fr.tropicube.core.network.PrivateChatInput(this);
     private RuntimeUiBundle runtimeUiBundle;
     private MenuTemplateRegistry menuTemplates;
@@ -299,12 +299,12 @@ public class TropicubeCore extends JavaPlugin {
                     new File(getDataFolder(), "missions.yml").toPath())) {
             missionService = new MissionService(this, databaseManager, MissionCatalog.load(input));
             }
-            guildService = new GuildService(databaseManager,
-                    positiveConfig("guilds.max-members", 50, 2),
-                    positiveConfig("guilds.max-officers", 5, 1),
-                    positiveConfig("guilds.weekly-contribution-cap", 5000, 1));
-            guildInvitations = new fr.tropicube.core.guild.GuildInvitations(guildService, notificationService);
-            getServer().getAsyncScheduler().runAtFixedRate(this, task -> guildService.applySuccession(),
+            clanService = new ClanService(databaseManager,
+                    positiveConfig("clans.max-members", 50, 2),
+                    positiveConfig("clans.max-officers", 5, 1),
+                    positiveConfig("clans.weekly-contribution-cap", 5000, 1));
+            clanInvitations = new fr.tropicube.core.clan.ClanInvitations(clanService, notificationService);
+            getServer().getAsyncScheduler().runAtFixedRate(this, task -> clanService.applySuccession(),
                     1, 24, java.util.concurrent.TimeUnit.HOURS);
             getServer().getAsyncScheduler().runAtFixedRate(this,
                     task -> permissionManager.purgeAudit(positiveConfig("access.audit-retention-days", 365, 1)),
@@ -397,7 +397,7 @@ public class TropicubeCore extends JavaPlugin {
             Objects.requireNonNull(getCommand("notifications")).setExecutor(playerCenter);
             Objects.requireNonNull(getCommand("center")).setExecutor(playerCenter);
             Objects.requireNonNull(getCommand("privacy")).setExecutor(new fr.tropicube.core.commands.PrivacyCommand(this));
-            Objects.requireNonNull(getCommand("guild")).setExecutor(new GuildCommand(this));
+            Objects.requireNonNull(getCommand("clan")).setExecutor(new ClanCommand(this));
 
             var friendCommand = new FriendCommand(this);
             Objects.requireNonNull(getCommand("friend")).setExecutor(friendCommand);
@@ -468,7 +468,10 @@ public class TropicubeCore extends JavaPlugin {
      */
     private void updateConfigs() {
         try {
-            ConfigUpdater.update(this, "config.yml", new File(getDataFolder(), "config.yml"));
+            File coreConfig = new File(getDataFolder(), "config.yml");
+            ConfigUpdater.migrateRootSection(coreConfig, "guilds", "clans");
+            ConfigUpdater.update(this, "config.yml", coreConfig);
+            reloadConfig();
             ConfigUpdater.update(this, "missions.yml", new File(getDataFolder(), "missions.yml"));
 
             String[] langs = {"fr", "en", "es", "de"};
@@ -508,9 +511,9 @@ public class TropicubeCore extends JavaPlugin {
     public ProfileService getProfileService() { return profileService; }
     /** Shared private input boundary consumed before network chat publication. */
     public fr.tropicube.core.network.PrivateChatInput getPrivateChatInput() { return privateChatInput; }
-    /** Notification delivery shared by guild command and menu adapters. */
-    public fr.tropicube.core.guild.GuildInvitations getGuildInvitations() { return guildInvitations; }
-    public GuildService getGuildService() { return guildService; }
+    /** Notification delivery shared by clan command and menu adapters. */
+    public fr.tropicube.core.clan.ClanInvitations getClanInvitations() { return clanInvitations; }
+    public ClanService getClanService() { return clanService; }
     public boolean isStaffMode(UUID playerId) { return staffModePlayers.contains(playerId); }
     public void setStaffMode(UUID playerId, boolean active) {
         if (active) staffModePlayers.add(playerId); else staffModePlayers.remove(playerId);

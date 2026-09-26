@@ -35,16 +35,16 @@ public final class NetworkProgressionService {
                 .whenComplete((progression, error) -> {
                     if (error == null) {
                         display(playerId, progression);
-                        contributeToGuild(playerId, amount);
+                        contributeToClan(playerId, amount);
                     }
                 });
     }
 
-    private void contributeToGuild(UUID playerId, long amount) {
+    private void contributeToClan(UUID playerId, long amount) {
         try {
-            plugin.getGuildService().contribute(playerId, amount).exceptionally(contributionError -> {
+            plugin.getClanService().contribute(playerId, amount).exceptionally(contributionError -> {
                 plugin.getLogger().warning("Impossible de contribuer l'XP de " + playerId
-                        + " à sa guilde : " + contributionError.getMessage());
+                        + " à sa clan : " + contributionError.getMessage());
                 return 0L;
             });
         } catch (RuntimeException contributionError) {

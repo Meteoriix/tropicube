@@ -180,7 +180,7 @@ public final class MissionService {
                 connection.commit();
                 plugin.getEconomyManager().invalidateCache(playerId);
                 plugin.getNetworkProgressionService().refreshDisplay(playerId);
-                contributeToGuild(playerId, assignment.mission().experience());
+                contributeToClan(playerId, assignment.mission().experience());
                 return ClaimResult.CLAIMED;
             } catch (SQLException | RuntimeException error) {
                 connection.rollback();
@@ -189,11 +189,11 @@ public final class MissionService {
         }
     }
 
-    private void contributeToGuild(UUID playerId, long amount) {
+    private void contributeToClan(UUID playerId, long amount) {
         try {
-            plugin.getGuildService().contribute(playerId, amount).exceptionally(contributionError -> {
+            plugin.getClanService().contribute(playerId, amount).exceptionally(contributionError -> {
                 plugin.getLogger().warning("Impossible de contribuer l'XP de mission de " + playerId
-                        + " à sa guilde : " + contributionError.getMessage());
+                        + " à sa clan : " + contributionError.getMessage());
                 return 0L;
             });
         } catch (RuntimeException contributionError) {

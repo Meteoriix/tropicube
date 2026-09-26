@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class NotificationServiceTest {
     @Test void onlyAllowlistedSuggestedCommandsCanBePersisted() {
         assertDoesNotThrow(() -> new NotificationService.Action(
-                NotificationService.ActionType.SUGGEST_COMMAND, "/guild accept TEST"));
+                NotificationService.ActionType.SUGGEST_COMMAND, "/clan accept TEST"));
         assertDoesNotThrow(() -> new NotificationService.Action(
                 NotificationService.ActionType.SUGGEST_COMMAND, "/competitive 8v8"));
         assertThrows(IllegalArgumentException.class, () -> new NotificationService.Action(
