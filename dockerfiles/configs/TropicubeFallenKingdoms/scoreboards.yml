@@ -7,7 +7,10 @@ scoreboards:
         lines:
           - key: fk.sb-separator
           - key: fk.sb-waiting
+          - blank: true
           - key: fk.sb-players
+          - key: fk.sb-map
+          - blank: true
           - key: fk.sb-team
           - key: fk.sb-kit
           - key: fk.sb-separator

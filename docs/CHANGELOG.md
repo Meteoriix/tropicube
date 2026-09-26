@@ -6,7 +6,7 @@ Ce document conserve les évolutions fonctionnelles, techniques et opérationnel
 
 ### 2026-09-26
 
-- Complète le scoreboard d'attente Fallen Kingdoms avec sa capacité totale, réduit les noms de royaumes à leur couleur et localise entièrement les objets, quantités, potions et enchantements du menu des kits.
+- Complète et réorganise le scoreboard d'attente Fallen Kingdoms avec la carte, la capacité totale et une présentation plus lisible, réduit les noms de royaumes à leur couleur et localise entièrement les objets, quantités, potions et enchantements du menu des kits.
 
 ### 2026-09-25
 
