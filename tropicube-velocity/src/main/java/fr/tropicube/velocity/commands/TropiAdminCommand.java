@@ -3,6 +3,7 @@ package fr.tropicube.velocity.commands;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import fr.tropicube.docker.model.ServerInstance;
+import fr.tropicube.language.PlaceholderValues;
 import fr.tropicube.velocity.managers.TropiServerManager;
 import fr.tropicube.velocity.managers.VelocityLanguageManager;
 import net.kyori.adventure.text.Component;
@@ -167,10 +168,11 @@ public class TropiAdminCommand implements SimpleCommand {
             source.sendMessage(lm.getComponent(source, "proxy.admin-info-rcon", rconVal));
             source.sendMessage(lm.getComponent(source, "proxy.admin-info-players",
                     i.getOnlinePlayers(), i.getMaxPlayers()));
-            String wlVal = i.isWhitelisted()
-                    ? lm.get(source, "proxy.admin-info-whitelist-yes")
-                    : lm.get(source, "proxy.admin-info-whitelist-no");
-            source.sendMessage(lm.getComponent(source, "proxy.admin-info-whitelist", wlVal));
+            Component whitelistStatus = lm.getComponent(source, i.isWhitelisted()
+                    ? "proxy.admin-info-whitelist-yes"
+                    : "proxy.admin-info-whitelist-no");
+            source.sendMessage(lm.getComponent(source, "proxy.admin-info-whitelist",
+                    PlaceholderValues.builder().putComponent("whitelist_status", whitelistStatus).build()));
             source.sendMessage(lm.getComponent(source, "proxy.admin-footer"));
         }, () -> source.sendMessage(lm.getComponent(source, "proxy.admin-instance-not-found", nameOrId)));
     }

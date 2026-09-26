@@ -6,6 +6,7 @@ This document records functional, technical, and operational changes. Entries ar
 
 ### 2026-09-26
 
+- Fixes the MiniMessage rendering of the whitelist status in `/tropi info`, applying its color without displaying formatting tags.
 - Completes the Fallen Kingdoms waiting scoreboard with its total capacity, shortens kingdom names to their color, and fully localizes kit-menu items, quantities, potions, and enchantments.
 
 ### 2026-09-25
