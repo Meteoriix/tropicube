@@ -145,7 +145,7 @@ services:
 
   # ── Admin (MySQL web interface, dev only) ───────────
   adminer:
-    image: adminer:5.5.1@sha256:f0caf52ccfad5b1c06314f984d5798810404374f516ff91125c0e51295ac6f12
+    image: adminer:6.3.0@sha256:3a07decd833c2375ea749aa8018250c1db4859a78bd55354f797bfb591733233
     container_name: tropicube-adminer
     logging: *bounded-logging
     restart: unless-stopped
