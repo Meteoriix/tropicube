@@ -119,7 +119,7 @@ services:
         condition: service_healthy
   # ── Docker Socket Proxy ────────────────────────────────────
   docker-proxy:
-    image: tecnativa/docker-socket-proxy:0.3@sha256:9e4b9e7517a6b660f2cc903a19b257b1852d5b3344794e3ea334ff00ae677ac2
+    image: tecnativa/docker-socket-proxy:3.4@sha256:027f9fa5ee70be5836eeaa10ce889d7a83f34a8db16a7f412818b92997e0beab
     container_name: tropicube-docker-proxy
     logging: *bounded-logging
     restart: unless-stopped
